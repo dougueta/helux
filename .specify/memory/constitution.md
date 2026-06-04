@@ -1,50 +1,113 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- SYNC IMPACT REPORT
+Version change: [template] → 1.0.0
+Added sections: Core Principles (5), Technology Stack, Development Workflow, Governance
+Removed sections: N/A (initial constitution)
+Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ aligned (Constitution Check gate references TDD + monorepo)
+  - .specify/templates/spec-template.md ✅ aligned (no constitution-specific fields)
+  - .specify/templates/tasks-template.md ✅ aligned (TDD task ordering already enforced)
+  - .specify/templates/constitution-template.md ✅ source template unchanged
+Follow-up TODOs:
+  - TODO(TECHNOLOGY_STACK): Confirm language/framework choices for backend, frontend, and services once decided
+  - TODO(PERFORMANCE_GOALS): Define latency/throughput targets per service when scope is known
+-->
+
+# Helux Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Monorepo-First
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+All applications, services, and shared libraries MUST reside in this repository.
+New work MUST NOT be started in a separate repository without an explicit architecture
+decision record (ADR) justifying the exception.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- `apps/` — deployable applications (frontend, backend, admin, etc.)
+- `packages/` — shared libraries, types, utilities consumed across apps
+- `services/` — standalone services (workers, schedulers, third-party integrations)
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Each workspace MUST have its own `package.json` (or language-equivalent manifest),
+its own test suite, and its own README describing purpose and usage.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Test-First (NON-NEGOTIABLE)
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+TDD is mandatory and non-negotiable:
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+1. Write the test.
+2. Confirm the test fails (red).
+3. Implement the minimum code to pass (green).
+4. Refactor without breaking tests.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+No implementation task is considered started until its failing tests exist and have been
+reviewed. PRs that include implementation without accompanying tests MUST be rejected.
+The Red–Green–Refactor cycle is strictly enforced at code review.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Independent Deployability
+
+Each `apps/` and `services/` workspace MUST be independently deployable:
+
+- MUST NOT require other apps or services to be deployed simultaneously.
+- MUST declare all runtime dependencies explicitly (env vars, external APIs, queues).
+- Integration between workspaces MUST occur via well-defined contracts (API schemas,
+  message contracts, shared types in `packages/`).
+
+### IV. Shared Code via Packages
+
+Code MUST NOT be duplicated across workspaces. Cross-cutting logic MUST be extracted
+into a `packages/` workspace:
+
+- Shared types and interfaces → `packages/types`
+- Shared utilities/helpers → `packages/utils` (or a named package)
+- Shared UI components → `packages/ui`
+
+A workspace MUST import from `packages/` rather than referencing another `apps/` or
+`services/` workspace directly (except through versioned contracts).
+
+### V. Simplicity
+
+YAGNI (You Aren't Gonna Need It) MUST be the default position:
+
+- Abstractions MUST be introduced only when a second concrete use case exists.
+- Configuration layers, plugin architectures, and generic frameworks MUST be justified
+  by current requirements, not anticipated future needs.
+- Complexity introduced to satisfy a principle (e.g., package extraction) MUST be
+  documented in the Complexity Tracking section of the relevant plan.
+
+## Technology Stack
+
+TODO(TECHNOLOGY_STACK): Confirm and record the canonical tech choices for each layer
+once decided. Update this section before the first feature spec is ratified.
+
+Placeholders to fill in:
+
+- **Backend**: [e.g., Node.js + Fastify, Python + FastAPI, Go + Chi]
+- **Frontend**: [e.g., Next.js + React, SvelteKit, Vue + Nuxt]
+- **Shared packages tooling**: [e.g., Turborepo, Nx, pnpm workspaces]
+- **Database**: [e.g., PostgreSQL + Prisma, MongoDB, SQLite]
+- **Testing**: [e.g., Vitest, Jest, pytest, Go test]
+- **CI/CD**: [e.g., GitHub Actions, Vercel, Railway]
+
+## Development Workflow
+
+- All work MUST be done on a feature branch (e.g., `001-feature-name`).
+- PRs MUST pass all tests in affected workspaces before merge.
+- Commits SHOULD be atomic and reference the feature/task number.
+- Breaking changes to `packages/` MUST bump the package version and update all consumers
+  in the same PR.
+- The `main` branch MUST always be in a deployable state.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other development practices. Any deviation MUST be
+documented as a justified exception in the relevant plan's Complexity Tracking table.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Amendments require:
+1. A written proposal describing the change and its rationale.
+2. Review by at least one team member not authoring the change.
+3. An update to `LAST_AMENDED_DATE` and `CONSTITUTION_VERSION`.
+4. Propagation to any dependent templates or guidance files.
+
+All PRs and code reviews MUST verify compliance with the principles above.
+Complexity MUST be justified; simplicity is the default.
+
+**Version**: 1.0.0 | **Ratified**: 2026-06-04 | **Last Amended**: 2026-06-04
