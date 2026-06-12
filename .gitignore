@@ -1,0 +1,16 @@
+# Dados sensíveis do usuário
+data/genetics/genera.json
+data/workouts/history.json
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+.turbo/
+
+# OS
+.DS_Store
+Thumbs.db
