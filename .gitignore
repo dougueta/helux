@@ -4,6 +4,7 @@ node_modules/
 # Dados sensíveis do usuário
 data/genetics/genera.json
 data/workouts/history.json
+data/workouts/latest-plan.json
 
 # Variáveis de ambiente
 .env
