@@ -11,6 +11,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@helux/genetics": "workspace:*",
     "@helux/types": "workspace:*",
     "fastify": "^5.7.2"
   },
