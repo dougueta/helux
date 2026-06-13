@@ -37,7 +37,7 @@ export async function generateWorkoutPlan(input: PlanInput): Promise<NextWorkout
     throw new Error('Resposta da IA não contém bloco de texto')
   }
 
-  const plan = parseJsonResponse(textBlock.text)
+  const plan = { ...parseJsonResponse(textBlock.text), generatedAt: new Date().toISOString() }
 
   mkdirSync(dirname(LATEST_PLAN_PATH), { recursive: true })
   writeFileSync(LATEST_PLAN_PATH, JSON.stringify(plan, null, 2), 'utf-8')

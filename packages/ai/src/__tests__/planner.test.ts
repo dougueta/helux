@@ -59,7 +59,7 @@ describe('generateWorkoutPlan', () => {
   it('retorna NextWorkoutPlan com generatedAt, exercises e rationale', async () => {
     const result = await generateWorkoutPlan(MOCK_INPUT)
 
-    expect(result.generatedAt).toBe(MOCK_PLAN.generatedAt)
+    expect(result.generatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)
     expect(result.exercises).toHaveLength(1)
     expect(result.exercises[0].name).toBe('Supino Reto')
     expect(result.rationale).toBe(MOCK_PLAN.rationale)
