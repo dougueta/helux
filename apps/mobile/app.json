@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Helux",
+    "slug": "helux",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "helux",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0C0A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.helux.app"
+    },
+    "android": {
+      "package": "com.helux.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0C0A"
+      }
+    },
+    "plugins": ["expo-font", "expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
