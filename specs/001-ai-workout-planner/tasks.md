@@ -113,7 +113,7 @@ curl http://localhost:3001/workout/latest-plan
 
 - [X] T030 [P] Rodar `pnpm typecheck` na raiz — confirmar 0 erros em todos os workspaces (`@helux/types`, `@helux/genetics`, `@helux/ai`, `@helux/api`)
 - [X] T031 Rodar `pnpm test` na raiz — confirmar todos os testes passam (tipos 5, genetics 22, ai 5, api 9)
-- [ ] T032 Verificar `usage.cache_creation_input_tokens > 0` numa chamada real (com `ANTHROPIC_API_KEY` real) para confirmar que o system prompt atingiu o mínimo de 2048 tokens para caching no `sonnet-4-6`
+- [X] T032 Verificar `usage.cache_creation_input_tokens > 0` numa chamada real (com `ANTHROPIC_API_KEY` real) para confirmar que o system prompt atingiu o mínimo de 2048 tokens para caching no `sonnet-4-6`
 
 ---
 
