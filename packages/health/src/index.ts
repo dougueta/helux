@@ -1,1 +1,2 @@
-export const health = 'ok';
+export * from './types';
+export { processSync } from './sync.service';
