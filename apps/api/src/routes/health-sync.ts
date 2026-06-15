@@ -3,6 +3,13 @@ import { ZodError } from 'zod';
 import { HealthSyncPayloadSchema, processSync } from '@helux/health';
 import type { HealthSyncPayload } from '@helux/health';
 import { createClient } from '@supabase/supabase-js';
+import { timingSafeEqual, createHash } from 'crypto';
+
+const safeEqual = (a: string, b: string): boolean => {
+  const ha = createHash('sha256').update(a).digest()
+  const hb = createHash('sha256').update(b).digest()
+  return timingSafeEqual(ha, hb)
+}
 
 export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -21,7 +28,7 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
     const personalApiKey = process.env.PERSONAL_API_KEY
     const personalUserId = process.env.PERSONAL_USER_ID
 
-    if (apiKey && personalApiKey && personalUserId && apiKey === personalApiKey) {
+    if (apiKey && personalApiKey && personalUserId && safeEqual(apiKey, personalApiKey)) {
       // iOS Shortcut path — personal API key
       userId = personalUserId
     } else {

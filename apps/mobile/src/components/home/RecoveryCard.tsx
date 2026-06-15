@@ -21,17 +21,17 @@ export function RecoveryCard({ data }: RecoveryCardProps) {
   return (
     <View style={styles.card}>
       <View style={styles.metricBlock}>
-        <Text style={styles.metricValue}>{data.hrv}</Text>
+        <Text style={styles.metricValue}>{data.hrv ?? '—'}</Text>
         <Text style={styles.metricUnit}>ms</Text>
       </View>
       <View style={styles.textBlock}>
         <View style={styles.row}>
           <Text style={styles.label}>HRV</Text>
-          <Text style={styles.value}>{data.hrv} ms</Text>
+          <Text style={styles.value}>{data.hrv !== undefined ? `${data.hrv} ms` : '—'}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>FC repouso</Text>
-          <Text style={styles.value}>{data.restingHR} bpm</Text>
+          <Text style={styles.value}>{data.restingHR !== undefined ? `${data.restingHR} bpm` : '—'}</Text>
         </View>
       </View>
     </View>

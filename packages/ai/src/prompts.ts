@@ -133,9 +133,9 @@ export function buildUserPrompt(
           .join('\n')}`
       : '### Dados de Recuperação\n\nNenhum dado de recuperação disponível.'
 
-  const latestHRV = recentRecovery.length > 0 ? recentRecovery[recentRecovery.length - 1].hrv : null
+  const latestHRV = recentRecovery.length > 0 ? recentRecovery[recentRecovery.length - 1].hrv : undefined
   const recoveryStatus =
-    latestHRV !== null
+    latestHRV !== undefined
       ? latestHRV >= 60
         ? `✅ HRV atual (${latestHRV}ms) indica boa recuperação — pode treinar em intensidade normal ou elevada.`
         : latestHRV >= 40

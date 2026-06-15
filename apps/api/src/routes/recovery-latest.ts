@@ -37,8 +37,8 @@ export async function recoveryLatestRoutes(app: FastifyInstance): Promise<void> 
       return reply.code(404).send({ error: 'No data found' })
     }
 
-    const avg = (arr: number[]) =>
-      arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0
+    const avg = (arr: number[]): number | undefined =>
+      arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : undefined
     const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0)
 
     const hrv = avg(samples.filter(s => s.type === 'hrv').map(s => Number(s.value)))
@@ -51,8 +51,8 @@ export async function recoveryLatestRoutes(app: FastifyInstance): Promise<void> 
 
     const recovery: RecoveryData = {
       date: latestDate,
-      hrv: Math.round(hrv),
-      restingHR: Math.round(restingHR),
+      hrv: hrv !== undefined ? Math.round(hrv) : undefined,
+      restingHR: restingHR !== undefined ? Math.round(restingHR) : undefined,
       activeCalories: Math.round(activeCalories),
       sleepHours,
       source: 'healthkit',
