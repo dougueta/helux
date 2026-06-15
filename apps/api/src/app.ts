@@ -4,6 +4,7 @@ import { geneticProfileRoutes } from './routes/genetic-profile'
 import { workoutGenerateRoutes } from './routes/workout-generate'
 import { workoutLatestPlanRoutes } from './routes/workout-latest-plan'
 import { healthSyncRoutes } from './routes/health-sync'
+import { recoveryLatestRoutes } from './routes/recovery-latest'
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({
@@ -15,6 +16,7 @@ export function buildApp(): FastifyInstance {
   app.register(workoutGenerateRoutes)
   app.register(workoutLatestPlanRoutes)
   app.register(healthSyncRoutes)
+  app.register(recoveryLatestRoutes)
 
   return app
 }

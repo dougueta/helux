@@ -15,16 +15,27 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   app.post('/api/health/sync', async (request, reply) => {
-    const authHeader = request.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
-      return reply.code(401).send({ error: 'Unauthorized' });
-    }
+    let userId: string
 
-    const token = authHeader.slice(7);
+    const apiKey = request.headers['x-api-key'] as string | undefined
+    const personalApiKey = process.env.PERSONAL_API_KEY
+    const personalUserId = process.env.PERSONAL_USER_ID
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return reply.code(401).send({ error: 'Unauthorized' });
+    if (apiKey && personalApiKey && personalUserId && apiKey === personalApiKey) {
+      // iOS Shortcut path — personal API key
+      userId = personalUserId
+    } else {
+      // App path — Supabase Bearer token
+      const authHeader = request.headers.authorization
+      if (!authHeader?.startsWith('Bearer ')) {
+        return reply.code(401).send({ error: 'Unauthorized' })
+      }
+      const token = authHeader.slice(7)
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+      if (authError || !user) {
+        return reply.code(401).send({ error: 'Unauthorized' })
+      }
+      userId = user.id
     }
 
     let payload: HealthSyncPayload;
@@ -37,7 +48,7 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
       throw err;
     }
 
-    const rows = processSync(user.id, payload);
+    const rows = processSync(userId, payload);
 
     // Deduplication: ON CONFLICT DO NOTHING ensures idempotent re-syncs (AC2)
     if (rows.length > 0) {
