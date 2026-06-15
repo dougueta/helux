@@ -42,3 +42,20 @@ export async function syncHealthData(
 
   return { recovery, syncedAt: to }
 }
+
+export async function fetchLatestRecovery(
+  token: string,
+  apiUrl: string,
+): Promise<RecoveryData | null> {
+  try {
+    const res = await fetch(`${apiUrl}/api/recovery/latest`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (res.status === 404) return null
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return await res.json() as RecoveryData
+  } catch (err) {
+    console.error('[fetchLatestRecovery]', err)
+    return null
+  }
+}
