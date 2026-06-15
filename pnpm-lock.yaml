@@ -150,9 +150,6 @@ importers:
       '@helux/types':
         specifier: workspace:*
         version: link:../types
-      '@supabase/supabase-js':
-        specifier: ^2.49.1
-        version: 2.108.1
       zod:
         specifier: ^3.24.2
         version: 3.25.76
