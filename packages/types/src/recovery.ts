@@ -3,5 +3,6 @@ export interface RecoveryData {
   hrv: number
   restingHR: number
   activeCalories: number
+  sleepHours?: number
   source: 'healthkit'
 }
