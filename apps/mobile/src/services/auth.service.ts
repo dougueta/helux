@@ -3,8 +3,6 @@ import { makeRedirectUri } from 'expo-auth-session'
 import { createClient } from '@supabase/supabase-js'
 import type { Session } from '@supabase/supabase-js'
 
-WebBrowser.maybeCompleteAuthSession()
-
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
 
@@ -51,7 +49,7 @@ export const AuthService = {
   },
 
   async getAccessToken(): Promise<string> {
-    const session = await this.getSession()
+    const session = await AuthService.getSession()
     if (!session) throw new Error('Usuário não autenticado')
     return session.access_token
   },
