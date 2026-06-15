@@ -10,6 +10,7 @@ import {
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import BottomSheet from '@gorhom/bottom-sheet'
 import {
   startSession,
   logSet,
@@ -29,6 +30,7 @@ import ExerciseHeader from '@/components/active-workout/ExerciseHeader'
 import SetTable from '@/components/active-workout/SetTable'
 import RestTimerBanner from '@/components/active-workout/RestTimerBanner'
 import WorkoutCompletionScreen from '@/components/active-workout/WorkoutCompletionScreen'
+import { ExerciseSheet } from '@/components/active-workout/ExerciseSheet'
 import Icon from '@/components/shared/Icon'
 
 // ── Types ──────────────────────────────────────────────────────
@@ -181,6 +183,7 @@ export default function TreinoAtivo() {
   const startTimeRef = useRef<number>(Date.now())
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [elapsed, setElapsed] = React.useState(0)
+  const bottomSheetRef = useRef<BottomSheet>(null)
 
   // Session elapsed timer
   useEffect(() => {
@@ -306,7 +309,8 @@ export default function TreinoAtivo() {
         <ExerciseHeader
           exercise={currentExercise}
           onOpenSheet={() => {
-            console.log('[TreinoAtivo] Ver execução — ExerciseSheet coming in Phase 4')
+            bottomSheetRef.current?.expand()
+            dispatch({ type: 'OPEN_SHEET' })
           }}
         />
 
@@ -356,6 +360,17 @@ export default function TreinoAtivo() {
           />
         </TouchableOpacity>
       </View>
+
+      {/* ── Exercise Sheet (bottom sheet, outside ScrollView) ── */}
+      <ExerciseSheet
+        ref={bottomSheetRef}
+        exercise={currentExercise}
+        activeVariantId={state.session.variantById[currentExercise.id]}
+        onSelectVariant={(variantId) =>
+          dispatch({ type: 'SWAP_VARIANT', exId: currentExercise.id, variantId })
+        }
+        onClose={() => dispatch({ type: 'CLOSE_SHEET' })}
+      />
     </View>
   )
 }

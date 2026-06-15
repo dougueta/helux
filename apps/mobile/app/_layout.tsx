@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Stack } from 'expo-router'
-import { SplashScreen } from 'expo-splash-screen'
+import * as SplashScreen from 'expo-splash-screen'
 import { useFonts } from 'expo-font'
 import {
   SpaceGrotesk_400Regular,
@@ -9,6 +9,7 @@ import {
   SpaceGrotesk_700Bold,
 } from '@expo-google-fonts/space-grotesk'
 import { JetBrainsMono_600SemiBold } from '@expo-google-fonts/jetbrains-mono'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { colors } from '@/constants/theme'
 
 SplashScreen.preventAutoHideAsync()
@@ -29,9 +30,11 @@ export default function RootLayout() {
   if (!fontsLoaded) return null
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="treino-ativo" options={{ presentation: 'modal' }} />
-    </Stack>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="treino-ativo" options={{ presentation: 'modal' }} />
+      </Stack>
+    </GestureHandlerRootView>
   )
 }
