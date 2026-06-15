@@ -21,6 +21,7 @@
         "backgroundColor": "#0A0C0A"
       }
     },
+
     "plugins": ["expo-font", "expo-router"],
     "experiments": {
       "typedRoutes": true
