@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { RecoveryData } from '@helux/types'
 import { AuthService } from '../services/auth.service'
-import { syncHealthData } from '../services/health-sync.service'
+import { syncHealthData, RECOVERY_KEY } from '../services/health-sync.service'
 import { useAuth } from './useAuth'
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000'
-const RECOVERY_KEY = 'helux:recovery-data'
 
 export function useHealthSync() {
   const { session } = useAuth()

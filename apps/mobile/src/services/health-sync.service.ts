@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { RecoveryData } from '@helux/types'
 import { healthKit } from './healthkit'
 
-const RECOVERY_KEY = 'helux:recovery-data'
+export const RECOVERY_KEY = 'helux:recovery-data'
 const LAST_SYNC_KEY = 'helux:last-sync-at'
 
 export interface SyncResult {
