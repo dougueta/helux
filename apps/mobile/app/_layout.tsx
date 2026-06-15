@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Stack, Redirect } from 'expo-router'
+import { Stack, Redirect, type Href } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { useFonts } from 'expo-font'
 import {
@@ -38,8 +38,7 @@ export default function RootLayout() {
         <Stack.Screen name="login" />
         <Stack.Screen name="treino-ativo" options={{ presentation: 'modal' }} />
       </Stack>
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      {!session && <Redirect href={'/login' as any} />}
+      {!session && <Redirect href={'/login' as Href} />}
     </GestureHandlerRootView>
   )
 }
