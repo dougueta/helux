@@ -3,7 +3,7 @@ import type { RecoveryData } from '@helux/types'
 import { healthKit } from './healthkit'
 
 export const RECOVERY_KEY = 'helux:recovery-data'
-const LAST_SYNC_KEY = 'helux:last-sync-at'
+export const LAST_SYNC_KEY = 'helux:last-sync-at'
 
 export interface SyncResult {
   recovery: RecoveryData
@@ -46,10 +46,12 @@ export async function syncHealthData(
 export async function fetchLatestRecovery(
   token: string,
   apiUrl: string,
+  signal?: AbortSignal,
 ): Promise<RecoveryData | null> {
   try {
     const res = await fetch(`${apiUrl}/api/recovery/latest`, {
       headers: { Authorization: `Bearer ${token}` },
+      signal,
     })
     if (res.status === 404) return null
     if (!res.ok) throw new Error(`HTTP ${res.status}`)

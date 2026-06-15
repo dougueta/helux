@@ -2,11 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { RecoveryData } from '@helux/types'
 import { AuthService } from '../services/auth.service'
-import { fetchLatestRecovery, RECOVERY_KEY } from '../services/health-sync.service'
+import { fetchLatestRecovery, RECOVERY_KEY, LAST_SYNC_KEY } from '../services/health-sync.service'
 import { useAuth } from './useAuth'
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001'
-const LAST_SYNC_KEY = 'helux:last-sync-at'
 
 export function useHealthSync() {
   const { session } = useAuth()
@@ -46,10 +45,34 @@ export function useHealthSync() {
 
   // Auto-fetch on mount when session is available
   useEffect(() => {
-    if (session) {
-      sync()
+    if (!session) return
+    let mounted = true
+    const controller = new AbortController()
+
+    const autoFetch = async () => {
+      const token = session.access_token
+      try {
+        const data = await fetchLatestRecovery(token, API_URL, controller.signal)
+        if (!mounted) return
+        if (data) {
+          setRecovery(data)
+          const now = new Date()
+          setLastSyncAt(now)
+          await AsyncStorage.setItem(RECOVERY_KEY, JSON.stringify(data))
+          await AsyncStorage.setItem(LAST_SYNC_KEY, now.toISOString())
+        }
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return
+        console.error('[useHealthSync] auto-fetch', err)
+      }
     }
-  }, [session, sync])
+
+    autoFetch()
+    return () => {
+      mounted = false
+      controller.abort()
+    }
+  }, [session])
 
   return { sync, loading, lastSyncAt, recovery }
 }
