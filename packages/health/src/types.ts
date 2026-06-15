@@ -13,6 +13,8 @@ export const HealthSyncPayloadSchema = z.object({
   heartRate: z.array(HealthSampleSchema).optional(),
   steps: z.array(HealthSampleSchema).optional(),
   hrv: z.array(HealthSampleSchema).optional(),
+  activeEnergy: z.array(HealthSampleSchema).optional(),
+  sleepDuration: z.array(HealthSampleSchema).optional(),
 });
 
 export type HealthSample = z.infer<typeof HealthSampleSchema>;

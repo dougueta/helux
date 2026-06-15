@@ -11,7 +11,7 @@ Este guia explica como criar um Atalho do iOS (Shortcuts) que lê dados de saúd
 - API do Helux em funcionamento em `https://helux.fly.dev`
 - Chave de API pessoal: `106ade90-507a-46c1-8efb-4471ddb0515b`
 
-> **Nota sobre o payload:** O endpoint `POST /api/health/sync` aceita um objeto JSON com as chaves `heartRate`, `hrv` e `steps`. Cada item dentro dessas listas precisa dos campos `uuid`, `value`, `unit`, `startDate` e `endDate`.
+> **Nota sobre o payload:** O endpoint `POST /api/health/sync` aceita um objeto JSON com as chaves `heartRate`, `hrv`, `steps`, `activeEnergy` e `sleepDuration`. Cada item dentro dessas listas precisa dos campos `uuid`, `value`, `unit`, `startDate` e `endDate`.
 
 ---
 
@@ -73,6 +73,15 @@ Abra o app **Atalhos** e toque em **+** para criar um novo atalho. Dê o nome **
       "startDate": "<HRV — Data de início>",
       "endDate": "<HRV — Data de término>"
     }
+  ],
+  "activeEnergy": [
+    {
+      "uuid": "<Calorias — Identificador>",
+      "value": <Calorias — Valor>,
+      "unit": "kcal",
+      "startDate": "<Calorias — Data de início>",
+      "endDate": "<Calorias — Data de término>"
+    }
   ]
 }
 ```
@@ -89,6 +98,10 @@ Abra o app **Atalhos** e toque em **+** para criar um novo atalho. Dê o nome **
 | `<HRV — Valor>` | `HRV` | Valor |
 | `<HRV — Data de início>` | `HRV` | Data de início |
 | `<HRV — Data de término>` | `HRV` | Data de término |
+| `<Calorias — Identificador>` | `Calorias` | UUID / Identificador |
+| `<Calorias — Valor>` | `Calorias` | Valor |
+| `<Calorias — Data de início>` | `Calorias` | Data de início |
+| `<Calorias — Data de término>` | `Calorias` | Data de término |
 
 > **Dica:** As datas retornadas pelo iOS já estão no formato ISO 8601 com timezone (ex: `2026-06-15T07:30:00+00:00`), que é exatamente o que a API espera.
 
@@ -125,11 +138,41 @@ Para acessar o atalho com um toque:
 2. Selecione **Detalhes** e depois **Adicionar à Tela de Início**.
 3. Escolha um ícone e confirme.
 
-Para executar manualmente sempre que quiser sincronizar, basta tocar no ícone na tela inicial. Não é necessário automação — rode o atalho após o treino ou pela manhã ao acordar.
+Para executar manualmente sempre que quiser sincronizar, basta tocar no ícone na tela inicial. Veja a seção 4 abaixo para configurar a execução automática.
 
 ---
 
-## 4. Testando Localmente (antes do deploy)
+## 4. Automatizando o Atalho (iOS Automações)
+
+Você pode configurar o atalho para rodar automaticamente, sem precisar tocá-lo manualmente.
+
+1. Abra o app **Atalhos** e toque na aba **"Automação"** (ícone de relógio na parte inferior).
+2. Toque em **"+"** no canto superior direito e selecione **"Criar Automação Pessoal"**.
+3. Escolha o gatilho desejado:
+   - **Hora do dia:** selecione **"Hora do dia"** e defina o horário (ex.: 7h da manhã, todos os dias). Ideal para sincronização matinal de dados de sono e recuperação.
+   - **Treino:** selecione **"Treino"** e escolha **"Termina"**. O atalho será executado automaticamente ao fim de cada treino registrado no Apple Watch.
+4. Toque em **"Adicionar Ação"** → pesquise por **"Executar Atalho"** e selecione.
+5. Toque no campo do atalho e selecione **"Sincronizar Helux"**.
+6. Toque em **"Próximo"** e desative a opção **"Perguntar antes de executar"** — isso permite que a automação rode silenciosamente em segundo plano, sem exibir um alerta.
+7. Toque em **"Concluído"** para salvar.
+
+> **Dica:** Você pode criar duas automações ao mesmo tempo — uma pela manhã e outra após o treino — para garantir que os dados mais recentes sempre cheguem ao Helux.
+
+---
+
+## 5. Dados Ausentes ou Apple Watch Não Usado
+
+Se o Apple Watch não foi usado ou não sincronizou com o iPhone antes de o atalho rodar, o HealthKit pode não ter amostras recentes. Nesses casos:
+
+- A ação **"Buscar Amostras de Saúde"** retornará uma lista vazia ou sem valor.
+- O JSON enviado à API poderá conter arrays vazios (ex.: `"activeEnergy": []`), o que é aceito sem erro.
+- O app Helux exibirá **"—"** para as métricas sem dados disponíveis.
+
+**O que fazer:** antes de rodar o atalho, abra o app **Saúde** no iPhone e confirme que os dados do Watch já aparecem lá. Se necessário, abra o app **Watch** no iPhone e aguarde a sincronização concluir. Somente após isso rode o atalho **"Sincronizar Helux"**.
+
+---
+
+## 6. Testando Localmente (antes do deploy)
 
 Enquanto a API ainda não está no Fly.io, você pode testar apontando para o servidor local:
 
@@ -148,7 +191,7 @@ Enquanto a API ainda não está no Fly.io, você pode testar apontando para o se
 
 ---
 
-## 5. Solução de Problemas
+## 7. Solução de Problemas
 
 | Sintoma | Possível causa | Solução |
 |---|---|---|

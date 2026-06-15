@@ -4,6 +4,8 @@ const TYPE_MAP: Record<keyof HealthSyncPayload, string> = {
   heartRate: 'heart_rate',
   steps: 'step_count',
   hrv: 'hrv',
+  activeEnergy: 'active_energy',
+  sleepDuration: 'sleep_duration',
 };
 
 export function processSync(userId: string, payload: HealthSyncPayload): HealthSampleRow[] {
