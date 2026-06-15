@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, View, Text, StyleSheet, Platform } from 'react-native'
+import { ScrollView, View, Text, StyleSheet, Platform, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { colors, fontFamilies } from '@/constants/theme'
@@ -10,6 +10,7 @@ import { WeekDotsCard } from '@/components/home/WeekDotsCard'
 import { GeneticInsightCard } from '@/components/home/GeneticInsightCard'
 import HelixMark from '@/components/shared/HelixMark'
 import Icon from '@/components/shared/Icon'
+import { useHealthSync } from '@/hooks/useHealthSync'
 
 function getFormattedDate(): string {
   const now = new Date()
@@ -24,6 +25,7 @@ export default function TodayScreen() {
   const insets = useSafeAreaInsets()
   const todayWorkout = MOCK_WORKOUTS.find((w) => w.today)!
   const driver = MOCK_GENETICS.drivers[0]
+  const { sync, loading: syncing, recovery: recoveryData } = useHealthSync()
 
   return (
     <ScrollView
@@ -40,10 +42,19 @@ export default function TodayScreen() {
           <HelixMark size={22} />
           <Text style={styles.brandName}>helux</Text>
         </View>
-        <View style={styles.streak}>
-          <Icon name="flame" size={15} stroke={colors.accent} fill={colors.accentSoft} />
-          <Text style={styles.streakNum}>{MOCK_USER.streak}</Text>
-          <Text style={styles.streakUnit}>sem</Text>
+        <View style={styles.topbarRight}>
+          <View style={styles.streak}>
+            <Icon name="flame" size={15} stroke={colors.accent} fill={colors.accentSoft} />
+            <Text style={styles.streakNum}>{MOCK_USER.streak}</Text>
+            <Text style={styles.streakUnit}>sem</Text>
+          </View>
+          <TouchableOpacity style={styles.syncBtn} onPress={sync} disabled={syncing}>
+            {syncing ? (
+              <ActivityIndicator size="small" color={colors.textFaint} />
+            ) : (
+              <Text style={styles.syncIcon}>⟳</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -66,7 +77,7 @@ export default function TodayScreen() {
 
       {/* Grid: Recovery + Week Dots */}
       <View style={styles.grid}>
-        <RecoveryCard value={MOCK_USER.recovery} />
+        <RecoveryCard data={recoveryData} />
         <WeekDotsCard done={MOCK_USER.week.done} target={MOCK_USER.week.target} />
       </View>
 
@@ -104,6 +115,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  topbarRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   brandName: {
     fontSize: 18,
     fontFamily: fontFamilies.uiBold,
@@ -129,6 +145,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: fontFamilies.ui,
     color: colors.textDim,
+  },
+  syncBtn: {
+    width: 36,
+    height: 36,
+    backgroundColor: colors.surface1,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  syncIcon: {
+    fontSize: 18,
+    color: colors.textFaint,
+    lineHeight: 20,
   },
   header: {
     paddingHorizontal: 20,

@@ -1,21 +1,38 @@
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { colors, radii, fontFamilies } from '@/constants/theme'
-import Ring from '@/components/shared/Ring'
+import type { RecoveryData } from '@helux/types'
 
 interface RecoveryCardProps {
-  value: number
+  data: RecoveryData | null
 }
 
-export function RecoveryCard({ value }: RecoveryCardProps) {
+export function RecoveryCard({ data }: RecoveryCardProps) {
+  if (!data) {
+    return (
+      <View style={styles.card}>
+        <View style={styles.placeholder}>
+          <Text style={styles.placeholderText}>Sincronize para{'\n'}ver recuperação</Text>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View style={styles.card}>
-      <Ring size={62} sw={6} value={value}>
-        <Text style={styles.ringValue}>{value}</Text>
-      </Ring>
+      <View style={styles.metricBlock}>
+        <Text style={styles.metricValue}>{data.hrv}</Text>
+        <Text style={styles.metricUnit}>ms</Text>
+      </View>
       <View style={styles.textBlock}>
-        <Text style={styles.label}>Recuperação</Text>
-        <Text style={styles.status}>Pronto p/ treinar</Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>HRV</Text>
+          <Text style={styles.value}>{data.hrv} ms</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>FC repouso</Text>
+          <Text style={styles.value}>{data.restingHR} bpm</Text>
+        </View>
       </View>
     </View>
   )
@@ -32,24 +49,51 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    minHeight: 80,
   },
-  ringValue: {
+  metricBlock: {
+    alignItems: 'center',
+    width: 44,
+  },
+  metricValue: {
     fontFamily: fontFamilies.mono,
-    fontSize: 14,
-    color: colors.text,
+    fontSize: 20,
+    color: colors.accent,
+    lineHeight: 24,
+  },
+  metricUnit: {
+    fontFamily: fontFamilies.ui,
+    fontSize: 10,
+    color: colors.textFaint,
   },
   textBlock: {
     flex: 1,
+    gap: 4,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   label: {
     fontSize: 12,
     fontFamily: fontFamilies.ui,
     color: colors.textFaint,
   },
-  status: {
-    fontSize: 14,
-    fontFamily: fontFamilies.uiBold,
+  value: {
+    fontSize: 13,
+    fontFamily: fontFamilies.mono,
     color: colors.text,
-    marginTop: 2,
+  },
+  placeholder: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 12,
+    fontFamily: fontFamilies.ui,
+    color: colors.textFaint,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 })
