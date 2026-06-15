@@ -1,11 +1,20 @@
 import type { FastifyInstance } from 'fastify';
 import { ZodError } from 'zod';
 import { HealthSyncPayloadSchema, processSync } from '@helux/health';
+import type { HealthSyncPayload } from '@helux/health';
 import { createClient } from '@supabase/supabase-js';
 
 export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables');
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
   app.post('/api/health/sync', async (request, reply) => {
-    // Extract user from JWT — Supabase JWT has sub as user_id
     const authHeader = request.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
       return reply.code(401).send({ error: 'Unauthorized' });
@@ -13,19 +22,12 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
 
     const token = authHeader.slice(7);
 
-    // Validate and decode token via Supabase client
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_ANON_KEY!,
-    );
-
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
 
-    // Validate payload
-    let payload;
+    let payload: HealthSyncPayload;
     try {
       payload = HealthSyncPayloadSchema.parse(request.body);
     } catch (err) {
@@ -35,10 +37,9 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
       throw err;
     }
 
-    // Map to DB rows
     const rows = processSync(user.id, payload);
 
-    // Insert with deduplication via ON CONFLICT DO NOTHING
+    // Deduplication: ON CONFLICT DO NOTHING ensures idempotent re-syncs (AC2)
     if (rows.length > 0) {
       const { error: insertError } = await supabase
         .from('health_samples')

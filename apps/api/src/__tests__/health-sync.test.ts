@@ -1,16 +1,18 @@
 import { vi, describe, it, expect, beforeEach, afterAll } from 'vitest';
-import { buildApp } from '../app';
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(),
 }));
 
 import { createClient } from '@supabase/supabase-js';
+import { buildApp } from '../app';
 
 const mockGetUser = vi.fn();
 const mockUpsert = vi.fn();
 
 beforeEach(() => {
+  process.env.SUPABASE_URL = 'http://localhost:54321';
+  process.env.SUPABASE_ANON_KEY = 'test-anon-key';
   vi.mocked(createClient).mockReturnValue({
     auth: { getUser: mockGetUser },
     from: vi.fn().mockReturnValue({ upsert: mockUpsert }),
@@ -103,5 +105,27 @@ describe('POST /api/health/sync', () => {
     const body = JSON.parse(response.body);
     expect(body.status).toBe('accepted');
     expect(body.count).toBe(1);
+  });
+
+  it('returns 500 when database insert fails', async () => {
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: 'user-123' } }, error: null });
+    mockUpsert.mockResolvedValueOnce({ error: { message: 'DB error' } });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/health/sync',
+      headers: { authorization: 'Bearer valid-token' },
+      payload: {
+        heartRate: [{
+          uuid: '123e4567-e89b-12d3-a456-426614174000',
+          value: 72,
+          unit: 'bpm',
+          startDate: '2026-06-15T10:00:00Z',
+          endDate: '2026-06-15T10:00:00Z',
+        }],
+      },
+    });
+
+    expect(response.statusCode).toBe(500);
   });
 });
