@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Stack } from 'expo-router'
+import { Stack, Redirect } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { useFonts } from 'expo-font'
 import {
@@ -11,6 +11,7 @@ import {
 import { JetBrainsMono_600SemiBold } from '@expo-google-fonts/jetbrains-mono'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { colors } from '@/constants/theme'
+import { useAuth } from '@/hooks/useAuth'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -22,19 +23,23 @@ export default function RootLayout() {
     SpaceGrotesk_700Bold,
     JetBrainsMono_600SemiBold,
   })
+  const { session, loading: authLoading } = useAuth()
 
   useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync()
-  }, [fontsLoaded])
+    if (fontsLoaded && !authLoading) SplashScreen.hideAsync()
+  }, [fontsLoaded, authLoading])
 
-  if (!fontsLoaded) return null
+  if (!fontsLoaded || authLoading) return null
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="login" />
         <Stack.Screen name="treino-ativo" options={{ presentation: 'modal' }} />
       </Stack>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      {!session && <Redirect href={'/login' as any} />}
     </GestureHandlerRootView>
   )
 }
