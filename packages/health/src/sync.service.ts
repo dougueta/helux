@@ -1,6 +1,6 @@
 import { HealthSyncPayload, HealthSampleRow } from './types';
 
-const TYPE_MAP: Record<string, string> = {
+const TYPE_MAP: Record<keyof HealthSyncPayload, string> = {
   heartRate: 'heart_rate',
   steps: 'step_count',
   hrv: 'hrv',
@@ -11,7 +11,7 @@ export function processSync(userId: string, payload: HealthSyncPayload): HealthS
 
   for (const [key, samples] of Object.entries(payload)) {
     if (!samples) continue;
-    const type = TYPE_MAP[key] ?? key;
+    const type = TYPE_MAP[key as keyof HealthSyncPayload];
     for (const sample of samples) {
       rows.push({
         id: sample.uuid,

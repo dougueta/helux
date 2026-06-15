@@ -97,11 +97,8 @@ describe('processSync', () => {
   });
 
   it('handles missing metadata and defaults to empty object', () => {
-    const sample = makeHeartRateSample();
-    // Ensure metadata is not set
-    delete (sample as Record<string, unknown>)['metadata'];
     const payload: HealthSyncPayload = {
-      heartRate: [sample],
+      heartRate: [makeHeartRateSample()],
     };
     const rows = processSync('user-1', payload);
     expect(rows[0].metadata).toEqual({});

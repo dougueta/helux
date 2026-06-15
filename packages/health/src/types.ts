@@ -6,7 +6,7 @@ export const HealthSampleSchema = z.object({
   unit: z.string(),
   startDate: z.string().datetime(),
   endDate: z.string().datetime(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
 });
 
 export const HealthSyncPayloadSchema = z.object({
@@ -19,12 +19,12 @@ export type HealthSample = z.infer<typeof HealthSampleSchema>;
 export type HealthSyncPayload = z.infer<typeof HealthSyncPayloadSchema>;
 
 export interface HealthSampleRow {
-  id: string;        // UUID from HealthKit
+  id: string;
   user_id: string;
-  type: string;      // 'heart_rate' | 'step_count' | 'hrv'
+  type: string;
   value: number;
   unit: string;
-  start_at: string;  // ISO 8601
-  end_at: string;    // ISO 8601
+  start_at: string;
+  end_at: string;
   metadata: Record<string, unknown>;
 }
