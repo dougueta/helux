@@ -350,13 +350,13 @@ export default function TreinoAtivo() {
           onPress={handleNext}
           activeOpacity={0.85}
         >
-          <Text style={styles.nextBtnText}>
+          <Text style={[styles.nextBtnText, isLast && styles.nextBtnTextFinish]}>
             {isLast ? 'Finalizar treino' : 'Próximo exercício'}
           </Text>
           <Icon
             name={isLast ? 'check' : 'chevron'}
             size={18}
-            stroke={colors.accentInk}
+            stroke={isLast ? colors.accentInk : colors.text}
           />
         </TouchableOpacity>
       </View>
@@ -468,6 +468,9 @@ const styles = StyleSheet.create({
   nextBtnText: {
     fontSize: 15,
     fontFamily: fontFamilies.uiBold,
+    color: colors.text,
+  },
+  nextBtnTextFinish: {
     color: colors.accentInk,
   },
 })
