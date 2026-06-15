@@ -13,7 +13,9 @@
   "dependencies": {
     "@helux/ai": "workspace:*",
     "@helux/genetics": "workspace:*",
+    "@helux/health": "workspace:*",
     "@helux/types": "workspace:*",
+    "@supabase/supabase-js": "^2.49.1",
     "fastify": "^5.7.2"
   },
   "devDependencies": {

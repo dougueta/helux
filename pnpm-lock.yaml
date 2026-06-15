@@ -23,9 +23,15 @@ importers:
       '@helux/genetics':
         specifier: workspace:*
         version: link:../../packages/genetics
+      '@helux/health':
+        specifier: workspace:*
+        version: link:../../packages/health
       '@helux/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@supabase/supabase-js':
+        specifier: ^2.49.1
+        version: 2.108.1
       fastify:
         specifier: ^5.7.2
         version: 5.8.5
