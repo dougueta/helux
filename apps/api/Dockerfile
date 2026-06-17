@@ -41,9 +41,10 @@ COPY --from=builder /app/node_modules /app/node_modules
 # Copy workspace packages (needed for runtime resolution)
 COPY --from=builder /app/packages /app/packages
 
-# Copy the built API dist
+# Copy the built API dist and static data
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/package.json ./package.json
+COPY --from=builder /app/apps/api/data ./data
 
 ENV NODE_ENV=production
 

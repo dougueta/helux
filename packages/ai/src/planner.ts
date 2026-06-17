@@ -1,10 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { writeFileSync, mkdirSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
 import type { PlanInput, NextWorkoutPlan } from '@helux/types'
 import { buildSystemPrompt, buildUserPrompt } from './prompts'
-
-const LATEST_PLAN_PATH = resolve(process.cwd(), 'data', 'workouts', 'latest-plan.json')
 
 export async function generateWorkoutPlan(input: PlanInput): Promise<NextWorkoutPlan> {
   const client = new Anthropic()
@@ -38,9 +34,6 @@ export async function generateWorkoutPlan(input: PlanInput): Promise<NextWorkout
   }
 
   const plan = { ...parseJsonResponse(textBlock.text), generatedAt: new Date().toISOString() }
-
-  mkdirSync(dirname(LATEST_PLAN_PATH), { recursive: true })
-  writeFileSync(LATEST_PLAN_PATH, JSON.stringify(plan, null, 2), 'utf-8')
 
   return plan
 }

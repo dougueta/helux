@@ -3,10 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import type { RecoveryData } from '@helux/types'
 
 export async function recoveryLatestRoutes(app: FastifyInstance): Promise<void> {
-  const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
-  )
+  const supabaseUrl = process.env.SUPABASE_URL!
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!
 
   app.get('/api/recovery/latest', async (request, reply) => {
     const authHeader = request.headers.authorization
@@ -15,12 +13,17 @@ export async function recoveryLatestRoutes(app: FastifyInstance): Promise<void> 
     }
 
     const token = authHeader.slice(7)
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const verifyClient = createClient(supabaseUrl, supabaseAnonKey)
+    const { data: { user }, error: authError } = await verifyClient.auth.getUser(token)
     if (authError || !user) {
       return reply.code(401).send({ error: 'Unauthorized' })
     }
 
     const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    })
 
     const { data: samples, error } = await supabase
       .from('health_samples')

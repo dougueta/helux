@@ -1,6 +1,11 @@
 import type { GeneticProfile, WorkoutConstraints, WorkoutSession, RecoveryData } from '@helux/types'
 
 export function buildSystemPrompt(profile: GeneticProfile, constraints: WorkoutConstraints): string {
+  const profileDefaults: GeneticProfile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] }
+  const constraintDefaults: WorkoutConstraints = { maxWeeklyFrequency: 4, preferredVolume: 'medio', restBetweenSets: '90-120s', cardioIntensityLimit: 'moderado', forbiddenExerciseTypes: [] }
+  profile = { ...profileDefaults, ...profile }
+  constraints = { ...constraintDefaults, ...constraints }
+
   return `Você é um coach de performance esportiva especializado em treinamento personalizado baseado em genética e dados biométricos. Seu papel é prescrever o próximo treino ideal com base no perfil genético único do atleta, suas restrições fisiológicas, histórico de treinos e dados de recuperação.
 
 ## Sua Abordagem
@@ -57,6 +62,30 @@ ${JSON.stringify(constraints, null, 2)}
 - **Limite de intensidade cardio**: ${constraints.cardioIntensityLimit} — não prescrever cardio mais intenso que isso
 ${constraints.forbiddenExerciseTypes.length > 0 ? `- **Exercícios PROIBIDOS**: ${constraints.forbiddenExerciseTypes.join(', ')} — NUNCA incluir no plano` : ''}
 
+## Metodologia de Periodização — OBRIGATÓRIO
+
+Você DEVE respeitar uma estrutura de divisão muscular para garantir recuperação e progressão:
+
+### Regras de Divisão por Grupo Muscular
+
+1. **Analise o histórico de sessões** fornecido e identifique quais grupos musculares foram treinados em cada dia
+2. **Respeite o descanso mínimo antes de retreinar o mesmo grupo**:
+   - Recuperação alta: ≥ 48h
+   - Recuperação média: ≥ 60h
+   - Recuperação baixa: ≥ 72h
+3. **Nunca repita o mesmo exercício** que apareceu na sessão imediatamente anterior
+4. **Siga a divisão adequada** ao número de dias disponíveis e à predisposição genética:
+   - 2 dias/semana → **Upper/Lower**: A = Superior (Peito, Costas, Ombro, Bíceps, Tríceps) | B = Inferior (Glúteo, Quad, Posterior, Panturrilha)
+   - 3 dias/semana → **Push/Pull/Legs**: A = Empurrar (Peito, Ombro, Tríceps) | B = Puxar (Costas, Bíceps) | C = Pernas
+   - 4 dias/semana → **ABCD**: A = Peito + Tríceps | B = Costas + Bíceps | C = Pernas | D = Ombro + Core
+   - Predisposição endurance: substituir 1 sessão de força por Full Body de intensidade moderada
+5. **Determine qual letra do ciclo** você está gerando com base no histórico (se histórico vazio → comece pelo Treino A)
+
+### Rotulagem Obrigatória
+
+A justificativa DEVE começar com a linha (em negrito): **Treino [LETRA] — [Grupos]**
+Exemplo: **Treino B — Puxar / Costas + Bíceps**
+
 ## Formato de Resposta
 
 Você DEVE responder EXCLUSIVAMENTE com um JSON válido no seguinte formato, sem texto adicional antes ou depois:
@@ -106,6 +135,11 @@ export function buildUserPrompt(
   const recentHistory = history.slice(-5)
   const recentRecovery = recovery.slice(-7)
 
+  const lastSession = recentHistory[recentHistory.length - 1]
+  const lastSessionAlert = lastSession
+    ? `⚠️ ÚLTIMA SESSÃO (${lastSession.date}): ${lastSession.exercises.map(e => e.name).join(', ')} — NÃO repita estes exercícios e respeite o descanso dos grupos musculares envolvidos.`
+    : null
+
   const historySection =
     recentHistory.length > 0
       ? `### Últimas ${recentHistory.length} Sessões de Treino\n\n${recentHistory
@@ -121,7 +155,7 @@ export function buildUserPrompt(
                 .join('\n')}`,
           )
           .join('\n\n')}`
-      : '### Histórico de Treinos\n\nNenhuma sessão registrada ainda — atleta iniciando o programa.'
+      : '### Histórico de Treinos\n\nNenhuma sessão registrada ainda — atleta iniciando o programa. Gere o Treino A do ciclo.'
 
   const recoverySection =
     recentRecovery.length > 0
@@ -150,6 +184,7 @@ export function buildUserPrompt(
 **Dias disponíveis por semana**: ${daysPerWeek}
 
 **Status de recuperação**: ${recoveryStatus}
+${lastSessionAlert ? `\n${lastSessionAlert}` : ''}
 
 ---
 

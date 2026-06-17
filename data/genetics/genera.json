@@ -1,0 +1,1054 @@
+{
+  "metadata": {
+    "nome": "Douglas Lopes",
+    "fonte": "Genera Exames Genéticos",
+    "modulos": [
+      "Ancestralidade Global",
+      "Escala de Risco Genético",
+      "Doenças Genéticas",
+      "Genera Farma",
+      "Genera Nutri",
+      "Genera Fit",
+      "Genera Skin",
+      "Genera Aging",
+      "Genera You",
+      "Painel Saúde Esportiva"
+    ]
+  },
+
+  "ancestralidade": {
+    "resumo_continental": {
+      "Europa": 61,
+      "Africa": 24,
+      "Americas": 8,
+      "Oriente_Medio_e_Magrebe": 7
+    },
+    "detalhamento_regional": {
+      "Europa": {
+        "total_pct": 61,
+        "subgrupos": {
+          "Iberia": 39,
+          "Europa_Ocidental": 9,
+          "Italia": 8,
+          "Sardenha": "<3",
+          "Judeus_Sefaradim": "<3",
+          "Basco": "<2"
+        }
+      },
+      "Africa": {
+        "total_pct": 24,
+        "subgrupos": {
+          "Costa_da_Mina": 18,
+          "Leste_da_Africa": 3,
+          "Mande": 3
+        }
+      },
+      "Americas": {
+        "total_pct": 8,
+        "subgrupos": {
+          "America_Andina": 5,
+          "Tupi": 3
+        }
+      },
+      "Oriente_Medio_e_Magrebe": {
+        "total_pct": 7,
+        "subgrupos": {
+          "Magrebe": 6,
+          "Levante": "<2"
+        }
+      }
+    }
+  },
+
+  "escala_risco_genetico": {
+    "aviso": "Teste de triagem, não diagnóstico. Consulte um médico.",
+    "risco_aumentado": [
+      {
+        "condicao": "Diabetes tipo 1",
+        "risco_pct": 0.67,
+        "intervalo": "0.64-0.70",
+        "nivel": "aumentado",
+        "fatores_geneticos_analisados_pct": 9.42,
+        "outros_fatores_geneticos_pct": 62.58,
+        "fatores_ambientais_pct": 28
+      },
+      {
+        "condicao": "Doença celíaca",
+        "risco_pct": 0.38,
+        "intervalo": "0.37-0.40",
+        "nivel": "aumentado",
+        "fatores_geneticos_analisados_pct": 19.69,
+        "outros_fatores_geneticos_pct": 50.31,
+        "fatores_ambientais_pct": 30
+      },
+      {
+        "condicao": "Fibrilação atrial",
+        "risco_pct": 27.36,
+        "intervalo": "25.99-28.73",
+        "nivel": "aumentado",
+        "fatores_geneticos_analisados_pct": 4.06,
+        "outros_fatores_geneticos_pct": 57.94,
+        "fatores_ambientais_pct": 38
+      },
+      {
+        "condicao": "Leucemia linfocítica crônica",
+        "risco_pct": 1.54,
+        "intervalo": "1.46-1.62",
+        "nivel": "aumentado",
+        "fatores_geneticos_analisados_pct": 12.22,
+        "outros_fatores_geneticos_pct": 21.78,
+        "fatores_ambientais_pct": 66
+      },
+      {
+        "condicao": "Moléstia de Dupuytren",
+        "risco_pct": 6.69,
+        "intervalo": "6.36-7.02",
+        "nivel": "aumentado",
+        "fatores_geneticos_analisados_pct": 6.76,
+        "outros_fatores_geneticos_pct": 73.24,
+        "fatores_ambientais_pct": 20
+      },
+      {
+        "condicao": "Diabetes tipo 2",
+        "risco_pct": 48.88,
+        "intervalo": "46.43-51.32",
+        "nivel": "aumentado",
+        "fatores_geneticos_analisados_pct": 4.08,
+        "outros_fatores_geneticos_pct": 35.92,
+        "fatores_ambientais_pct": 60
+      }
+    ],
+    "risco_padrao": [
+      {
+        "condicao": "Doença arterial coronariana",
+        "risco_pct": 47.75,
+        "intervalo": "45.37-50.14",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 3.43,
+        "outros_fatores_geneticos_pct": 19.87,
+        "fatores_ambientais_pct": 76.7
+      },
+      {
+        "condicao": "Linfoma de Hodgkin",
+        "risco_pct": 0.19,
+        "intervalo": "0.18-0.20",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 5.41,
+        "outros_fatores_geneticos_pct": 50.59,
+        "fatores_ambientais_pct": 44
+      },
+      {
+        "condicao": "Gota",
+        "risco_pct": 14.85,
+        "intervalo": "14.11-15.59",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 6.66,
+        "outros_fatores_geneticos_pct": 3.34,
+        "fatores_ambientais_pct": 90
+      },
+      {
+        "condicao": "Doença intestinal inflamatória",
+        "risco_pct": 3.22,
+        "intervalo": "3.06-3.38",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 11.78,
+        "outros_fatores_geneticos_pct": 63.22,
+        "fatores_ambientais_pct": 25
+      },
+      {
+        "condicao": "Doença de Crohn",
+        "risco_pct": 3.25,
+        "intervalo": "3.08-3.41",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 4.0,
+        "outros_fatores_geneticos_pct": 82.0,
+        "fatores_ambientais_pct": 14
+      },
+      {
+        "condicao": "Doença de Alzheimer",
+        "risco_pct": 11.62,
+        "intervalo": "11.04-12.20",
+        "nivel": "padrao",
+        "nota": "risco até 75 anos",
+        "fatores_geneticos_analisados_pct": 5.0,
+        "outros_fatores_geneticos_pct": 69.0,
+        "fatores_ambientais_pct": 26
+      },
+      {
+        "condicao": "Câncer de tireoide",
+        "risco_pct": 1.47,
+        "intervalo": "1.40-1.55",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 5.2,
+        "outros_fatores_geneticos_pct": 47.8,
+        "fatores_ambientais_pct": 47
+      },
+      {
+        "condicao": "Colite ulcerativa",
+        "risco_pct": 2.80,
+        "intervalo": "2.66-2.94",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 3.24,
+        "outros_fatores_geneticos_pct": 50.76,
+        "fatores_ambientais_pct": 46
+      },
+      {
+        "condicao": "Carcinoma basocelular",
+        "risco_pct": 6.50,
+        "intervalo": "6.17-6.82",
+        "nivel": "padrao",
+        "nota": "risco até 75 anos",
+        "fatores_geneticos_analisados_pct": 6.07,
+        "outros_fatores_geneticos_pct": 10.78,
+        "fatores_ambientais_pct": 83.15
+      },
+      {
+        "condicao": "Câncer de próstata",
+        "risco_pct": 27.64,
+        "intervalo": "26.26-29.03",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 5.08,
+        "outros_fatores_geneticos_pct": 36.92,
+        "fatores_ambientais_pct": 58
+      },
+      {
+        "condicao": "Câncer de mama",
+        "risco_pct": 10.76,
+        "intervalo": "10.22-11.29",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 5.63,
+        "outros_fatores_geneticos_pct": 24.37,
+        "fatores_ambientais_pct": 70
+      },
+      {
+        "condicao": "Melanoma",
+        "risco_pct": 2.78,
+        "intervalo": "2.64-2.92",
+        "nivel": "padrao",
+        "fatores_geneticos_analisados_pct": 10.22,
+        "outros_fatores_geneticos_pct": 56.68,
+        "fatores_ambientais_pct": 33.1
+      }
+    ],
+    "risco_reduzido": [
+      {
+        "condicao": "Câncer de bexiga",
+        "risco_pct": 1.62,
+        "intervalo": "1.54-1.70",
+        "nivel": "reduzido",
+        "fatores_geneticos_analisados_pct": 12.3,
+        "outros_fatores_geneticos_pct": 17.7,
+        "fatores_ambientais_pct": 70
+      },
+      {
+        "condicao": "Câncer colorretal",
+        "risco_pct": 4.51,
+        "intervalo": "4.28-4.73",
+        "nivel": "reduzido",
+        "fatores_geneticos_analisados_pct": 7.0,
+        "outros_fatores_geneticos_pct": 28.0,
+        "fatores_ambientais_pct": 65
+      }
+    ]
+  },
+
+  "doencas_geneticas": {
+    "aviso": "Teste de triagem, não diagnóstico.",
+    "risco_detectado": [
+      {
+        "condicao": "Deficiência de fator XII",
+        "snp": "rs1801020",
+        "cromossomo": 5,
+        "gene": "F12",
+        "genotipo": "A,A",
+        "zigosidade": "homozigose",
+        "implicacao": "Predisposição para desenvolvimento de trombose",
+        "populacao_estudo": "Europeia e asiática"
+      }
+    ],
+    "protecao_detectada": [
+      {
+        "condicao": "Proteção para eventos tromboembólicos",
+        "snp": "rs5985",
+        "cromossomo": 6,
+        "gene": "F13A1",
+        "genotipo": "C,A",
+        "zigosidade": "heterozigose",
+        "implicacao": "Proteção contra eventos tromboembólicos",
+        "populacao_estudo": "Europeia e americana"
+      }
+    ],
+    "risco_nao_detectado": [
+      "Doença de Wilson (ATP7B)",
+      "Deficiência de alfa-1 antitripsina variante PI*Z (SERPINA1)",
+      "Deficiência de alfa-1 antitripsina variante PI*S (SERPINA1)",
+      "Trombofilia - Fator II Protrombina (F2)",
+      "Trombofilia - Fator V de Leiden (F5)",
+      "Hemocromatose tipo 1 variante C282Y (HFE)",
+      "Hemocromatose tipo 1 variante H63D (HFE)",
+      "Hemocromatose tipo 1 variante S65C (HFE)",
+      "Doenças mieloproliferativas (JAK2)",
+      "Amiloidose hereditária variante V122I (TTR)",
+      "Amiloidose hereditária variante V50M (TTR)",
+      "Amiloidose hereditária variante T80A (TTR)",
+      "Polipose associada ao gene MUTYH variante G396D",
+      "Doença de Parkinson (LRRK2)",
+      "Câncer - variante CHEK2",
+      "Abetalipoproteinemia (MTTP)",
+      "Tirosinemia tipo I (FAH)",
+      "Síndrome de Pendred (SLC26A4)",
+      "Retinite pigmentosa autossômica recessiva DHDDS",
+      "Hiperinsulinismo familiar (ABCC8/SUR1)",
+      "Hipercolesterolemia familiar (APOB)"
+    ]
+  },
+
+  "farma": {
+    "aviso": "Nunca inicie, interrompa ou altere tratamentos sem orientação médica.",
+    "pontos_de_atencao": [
+      {
+        "medicamento": "Sinvastatina (Zocor®)",
+        "snp": "rs4149056",
+        "gene": "SLCO1B1",
+        "genotipo": "C,T",
+        "nivel_risco": "Alto",
+        "resultado": "Predisposição para desenvolver distúrbios musculares durante o tratamento"
+      },
+      {
+        "medicamento": "Ibuprofeno",
+        "snp": "rs1799853",
+        "gene": "CYP2C9",
+        "genotipo": "T,T",
+        "nivel_risco": "Alto",
+        "resultado": "Predisposição para sangramento gastrointestinal"
+      }
+    ],
+    "cuidados_relevantes": [
+      {
+        "medicamento": "Estatinas (classe geral)",
+        "snp": "rs4693075",
+        "gene": "COQ2",
+        "genotipo": "C,G",
+        "nivel_risco": "Moderado",
+        "resultado": "Predisposição para manifestar distúrbios musculares durante o tratamento"
+      },
+      {
+        "medicamento": "Atorvastatina (Lípitor®)",
+        "snp": "rs7412",
+        "gene": "APOE",
+        "genotipo": "C,C",
+        "nivel_risco": "Moderado",
+        "resultado": "Predisposição para menor taxa de resposta ao tratamento"
+      },
+      {
+        "medicamento": "Nicotina (terapia de reposição)",
+        "snp": "rs4680",
+        "gene": "COMT",
+        "genotipo": "A,G",
+        "nivel_risco": "Moderado",
+        "resultado": "Sem predisposição para abandonar o hábito de fumar com reposição de nicotina"
+      },
+      {
+        "medicamento": "Opioides",
+        "snp": "rs4680",
+        "gene": "COMT",
+        "genotipo": "A,G",
+        "nivel_risco": "Moderado",
+        "resultado": "Predisposição para menor taxa de resposta ao tratamento (necessita doses mais altas)"
+      },
+      {
+        "medicamento": "Salbutamol (Aerolin®) e Salmeterol (Serevent®)",
+        "snp": "rs1042713",
+        "gene": "ADRB2",
+        "genotipo": "A,G",
+        "nivel_risco": "Moderado",
+        "resultado": "Predisposição para menor taxa de resposta ao tratamento"
+      },
+      {
+        "medicamento": "Sulfonilureias (diabetes tipo 2)",
+        "snp": "rs5219",
+        "gene": "KCNJ11",
+        "genotipo": "C,C",
+        "nivel_risco": "Moderado",
+        "resultado": "Predisposição para menor taxa de resposta ao tratamento"
+      },
+      {
+        "medicamento": "Omeprazol",
+        "snp": "rs4986893",
+        "gene": "CYP2C19",
+        "genotipo": "G,G",
+        "nivel_risco": "Moderado",
+        "resultado": "Menor eficácia no tratamento com omeprazol associado a antibiótico"
+      },
+      {
+        "medicamento": "Voriconazol",
+        "snp": "rs4986893",
+        "gene": "CYP2C19",
+        "genotipo": "G,G",
+        "nivel_risco": "Moderado",
+        "resultado": "Predisposição para menor taxa de sucesso no tratamento"
+      }
+    ],
+    "achados_adicionais": [
+      {
+        "medicamento": "Ácido acetilsalicílico - Aspirina® (urticária)",
+        "snp": "rs730012",
+        "gene": "LTC4S",
+        "genotipo": "A,A",
+        "resultado": "Sem predisposição para desenvolver urticária"
+      },
+      {
+        "medicamento": "Ácido acetilsalicílico - Aspirina Prevent® (anticoagulante)",
+        "snp": "rs10306114",
+        "gene": "PTGS1 (COX1)",
+        "genotipo": "A,A",
+        "resultado": "Predisposição para responder ao tratamento com AAS"
+      },
+      {
+        "medicamento": "Anti-inflamatórios não-esteroidais (AINEs)",
+        "snp": "rs1057910",
+        "gene": "CYP2C9",
+        "genotipo": "A,A",
+        "resultado": "Sem predisposição para sangramento gastrointestinal"
+      },
+      {
+        "medicamento": "Bisfosfonatos (osteoporose)",
+        "snp": "rs2297480",
+        "gene": "FDPS",
+        "genotipo": "G,T",
+        "resultado": "Predisposição para maior taxa de resposta ao tratamento"
+      },
+      {
+        "medicamento": "Hidroclorotiazida (Clorana®)",
+        "snp": "rs16960228",
+        "gene": "PRKCA",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para maior taxa de resposta ao tratamento"
+      },
+      {
+        "medicamento": "Metformina (Glifage®)",
+        "snp": "rs11212617",
+        "gene": "ATM",
+        "genotipo": "A,C",
+        "resultado": "Predisposição para maior taxa de resposta ao tratamento"
+      },
+      {
+        "medicamento": "Sildenafil (Viagra®)",
+        "snp": "rs5443",
+        "gene": "GNB3",
+        "genotipo": "T,T",
+        "resultado": "Predisposição para maior taxa de resposta ao tratamento (disfunção erétil)"
+      }
+    ]
+  },
+
+  "nutri": {
+    "pontos_de_atencao": [
+      {
+        "caracteristica": "Intolerância à lactose",
+        "snp": "rs4988235",
+        "gene": "MCM6",
+        "genotipo": "G,G",
+        "resultado": "Predisposição para desenvolver intolerância à lactose",
+        "categoria": "ponto_atencao"
+      },
+      {
+        "caracteristica": "Vitamina D",
+        "snp": "rs7041",
+        "gene": "GC",
+        "genotipo": "A,C",
+        "resultado": "Predisposição para níveis reduzidos de vitamina D",
+        "categoria": "ponto_atencao"
+      }
+    ],
+    "cuidados_relevantes": [
+      {
+        "caracteristica": "Vitamina B6",
+        "snp": "rs1256335",
+        "gene": "ALPL",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para níveis reduzidos de vitamina B6",
+        "categoria": "cuidado_relevante"
+      }
+    ],
+    "curiosidades": [
+      {
+        "caracteristica": "Eficácia da dieta mediterrânea",
+        "snp": "rs1801282",
+        "gene": "PPARG",
+        "genotipo": "C,C",
+        "resultado": "Sem predisposição para perda de peso com a dieta mediterrânea",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Eficácia das dietas low fat e high fat",
+        "snp": "rs7903146",
+        "gene": "TCF7L2",
+        "genotipo": "C,T",
+        "resultado": "Predisposição para perda de peso com as dietas low fat e high fat",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Eficácia da dieta low carb",
+        "snp": "rs9939609",
+        "gene": "FTO",
+        "genotipo": "T,T",
+        "resultado": "Sem predisposição para IMC elevado ao consumir dieta low carb (dieta low carb mais eficaz)",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Manutenção de resultados após intervenção para perda de peso",
+        "snp": "rs1801282",
+        "gene": "PPARG",
+        "genotipo": "C,C",
+        "resultado": "Sem predisposição para recuperar o peso após intervenção clínica",
+        "categoria": "curiosidade"
+      }
+    ],
+    "achados_adicionais": [
+      {
+        "caracteristica": "Vitamina K",
+        "snp": "rs7294",
+        "gene": "VKORC1",
+        "genotipo": "C,C",
+        "resultado": "Sem predisposição para níveis reduzidos de vitamina K"
+      },
+      {
+        "caracteristica": "Sensibilidade à cafeína",
+        "snp": "rs4822492",
+        "gene": "ADORA2A",
+        "genotipo": "C,G",
+        "resultado": "Sem predisposição para aumento da ansiedade após consumo de cafeína"
+      },
+      {
+        "caracteristica": "Fome emocional",
+        "snp": "rs9939609",
+        "gene": "FTO",
+        "genotipo": "T,T",
+        "resultado": "Sem predisposição para fome emocional"
+      },
+      {
+        "caracteristica": "Ingestão de açúcares",
+        "snp": "rs5400",
+        "gene": "SLC2A2",
+        "genotipo": "G,G",
+        "resultado": "Sem predisposição para ingestão de açúcares em maiores quantidades"
+      },
+      {
+        "caracteristica": "Armazenamento de gordura",
+        "snp": "rs1421085",
+        "gene": "FTO",
+        "genotipo": "T,T",
+        "resultado": "Menor predisposição para armazenamento de gordura corporal"
+      },
+      {
+        "caracteristica": "Folato / Vitamina B9 (variante C677T)",
+        "snp": "rs1801133",
+        "gene": "MTHFR",
+        "genotipo": "G,A",
+        "resultado": "Sem predisposição para níveis reduzidos de folato"
+      },
+      {
+        "caracteristica": "Sobrecarga de ferro",
+        "snp": "rs1800562",
+        "gene": "HFE",
+        "genotipo": "G,G",
+        "resultado": "Sem predisposição para sobrecarga de ferro"
+      },
+      {
+        "caracteristica": "Sensação de saciedade",
+        "snp": "rs9939609",
+        "gene": "FTO",
+        "genotipo": "T,T",
+        "resultado": "Predisposição para maior sensação de saciedade"
+      },
+      {
+        "caracteristica": "Folato / Vitamina B9 (variante A1298C)",
+        "snp": "rs1801131",
+        "gene": "MTHFR",
+        "genotipo": "T,T",
+        "resultado": "Sem predisposição para níveis reduzidos de folato"
+      },
+      {
+        "caracteristica": "Níveis de ferro",
+        "snp": "rs1799945",
+        "gene": "HFE",
+        "genotipo": "C,C",
+        "resultado": "Sem predisposição para níveis elevados de ferro"
+      }
+    ]
+  },
+
+  "fit": {
+    "pontos_de_atencao": [
+      {
+        "caracteristica": "Densidade óssea (força dos ossos)",
+        "snp": "rs2707466",
+        "gene": "WNT16",
+        "genotipo": "C,T",
+        "resultado": "Predisposição para menor densidade óssea",
+        "categoria": "ponto_atencao"
+      }
+    ],
+    "cuidados_relevantes": [
+      {
+        "caracteristica": "Risco de obesidade",
+        "snp": "rs1861868",
+        "gene": "FTO",
+        "genotipo": "T,C",
+        "resultado": "Maior predisposição para obesidade",
+        "categoria": "cuidado_relevante"
+      },
+      {
+        "caracteristica": "Ganho de massa muscular",
+        "snp": "rs2267668",
+        "gene": "PPARD",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para ganhar massa muscular com menos facilidade",
+        "categoria": "cuidado_relevante"
+      },
+      {
+        "caracteristica": "Recuperação da frequência cardíaca após exercício",
+        "snp": "rs324640",
+        "gene": "CHRM2",
+        "genotipo": "G,A",
+        "resultado": "Predisposição para recuperação mais lenta da frequência cardíaca",
+        "categoria": "cuidado_relevante"
+      }
+    ],
+    "curiosidades": [
+      {
+        "caracteristica": "Performance atlética",
+        "snp": "rs1815739",
+        "gene": "ACTN3",
+        "genotipo": "C,C",
+        "resultado": "Predisposição para melhor desempenho em atividades de força e explosão",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Habilidade esportiva",
+        "snp": "rs8192678",
+        "gene": "PPARGC1A",
+        "genotipo": "C,C",
+        "resultado": "Predisposição mais favorável para habilidade esportiva",
+        "categoria": "curiosidade"
+      }
+    ],
+    "achados_adicionais": [
+      {
+        "caracteristica": "Resistência física",
+        "snp": "rs1572312",
+        "gene": "NFIA-AS2",
+        "genotipo": "G,G",
+        "resultado": "Predisposição para maior captação de oxigênio e maior resistência física"
+      },
+      {
+        "caracteristica": "Dor muscular após exercício físico",
+        "snp": "rs7924316",
+        "gene": "IGF2-AS",
+        "genotipo": "G,T",
+        "resultado": "Predisposição para menor dor muscular após a prática de exercícios"
+      },
+      {
+        "caracteristica": "Danos musculares induzidos por atividade física de alta intensidade",
+        "snp": "rs4880",
+        "gene": "SOD2",
+        "genotipo": "G,G",
+        "resultado": "Sem predisposição para danos musculares após atividade física de alta intensidade"
+      },
+      {
+        "caracteristica": "Redução dos níveis de colesterol total em resposta ao exercício",
+        "snp": "rs2267668",
+        "gene": "PPARD",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para redução dos níveis de colesterol total em resposta ao exercício"
+      },
+      {
+        "caracteristica": "Índice de massa corporal (IMC)",
+        "snp": "rs9939609",
+        "gene": "FTO",
+        "genotipo": "T,T",
+        "resultado": "Sem predisposição para IMC elevado"
+      },
+      {
+        "caracteristica": "Força muscular",
+        "snp": "rs1800169",
+        "gene": "CNTF",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para maior força muscular"
+      },
+      {
+        "caracteristica": "Tendinopatia de Aquiles",
+        "snp": "rs679620",
+        "gene": "MMP3",
+        "genotipo": "T,C",
+        "resultado": "Sem predisposição para desenvolver tendinopatia de Aquiles"
+      },
+      {
+        "caracteristica": "Capacidade cardiorrespiratória",
+        "snp": "rs1042713",
+        "gene": "ADRB2",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para maior capacidade cardiorrespiratória"
+      },
+      {
+        "caracteristica": "Resistência muscular",
+        "snp": "rs4253778",
+        "gene": "PPARA",
+        "genotipo": "C,G",
+        "resultado": "Predisposição para maior resistência muscular em exercícios de alta intensidade e longa duração"
+      },
+      {
+        "caracteristica": "Adesão ao exercício físico",
+        "snp": "rs780094",
+        "gene": "GCKR",
+        "genotipo": "T,T",
+        "resultado": "Predisposição para aderir à prática de atividades físicas"
+      }
+    ]
+  },
+
+  "skin": {
+    "cuidados_relevantes": [
+      {
+        "caracteristica": "Acne",
+        "snp": "rs7531806",
+        "gene": "SELL",
+        "genotipo": "A,G",
+        "resultado": "Maior predisposição para desenvolver acne",
+        "categoria": "cuidado_relevante"
+      },
+      {
+        "caracteristica": "Vitamina C",
+        "snp": "rs11950646",
+        "gene": "SLC23A1",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para níveis reduzidos de vitamina C",
+        "categoria": "cuidado_relevante"
+      },
+      {
+        "caracteristica": "Vitamina E",
+        "snp": "rs964184",
+        "gene": "ZPR1",
+        "genotipo": "C,C",
+        "resultado": "Sem predisposição para níveis elevados de vitamina E",
+        "categoria": "cuidado_relevante"
+      },
+      {
+        "caracteristica": "Capacidade antioxidante",
+        "snp": "rs1800566",
+        "gene": "NQO1",
+        "genotipo": "A,A",
+        "resultado": "Menor capacidade antioxidante (menor proteção contra envelhecimento da pele)",
+        "categoria": "cuidado_relevante"
+      },
+      {
+        "caracteristica": "Dermatite atópica",
+        "snp": "rs3745367",
+        "gene": "RETN",
+        "genotipo": "G,G",
+        "resultado": "Maior predisposição para desenvolver dermatite atópica",
+        "categoria": "cuidado_relevante"
+      }
+    ],
+    "achados_adicionais": [
+      {
+        "caracteristica": "Sensibilidade ao sol",
+        "snp": "rs1805008",
+        "gene": "MC1R",
+        "genotipo": "C,C",
+        "resultado": "Menor predisposição para sensibilidade aos raios ultravioleta (facilidade para bronzear)"
+      },
+      {
+        "caracteristica": "Risco para hiperpigmentação da pele",
+        "snp": "rs2228479",
+        "gene": "MC1R",
+        "genotipo": "G,G",
+        "resultado": "Sem predisposição para desenvolver hiperpigmentação da pele"
+      },
+      {
+        "caracteristica": "Rugas faciais",
+        "snp": "rs702491",
+        "gene": "GLIS1",
+        "genotipo": "T,C",
+        "resultado": "Maior predisposição para o desenvolvimento de rugas faciais"
+      },
+      {
+        "caracteristica": "Flacidez palpebral",
+        "snp": "rs16927253",
+        "gene": "MACROH2A2",
+        "genotipo": "C,C",
+        "resultado": "Sem proteção contra a flacidez palpebral grave"
+      },
+      {
+        "caracteristica": "Rugas periorbitais (pés de galinha)",
+        "snp": "rs2066853",
+        "gene": "AHR",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para desenvolver rugas periorbitais"
+      }
+    ]
+  },
+
+  "aging": {
+    "pontos_de_atencao": [
+      {
+        "caracteristica": "Tremor essencial não relacionado a Parkinson",
+        "snp": "rs9652490",
+        "gene": "LINGO1",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para desenvolver tremor essencial",
+        "categoria": "ponto_atencao"
+      },
+      {
+        "caracteristica": "Degeneração macular relacionada à idade",
+        "snp": "rs10490924",
+        "gene": "ARMS2",
+        "genotipo": "T,G",
+        "resultado": "Predisposição para desenvolver degeneração macular relacionada à idade",
+        "categoria": "ponto_atencao"
+      },
+      {
+        "caracteristica": "Osteoporose",
+        "snp": "rs1544410",
+        "gene": "VDR",
+        "genotipo": "T,T",
+        "resultado": "Sem proteção contra o desenvolvimento de osteoporose",
+        "categoria": "ponto_atencao"
+      },
+      {
+        "caracteristica": "Osteoartrite de quadril",
+        "snp": "rs16944",
+        "gene": "IL1B",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para desenvolver osteoartrite de quadril",
+        "categoria": "ponto_atencao"
+      }
+    ],
+    "cuidados_relevantes": [
+      {
+        "caracteristica": "Calvície",
+        "snp": "rs9287638",
+        "gene": "HDAC4",
+        "genotipo": "A,A",
+        "resultado": "Maior predisposição para desenvolver calvície (homozigoto)",
+        "categoria": "cuidado_relevante"
+      },
+      {
+        "caracteristica": "Osteoartrite de joelho",
+        "snp": "rs11842874",
+        "gene": "MCF2L",
+        "genotipo": "A,A",
+        "resultado": "Predisposição para desenvolver osteoartrite de joelho (homozigoto)",
+        "categoria": "cuidado_relevante"
+      }
+    ],
+    "curiosidades": [
+      {
+        "caracteristica": "Comprimento dos telômeros",
+        "snp": "rs755017",
+        "gene": "Próximo ao gene RTEL1",
+        "genotipo": "A,A",
+        "resultado": "Sem predisposição para envelhecimento tardio",
+        "categoria": "curiosidade"
+      }
+    ],
+    "achados_adicionais": [
+      {
+        "caracteristica": "Fotoenvelhecimento",
+        "snp": "rs322458",
+        "gene": "Entre STXBP5L e LINC02049",
+        "genotipo": "T,T",
+        "resultado": "Menor predisposição para fotoenvelhecimento"
+      },
+      {
+        "caracteristica": "Longevidade",
+        "snp": "rs2075650",
+        "gene": "TOMM40",
+        "genotipo": "A,G",
+        "resultado": "Sem predisposição para expectativa de vida mais longa"
+      },
+      {
+        "caracteristica": "Níveis de cálcio",
+        "snp": "rs1801725",
+        "gene": "CASR",
+        "genotipo": "G,G",
+        "resultado": "Sem predisposição para níveis elevados de cálcio"
+      }
+    ]
+  },
+
+  "you": {
+    "cuidados_relevantes": [
+      {
+        "caracteristica": "Miopia",
+        "snp": "rs634990",
+        "gene": "Entre GJD2 e ACTC1",
+        "genotipo": "C,C",
+        "resultado": "Maior predisposição para desenvolver miopia (homozigoto)",
+        "categoria": "cuidado_relevante"
+      }
+    ],
+    "curiosidades": [
+      {
+        "caracteristica": "Gene guerreiro (warrior vs worrier)",
+        "snp": "rs4680",
+        "gene": "COMT",
+        "genotipo": "A,G",
+        "resultado": "Intermediário entre worrier e warrior (bom desempenho em tarefas de atenção e memória E em situações de estresse)",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Habilidade matemática",
+        "snp": "rs1881396",
+        "gene": "ZNF512",
+        "genotipo": "T,T",
+        "resultado": "Sem predisposição para desempenho matemático abaixo da média",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Impulsividade",
+        "snp": "rs1611115",
+        "gene": "DBH",
+        "genotipo": "C,C",
+        "resultado": "Sem predisposição para nível de impulsividade elevado",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Preferência por horários diurnos ou noturnos",
+        "snp": "rs1801260",
+        "gene": "CLOCK",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para preferência por horários noturnos",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Percepção do gosto amargo",
+        "snp": "rs1726866",
+        "gene": "TAS2R38",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para sentir a maioria dos tipos de gosto amargo",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Cera de ouvido",
+        "snp": "rs17822931",
+        "gene": "ABCC11",
+        "genotipo": "C,C",
+        "resultado": "Predisposição para cera de ouvido molhada",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Cor dos olhos",
+        "snp": "rs12913832",
+        "gene": "HERC2",
+        "genotipo": "A,G",
+        "resultado": "Maior chance de ter olhos castanhos",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Duração do sono",
+        "snp": "rs11046205",
+        "gene": "ABCC9 (SUR2)",
+        "genotipo": "G,G",
+        "resultado": "Predisposição para menor duração do sono",
+        "categoria": "curiosidade"
+      },
+      {
+        "caracteristica": "Sensibilidade à dor",
+        "snp": "rs6269",
+        "gene": "COMT",
+        "genotipo": "A,G",
+        "resultado": "Predisposição para maior sensibilidade à dor",
+        "categoria": "curiosidade"
+      }
+    ],
+    "achados_adicionais": [
+      {
+        "caracteristica": "Predisposição ao alcoolismo",
+        "snp": "rs324420",
+        "gene": "FAAH",
+        "genotipo": "C,C",
+        "resultado": "Sem predisposição ao alcoolismo"
+      },
+      {
+        "caracteristica": "Predisposição para dependência de nicotina",
+        "snp": "rs16969968",
+        "gene": "CHRNA5",
+        "genotipo": "G,G",
+        "resultado": "Sem predisposição para desenvolver dependência de nicotina"
+      }
+    ]
+  },
+
+  "painel_saude_esportiva": {
+    "resultados": [
+      {
+        "caracteristica": "Desempenho para correr mais rápido e saltar mais longe",
+        "snp": "rs6265",
+        "gene": "BDNF",
+        "genotipo": "C,C",
+        "resultado": "Predisposição para correr mais rápido e saltar mais longe (força, aceleração e velocidade)",
+        "categoria": "performance"
+      },
+      {
+        "caracteristica": "Eficiência da contração muscular em resposta à prática de atividades físicas",
+        "snp": "rs659366",
+        "gene": "UCP2",
+        "genotipo": "T,T",
+        "resultado": "Predisposição para aumentar a eficiência da contração muscular após treinamento físico",
+        "categoria": "performance"
+      },
+      {
+        "caracteristica": "Lesões de ombro",
+        "snp": "rs1800012",
+        "gene": "COL1A1",
+        "genotipo": "C,C",
+        "resultado": "Predisposição para sofrer lesões de ombro",
+        "categoria": "lesao"
+      },
+      {
+        "caracteristica": "Lesões no ligamento cruzado",
+        "snp": "rs1800012",
+        "gene": "COL1A1",
+        "genotipo": "C,C",
+        "resultado": "Maior suscetibilidade de sofrer lesões no ligamento cruzado",
+        "categoria": "lesao"
+      },
+      {
+        "caracteristica": "Redução da pressão arterial em resposta à prática de atividades físicas",
+        "snp": "rs5370",
+        "gene": "EDN1",
+        "genotipo": "G,G",
+        "resultado": "Predisposição para redução da pressão arterial após treinamento físico",
+        "categoria": "cardiovascular"
+      }
+    ]
+  },
+
+  "resumo_fitness": {
+    "pontos_fortes": [
+      "Performance atlética favorável para força e explosão (ACTN3 C,C)",
+      "Habilidade esportiva mais favorável (PPARGC1A C,C)",
+      "Predisposição para maior resistência física e captação de oxigênio",
+      "Predisposição para maior resistência muscular (PPARA)",
+      "Predisposição para maior força muscular (CNTF)",
+      "Maior capacidade cardiorrespiratória (ADRB2)",
+      "Menor dor muscular após exercícios",
+      "Sem danos musculares com exercícios de alta intensidade",
+      "Boa adesão ao exercício físico",
+      "Redução do colesterol total com exercício",
+      "Correr mais rápido e saltar mais longe (BDNF C,C)",
+      "Maior eficiência da contração muscular com treinamento"
+    ],
+    "pontos_de_atencao": [
+      "Predisposição para menor densidade óssea (WNT16) — manter cálcio e vitamina D",
+      "Ganho de massa muscular com menos facilidade (PPARD) — treino e dieta hipercalórica são essenciais",
+      "Recuperação da frequência cardíaca mais lenta após exercício",
+      "Maior suscetibilidade a lesões no ligamento cruzado (COL1A1 C,C)",
+      "Predisposição para lesões de ombro (COL1A1 C,C)",
+      "Maior predisposição para obesidade (FTO T,C) — monitorar alimentação",
+      "Predisposição para menor duração do sono — impacta recuperação muscular"
+    ]
+  }
+}

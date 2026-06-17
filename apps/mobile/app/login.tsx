@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native'
+import { router } from 'expo-router'
 import { useAuth } from '@/hooks/useAuth'
 import { colors, fontFamilies } from '@/constants/theme'
 import HelixMark from '@/components/shared/HelixMark'
@@ -15,6 +16,7 @@ export default function LoginScreen() {
     setLoading(true)
     try {
       await signIn()
+      router.replace('/(tabs)')
     } catch (err) {
       console.error('[Login]', err)
     } finally {

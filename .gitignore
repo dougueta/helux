@@ -1,10 +1,8 @@
 # Dependencies
 node_modules/
 
-# Dados sensíveis do usuário
-data/genetics/genera.json
-data/workouts/history.json
-data/workouts/latest-plan.json
+# Dados de treino gerados em runtime (não commitar)
+apps/api/data/workouts/
 
 # Variáveis de ambiente
 .env

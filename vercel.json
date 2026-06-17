@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm --filter @helux/web build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs"
+}

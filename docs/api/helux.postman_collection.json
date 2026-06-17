@@ -1,0 +1,134 @@
+{
+	"info": {
+		"_postman_id": "helux-api-collection",
+		"name": "Helux Fitness AI",
+		"description": "API para gestão de treinos adaptativos baseados em genética.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "System",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Genetic",
+			"item": [
+				{
+					"name": "Get Genetic Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/genetic-profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"genetic-profile"
+							]
+						},
+						"description": "Retorna o perfil interpretado a partir do arquivo genera.json local."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Workouts",
+			"item": [
+				{
+					"name": "Generate Workout Plan",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"geneticProfile\": {\n        \"metabolismo\": \"moderado\",\n        \"recuperacaoMuscular\": \"media\",\n        \"riscoCardiovascular\": \"baixo\",\n        \"predisposicao\": \"forca\",\n        \"alertas\": []\n    },\n    \"constraints\": {\n        \"maxWeeklyFrequency\": 4,\n        \"preferredVolume\": \"medio\",\n        \"restBetweenSets\": \"90-120s\",\n        \"forbiddenExerciseTypes\": [],\n        \"cardioIntensityLimit\": \"moderado\"\n    },\n    \"workoutHistory\": [],\n    \"recoveryData\": [],\n    \"userGoals\": \"Ganho de massa muscular\",\n    \"userLevel\": \"intermediario\",\n    \"availableDaysPerWeek\": 4\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/workout/generate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"workout",
+								"generate"
+							]
+						},
+						"description": "Envia os dados para o Claude API gerar um novo plano de treino."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Latest Plan",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/workout/latest-plan",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"workout",
+								"latest-plan"
+							]
+						},
+						"description": "Recupera o último plano gerado que está salvo em disco."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3001",
+			"type": "string"
+		}
+	]
+}
