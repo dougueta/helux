@@ -12,6 +12,10 @@ apps/api/data/workouts/
 # Build outputs
 dist/
 .turbo/
+.next/
+
+# Expo
+.expo/
 
 # OS
 .DS_Store
