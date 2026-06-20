@@ -25,3 +25,5 @@ Thumbs.db
 .superpowers/
 
 .worktrees/
+.vercel
+supabase/.temp/
