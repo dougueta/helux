@@ -8,8 +8,8 @@ Este guia explica como criar um Atalho do iOS (Shortcuts) que lê dados de saúd
 
 - iPhone com o app **Atalhos** instalado (já vem de fábrica no iOS 16+)
 - Apple Watch Series 7 pareado, com dados de saúde coletados
-- API do Helux em funcionamento em `https://helux.fly.dev`
-- Chave de API pessoal: `106ade90-507a-46c1-8efb-4471ddb0515b`
+- API do Helux em funcionamento em `https://helux-api.onrender.com`
+- Chave de API pessoal: veja o valor em `apps/api/.env` (`PERSONAL_API_KEY`) — **nunca cole o valor real aqui, este arquivo é versionado em um repositório público**
 
 > **Nota sobre o payload:** O endpoint `POST /api/health/sync` aceita um objeto JSON com as chaves `heartRate`, `hrv`, `steps`, `activeEnergy` e `sleepDuration`. Cada item dentro dessas listas precisa dos campos `uuid`, `value`, `unit`, `startDate` e `endDate`.
 
@@ -111,11 +111,11 @@ Abra o app **Atalhos** e toque em **+** para criar um novo atalho. Dê o nome **
 
 1. Adicione a ação **"Obter Conteúdo da URL"** (ou *Get Contents of URL*).
 2. Configure:
-   - **URL:** `https://helux.fly.dev/api/health/sync`
+   - **URL:** `https://helux-api.onrender.com/api/health/sync`
    - **Método:** `POST`
 3. Toque em **Mostrar mais** para expandir as opções avançadas.
 4. Em **Cabeçalhos** (Headers), adicione dois cabeçalhos:
-   - **Chave:** `X-API-Key` → **Valor:** `106ade90-507a-46c1-8efb-4471ddb0515b`
+   - **Chave:** `X-API-Key` → **Valor:** (o valor de `PERSONAL_API_KEY` — confira em `apps/api/.env`, nunca documente o valor aqui)
    - **Chave:** `Content-Type` → **Valor:** `application/json`
 5. Em **Corpo da Requisição** (Request Body), selecione **JSON** ou **Texto**:
    - Se aparecer a opção **Arquivo/Texto**, escolha **Texto** e insira a variável `CorpoJSON`.
@@ -174,7 +174,7 @@ Se o Apple Watch não foi usado ou não sincronizou com o iPhone antes de o atal
 
 ## 6. Testando Localmente (antes do deploy)
 
-Enquanto a API ainda não está no Fly.io, você pode testar apontando para o servidor local:
+Para testar mudanças no Shortcut antes de apontar para produção, você pode usar o servidor local:
 
 1. Descubra o IP local do seu Mac: abra o Terminal e rode `ipconfig getifaddr en0`.
    Exemplo de resultado: `192.168.1.100`
@@ -183,11 +183,11 @@ Enquanto a API ainda não está no Fly.io, você pode testar apontando para o se
    pnpm --filter @helux/api dev
    ```
 3. No atalho, substitua temporariamente a URL do Passo 5:
-   - De: `https://helux.fly.dev/api/health/sync`
+   - De: `https://helux-api.onrender.com/api/health/sync`
    - Para: `http://192.168.1.100:3001/api/health/sync`
 4. O iPhone e o Mac precisam estar na **mesma rede Wi-Fi**.
 5. Execute o atalho e observe os logs no terminal — você verá a requisição chegando.
-6. Quando o deploy estiver feito, volte a URL para `https://helux.fly.dev/api/health/sync`.
+6. Ao terminar o teste, volte a URL para `https://helux-api.onrender.com/api/health/sync`.
 
 ---
 
