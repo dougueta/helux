@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 
 // ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@ function Icon({
   size?: number
   stroke?: string
   sw?: number
-  style?: React.CSSProperties
+  style?: CSSProperties
 }) {
   return (
     <svg

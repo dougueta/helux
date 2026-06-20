@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react'
+
 interface ShellProps {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
 }
 

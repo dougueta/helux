@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import type { ReactNode } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
 
@@ -42,7 +43,7 @@ function HelixMark({ size = 28, stroke = 'var(--accent)' }: { size?: number; str
   )
 }
 
-function Ring({ value, size = 64, sw = 6, children }: { value: number; size?: number; sw?: number; children?: React.ReactNode }) {
+function Ring({ value, size = 64, sw = 6, children }: { value: number; size?: number; sw?: number; children?: ReactNode }) {
   const r = (size - sw) / 2
   const c = 2 * Math.PI * r
   const off = c * (1 - value / 100)

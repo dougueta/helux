@@ -1,5 +1,7 @@
 'use client'
 
+import type { ReactNode } from 'react'
+
 interface DnaClientProps {
   profile: Record<string, unknown> | null
 }
@@ -27,7 +29,7 @@ function Icon({ name, size = 22, stroke = 'currentColor', sw = 1.9 }: { name: ke
   )
 }
 
-function Ring({ value, size = 64, sw = 6, children }: { value: number; size?: number; sw?: number; children?: React.ReactNode }) {
+function Ring({ value, size = 64, sw = 6, children }: { value: number; size?: number; sw?: number; children?: ReactNode }) {
   const r = (size - sw) / 2
   const c = 2 * Math.PI * r
   const off = c * (1 - value / 100)
