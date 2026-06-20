@@ -9,6 +9,7 @@ WORKDIR /app
 COPY pnpm-workspace.yaml ./
 COPY package.json ./
 COPY pnpm-lock.yaml ./
+COPY tsconfig.base.json ./
 
 # Copy package.json files for all workspace packages used by @helux/api
 COPY apps/api/package.json ./apps/api/package.json
