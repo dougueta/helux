@@ -29,18 +29,27 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
     throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables');
   }
 
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const verifyClient = createClient(supabaseUrl, supabaseAnonKey);
 
   app.post('/api/health/sync', async (request, reply) => {
     let userId: string
+    let supabase: ReturnType<typeof createClient>
 
     const apiKey = request.headers['x-api-key'] as string | undefined
     const personalApiKey = process.env.PERSONAL_API_KEY
     const personalUserId = process.env.PERSONAL_USER_ID
 
     if (apiKey && personalApiKey && personalUserId && safeEqual(apiKey, personalApiKey)) {
-      // iOS Shortcut path — personal API key
+      // iOS Shortcut path — personal API key, no Supabase session/JWT exists.
+      // RLS requires auth.uid() = user_id, which only resolves from a real
+      // JWT, so this path must use the service role key to bypass RLS —
+      // identity here was already verified above via the API key match.
+      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+      if (!serviceRoleKey) {
+        throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
+      }
       userId = personalUserId
+      supabase = createClient(supabaseUrl, serviceRoleKey)
     } else {
       // App path — Supabase Bearer token
       const authHeader = request.headers.authorization
@@ -48,11 +57,15 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
         return reply.code(401).send({ error: 'Unauthorized' })
       }
       const token = authHeader.slice(7)
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+      const { data: { user }, error: authError } = await verifyClient.auth.getUser(token)
       if (authError || !user) {
         return reply.code(401).send({ error: 'Unauthorized' })
       }
       userId = user.id
+      // Use user-scoped client so auth.uid() is set and RLS passes
+      supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      })
     }
 
     let rows;

@@ -107,6 +107,40 @@ describe('POST /api/health/sync', () => {
     expect(body.count).toBe(1);
   });
 
+  it('returns 202 for the X-API-Key (personal) auth path', async () => {
+    process.env.PERSONAL_API_KEY = 'test-personal-key';
+    process.env.PERSONAL_USER_ID = 'personal-user-123';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
+    mockUpsert.mockResolvedValue({ error: null });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/health/sync',
+      headers: { 'x-api-key': 'test-personal-key' },
+      payload: { hrv: 45 },
+    });
+    expect(response.statusCode).toBe(202);
+  });
+
+  it('uses a service-role-keyed Supabase client to write rows for the X-API-Key path (RLS requires it, no JWT is available)', async () => {
+    process.env.PERSONAL_API_KEY = 'test-personal-key';
+    process.env.PERSONAL_USER_ID = 'personal-user-123';
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
+    mockUpsert.mockResolvedValue({ error: null });
+
+    await app.inject({
+      method: 'POST',
+      url: '/api/health/sync',
+      headers: { 'x-api-key': 'test-personal-key' },
+      payload: { hrv: 45 },
+    });
+
+    const calledWithServiceRole = vi
+      .mocked(createClient)
+      .mock.calls.some((call) => call[1] === 'test-service-role-key');
+    expect(calledWithServiceRole).toBe(true);
+  });
+
   it('returns 202 with accepted count for the simple flat payload', async () => {
     mockGetUser.mockResolvedValue({
       data: { user: { id: 'user-123' } },
