@@ -52,6 +52,7 @@ export function RecoveryCard({ data, isStale }: RecoveryCardProps) {
           value={data.sleepHours != null ? Math.round(data.sleepHours * 10) / 10 : undefined}
           unit="horas"
         />
+        <MetricTile label="Recup. Cardio" value={data.cardioRecovery} unit="bpm" />
       </div>
       <p className="text-helux-muted text-xs font-mono text-right">
         Atualizado: {new Date(data.date).toLocaleDateString('pt-BR')}

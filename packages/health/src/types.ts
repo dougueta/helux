@@ -15,10 +15,21 @@ export const HealthSyncPayloadSchema = z.object({
   hrv: z.array(HealthSampleSchema).optional(),
   activeEnergy: z.array(HealthSampleSchema).optional(),
   sleepDuration: z.array(HealthSampleSchema).optional(),
+  cardioRecovery: z.array(HealthSampleSchema).optional(),
 });
 
 export type HealthSample = z.infer<typeof HealthSampleSchema>;
 export type HealthSyncPayload = z.infer<typeof HealthSyncPayloadSchema>;
+
+export const HealthSyncSimplePayloadSchema = z.object({
+  hrv: z.number().optional(),
+  restingHR: z.number().optional(),
+  activeEnergy: z.number().optional(),
+  cardioRecovery: z.number().optional(),
+  sleepHours: z.number().optional(),
+});
+
+export type HealthSyncSimplePayload = z.infer<typeof HealthSyncSimplePayloadSchema>;
 
 export interface HealthSampleRow {
   id: string;

@@ -162,7 +162,7 @@ export function buildUserPrompt(
       ? `### Dados de Recuperação (últimos ${recentRecovery.length} dias)\n\n${recentRecovery
           .map(
             (r) =>
-              `**${r.date}**: HRV=${r.hrv}ms | FC repouso=${r.restingHR}bpm | Calorias ativas=${r.activeCalories}kcal`,
+              `**${r.date}**: HRV=${r.hrv}ms | FC repouso=${r.restingHR}bpm | Calorias ativas=${r.activeCalories}kcal${r.cardioRecovery !== undefined ? ` | Recuperação cardiovascular=${r.cardioRecovery}bpm` : ''}`,
           )
           .join('\n')}`
       : '### Dados de Recuperação\n\nNenhum dado de recuperação disponível.'

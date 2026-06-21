@@ -18,6 +18,7 @@ interface RecoveryData {
   restingHR?: number     // bpm
   activeCalories: number // kcal
   sleepHours?: number    // hours
+  cardioRecovery?: number // bpm (Cardio/Heart Rate Recovery, 1 min post-exercise)
   source: 'healthkit'
 }
 ```

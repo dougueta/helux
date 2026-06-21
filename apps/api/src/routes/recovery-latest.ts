@@ -49,6 +49,7 @@ export async function recoveryLatestRoutes(app: FastifyInstance): Promise<void> 
     const activeCalories = sum(samples.filter(s => s.type === 'active_energy').map(s => Number(s.value)))
     const sleepSample = samples.find(s => s.type === 'sleep_duration')
     const sleepHours = sleepSample ? Number(sleepSample.value) : undefined
+    const cardioRecovery = avg(samples.filter(s => s.type === 'cardio_recovery').map(s => Number(s.value)))
 
     const latestDate = samples[0]?.start_at?.split('T')[0] ?? new Date().toISOString().split('T')[0]
 
@@ -58,6 +59,7 @@ export async function recoveryLatestRoutes(app: FastifyInstance): Promise<void> 
       restingHR: restingHR !== undefined ? Math.round(restingHR) : undefined,
       activeCalories: Math.round(activeCalories),
       sleepHours,
+      cardioRecovery: cardioRecovery !== undefined ? Math.round(cardioRecovery) : undefined,
       source: 'healthkit',
     }
 

@@ -107,6 +107,25 @@ describe('POST /api/health/sync', () => {
     expect(body.count).toBe(1);
   });
 
+  it('returns 202 with accepted count for the simple flat payload', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'user-123' } },
+      error: null,
+    });
+    mockUpsert.mockResolvedValue({ error: null });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/health/sync',
+      headers: { authorization: 'Bearer valid-token' },
+      payload: { hrv: 45, activeEnergy: 320 },
+    });
+    expect(response.statusCode).toBe(202);
+    const body = JSON.parse(response.body);
+    expect(body.status).toBe('accepted');
+    expect(body.count).toBe(2);
+  });
+
   it('returns 500 when database insert fails', async () => {
     mockGetUser.mockResolvedValueOnce({ data: { user: { id: 'user-123' } }, error: null });
     mockUpsert.mockResolvedValueOnce({ error: { message: 'DB error' } });

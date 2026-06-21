@@ -9,16 +9,18 @@ const mockData: RecoveryData = {
   restingHR: 52,
   activeCalories: 420,
   sleepHours: 7.5,
+  cardioRecovery: 28,
   source: 'healthkit',
 }
 
 describe('RecoveryCard', () => {
-  it('renders 4 metric tiles', () => {
+  it('renders 5 metric tiles', () => {
     render(<RecoveryCard data={mockData} isStale={false} />)
     expect(screen.getByText(/58/)).toBeInTheDocument()  // HRV
     expect(screen.getByText(/52/)).toBeInTheDocument()  // HR
     expect(screen.getByText(/420/)).toBeInTheDocument() // Calories
     expect(screen.getByText(/7\.5/)).toBeInTheDocument() // Sleep
+    expect(screen.getByText(/28/)).toBeInTheDocument() // Cardio Recovery
   })
 
   it('shows staleness badge when isStale', () => {

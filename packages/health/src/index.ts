@@ -1,2 +1,2 @@
 export * from './types';
-export { processSync } from './sync.service';
+export { processSync, processSimpleSync } from './sync.service';

@@ -1,9 +1,19 @@
 import type { FastifyInstance } from 'fastify';
 import { ZodError } from 'zod';
-import { HealthSyncPayloadSchema, processSync } from '@helux/health';
-import type { HealthSyncPayload } from '@helux/health';
+import { HealthSyncPayloadSchema, HealthSyncSimplePayloadSchema, processSync, processSimpleSync } from '@helux/health';
 import { createClient } from '@supabase/supabase-js';
 import { timingSafeEqual, createHash } from 'crypto';
+
+// The complex (array-of-samples) shape is for clients with real HealthKit
+// sample data (uuid/startDate/endDate). The simple (flat-number) shape is
+// for the iOS Shortcut, which can only realistically produce a single
+// aggregated reading per metric per sync — see docs/shortcuts-guide.md.
+function isSimplePayload(body: unknown): boolean {
+  if (typeof body !== 'object' || body === null) return false;
+  return Object.values(body as Record<string, unknown>).every(
+    (v) => typeof v === 'number' || v === undefined,
+  );
+}
 
 const safeEqual = (a: string, b: string): boolean => {
   const ha = createHash('sha256').update(a).digest()
@@ -45,17 +55,21 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
       userId = user.id
     }
 
-    let payload: HealthSyncPayload;
+    let rows;
     try {
-      payload = HealthSyncPayloadSchema.parse(request.body);
+      if (isSimplePayload(request.body)) {
+        const payload = HealthSyncSimplePayloadSchema.parse(request.body);
+        rows = processSimpleSync(userId, payload);
+      } else {
+        const payload = HealthSyncPayloadSchema.parse(request.body);
+        rows = processSync(userId, payload);
+      }
     } catch (err) {
       if (err instanceof ZodError) {
         return reply.code(400).send({ error: 'Bad Request', details: err.errors });
       }
       throw err;
     }
-
-    const rows = processSync(userId, payload);
 
     // Deduplication: ON CONFLICT DO NOTHING ensures idempotent re-syncs (AC2)
     if (rows.length > 0) {

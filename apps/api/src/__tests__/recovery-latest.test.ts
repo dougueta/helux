@@ -89,6 +89,8 @@ describe('GET /api/recovery/latest', () => {
       { type: 'active_energy', value: 300, unit: 'kcal', start_at: '2026-06-15T07:00:00.000Z' },
       { type: 'active_energy', value: 200, unit: 'kcal', start_at: '2026-06-15T06:00:00.000Z' },
       { type: 'sleep_duration', value: 7.5, unit: 'hr', start_at: '2026-06-15T00:00:00.000Z' },
+      { type: 'cardio_recovery', value: 24, unit: 'bpm', start_at: '2026-06-15T07:00:00.000Z' },
+      { type: 'cardio_recovery', value: 32, unit: 'bpm', start_at: '2026-06-15T06:00:00.000Z' },
     ]);
 
     const response = await app.inject({
@@ -105,6 +107,8 @@ describe('GET /api/recovery/latest', () => {
     // sum activeCalories: 300+200 = 500
     expect(body.activeCalories).toBe(500);
     expect(body.sleepHours).toBe(7.5);
+    // avg cardioRecovery: (24+32)/2 = 28
+    expect(body.cardioRecovery).toBe(28);
     expect(body.source).toBe('healthkit');
     expect(body.date).toBe('2026-06-15');
   });

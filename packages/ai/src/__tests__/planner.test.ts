@@ -84,7 +84,7 @@ describe('generateWorkoutPlan', () => {
         { id: 'w1', date: '2026-06-12', exercises: [{ name: 'Agachamento', sets: [{ reps: 8, weight: 100, effort: 7 }] }] },
       ],
       recoveryData: [
-        { date: '2026-06-12', hrv: 45, restingHR: 58, activeCalories: 320, source: 'healthkit' },
+        { date: '2026-06-12', hrv: 45, restingHR: 58, activeCalories: 320, cardioRecovery: 99, source: 'healthkit' },
       ],
       userGoals: 'ganhar força',
     }
@@ -97,6 +97,7 @@ describe('generateWorkoutPlan', () => {
     expect(userContent).toContain('Agachamento')
     expect(userContent).toContain('45')
     expect(userContent).toContain('ganhar força')
+    expect(userContent).toContain('99')
   })
 
   it('propaga erro quando API key inválida (AuthenticationError)', async () => {

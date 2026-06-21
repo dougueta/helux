@@ -62,6 +62,23 @@ describe('processSync', () => {
     expect(rows[0].type).toBe('hrv');
   });
 
+  it('maps cardioRecovery key to type cardio_recovery', () => {
+    const payload: HealthSyncPayload = {
+      cardioRecovery: [
+        {
+          uuid: '423e4567-e89b-12d3-a456-426614174003',
+          value: 28,
+          unit: 'bpm',
+          startDate: '2026-06-15T09:00:00.000Z',
+          endDate: '2026-06-15T09:01:00.000Z',
+        },
+      ],
+    };
+    const rows = processSync('user-1', payload);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].type).toBe('cardio_recovery');
+  });
+
   it('handles empty payload and returns empty array', () => {
     const payload: HealthSyncPayload = {};
     const rows = processSync('user-1', payload);
