@@ -17,7 +17,7 @@ export const EXERCISE_BANK: ExerciseBankEntry[] = [
     pattern: 'agachar',
     cues: [
       'Barra apoiada no trapézio, pés na largura dos ombros, ponta dos pés levemente para fora',
-      'Desça controlando o quadril para trás e para baixo até o quadríceps ficar paralelo ao chão',
+      'Desça controlando o quadril para trás e para baixo até a coxa ficar paralela ao chão',
       'Mantenha o peito erguido e os joelhos alinhados com a direção dos pés',
       'Erro comum: deixar os joelhos colapsarem para dentro na subida',
     ],
@@ -173,7 +173,7 @@ export const EXERCISE_BANK: ExerciseBankEntry[] = [
     pattern: 'agachar',
     cues: [
       'Costas e ombros apoiados na máquina, pés à frente do corpo na plataforma',
-      'Desça controlado até o quadríceps ficar paralelo, sem tirar as costas do apoio',
+      'Desça controlado até a coxa ficar paralela, sem tirar as costas do apoio',
       'Empurre de forma uniforme com os dois pés',
       'Erro comum: posicionar os pés baixos demais na plataforma, sobrecarregando o joelho',
     ],
