@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { PlanInput, NextWorkoutPlan } from '@helux/types'
+import type { PlanInput, NextWorkoutPlan, PlannedExercise } from '@helux/types'
 import { buildSystemPrompt, buildUserPrompt } from './prompts'
+import { EXERCISE_BANK } from './exercise-bank'
 
 export async function generateWorkoutPlan(input: PlanInput): Promise<NextWorkoutPlan> {
   const client = new Anthropic()
@@ -35,8 +36,15 @@ export async function generateWorkoutPlan(input: PlanInput): Promise<NextWorkout
   }
 
   const plan = { ...parseJsonResponse(textBlock.text), generatedAt: new Date().toISOString() }
+  plan.exercises = plan.exercises.map(attachCues)
 
   return plan
+}
+
+function attachCues(exercise: PlannedExercise): PlannedExercise {
+  const bankEntry = EXERCISE_BANK.find((entry) => entry.name === exercise.name)
+  if (!bankEntry) return exercise
+  return { ...exercise, cues: bankEntry.cues }
 }
 
 function parseJsonResponse(text: string): NextWorkoutPlan {

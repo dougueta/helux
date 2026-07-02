@@ -1,4 +1,5 @@
 import type { GeneticProfile, WorkoutConstraints, WorkoutSession, RecoveryData, BodyCheckin } from '@helux/types'
+import { EXERCISE_BANK, type ExerciseBankEntry } from './exercise-bank'
 
 function monthLabel(month: string): string {
   const [year, m] = month.split('-')
@@ -51,6 +52,27 @@ ${lines.join('\n')}
   return `### Tendência de Progresso (${monthLabel(prev.month)} → ${monthLabel(curr.month)})
 
 ${lines.join('\n')}`
+}
+
+function buildExerciseCatalogSection(): string {
+  const byPattern = new Map<string, ExerciseBankEntry[]>()
+  for (const entry of EXERCISE_BANK) {
+    const list = byPattern.get(entry.pattern) ?? []
+    list.push(entry)
+    byPattern.set(entry.pattern, list)
+  }
+
+  const sections = Array.from(byPattern.entries())
+    .map(([pattern, entries]) => `**${pattern}**: ${entries.map((e) => e.name).join(', ')}`)
+    .join('\n')
+
+  return `## Catálogo de Exercícios — OBRIGATÓRIO
+
+Escolha os exercícios EXCLUSIVAMENTE da lista de catálogo abaixo, usando o nome exatamente como aparece (não invente variações de nome). Respeite as categorias proibidas listadas nas restrições do atleta, excluindo do catálogo qualquer exercício que se enquadre nelas.
+
+Priorize variedade em relação aos exercícios recentes listados no histórico de sessões — evite repetir a mesma escolha em múltiplas sessões seguidas quando houver alternativa adequada no catálogo para o mesmo padrão de movimento.
+
+${sections}`
 }
 
 export function buildSystemPrompt(profile: GeneticProfile, constraints: WorkoutConstraints): string {
@@ -153,6 +175,8 @@ Quando a seção "Tendência de Progresso" ou "Check-in Mensal Atual" estiver pr
 
 Quando não há dados de check-in, ignore esta seção e use apenas o perfil genético e HRV.
 Mencione na justificativa como os dados de check-in influenciaram o plano (quando disponíveis).
+
+${buildExerciseCatalogSection()}
 
 ## Formato de Resposta
 
