@@ -65,4 +65,26 @@ describe('apiFetch', () => {
     const { apiFetch } = await import('@/services/api-client')
     await expect(apiFetch('/api/recovery/latest')).rejects.toThrow()
   })
+
+  it('attaches Zod validation details to the thrown error when present', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({
+        error: 'Bad Request',
+        details: [{ path: ['body_fat_pct'], message: 'Number must be less than or equal to 70' }],
+      }),
+    })
+
+    const { apiFetch, ApiError } = await import('@/services/api-client')
+    try {
+      await apiFetch('/api/checkins', { method: 'POST', body: '{}' })
+      expect.fail('should have thrown')
+    } catch (err) {
+      expect(err).toBeInstanceOf(ApiError)
+      expect((err as InstanceType<typeof ApiError>).details).toEqual([
+        { path: ['body_fat_pct'], message: 'Number must be less than or equal to 70' },
+      ])
+    }
+  })
 })

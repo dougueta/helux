@@ -1,5 +1,20 @@
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
+export interface ApiErrorDetail {
+  path: (string | number)[]
+  message: string
+}
+
+export class ApiError extends Error {
+  details?: ApiErrorDetail[]
+
+  constructor(message: string, details?: ApiErrorDetail[]) {
+    super(message)
+    this.name = 'ApiError'
+    this.details = details
+  }
+}
+
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<unknown> {
   const supabase = createSupabaseBrowserClient()
   const { data: { session } } = await supabase.auth.getSession()
@@ -20,7 +35,8 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
-    throw new Error((body as { error?: string }).error ?? `HTTP ${response.status}`)
+    const parsed = body as { error?: string; details?: ApiErrorDetail[] }
+    throw new ApiError(parsed.error ?? `HTTP ${response.status}`, parsed.details)
   }
 
   return response.json()

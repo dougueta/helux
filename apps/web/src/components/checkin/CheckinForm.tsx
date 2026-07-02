@@ -3,13 +3,34 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCheckin } from '@/hooks/useCheckin'
+import { ApiError } from '@/services/api-client'
 import type { CheckinInput } from '@helux/types'
 
 type FieldName = keyof Omit<CheckinInput, 'month' | 'notes'>
 
-function NumericField({ label, name, value, onChange }: {
-  label: string; name: FieldName; value: string; onChange: (n: FieldName, v: string) => void
+// Mirrors the bounds enforced by the Zod schema in apps/api/src/routes/checkins.ts —
+// kept here too so the form can validate instantly, without a round trip.
+const FIELD_BOUNDS: Record<FieldName, { min: number; max: number; label: string }> = {
+  weight_kg: { min: 20, max: 500, label: 'Peso (kg)' },
+  body_fat_pct: { min: 1, max: 70, label: 'Gordura (%)' },
+  waist_cm: { min: 30, max: 300, label: 'Cintura (cm)' },
+  hip_cm: { min: 30, max: 300, label: 'Quadril (cm)' },
+  arm_cm: { min: 10, max: 100, label: 'Braço (cm)' },
+  leg_cm: { min: 10, max: 150, label: 'Coxa (cm)' },
+  squat_kg: { min: 0, max: 1000, label: 'Agachamento (kg)' },
+  bench_kg: { min: 0, max: 1000, label: 'Supino (kg)' },
+  deadlift_kg: { min: 0, max: 1000, label: 'Terra (kg)' },
+}
+
+function boundsMessage(name: FieldName): string {
+  const { label, min, max } = FIELD_BOUNDS[name]
+  return `${label}: valor deve estar entre ${min} e ${max}.`
+}
+
+function NumericField({ name, value, onChange }: {
+  name: FieldName; value: string; onChange: (n: FieldName, v: string) => void
 }) {
+  const { label, min, max } = FIELD_BOUNDS[name]
   return (
     <div>
       <label htmlFor={name} style={{ display: 'block', fontSize: 12, color: 'var(--text-faint)', marginBottom: 4 }}>
@@ -20,6 +41,8 @@ function NumericField({ label, name, value, onChange }: {
         type="number"
         inputMode="decimal"
         step="0.1"
+        min={min}
+        max={max}
         value={value}
         onChange={e => onChange(name, e.target.value)}
         style={{
@@ -87,49 +110,74 @@ export function CheckinForm() {
     return isNaN(n) ? undefined : n
   }
 
+  function validate(input: Partial<Record<FieldName, number>>): string | null {
+    for (const name of Object.keys(FIELD_BOUNDS) as FieldName[]) {
+      const value = input[name]
+      if (value === undefined) continue
+      const { min, max } = FIELD_BOUNDS[name]
+      if (value < min || value > max) return boundsMessage(name)
+    }
+    return null
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+
+    const input: Omit<CheckinInput, 'month'> = {
+      weight_kg: toNum(fields.weight_kg),
+      body_fat_pct: toNum(fields.body_fat_pct),
+      waist_cm: toNum(fields.waist_cm),
+      hip_cm: toNum(fields.hip_cm),
+      arm_cm: toNum(fields.arm_cm),
+      leg_cm: toNum(fields.leg_cm),
+      squat_kg: toNum(fields.squat_kg),
+      bench_kg: toNum(fields.bench_kg),
+      deadlift_kg: toNum(fields.deadlift_kg),
+      notes: notes.trim() || undefined,
+    }
+
+    const validationError = validate(input)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
     try {
-      const input: Omit<CheckinInput, 'month'> = {
-        weight_kg: toNum(fields.weight_kg),
-        body_fat_pct: toNum(fields.body_fat_pct),
-        waist_cm: toNum(fields.waist_cm),
-        hip_cm: toNum(fields.hip_cm),
-        arm_cm: toNum(fields.arm_cm),
-        leg_cm: toNum(fields.leg_cm),
-        squat_kg: toNum(fields.squat_kg),
-        bench_kg: toNum(fields.bench_kg),
-        deadlift_kg: toNum(fields.deadlift_kg),
-        notes: notes.trim() || undefined,
-      }
       await save(input)
       router.push('/checkin/history')
-    } catch {
+    } catch (err) {
+      if (err instanceof ApiError && err.details?.length) {
+        const fieldName = err.details[0].path[0]
+        if (typeof fieldName === 'string' && fieldName in FIELD_BOUNDS) {
+          setError(boundsMessage(fieldName as FieldName))
+          return
+        }
+      }
       setError('Erro ao salvar check-in. Tente novamente.')
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: '0 16px 16px' }}>
+    <form onSubmit={handleSubmit} noValidate style={{ padding: '0 16px 16px' }}>
       <SectionHeader label="COMPOSIÇÃO CORPORAL" open={showBody} onToggle={() => setShowBody(v => !v)} />
       {showBody && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 8 }}>
-          <NumericField label="Peso (kg)" name="weight_kg" value={fields.weight_kg} onChange={update} />
-          <NumericField label="Gordura (%)" name="body_fat_pct" value={fields.body_fat_pct} onChange={update} />
-          <NumericField label="Cintura (cm)" name="waist_cm" value={fields.waist_cm} onChange={update} />
-          <NumericField label="Quadril (cm)" name="hip_cm" value={fields.hip_cm} onChange={update} />
-          <NumericField label="Braço (cm)" name="arm_cm" value={fields.arm_cm} onChange={update} />
-          <NumericField label="Coxa (cm)" name="leg_cm" value={fields.leg_cm} onChange={update} />
+          <NumericField name="weight_kg" value={fields.weight_kg} onChange={update} />
+          <NumericField name="body_fat_pct" value={fields.body_fat_pct} onChange={update} />
+          <NumericField name="waist_cm" value={fields.waist_cm} onChange={update} />
+          <NumericField name="hip_cm" value={fields.hip_cm} onChange={update} />
+          <NumericField name="arm_cm" value={fields.arm_cm} onChange={update} />
+          <NumericField name="leg_cm" value={fields.leg_cm} onChange={update} />
         </div>
       )}
 
       <SectionHeader label="PERFORMANCE" open={showPerf} onToggle={() => setShowPerf(v => !v)} />
       {showPerf && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 8 }}>
-          <NumericField label="Agachamento (kg)" name="squat_kg" value={fields.squat_kg} onChange={update} />
-          <NumericField label="Supino (kg)" name="bench_kg" value={fields.bench_kg} onChange={update} />
-          <NumericField label="Terra (kg)" name="deadlift_kg" value={fields.deadlift_kg} onChange={update} />
+          <NumericField name="squat_kg" value={fields.squat_kg} onChange={update} />
+          <NumericField name="bench_kg" value={fields.bench_kg} onChange={update} />
+          <NumericField name="deadlift_kg" value={fields.deadlift_kg} onChange={update} />
         </div>
       )}
 
