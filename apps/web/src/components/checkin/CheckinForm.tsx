@@ -12,10 +12,11 @@ function NumericField({ label, name, value, onChange }: {
 }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: 12, color: 'var(--text-faint)', marginBottom: 4 }}>
+      <label htmlFor={name} style={{ display: 'block', fontSize: 12, color: 'var(--text-faint)', marginBottom: 4 }}>
         {label}
       </label>
       <input
+        id={name}
         type="number"
         inputMode="decimal"
         step="0.1"
@@ -33,6 +34,20 @@ function NumericField({ label, name, value, onChange }: {
         }}
       />
     </div>
+  )
+}
+
+function SectionHeader({ label, open, onToggle }: { label: string; open: boolean; onToggle: () => void }) {
+  return (
+    <button type="button" onClick={onToggle} style={{
+      width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      background: 'none', border: 'none', padding: '12px 0 8px', cursor: 'pointer',
+      fontSize: 13, fontWeight: 600, color: 'var(--text-dim)', letterSpacing: '0.05em',
+      minHeight: 44,
+    }}>
+      {label}
+      <span style={{ fontSize: 18, color: 'var(--text-faint)' }}>{open ? '−' : '+'}</span>
+    </button>
   )
 }
 
@@ -95,24 +110,11 @@ export function CheckinForm() {
     }
   }
 
-  function SectionHeader({ label, open, onToggle }: { label: string; open: boolean; onToggle: () => void }) {
-    return (
-      <button type="button" onClick={onToggle} style={{
-        width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        background: 'none', border: 'none', padding: '12px 0 8px', cursor: 'pointer',
-        fontSize: 13, fontWeight: 600, color: 'var(--text-dim)', letterSpacing: '0.05em',
-      }}>
-        {label}
-        <span style={{ fontSize: 18, color: 'var(--text-faint)' }}>{open ? '−' : '+'}</span>
-      </button>
-    )
-  }
-
   return (
     <form onSubmit={handleSubmit} style={{ padding: '0 16px 16px' }}>
       <SectionHeader label="COMPOSIÇÃO CORPORAL" open={showBody} onToggle={() => setShowBody(v => !v)} />
       {showBody && (
-        <div className="grid grid-cols-2 gap-3" style={{ marginBottom: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 8 }}>
           <NumericField label="Peso (kg)" name="weight_kg" value={fields.weight_kg} onChange={update} />
           <NumericField label="Gordura (%)" name="body_fat_pct" value={fields.body_fat_pct} onChange={update} />
           <NumericField label="Cintura (cm)" name="waist_cm" value={fields.waist_cm} onChange={update} />
@@ -124,7 +126,7 @@ export function CheckinForm() {
 
       <SectionHeader label="PERFORMANCE" open={showPerf} onToggle={() => setShowPerf(v => !v)} />
       {showPerf && (
-        <div className="grid grid-cols-3 gap-3" style={{ marginBottom: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 8 }}>
           <NumericField label="Agachamento (kg)" name="squat_kg" value={fields.squat_kg} onChange={update} />
           <NumericField label="Supino (kg)" name="bench_kg" value={fields.bench_kg} onChange={update} />
           <NumericField label="Terra (kg)" name="deadlift_kg" value={fields.deadlift_kg} onChange={update} />
