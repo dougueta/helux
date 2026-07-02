@@ -48,12 +48,14 @@ export default async function HomePage() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) redirect('/login')
 
-  const [plan, recovery, insight, checkins] = await Promise.all([
+  const [plan, recovery, insight, checkinsRaw] = await Promise.all([
     getLatestPlan(),
     getRecovery(session.access_token),
     getGeneticInsight(),
     getLatestCheckins(session.access_token),
   ])
+
+  const checkins = checkinsRaw.sort((a, b) => b.month.localeCompare(a.month))
 
   const firstName = session.user.email?.split('@')[0] ?? 'atleta'
 

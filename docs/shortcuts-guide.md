@@ -1,234 +1,225 @@
 # Guia: Sincronizar Apple Watch com Helux via iOS Shortcuts
 
-Este guia explica como criar um Atalho do iOS (Shortcuts) que lê dados de saúde do Apple Watch e os envia automaticamente para o backend do Helux.
-
-> **Nota sobre a ação de busca:** dependendo da versão do iOS, a ação pode aparecer como **"Buscar Amostras de Saúde"** ou **"Localizar Amostras de Saúde"** (interface mais nova, em formato de filtro: "Localizar Amostras de Saúde em que Todos dos seguintes são verdadeiros"). Funcionalmente são equivalentes — ambas configuram Tipo, ordenação e limite de resultados. As instruções abaixo usam os nomes de campo da versão mais nova; adapte se a sua tela mostrar nomes diferentes.
+> **Versão:** iOS 26 (Liquid Glass)
+> **Última revisão:** 2026-06-27
+>
+> Este guia usa o formato simples de payload — só valores numéricos, sem UUID ou datas. O backend gera os identificadores automaticamente com deduplicação por dia.
 
 ---
 
 ## 1. Pré-requisitos
 
-- iPhone com o app **Atalhos** instalado (já vem de fábrica no iOS 16+)
-- Apple Watch pareado, com dados de saúde coletados
-- API do Helux em funcionamento em `https://helux-api.onrender.com`
-- Chave de API pessoal: veja o valor em `apps/api/.env` (`PERSONAL_API_KEY`) — **nunca cole o valor real aqui, este arquivo é versionado em um repositório público**
+- iPhone com iOS 26 e app **Atalhos** (vem instalado de fábrica)
+- Apple Watch pareado e com dados sincronizados com o iPhone
+- API do Helux rodando em `https://helux-api.onrender.com`
+- Sua `PERSONAL_API_KEY` — confira o valor em `apps/api/.env`
 
-> **Nota sobre o payload:** O endpoint `POST /api/health/sync` aceita um objeto JSON com as chaves `heartRate`, `hrv`, `steps`, `activeEnergy`, `sleepDuration` e `cardioRecovery`. Cada item dentro dessas listas precisa dos campos `uuid`, `value`, `unit`, `startDate` e `endDate`. **Todas as chaves são opcionais** — se uma métrica não estiver disponível, basta omiti-la ou enviar lista vazia.
-
-> **Nota sobre Frequência Cardíaca em Repouso:** essa métrica não está incluída neste guia porque a Apple só a calcula depois de vários dias/semanas de uso consistente do Apple Watch — em dispositivos novos ou recém-configurados ela simplesmente não existe ainda nas listas de tipo do Atalho. Quando ela aparecer no seu aparelho, pode ser adicionada seguindo o mesmo padrão do Passo 3 (Recuperação Cardiovascular), com **Tipo: Frequência Cardíaca em Repouso** e chave JSON `heartRate`.
+> **Antes de começar:** abra o app **Saúde** no iPhone e confirme que você consegue ver dados recentes de HRV, Sono e Calorias. Se os dados ainda não aparecerem lá, o Watch ainda não sincronizou — aguarde e tente novamente.
 
 ---
 
-## 2. Criando o Atalho
+## 2. Criar o Atalho
 
 Abra o app **Atalhos** e toque em **+** para criar um novo atalho. Dê o nome **"Sincronizar Helux"**.
 
-### Passo 1 — Buscar HRV (Variabilidade de Batimentos)
+> **Como adicionar ações:** toque em **"Adicionar Ação"** (ou **+** dentro do editor). Uma gaveta de pesquisa abre na parte inferior — use-a para pesquisar cada ação.
+>
+> **Como usar "Definir Variável":** após cada busca de amostras, adicione a ação **"Definir Variável"** para dar um nome ao resultado. Assim você referencia a variável depois sem depender de renomear chips.
+>
+> **Como inserir chips de variável em campos de texto:** toque no campo de texto, selecione **Variáveis** na barra acima do teclado, escolha a variável. Toque no chip inserido para selecionar uma propriedade (Valor, Duração, etc.).
 
-1. Toque em **Adicionar Ação**.
-2. Pesquise por **"Amostras de Saúde"** e selecione a ação de busca/localização disponível.
-3. Configure:
-   - **Tipo é:** `Variabilidade de Batimentos`
-   - **Ordenar por:** `Data de Início` (selecione a direção decrescente/mais recente primeiro, se houver essa opção)
-   - **Limite:** ative o toggle e defina `1`
-4. Renomeie a variável de resultado para **`HRV`** (toque no chip de variável e escolha "Renomear").
+---
 
-### Passo 2 — Buscar Energia Ativa (Calorias)
+### Bloco 1 — HRV
 
-1. Adicione nova ação de busca de Amostras de Saúde.
+1. Pesquise e adicione **"Amostras de Saúde"** (pode aparecer como *Buscar*, *Localizar* ou *Obter Amostras de Saúde*).
 2. Configure:
-   - **Tipo é:** `Energia Ativa`
-   - **Ordenar por:** `Data de Início`, decrescente/mais recente primeiro
+   - **Tipo:** `Variabilidade de Batimentos`
+   - **Filtro de data:** `Data de Início` nos últimos `1` dia
+   - **Ordenar por:** `Data de Início` — decrescente
    - **Limite:** `1`
-3. Renomeie o resultado para **`Calorias`**.
+3. Adicione **"Definir Variável"**:
+   - **Nome:** `HRV`
+   - **Para:** o chip de resultado da ação anterior
 
-### Passo 3 — Buscar Recuperação Cardiovascular
+---
 
-1. Adicione nova ação de busca de Amostras de Saúde.
+### Bloco 2 — Energia Ativa
+
+1. Adicione **"Amostras de Saúde"**.
 2. Configure:
-   - **Tipo é:** `Recuperação Cardiovascular`
-   - **Ordenar por:** `Data de Início`, decrescente/mais recente primeiro
+   - **Tipo:** `Energia Ativa`
+   - **Filtro de data:** `Data de Início` nos últimos `1` dia
+   - **Ordenar por:** `Data de Início` — decrescente
    - **Limite:** `1`
-3. Renomeie o resultado para **`RecupCardio`**.
+3. Adicione **"Definir Variável"**:
+   - **Nome:** `Calorias`
+   - **Para:** o chip de resultado
 
-> Essa métrica só existe em dias em que você termina um treino registrado pelo Apple Watch (mede quantos bpm a FC cai no 1º minuto após o esforço). Em dias sem treino, o resultado vem vazio — isso é esperado e não quebra a sincronização (o campo é opcional).
+> **Nota:** estamos buscando apenas o sample mais recente (não o total do dia) até confirmar que os dados chegam corretamente. Após a validação, este bloco será ajustado para somar todos os samples do dia.
 
-### Passo 4 — Buscar Duração do Sono
+---
 
-1. Adicione nova ação de busca de Amostras de Saúde.
+### Bloco 3 — Sono
+
+1. Adicione **"Amostras de Saúde"**.
 2. Configure:
-   - **Tipo é:** `Análise do Sono` (ou `Tempo Dormindo`/`Sono`, conforme aparecer na sua lista)
-   - **Filtro de Data de Início:** está nos(as) últimos(as) `1` dia (a noite de sono gera várias amostras de estágios diferentes — esse filtro pega só a mais recente)
-   - **Ordenar por:** `Duração`, decrescente (a maior primeiro — tende a ser o registro principal da noite, não um cochilo)
+   - **Tipo:** `Análise do Sono` (pode aparecer como `Tempo Dormindo` ou `Sono`)
+   - **Filtro de data:** `Data de Início` nos últimos `1` dia
+   - **Ordenar por:** `Duração` — decrescente
    - **Limite:** `1`
-3. Renomeie o resultado para **`Sono`**.
+3. Adicione **"Definir Variável"**:
+   - **Nome:** `Sono`
+   - **Para:** o chip de resultado
 
-> ⚠️ **Ponto de atenção:** a propriedade "Duração" desse resultado pode vir em segundos, minutos ou num formato de duração do iOS, dependendo da versão. A API espera o valor numérico em **horas**. Se ao inserir a variável `Sono — Duração` o valor não estiver em horas, adicione uma ação **"Calcular"** dividindo o valor por `3600` (se vier em segundos) antes de usá-lo no JSON do Passo 6. Teste rodando o atalho uma vez e conferindo o número que chega na notificação final (Passo 9) antes de confiar no dado.
+> **Nota:** não estamos convertendo a duração por enquanto. O valor bruto da propriedade `Duração` será enviado para identificar em qual unidade o iOS 26 retorna (segundos, minutos ou horas). Após a validação, adicionamos a conversão necessária.
 
-### Passo 5 — Compor o JSON
+---
 
-> **Como inserir variáveis no texto:** ao digitar, toque na barra de **Variáveis** acima do teclado (ou mantenha pressionado o campo de texto) para inserir uma variável. Depois de inserida, toque no chip já dentro do texto para escolher a propriedade desejada (Valor, UUID, Data de Início, etc.) — cada `<placeholder>` abaixo representa um desses chips, não texto digitado.
+> **Recuperação Cardiovascular** não está incluída neste atalho. O iOS 26 exibe um alerta bloqueante em dias sem treino registrado no Watch e não há opção para suprimi-lo. Esta métrica é capturada pelo atalho **"Helux Pós-Treino"** — veja a Seção 5.
+
+---
+
+### Bloco 4 — Montar o JSON
 
 1. Adicione a ação **"Texto"**.
-2. Monte o conteúdo abaixo, inserindo um chip de variável em cada `<placeholder>`:
+2. Digite o conteúdo abaixo inserindo cada chip de variável no lugar indicado:
 
 ```
 {
-  "hrv": [
-    {
-      "uuid": "<HRV — Identificador>",
-      "value": <HRV — Valor>,
-      "unit": "ms",
-      "startDate": "<HRV — Data de início>",
-      "endDate": "<HRV — Data de término>"
-    }
-  ],
-  "activeEnergy": [
-    {
-      "uuid": "<Calorias — Identificador>",
-      "value": <Calorias — Valor>,
-      "unit": "kcal",
-      "startDate": "<Calorias — Data de início>",
-      "endDate": "<Calorias — Data de término>"
-    }
-  ],
-  "cardioRecovery": [
-    {
-      "uuid": "<RecupCardio — Identificador>",
-      "value": <RecupCardio — Valor>,
-      "unit": "bpm",
-      "startDate": "<RecupCardio — Data de início>",
-      "endDate": "<RecupCardio — Data de término>"
-    }
-  ],
-  "sleepDuration": [
-    {
-      "uuid": "<Sono — Identificador>",
-      "value": <Sono — Duração em horas, ver nota do Passo 4>,
-      "unit": "hr",
-      "startDate": "<Sono — Data de início>",
-      "endDate": "<Sono — Data de término>"
-    }
-  ]
+  "hrv": [HRV · Valor],
+  "activeEnergy": [Calorias · Valor],
+  "sleepHours": [Sono · Duração]
 }
 ```
 
-**Como inserir cada variável:**
+> **Como inserir cada chip:**
+> - `[HRV · Valor]` → Variáveis → `HRV` → toque no chip → **Valor**
+> - `[Calorias · Valor]` → Variáveis → `Calorias` → toque no chip → **Valor**
+> - `[Sono · Duração]` → Variáveis → `Sono` → toque no chip → **Duração**
 
-| Placeholder | Variável a selecionar | Propriedade |
-|---|---|---|
-| `<HRV — Identificador>` | `HRV` | UUID / Identificador |
-| `<HRV — Valor>` | `HRV` | Valor |
-| `<HRV — Data de início>` | `HRV` | Data de início |
-| `<HRV — Data de término>` | `HRV` | Data de término |
-| `<Calorias — Identificador>` | `Calorias` | UUID / Identificador |
-| `<Calorias — Valor>` | `Calorias` | Valor |
-| `<Calorias — Data de início>` | `Calorias` | Data de início |
-| `<Calorias — Data de término>` | `Calorias` | Data de término |
-| `<RecupCardio — Identificador>` | `RecupCardio` | UUID / Identificador |
-| `<RecupCardio — Valor>` | `RecupCardio` | Valor |
-| `<RecupCardio — Data de início>` | `RecupCardio` | Data de início |
-| `<RecupCardio — Data de término>` | `RecupCardio` | Data de término |
-| `<Sono — Identificador>` | `Sono` | UUID / Identificador |
-| `<Sono — Duração em horas>` | `Sono` | Duração (convertida para horas, ver Passo 4) |
-| `<Sono — Data de início>` | `Sono` | Data de início |
-| `<Sono — Data de término>` | `Sono` | Data de término |
+3. Adicione **"Definir Variável"**:
+   - **Nome:** `CorpoJSON`
+   - **Para:** o resultado desta ação de Texto
 
-> **Dica:** As datas retornadas pelo iOS já estão no formato ISO 8601 com timezone (ex: `2026-06-15T07:30:00+00:00`), que é exatamente o que a API espera.
+---
 
-3. Renomeie o resultado desta ação de Texto para **`CorpoJSON`**.
+### Bloco 5 — Debug (temporário)
 
-### Passo 6 — Enviar para a API
+Adicione **"Mostrar Alerta"** com o conteúdo da variável `CorpoJSON` para inspecionar o JSON antes de enviar. **Remova este bloco após a validação.**
 
-1. Adicione a ação **"Obter Conteúdo da URL"** (ou *Get Contents of URL*).
+---
+
+### Bloco 6 — Enviar para a API
+
+1. Adicione **"Obter Conteúdo da URL"** (ou *Get Contents of URL*).
 2. Configure:
    - **URL:** `https://helux-api.onrender.com/api/health/sync`
    - **Método:** `POST`
-3. Toque em **Mostrar mais** para expandir as opções avançadas.
-4. Em **Cabeçalhos** (Headers), adicione dois cabeçalhos:
-   - **Chave:** `X-API-Key` → **Valor:** (o valor de `PERSONAL_API_KEY` — confira em `apps/api/.env`, nunca documente o valor aqui)
-   - **Chave:** `Content-Type` → **Valor:** `application/json`
-5. Em **Corpo da Requisição** (Request Body), selecione **JSON** ou **Texto**:
-   - Se aparecer a opção **Arquivo/Texto**, escolha **Texto** e insira a variável `CorpoJSON`.
-   - Se aparecer a opção **JSON**, mude para **Arquivo** ou **Texto** para enviar o JSON pré-formatado como string (isso evita que o iOS re-serialize e quebre o formato).
-6. Renomeie o resultado para **`RespostaAPI`**.
-
-### Passo 7 — Notificação de Resultado
-
-1. Adicione a ação **"Mostrar Notificação"** (ou *Show Notification*).
-2. No campo do título, digite: `Helux sincronizado!`
-3. No corpo da notificação, insira a variável `RespostaAPI` para ver a resposta da API.
+3. Expanda as opções avançadas (**"Mostrar mais"** ou `…`).
+4. Em **Cabeçalhos**, adicione:
+   - Chave: `X-API-Key` → Valor: *(sua PERSONAL_API_KEY de `apps/api/.env`)*
+   - Chave: `Content-Type` → Valor: `application/json`
+5. Em **Corpo da Requisição**:
+   - Tipo: **Arquivo** (não JSON nem Formulário)
+   - Conteúdo: variável `CorpoJSON`
+6. Adicione **"Definir Variável"**:
+   - **Nome:** `RespostaAPI`
+   - **Para:** o resultado desta ação
 
 ---
 
-## 3. Adicionando à Tela Inicial
+### Bloco 7 — Ver o resultado
 
-Para acessar o atalho com um toque:
+1. Adicione **"Mostrar Notificação"**.
+2. Título: `Helux sincronizado`
+3. Corpo: variável `RespostaAPI`
 
-1. No app Atalhos, toque e segure o atalho **"Sincronizar Helux"**.
-2. Selecione **Detalhes** e depois **Adicionar à Tela de Início**.
-3. Escolha um ícone e confirme.
-
-Para executar manualmente sempre que quiser sincronizar, basta tocar no ícone na tela inicial. Veja a seção 4 abaixo para configurar a execução automática.
-
----
-
-## 4. Automatizando o Atalho (iOS Automações)
-
-Você pode configurar o atalho para rodar automaticamente, sem precisar tocá-lo manualmente.
-
-1. Abra o app **Atalhos** e toque na aba **"Automação"** (ícone de relógio na parte inferior).
-2. Toque em **"+"** no canto superior direito e selecione **"Criar Automação Pessoal"**.
-3. Escolha o gatilho desejado:
-   - **Hora do dia:** selecione **"Hora do dia"** e defina o horário (ex.: 7h da manhã, todos os dias). Ideal para sincronização matinal de dados de sono e recuperação.
-   - **Treino:** selecione **"Treino"** e escolha **"Termina"**. O atalho será executado automaticamente ao fim de cada treino registrado no Apple Watch — é o melhor momento pra capturar a Recuperação Cardiovascular.
-4. Toque em **"Adicionar Ação"** → pesquise por **"Executar Atalho"** e selecione.
-5. Toque no campo do atalho e selecione **"Sincronizar Helux"**.
-6. Toque em **"Próximo"** e desative a opção **"Perguntar antes de executar"** — isso permite que a automação rode silenciosamente em segundo plano, sem exibir um alerta.
-7. Toque em **"Concluído"** para salvar.
-
-> **Dica:** Você pode criar duas automações ao mesmo tempo — uma pela manhã (HRV + Sono) e outra após o treino (Recuperação Cardiovascular + Calorias) — para garantir que os dados mais recentes sempre cheguem ao Helux.
+> Resposta de sucesso: `{"status":"accepted","count":2}` — `count` indica quantas métricas foram salvas.
+> Se `count` for `0`, o Watch provavelmente não sincronizou com o iPhone ainda.
 
 ---
 
-## 5. Dados Ausentes ou Apple Watch Não Usado
+## 3. Adicionar à Tela Inicial
 
-Se o Apple Watch não foi usado ou não sincronizou com o iPhone antes de o atalho rodar, o HealthKit pode não ter amostras recentes. Nesses casos:
-
-- A ação de busca de Amostras de Saúde retornará uma lista vazia ou sem valor.
-- O JSON enviado à API poderá conter arrays vazios (ex.: `"activeEnergy": []`), o que é aceito sem erro.
-- O app Helux exibirá **"—"** para as métricas sem dados disponíveis.
-
-**O que fazer:** antes de rodar o atalho, abra o app **Saúde** no iPhone e confirme que os dados do Watch já aparecem lá. Se necessário, abra o app **Watch** no iPhone e aguarde a sincronização concluir. Somente após isso rode o atalho **"Sincronizar Helux"**.
+1. Segure o atalho **"Sincronizar Helux"** no app Atalhos
+2. Selecione **"Detalhes"** → **"Adicionar à Tela de Início"**
+3. Escolha ícone e confirme
 
 ---
 
-## 6. Testando Localmente (antes do deploy)
+## 4. Automatizar
 
-Para testar mudanças no Shortcut antes de apontar para produção, você pode usar o servidor local:
+1. Atalhos → aba **"Automação"** → **+** → **"Criar Automação Pessoal"**
+2. Gatilho: **"Hora do Dia"** — 7h, todos os dias
+3. Ação: **"Executar Atalho"** → `Sincronizar Helux`
+4. Desative **"Perguntar antes de executar"**
+5. **"Concluído"**
 
-1. Descubra o IP local do seu Mac: abra o Terminal e rode `ipconfig getifaddr en0`.
-   Exemplo de resultado: `192.168.1.100`
-2. Certifique-se de que a API local está rodando na porta `3001`:
-   ```bash
-   pnpm --filter @helux/api dev
-   ```
-3. No atalho, substitua temporariamente a URL do Passo 6:
+---
+
+## 5. Atalho "Helux Pós-Treino" (Recuperação Cardiovascular)
+
+Atalho separado, disparado automaticamente ao fim de cada treino. Só precisa ser configurado uma vez.
+
+### Criar o atalho
+
+Crie um novo atalho chamado **"Helux Pós-Treino"** com 5 ações:
+
+**Bloco 1 — Buscar amostra**
+1. Adicione **"Amostras de Saúde"**
+   - **Tipo:** `Recuperação Cardiovascular`
+   - **Filtro de data:** últimos `1` dia
+   - **Ordenar por:** `Data de Início` — decrescente
+   - **Limite:** `1`
+2. **"Definir Variável"** → Nome: `RecupCardio`
+
+**Bloco 2 — Montar JSON**
+1. Adicione **"Texto"**:
+```
+{"cardioRecovery": [RecupCardio · Valor]}
+```
+2. **"Definir Variável"** → Nome: `CorpoJSON`
+
+**Bloco 3 — Enviar**
+1. Adicione **"Obter Conteúdo da URL"**
+   - URL: `https://helux-api.onrender.com/api/health/sync`
+   - Método: `POST`
+   - Cabeçalhos: `X-API-Key` + `Content-Type: application/json`
+   - Corpo: **Arquivo** → variável `CorpoJSON`
+
+### Configurar a automação
+
+1. Atalhos → aba **"Automação"** → **+** → **"Criar Automação Pessoal"**
+2. Gatilho: **"Treino"** → **"Termina"**
+3. Ação: **"Executar Atalho"** → `Helux Pós-Treino`
+4. Desative **"Perguntar antes de executar"**
+5. **"Concluído"**
+
+> Como este atalho só roda quando o treino termina, a amostra sempre existe — nunca aparece o alerta de "nenhuma amostra encontrada".
+
+---
+
+## 6. Solução de Problemas
+
+| Sintoma | Causa provável | O que fazer |
+|---|---|---|
+| `401 Unauthorized` | Chave de API errada | Confira o header `X-API-Key` com o valor exato de `apps/api/.env` |
+| `400 Bad Request` / JSON inválido | JSON malformado | Use o Bloco 5 (debug) para inspecionar o `CorpoJSON` antes de enviar |
+| `count: 0` na resposta | Watch não sincronizou | Abra o app Saúde e confirme que os dados aparecem lá antes de rodar |
+| Valor de sono muito grande (ex: `28800`) | Duração em segundos | Adicione ação **"Calcular"** com `Sono · Duração ÷ 3600` entre os Blocos 3 e 4, e use o resultado no JSON |
+| Valor de sono em minutos (ex: `480`) | Duração em minutos | Adicione ação **"Calcular"** com `Sono · Duração ÷ 60` entre os Blocos 3 e 4 |
+| Calorias muito baixas (ex: `3`) | Apenas último sample | Esperado por ora — será corrigido após validação |
+| Corpo vazio chegando na API | Tipo de corpo errado | No Bloco 6, certifique-se que o tipo do corpo é **Arquivo**, não JSON |
+
+---
+
+## 7. Testar com API local (Windows)
+
+1. Abra o Prompt de Comando e rode `ipconfig` — copie o **Endereço IPv4** da rede Wi-Fi (ex: `192.168.1.100`)
+2. Garanta que a API está rodando: `pnpm --filter @helux/api dev`
+3. No Bloco 6, troque temporariamente a URL:
    - De: `https://helux-api.onrender.com/api/health/sync`
    - Para: `http://192.168.1.100:3001/api/health/sync`
-4. O iPhone e o Mac precisam estar na **mesma rede Wi-Fi**.
-5. Execute o atalho e observe os logs no terminal — você verá a requisição chegando.
-6. Ao terminar o teste, volte a URL para `https://helux-api.onrender.com/api/health/sync`.
-
----
-
-## 7. Solução de Problemas
-
-| Sintoma | Possível causa | Solução |
-|---|---|---|
-| Notificação mostra `401 Unauthorized` | Chave de API incorreta ou ausente | Confirme o cabeçalho `X-API-Key` no Passo 6 |
-| Notificação mostra `400 Bad Request` | JSON malformado ou campo faltando | Verifique se todas as variáveis foram inseridas corretamente no Passo 5 |
-| Campo `uuid` vazio | iOS não retornou identificador único | Tente a propriedade "UUID" em vez de "Identificador" ao selecionar a variável |
-| Atalho não encontra amostras de um tipo específico | Métrica ainda não existe nos seus dados (ex: Frequência Cardíaca em Repouso em dispositivo novo) ou permissão não concedida | Vá em Ajustes → Saúde → Acesso a Dados e Dispositivos → Atalhos e confira os tipos disponíveis/ativos; se a métrica não aparecer nem ali, a Apple ainda não a calculou — aguarde mais dias de uso |
-| Valor de Sono parece muito grande/pequeno (ex: milhares ao invés de horas) | "Duração" retornada em segundos ou minutos, não horas | Adicione uma ação "Calcular" convertendo para horas antes de montar o JSON (ver nota do Passo 4) |
-| Erro de conexão no teste local | Firewall ou IP diferente | Confirme o IP com `ipconfig getifaddr en0` e que está na mesma rede Wi-Fi |
+4. iPhone e PC precisam estar na mesma rede Wi-Fi
+5. Volte a URL para produção após o teste
