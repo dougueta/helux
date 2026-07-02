@@ -9,6 +9,7 @@ import { recoveryLatestRoutes } from './routes/recovery-latest'
 import { workoutSessionsRoutes } from './routes/workout-sessions'
 import { workoutHistoryRoutes } from './routes/workout-history'
 import { workoutAnalyticsRoutes } from './routes/workout-analytics'
+import { checkinsRoutes } from './routes/checkins'
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({
@@ -29,6 +30,7 @@ export function buildApp(): FastifyInstance {
   app.register(workoutSessionsRoutes)
   app.register(workoutHistoryRoutes)
   app.register(workoutAnalyticsRoutes)
+  app.register(checkinsRoutes)
 
   return app
 }
