@@ -181,3 +181,36 @@ describe('buildSystemPrompt — catálogo de exercícios', () => {
     expect(prompt).toContain('Priorize variedade em relação aos exercícios recentes')
   })
 })
+
+describe('generateWorkoutPlan — anexação de cues do catálogo', () => {
+  it('anexa cues quando o nome do exercício bate com o catálogo', async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: 'text', text: JSON.stringify({
+        generatedAt: '2026-07-02T10:00:00.000Z',
+        exercises: [{ name: 'Agachamento Livre (Barra)', sets: 4, reps: '8-10', weight: '100kg' }],
+        rationale: 'Teste',
+      }) }],
+      usage: { input_tokens: 100, output_tokens: 200, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
+    })
+
+    const result = await generateWorkoutPlan(MOCK_INPUT)
+
+    expect(result.exercises[0].cues).toBeDefined()
+    expect(result.exercises[0].cues!.length).toBeGreaterThan(0)
+  })
+
+  it('não anexa cues quando o nome não bate com nenhuma entrada do catálogo', async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: 'text', text: JSON.stringify({
+        generatedAt: '2026-07-02T10:00:00.000Z',
+        exercises: [{ name: 'Exercício Inventado Pela IA', sets: 3, reps: '10', weight: '20kg' }],
+        rationale: 'Teste',
+      }) }],
+      usage: { input_tokens: 100, output_tokens: 200, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
+    })
+
+    const result = await generateWorkoutPlan(MOCK_INPUT)
+
+    expect(result.exercises[0].cues).toBeUndefined()
+  })
+})
