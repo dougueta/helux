@@ -6,11 +6,12 @@ import { usePathname } from 'next/navigation'
 const ICONS: Record<string, string> = {
   home:     'M4 11.5 12 4l8 7.5M6 10v9h12v-9',
   dumbbell: 'M6.5 9v6M9.5 7.5v9M14.5 7.5v9M17.5 9v6M9.5 12h5M4.5 11v2M19.5 11v2',
-  dna:      'M8 3c0 5 8 7 8 12s-8 6-8 9M16 3c0 5-8 7-8 12s8 6 8 9M8.5 7h7M7.5 12h9M8.5 17h7',
+  ruler:    'M21 6H3M21 12H3M21 18H3M7 6v12M12 6v4M17 6v8',
   chart:    'M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-8',
   play:     'M7 4.5v15l13-7.5z',
   flame:    'M12 3c1 4 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 1-2-1-4-1-8z',
   chevron:  'M9 6l6 6-6 6',
+  dna:      'M8 3c0 5 8 7 8 12s-8 6-8 9M16 3c0 5-8 7-8 12s8 6 8 9M8.5 7h7M7.5 12h9M8.5 17h7',
 }
 
 function Icon({ name, size = 22, stroke = 'currentColor', sw = 1.9 }: { name: keyof typeof ICONS; size?: number; stroke?: string; sw?: number }) {
@@ -27,7 +28,7 @@ function Icon({ name, size = 22, stroke = 'currentColor', sw = 1.9 }: { name: ke
 const tabs = [
   { href: '/', label: 'Hoje', icon: 'home' as const },
   { href: '/history', label: 'Treinos', icon: 'dumbbell' as const },
-  { href: '/dna', label: 'DNA', icon: 'dna' as const },
+  { href: '/checkin', label: 'Check-in', icon: 'ruler' as const },
   { href: '/recovery', label: 'Progresso', icon: 'chart' as const },
 ]
 
