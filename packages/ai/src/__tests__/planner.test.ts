@@ -159,3 +159,25 @@ describe('buildSystemPrompt — check-in rules', () => {
     expect(prompt).toContain('lifts estagnados')
   })
 })
+
+describe('buildSystemPrompt — catálogo de exercícios', () => {
+  it('inclui o catálogo de exercícios agrupado por padrão de movimento', () => {
+    const profile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] } as any
+    const constraints = {} as any
+    const prompt = buildSystemPrompt(profile, constraints)
+
+    expect(prompt).toContain('Catálogo de Exercícios')
+    expect(prompt).toContain('Agachamento Livre (Barra)')
+    expect(prompt).toContain('Levantamento Terra (Barra)')
+    expect(prompt).toContain('Supino Reto (Barra)')
+  })
+
+  it('inclui a instrução de escolha restrita e de variedade', () => {
+    const profile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] } as any
+    const constraints = {} as any
+    const prompt = buildSystemPrompt(profile, constraints)
+
+    expect(prompt).toContain('EXCLUSIVAMENTE da lista de catálogo')
+    expect(prompt).toContain('Priorize variedade em relação aos exercícios recentes')
+  })
+})
