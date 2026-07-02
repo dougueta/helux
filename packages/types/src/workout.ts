@@ -15,4 +15,5 @@ export interface PlannedExercise {
   reps: string
   weight: string
   notes?: string
+  cues?: string[]
 }
