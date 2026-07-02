@@ -34,4 +34,12 @@ describe('CheckinCard', () => {
     render(<CheckinCard checkins={[checkin1, checkin2]} />)
     expect(screen.getByText(/\+5/)).toBeTruthy()
   })
+
+  it('does not crash when optional fields are null (as returned by Supabase for unset columns)', () => {
+    const withNulls = {
+      id: '3', month: '2026-06-01', weight_kg: 82.2, body_fat_pct: null,
+      squat_kg: null, bench_kg: null, created_at: '2026-06-01T00:00:00Z',
+    } as unknown as BodyCheckin
+    expect(() => render(<CheckinCard checkins={[withNulls]} />)).not.toThrow()
+  })
 })

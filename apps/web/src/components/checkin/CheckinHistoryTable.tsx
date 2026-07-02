@@ -9,14 +9,14 @@ function monthLabel(month: string): string {
   return `${months[parseInt(m, 10) - 1]}/${year}`
 }
 
-function fmt(val?: number, decimals = 1): string {
-  return val !== undefined ? val.toFixed(decimals) : '—'
+function fmt(val?: number | null, decimals = 1): string {
+  return val != null ? val.toFixed(decimals) : '—'
 }
 
 function DeltaCell({ curr, prev, lowerIsBetter = false, decimals = 1 }: {
-  curr?: number; prev?: number; lowerIsBetter?: boolean; decimals?: number
+  curr?: number | null; prev?: number | null; lowerIsBetter?: boolean; decimals?: number
 }) {
-  if (curr === undefined || prev === undefined) return <span style={{ color: 'var(--text-faint)' }}>—</span>
+  if (curr == null || prev == null) return <span style={{ color: 'var(--text-faint)' }}>—</span>
   const d = curr - prev
   const neutral = Math.abs(d) < 0.05
   const positive = lowerIsBetter ? d < 0 : d > 0

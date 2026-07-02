@@ -7,12 +7,12 @@ function monthLabel(month: string): string {
   return `${months[parseInt(m, 10) - 1]}/${year}`
 }
 
-function fmt(val?: number, decimals = 1): string {
-  return val !== undefined ? val.toFixed(decimals) : '—'
+function fmt(val?: number | null, decimals = 1): string {
+  return val != null ? val.toFixed(decimals) : '—'
 }
 
-function deltaStr(curr?: number, prev?: number, decimals = 1): string {
-  if (curr === undefined || prev === undefined) return ''
+function deltaStr(curr?: number | null, prev?: number | null, decimals = 1): string {
+  if (curr == null || prev == null) return ''
   const d = curr - prev
   if (Math.abs(d) < 0.05) return ' ='
   const sign = d > 0 ? '+' : ''
@@ -20,9 +20,9 @@ function deltaStr(curr?: number, prev?: number, decimals = 1): string {
 }
 
 function DeltaSpan({ curr, prev, lowerIsBetter = false, decimals = 1 }: {
-  curr?: number; prev?: number; lowerIsBetter?: boolean; decimals?: number
+  curr?: number | null; prev?: number | null; lowerIsBetter?: boolean; decimals?: number
 }) {
-  if (curr === undefined || prev === undefined) return null
+  if (curr == null || prev == null) return null
   const d = curr - prev
   const neutral = Math.abs(d) < 0.05
   const positive = lowerIsBetter ? d < 0 : d > 0
@@ -56,25 +56,25 @@ export function CheckinCard({ checkins }: CheckinCardProps) {
           Check-in {monthLabel(curr.month)}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 0', fontSize: 13, color: 'var(--text)' }}>
-          {curr.weight_kg !== undefined && (
+          {curr.weight_kg != null && (
             <span>
               Peso <strong>{fmt(curr.weight_kg)}kg</strong>
               <DeltaSpan curr={curr.weight_kg} prev={prev?.weight_kg} lowerIsBetter decimals={1} />
             </span>
           )}
-          {curr.body_fat_pct !== undefined && (
+          {curr.body_fat_pct != null && (
             <span>
               Gordura <strong>{fmt(curr.body_fat_pct)}%</strong>
               <DeltaSpan curr={curr.body_fat_pct} prev={prev?.body_fat_pct} lowerIsBetter decimals={1} />
             </span>
           )}
-          {curr.squat_kg !== undefined && (
+          {curr.squat_kg != null && (
             <span>
               Agach. <strong>{fmt(curr.squat_kg, 0)}kg</strong>
               <DeltaSpan curr={curr.squat_kg} prev={prev?.squat_kg} decimals={0} />
             </span>
           )}
-          {curr.bench_kg !== undefined && (
+          {curr.bench_kg != null && (
             <span>
               Supino <strong>{fmt(curr.bench_kg, 0)}kg</strong>
               <DeltaSpan curr={curr.bench_kg} prev={prev?.bench_kg} decimals={0} />

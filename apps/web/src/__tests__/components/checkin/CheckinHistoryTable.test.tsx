@@ -30,4 +30,12 @@ describe('CheckinHistoryTable', () => {
     render(<CheckinHistoryTable checkins={rows} />)
     expect(screen.getByText('-1.2')).toBeTruthy()
   })
+
+  it('does not crash when optional fields are null (as returned by Supabase for unset columns)', () => {
+    const withNulls = [
+      { id: '2', month: '2026-06-01', weight_kg: 82.2, body_fat_pct: null, squat_kg: null, created_at: '2026-06-01T00:00:00Z' },
+      { id: '1', month: '2026-05-01', weight_kg: null, body_fat_pct: 19.0, squat_kg: 115, created_at: '2026-05-01T00:00:00Z' },
+    ] as unknown as BodyCheckin[]
+    expect(() => render(<CheckinHistoryTable checkins={withNulls} />)).not.toThrow()
+  })
 })

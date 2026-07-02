@@ -13,14 +13,14 @@ function buildCheckinSection(checkins?: BodyCheckin[]): string {
   if (checkins.length === 1) {
     const c = checkins[0]
     const lines: string[] = []
-    if (c.weight_kg !== undefined) lines.push(`Peso: ${c.weight_kg}kg`)
-    if (c.body_fat_pct !== undefined) lines.push(`Gordura: ${c.body_fat_pct}%`)
-    if (c.waist_cm !== undefined) lines.push(`Cintura: ${c.waist_cm}cm`)
-    if (c.arm_cm !== undefined) lines.push(`Braço: ${c.arm_cm}cm`)
-    if (c.leg_cm !== undefined) lines.push(`Coxa: ${c.leg_cm}cm`)
-    if (c.squat_kg !== undefined) lines.push(`Agachamento: ${c.squat_kg}kg`)
-    if (c.bench_kg !== undefined) lines.push(`Supino: ${c.bench_kg}kg`)
-    if (c.deadlift_kg !== undefined) lines.push(`Terra: ${c.deadlift_kg}kg`)
+    if (c.weight_kg != null) lines.push(`Peso: ${c.weight_kg}kg`)
+    if (c.body_fat_pct != null) lines.push(`Gordura: ${c.body_fat_pct}%`)
+    if (c.waist_cm != null) lines.push(`Cintura: ${c.waist_cm}cm`)
+    if (c.arm_cm != null) lines.push(`Braço: ${c.arm_cm}cm`)
+    if (c.leg_cm != null) lines.push(`Coxa: ${c.leg_cm}cm`)
+    if (c.squat_kg != null) lines.push(`Agachamento: ${c.squat_kg}kg`)
+    if (c.bench_kg != null) lines.push(`Supino: ${c.bench_kg}kg`)
+    if (c.deadlift_kg != null) lines.push(`Terra: ${c.deadlift_kg}kg`)
     if (c.notes) lines.push(`Observações: ${c.notes}`)
     return `### Check-in Mensal Atual (${monthLabel(c.month)})
 
@@ -32,8 +32,8 @@ ${lines.join('\n')}
   const [prev, curr] = checkins
   const lines: string[] = []
 
-  function d(label: string, currVal?: number, prevVal?: number, unit = 'kg') {
-    if (currVal === undefined || prevVal === undefined) return
+  function d(label: string, currVal?: number | null, prevVal?: number | null, unit = 'kg') {
+    if (currVal == null || prevVal == null) return
     const diff = currVal - prevVal
     const sign = diff > 0 ? '+' : ''
     const icon = diff === 0 ? '→' : diff > 0 ? '↑' : '↓'

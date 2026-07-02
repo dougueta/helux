@@ -147,6 +147,18 @@ describe('buildUserPrompt — check-in sections', () => {
     expect(prompt).toContain('-0.9')
     expect(prompt).toContain('+5.0')
   })
+
+  it('não lança quando algum campo do check-in é null (como retornado pelo Supabase para colunas não preenchidas)', () => {
+    const prev = {
+      id: '1', month: '2026-05-01', weight_kg: 83.4, body_fat_pct: null,
+      squat_kg: 115, bench_kg: null, deadlift_kg: 140, created_at: '2026-05-01T00:00:00Z',
+    } as unknown as BodyCheckin
+    const curr = {
+      id: '2', month: '2026-06-01', weight_kg: null, body_fat_pct: 18.1,
+      squat_kg: 120, bench_kg: null, deadlift_kg: 145, created_at: '2026-06-01T00:00:00Z',
+    } as unknown as BodyCheckin
+    expect(() => buildUserPrompt(...baseArgs, [prev, curr])).not.toThrow()
+  })
 })
 
 describe('buildSystemPrompt — check-in rules', () => {

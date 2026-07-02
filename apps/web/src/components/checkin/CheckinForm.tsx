@@ -60,7 +60,7 @@ export function CheckinForm() {
   const router = useRouter()
   const { current, saving, save } = useCheckin()
 
-  const toStr = (v?: number) => v !== undefined ? String(v) : ''
+  const toStr = (v?: number | null) => v != null ? String(v) : ''
 
   const [fields, setFields] = useState<Record<FieldName, string>>({
     weight_kg: toStr(current?.weight_kg),
