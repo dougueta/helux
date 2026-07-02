@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyReply } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 
@@ -16,11 +16,15 @@ const CheckinBodySchema = z.object({
   notes: z.string().max(500).optional(),
 })
 
+const GetQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(60).default(13),
+})
+
 export async function checkinsRoutes(app: FastifyInstance): Promise<void> {
   const supabaseUrl = process.env.SUPABASE_URL!
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!
 
-  async function getUser(authHeader: string | undefined, reply: any) {
+  async function getUser(authHeader: string | undefined, reply: FastifyReply) {
     if (!authHeader?.startsWith('Bearer ')) {
       await reply.code(401).send({ error: 'Unauthorized' })
       return null
@@ -67,17 +71,20 @@ export async function checkinsRoutes(app: FastifyInstance): Promise<void> {
     const auth = await getUser(request.headers.authorization, reply)
     if (!auth) return
 
-    const query = request.query as { limit?: string }
-    const limit = Math.min(Number(query.limit ?? 13), 60)
+    const queryParsed = GetQuerySchema.safeParse(request.query)
+    if (!queryParsed.success) {
+      return reply.code(400).send({ error: 'Bad Request', details: queryParsed.error.errors })
+    }
+    const { limit } = queryParsed.data
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: `Bearer ${auth.token}` } },
     })
 
-    // RLS on the user-scoped client enforces user isolation; no explicit .eq() needed
     const { data: checkins, error } = await supabase
       .from('body_checkins')
       .select('*')
+      .eq('user_id', auth.user.id)
       .order('month', { ascending: false })
       .range(0, limit - 1)
 

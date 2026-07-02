@@ -12,8 +12,8 @@ const mockSingle = vi.fn().mockResolvedValue({
 const mockSelect = vi.fn(() => ({ single: mockSingle }))
 const mockUpsert = vi.fn(() => ({ select: mockSelect }))
 const mockOrder = vi.fn(() => ({ range: vi.fn().mockResolvedValue({ data: [], error: null }) }))
-const mockRange = vi.fn().mockResolvedValue({ data: [], error: null })
-const mockFrom = vi.fn(() => ({ upsert: mockUpsert, select: vi.fn(() => ({ order: mockOrder })) }))
+const mockEq = vi.fn(() => ({ order: mockOrder }))
+const mockFrom = vi.fn(() => ({ upsert: mockUpsert, select: vi.fn(() => ({ eq: mockEq })) }))
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
