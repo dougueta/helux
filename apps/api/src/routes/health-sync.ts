@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { ZodError } from 'zod';
-import { HealthSyncPayloadSchema, HealthSyncSimplePayloadSchema, processSync, processSimpleSync } from '@helux/health';
-import { createClient } from '@supabase/supabase-js';
+import { HealthSyncPayloadSchema, HealthSyncSimplePayloadSchema, processSync, processSimpleSync, type HealthSampleRow } from '@helux/health';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { timingSafeEqual, createHash } from 'crypto';
 
 // The complex (array-of-samples) shape is for clients with real HealthKit
@@ -33,7 +33,7 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
 
   app.post('/api/health/sync', async (request, reply) => {
     let userId: string
-    let supabase: ReturnType<typeof createClient>
+    let supabase: SupabaseClient
 
     const apiKey = request.headers['x-api-key'] as string | undefined
     const personalApiKey = process.env.PERSONAL_API_KEY
@@ -68,7 +68,7 @@ export async function healthSyncRoutes(app: FastifyInstance): Promise<void> {
       })
     }
 
-    let rows;
+    let rows: HealthSampleRow[];
     try {
       if (isSimplePayload(request.body)) {
         const payload = HealthSyncSimplePayloadSchema.parse(request.body);

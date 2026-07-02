@@ -55,7 +55,7 @@ export default async function HomePage() {
     getLatestCheckins(session.access_token),
   ])
 
-  const checkins = checkinsRaw.sort((a, b) => b.month.localeCompare(a.month))
+  const checkins = checkinsRaw.sort((a: { month: string }, b: { month: string }) => b.month.localeCompare(a.month))
 
   const firstName = session.user.email?.split('@')[0] ?? 'atleta'
 
