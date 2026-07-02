@@ -1,5 +1,5 @@
 import { apiFetch } from '@/services/api-client'
-import type { NextWorkoutPlan, WorkoutSession, WorkoutAnalytics } from '@helux/types'
+import type { NextWorkoutPlan, WorkoutSession, WorkoutAnalytics, BodyCheckin } from '@helux/types'
 
 export async function getLatestPlan(): Promise<NextWorkoutPlan | null> {
   try {
@@ -22,6 +22,7 @@ export async function generatePlan(
   geneticProfile: unknown,
   recoveryData: unknown | null,
   workoutHistory: WorkoutSession[] = [],
+  bodyCheckins: BodyCheckin[] = [],
 ): Promise<NextWorkoutPlan> {
   const body = {
     geneticProfile: geneticProfile ?? {},
@@ -31,6 +32,7 @@ export async function generatePlan(
     userGoals: 'Hipertrofia e condicionamento geral',
     userLevel: 'intermediario',
     availableDaysPerWeek: 4,
+    bodyCheckins,
   }
   return (await apiFetch('/workout/generate', {
     method: 'POST',

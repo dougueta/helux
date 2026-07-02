@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { getLatestPlan, generatePlan as generatePlanService, getWorkoutHistory } from '@/services/workout.service'
 import { getGeneticProfile } from '@/services/genetics.service'
 import { getLatestRecovery } from '@/services/recovery.service'
+import { getCheckins } from '@/services/checkin.service'
 import type { NextWorkoutPlan } from '@helux/types'
 
 const STORAGE_KEY = 'helux:workout-plan'
@@ -50,12 +51,14 @@ export function useWorkoutPlan() {
     setGenerating(true)
     setGenerationError(null)
     try {
-      const [profile, recovery, history] = await Promise.all([
+      const [profile, recovery, history, checkins] = await Promise.all([
         getGeneticProfile(),
         getLatestRecovery(),
         getWorkoutHistory(5),
+        getCheckins(2),
       ])
-      const newPlan = await generatePlanService(profile, recovery, history)
+      const checkinsSorted = [...checkins].sort((a, b) => a.month.localeCompare(b.month))
+      const newPlan = await generatePlanService(profile, recovery, history, checkinsSorted)
       saveToStorage(newPlan)
       setPlanState(newPlan)
     } catch (e) {

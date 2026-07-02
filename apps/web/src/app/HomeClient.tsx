@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
+import { CheckinCard } from '@/components/checkin/CheckinCard'
+import type { BodyCheckin } from '@helux/types'
 
 // ─── Design tokens: icons, mark, ring ────────────────────────────────────────
 
@@ -69,6 +71,7 @@ interface HomeClientProps {
   recovery: { hrv?: number; restingHR?: number; activeCalories?: number; sleepHours?: number; date?: string } | null
   insight: { title?: string; text?: string; icon?: string } | null
   firstName: string
+  checkins: BodyCheckin[]
 }
 
 function todayLabel() {
@@ -89,7 +92,7 @@ function recoveryLabel(score: number): string {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function HomeClient({ plan: initialPlan, recovery, insight, firstName }: HomeClientProps) {
+export function HomeClient({ plan: initialPlan, recovery, insight, firstName, checkins }: HomeClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
   const { plan, generating, generationError, generatePlan } = useWorkoutPlan()
@@ -204,6 +207,9 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName }: 
         }}>
           {generating ? 'Gerando plano…' : 'Gerar Novo Plano'}
         </button>
+
+        {/* Check-in card */}
+        <CheckinCard checkins={checkins} />
 
         {/* Recovery ring + week */}
         <div className="grid grid-cols-2 gap-3">

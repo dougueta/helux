@@ -31,15 +31,28 @@ async function getGeneticInsight() {
   } catch { return null }
 }
 
+async function getLatestCheckins(token: string) {
+  try {
+    const res = await fetch(`${API}/api/checkins?limit=2`, {
+      headers: { Authorization: `Bearer ${token}` },
+      next: { revalidate: 3600 }
+    })
+    if (!res.ok) return []
+    const data = await res.json()
+    return data.checkins ?? []
+  } catch { return [] }
+}
+
 export default async function HomePage() {
   const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) redirect('/login')
 
-  const [plan, recovery, insight] = await Promise.all([
+  const [plan, recovery, insight, checkins] = await Promise.all([
     getLatestPlan(),
     getRecovery(session.access_token),
     getGeneticInsight(),
+    getLatestCheckins(session.access_token),
   ])
 
   const firstName = session.user.email?.split('@')[0] ?? 'atleta'
@@ -50,6 +63,7 @@ export default async function HomePage() {
       recovery={recovery}
       insight={insight}
       firstName={firstName}
+      checkins={checkins}
     />
   )
 }
