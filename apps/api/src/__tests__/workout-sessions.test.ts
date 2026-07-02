@@ -21,6 +21,11 @@ vi.mock('@supabase/supabase-js', () => ({
   }),
 }))
 
+const mockTriggerBackgroundPlanGeneration = vi.fn().mockResolvedValue(undefined)
+vi.mock('../services/plan-generation.service', () => ({
+  triggerBackgroundPlanGeneration: mockTriggerBackgroundPlanGeneration,
+}))
+
 async function buildApp() {
   const app = Fastify()
   const { workoutSessionsRoutes } = await import('../routes/workout-sessions')
@@ -62,6 +67,9 @@ describe('POST /api/workouts/sessions', () => {
     expect(res.statusCode).toBe(201)
     const body = res.json()
     expect(body).toHaveProperty('id')
+    expect(mockTriggerBackgroundPlanGeneration).toHaveBeenCalledWith(
+      'user-123', 'valid-token', expect.anything(), expect.anything(),
+    )
   })
 
   it('returns 400 for missing date', async () => {

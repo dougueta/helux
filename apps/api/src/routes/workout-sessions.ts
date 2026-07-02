@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
+import { triggerBackgroundPlanGeneration } from '../services/plan-generation.service'
 
 const SetSchema = z.object({
   reps: z.number().int().positive(),
@@ -59,6 +60,10 @@ export async function workoutSessionsRoutes(app: FastifyInstance): Promise<void>
       app.log.error(error, 'workout-sessions insert error')
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
+
+    // Fire-and-forget: generate the next plan now so it's ready by the time
+    // the user reopens the app, instead of waiting on-demand (see TD-001).
+    void triggerBackgroundPlanGeneration(user.id, token, supabase, app.log)
 
     return reply.code(201).send(data)
   })

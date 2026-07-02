@@ -4,9 +4,12 @@ import { HomeClient } from './HomeClient'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
 
-async function getLatestPlan() {
+async function getLatestPlan(token: string) {
   try {
-    const res = await fetch(`${API}/workout/latest-plan`, { next: { revalidate: 300 } })
+    const res = await fetch(`${API}/workout/latest-plan`, {
+      headers: { Authorization: `Bearer ${token}` },
+      next: { revalidate: 300 }
+    })
     return res.ok ? res.json() : null
   } catch { return null }
 }
@@ -49,7 +52,7 @@ export default async function HomePage() {
   if (!session) redirect('/login')
 
   const [plan, recovery, insight, checkinsRaw] = await Promise.all([
-    getLatestPlan(),
+    getLatestPlan(session.access_token),
     getRecovery(session.access_token),
     getGeneticInsight(),
     getLatestCheckins(session.access_token),
