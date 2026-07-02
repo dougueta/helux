@@ -75,24 +75,20 @@ Escolha os exercícios EXCLUSIVAMENTE da lista de catálogo abaixo, usando o cam
 as categorias proibidas pelo perfil genético do atleta listadas na seção de
 restrições — exclua do catálogo qualquer exercício que se enquadre nelas.
 
+Priorize variedade em relação aos exercícios recentes listados no histórico de
+sessões — evite repetir a mesma escolha em múltiplas sessões seguidas quando
+houver alternativa adequada no catálogo para o mesmo padrão de movimento.
+
 [catálogo completo injetado, agrupado por padrão de movimento]
 ```
 
 A exclusão por `WorkoutConstraints.forbiddenExerciseTypes` continua sendo feita pela própria LLM via instrução textual — igual ao mecanismo já existente hoje. O catálogo não tenta mapear estruturalmente essas categorias livres (ex: "pliometria de alto impacto") para `pattern`/`muscleGroup`, porque não há uma taxonomia comum confiável entre os dois; isso ficaria como uma melhoria futura, não neste MVP.
 
-### `buildUserPrompt`
+### Reforço de variedade (sem duplicar lógica existente)
 
-`buildUserPrompt` já recebe `workoutHistory: WorkoutSession[]` como parâmetro — nenhum dado novo precisa ser buscado. Extrai os nomes de exercícios (`ExerciseSet.name`) das últimas 1-2 sessões e injeta:
+`buildUserPrompt` já injeta o histórico detalhado das últimas 5 sessões (nomes de exercícios por data) e já existe uma regra de não repetir a sessão imediatamente anterior (`lastSessionAlert` + regra #3 da metodologia de periodização em `buildSystemPrompt`). Não é necessário duplicar essa lógica.
 
-```
-### Exercícios das sessões recentes (evitar repetir sem motivo)
-
-Evite repetir estes exercícios da(s) sessão(ões) anterior(es), exceto se fizer
-sentido por progressão direta de carga: [lista de nomes].
-Priorize variação dentro do mesmo grupo muscular/padrão de movimento.
-```
-
-Quando `workoutHistory` está vazio (primeira sessão), a seção é omitida.
+O reforço de variedade acontece só pela adição do catálogo: a instrução do catálogo (ver seção `buildSystemPrompt` abaixo) inclui a frase *"Priorize variedade em relação aos exercícios recentes listados no histórico de sessões — evite repetir a mesma escolha em múltiplas sessões seguidas quando houver alternativa adequada no catálogo para o mesmo padrão de movimento."* Isso reaproveita o histórico que já chega ao prompt, sem novo parâmetro ou nova extração de dados.
 
 ---
 
@@ -117,8 +113,7 @@ Quando `PlannedExercise.cues` existe e não é vazio, exibe um bloco colapsável
 ## Testes
 
 ### `packages/ai`
-- `buildSystemPrompt`: catálogo completo é injetado, agrupado por padrão de movimento.
-- `buildUserPrompt`: com `workoutHistory` não vazio, injeta seção "evitar repetir" com os nomes corretos; com `workoutHistory` vazio, omite a seção.
+- `buildSystemPrompt`: catálogo completo é injetado, agrupado por padrão de movimento, incluindo a instrução de variedade.
 - `planner.ts`: resposta da IA com nome que bate no catálogo → `cues` anexado; nome que não bate → exercício sem `cues`, sem lançar erro.
 
 ### `apps/web`
