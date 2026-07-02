@@ -6,7 +6,7 @@ import { CheckinHistoryTable } from '@/components/checkin/CheckinHistoryTable'
 import { useCheckinHistory } from '@/hooks/useCheckinHistory'
 
 function HistoryContent() {
-  const { checkins, loading } = useCheckinHistory(24)
+  const { checkins, loading } = useCheckinHistory(13)
 
   if (loading) {
     return <p style={{ color: 'var(--text-faint)', fontSize: 14, padding: '0 16px' }}>Carregando…</p>

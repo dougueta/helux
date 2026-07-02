@@ -35,7 +35,7 @@ export function CheckinHistoryTable({ checkins }: CheckinHistoryTableProps) {
     return (
       <div style={{ textAlign: 'center', padding: '40px 16px' }}>
         <p style={{ color: 'var(--text-faint)', fontSize: 14 }}>Nenhum check-in registrado ainda.</p>
-        <Link href="/checkin" style={{ color: 'var(--accent)', fontSize: 14, marginTop: 8, display: 'inline-block' }}>
+        <Link href="/checkin" style={{ color: 'var(--accent)', fontSize: 14, marginTop: 8, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
           Fazer primeiro check-in →
         </Link>
       </div>
