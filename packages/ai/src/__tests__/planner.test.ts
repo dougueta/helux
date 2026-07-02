@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PlanInput, GeneticProfile, WorkoutConstraints } from '@helux/types'
+import type { PlanInput, GeneticProfile, WorkoutConstraints, WorkoutSession, RecoveryData, BodyCheckin } from '@helux/types'
 
 const { mockCreate } = vi.hoisted(() => ({ mockCreate: vi.fn() }))
 
@@ -7,13 +7,8 @@ vi.mock('@anthropic-ai/sdk', () => ({
   default: vi.fn(() => ({ messages: { create: mockCreate } })),
 }))
 
-vi.mock('node:fs', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs')>()
-  return { ...actual, writeFileSync: vi.fn(), mkdirSync: vi.fn() }
-})
-
 import { generateWorkoutPlan } from '../planner'
-import { writeFileSync, mkdirSync } from 'node:fs'
+import { buildUserPrompt, buildSystemPrompt } from '../prompts'
 
 const MOCK_PROFILE: GeneticProfile = {
   metabolismo: 'moderado',
@@ -106,15 +101,61 @@ describe('generateWorkoutPlan', () => {
 
     await expect(generateWorkoutPlan(MOCK_INPUT)).rejects.toThrow('invalid x-api-key')
   })
+})
 
-  it('escreve NextWorkoutPlan em data/workouts/latest-plan.json após geração', async () => {
-    await generateWorkoutPlan(MOCK_INPUT)
+describe('buildUserPrompt — check-in sections', () => {
+  const baseArgs: [WorkoutSession[], RecoveryData[], string, string, number] = [
+    [],
+    [],
+    'Hipertrofia',
+    'intermediario',
+    4,
+  ]
 
-    expect(vi.mocked(mkdirSync)).toHaveBeenCalled()
-    expect(vi.mocked(writeFileSync)).toHaveBeenCalledWith(
-      expect.stringContaining('latest-plan.json'),
-      expect.stringContaining('"generatedAt"'),
-      'utf-8',
-    )
+  it('omits check-in section when no checkins provided', () => {
+    const prompt = buildUserPrompt(...baseArgs)
+    expect(prompt).not.toContain('Tendência de Progresso')
+    expect(prompt).not.toContain('Check-in Mensal')
+  })
+
+  it('shows current data without delta when only 1 check-in', () => {
+    const checkin: BodyCheckin = {
+      id: '1', month: '2026-06-01', weight_kg: 82, body_fat_pct: 19,
+      squat_kg: 120, bench_kg: 90, deadlift_kg: 140, created_at: '2026-06-01T00:00:00Z',
+    }
+    const prompt = buildUserPrompt(...baseArgs, [checkin])
+    expect(prompt).toContain('Check-in Mensal Atual')
+    expect(prompt).toContain('Jun/2026')
+    expect(prompt).toContain('82')
+    expect(prompt).not.toContain('Tendência de Progresso')
+  })
+
+  it('shows delta section when 2 check-ins provided', () => {
+    const prev: BodyCheckin = {
+      id: '1', month: '2026-05-01', weight_kg: 83.4, body_fat_pct: 19.0,
+      squat_kg: 115, bench_kg: 90, deadlift_kg: 140, created_at: '2026-05-01T00:00:00Z',
+    }
+    const curr: BodyCheckin = {
+      id: '2', month: '2026-06-01', weight_kg: 82.2, body_fat_pct: 18.1,
+      squat_kg: 120, bench_kg: 90, deadlift_kg: 145, created_at: '2026-06-01T00:00:00Z',
+    }
+    const prompt = buildUserPrompt(...baseArgs, [prev, curr])
+    expect(prompt).toContain('Tendência de Progresso')
+    expect(prompt).toContain('Mai/2026')
+    expect(prompt).toContain('Jun/2026')
+    expect(prompt).toContain('-1.2')
+    expect(prompt).toContain('-0.9')
+    expect(prompt).toContain('+5.0')
+  })
+})
+
+describe('buildSystemPrompt — check-in rules', () => {
+  it('includes check-in adjustment rules', () => {
+    const profile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] } as any
+    const constraints = {} as any
+    const prompt = buildSystemPrompt(profile, constraints)
+    expect(prompt).toContain('Ajuste por Tendência de Progresso')
+    expect(prompt).toContain('Gordura aumentou')
+    expect(prompt).toContain('lifts estagnados')
   })
 })

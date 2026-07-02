@@ -1,4 +1,57 @@
-import type { GeneticProfile, WorkoutConstraints, WorkoutSession, RecoveryData } from '@helux/types'
+import type { GeneticProfile, WorkoutConstraints, WorkoutSession, RecoveryData, BodyCheckin } from '@helux/types'
+
+function monthLabel(month: string): string {
+  const [year, m] = month.split('-')
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+  return `${months[parseInt(m, 10) - 1]}/${year}`
+}
+
+function buildCheckinSection(checkins?: BodyCheckin[]): string {
+  if (!checkins || checkins.length === 0) return ''
+
+  if (checkins.length === 1) {
+    const c = checkins[0]
+    const lines: string[] = []
+    if (c.weight_kg !== undefined) lines.push(`Peso: ${c.weight_kg}kg`)
+    if (c.body_fat_pct !== undefined) lines.push(`Gordura: ${c.body_fat_pct}%`)
+    if (c.waist_cm !== undefined) lines.push(`Cintura: ${c.waist_cm}cm`)
+    if (c.arm_cm !== undefined) lines.push(`Braço: ${c.arm_cm}cm`)
+    if (c.leg_cm !== undefined) lines.push(`Coxa: ${c.leg_cm}cm`)
+    if (c.squat_kg !== undefined) lines.push(`Agachamento: ${c.squat_kg}kg`)
+    if (c.bench_kg !== undefined) lines.push(`Supino: ${c.bench_kg}kg`)
+    if (c.deadlift_kg !== undefined) lines.push(`Terra: ${c.deadlift_kg}kg`)
+    if (c.notes) lines.push(`Observações: ${c.notes}`)
+    return `### Check-in Mensal Atual (${monthLabel(c.month)})
+
+${lines.join('\n')}
+
+(Primeiro check-in — sem dados anteriores para comparar)`
+  }
+
+  const [prev, curr] = checkins
+  const lines: string[] = []
+
+  function d(label: string, currVal?: number, prevVal?: number, unit = 'kg') {
+    if (currVal === undefined || prevVal === undefined) return
+    const diff = currVal - prevVal
+    const sign = diff > 0 ? '+' : ''
+    const icon = diff === 0 ? '→' : diff > 0 ? '↑' : '↓'
+    lines.push(`${label}: ${prevVal}${unit} → ${currVal}${unit} (Δ ${sign}${diff.toFixed(1)}${unit}) ${icon}`)
+  }
+
+  d('Peso', curr.weight_kg, prev.weight_kg)
+  d('Gordura', curr.body_fat_pct, prev.body_fat_pct, 'pp')
+  d('Cintura', curr.waist_cm, prev.waist_cm, 'cm')
+  d('Braço', curr.arm_cm, prev.arm_cm, 'cm')
+  d('Coxa', curr.leg_cm, prev.leg_cm, 'cm')
+  d('Agachamento', curr.squat_kg, prev.squat_kg)
+  d('Supino', curr.bench_kg, prev.bench_kg)
+  d('Terra', curr.deadlift_kg, prev.deadlift_kg)
+
+  return `### Tendência de Progresso (${monthLabel(prev.month)} → ${monthLabel(curr.month)})
+
+${lines.join('\n')}`
+}
 
 export function buildSystemPrompt(profile: GeneticProfile, constraints: WorkoutConstraints): string {
   const profileDefaults: GeneticProfile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] }
@@ -86,6 +139,21 @@ Você DEVE respeitar uma estrutura de divisão muscular para garantir recuperaç
 A justificativa DEVE começar com a linha (em negrito): **Treino [LETRA] — [Grupos]**
 Exemplo: **Treino B — Puxar / Costas + Bíceps**
 
+## Ajuste por Tendência de Progresso — OBRIGATÓRIO quando dados disponíveis
+
+Quando a seção "Tendência de Progresso" ou "Check-in Mensal Atual" estiver presente no contexto do atleta, aplique os seguintes ajustes ao plano:
+
+| Situação detectada | Ajuste obrigatório |
+|---|---|
+| Gordura aumentou > 1pp | Adicionar 1 sessão de cardio moderado ao programa semanal; reduzir volume total em ~20% |
+| Gordura reduziu > 1pp | Manter direção atual; não reduzir carga |
+| Peso estável + lifts estagnados (Δ = 0 em ≥ 2 lifts) | Aumentar cargas em 5–10%; adicionar 1 série por exercício composto |
+| Peso estável + gordura caindo | Recomposição corporal em curso; manter programa sem alteração |
+| Peso caindo + lifts caindo | Reduzir volume, priorizar técnica e recuperação — possível déficit calórico excessivo |
+
+Quando não há dados de check-in, ignore esta seção e use apenas o perfil genético e HRV.
+Mencione na justificativa como os dados de check-in influenciaram o plano (quando disponíveis).
+
 ## Formato de Resposta
 
 Você DEVE responder EXCLUSIVAMENTE com um JSON válido no seguinte formato, sem texto adicional antes ou depois:
@@ -131,6 +199,7 @@ export function buildUserPrompt(
   goals: string,
   level: string,
   daysPerWeek: number,
+  checkins?: BodyCheckin[],
 ): string {
   const recentHistory = history.slice(-5)
   const recentRecovery = recovery.slice(-7)
@@ -177,6 +246,8 @@ export function buildUserPrompt(
           : `🔴 HRV atual (${latestHRV}ms) indica recuperação comprometida — reduzir volume e intensidade, priorizar técnica.`
       : 'ℹ️ Sem dados de HRV disponíveis — usar julgamento conservador.'
 
+  const checkinSection = buildCheckinSection(checkins)
+
   return `## Contexto do Atleta para Esta Sessão
 
 **Objetivos**: ${goals}
@@ -195,6 +266,7 @@ ${historySection}
 ${recoverySection}
 
 ---
+${checkinSection ? `\n${checkinSection}\n\n---` : ''}
 
 Com base neste contexto e no perfil genético fornecido, prescreva o próximo treino ideal. Lembre-se de respeitar todas as restrições genéticas e o estado atual de recuperação.`
 }
