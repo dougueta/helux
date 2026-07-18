@@ -127,7 +127,7 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
             </a>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {recentSessions.map(session => (
+            {recentSessions.slice(0, 3).map(session => (
               <a
                 key={session.id}
                 href={`/history/${session.id}`}
