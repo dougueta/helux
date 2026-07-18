@@ -1,68 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import type { ReactNode } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
 import { CheckinCard } from '@/components/checkin/CheckinCard'
 import type { BodyCheckin } from '@helux/types'
-
-// ─── Design tokens: icons, mark, ring ────────────────────────────────────────
-
-const ICONS: Record<string, string> = {
-  home:     'M4 11.5 12 4l8 7.5M6 10v9h12v-9',
-  dumbbell: 'M6.5 9v6M9.5 7.5v9M14.5 7.5v9M17.5 9v6M9.5 12h5M4.5 11v2M19.5 11v2',
-  dna:      'M8 3c0 5 8 7 8 12s-8 6-8 9M16 3c0 5-8 7-8 12s8 6 8 9M8.5 7h7M7.5 12h9M8.5 17h7',
-  chart:    'M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-8',
-  play:     'M7 4.5v15l13-7.5z',
-  flame:    'M12 3c1 4 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 1-2-1-4-1-8z',
-  chevron:  'M9 6l6 6-6 6',
-}
-
-function Icon({ name, size = 22, stroke = 'currentColor', sw = 1.9 }: { name: keyof typeof ICONS; size?: number; stroke?: string; sw?: number }) {
-  const solid = name === 'play'
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24"
-      fill={solid ? stroke : 'none'} stroke={solid ? 'none' : stroke}
-      strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={ICONS[name]} />
-    </svg>
-  )
-}
-
-function HelixMark({ size = 28, stroke = 'var(--accent)' }: { size?: number; stroke?: string }) {
-  const rungs = [0.16, 0.34, 0.5, 0.66, 0.84]
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M11 3 C 21 9, 21 23, 11 29" stroke={stroke} strokeWidth="2.2" strokeLinecap="round"/>
-      <path d="M21 3 C 11 9, 11 23, 21 29" stroke={stroke} strokeWidth="2.2" strokeLinecap="round" opacity="0.55"/>
-      {rungs.map((t, i) => {
-        const y = 3 + t * 26
-        const amp = Math.sin(t * Math.PI) * 5
-        return <line key={i} x1={16 - amp} y1={y} x2={16 + amp} y2={y} stroke={stroke} strokeWidth="1.6" strokeLinecap="round" opacity={0.5} />
-      })}
-    </svg>
-  )
-}
-
-function Ring({ value, size = 64, sw = 6, children }: { value: number; size?: number; sw?: number; children?: ReactNode }) {
-  const r = (size - sw) / 2
-  const c = 2 * Math.PI * r
-  const off = c * (1 - value / 100)
-  return (
-    <div style={{ position: 'relative', width: size, height: size, display: 'grid', placeItems: 'center' }}>
-      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={sw} />
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--accent)" strokeWidth={sw}
-          strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 0.9s cubic-bezier(.2,.8,.2,1)' }} />
-      </svg>
-      <div style={{ position: 'absolute', textAlign: 'center', lineHeight: 1 }}>
-        {children}
-      </div>
-    </div>
-  )
-}
+import { Icon, HelixMark } from '@/components/ui/icons'
+import { Ring } from '@/components/ui/Ring'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
