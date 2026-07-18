@@ -8,6 +8,7 @@ import type {
   PlanInput,
   NextWorkoutPlan,
   PlannedExercise,
+  Variant,
 } from '../index'
 
 describe('GeneticProfile', () => {
@@ -102,5 +103,59 @@ describe('NextWorkoutPlan', () => {
     }
     expect(plano.exercises[0].reps).toBe('8-10')
     expect(plano.rationale).toBeTruthy()
+  })
+})
+
+describe('Variant', () => {
+  it('descreve uma variante de exercício com fit genético', () => {
+    const variante: Variant = {
+      id: 'e1b',
+      name: 'Supino reto com halteres',
+      equip: 'Halteres',
+      level: 'Intermediário',
+      match: 90,
+      betterFit: true,
+      motion: 'press-flat',
+      implement: 'dumbbell',
+      why: 'Maior amplitude e estabilização; corrige assimetrias.',
+    }
+    expect(variante.betterFit).toBe(true)
+    expect(variante.rec).toBeUndefined()
+  })
+})
+
+describe('PlannedExercise — campos opcionais de variantes', () => {
+  it('aceita muscle, muscles, tempo, match e variants além dos campos originais', () => {
+    const exercicio: PlannedExercise = {
+      name: 'Supino reto com barra',
+      sets: 4,
+      reps: '6-8',
+      weight: '80kg',
+      muscle: 'Peito',
+      muscles: { primary: ['peito'], secondary: ['ombro', 'triceps'] },
+      tempo: '2 · 0 · 1',
+      match: 96,
+      variants: [
+        {
+          id: 'e1',
+          name: 'Supino reto com barra',
+          equip: 'Barra',
+          level: 'Avançado',
+          match: 96,
+          rec: true,
+          motion: 'press-flat',
+          implement: 'barbell',
+          why: 'Cargas altas casam com seu perfil de força.',
+        },
+      ],
+    }
+    expect(exercicio.variants).toHaveLength(1)
+    expect(exercicio.muscles?.primary).toEqual(['peito'])
+  })
+
+  it('continua válido sem nenhum dos novos campos (compatibilidade retroativa)', () => {
+    const exercicio: PlannedExercise = { name: 'Agachamento', sets: 3, reps: '8-10', weight: '100kg' }
+    expect(exercicio.variants).toBeUndefined()
+    expect(exercicio.muscle).toBeUndefined()
   })
 })

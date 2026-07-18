@@ -9,6 +9,19 @@ export interface WorkoutSession {
   exercises: ExerciseSet[]
 }
 
+export interface Variant {
+  id: string
+  name: string
+  equip: string
+  level: string
+  match: number
+  rec?: boolean
+  betterFit?: boolean
+  motion: string
+  implement: string
+  why: string
+}
+
 export interface PlannedExercise {
   name: string
   sets: number
@@ -16,4 +29,9 @@ export interface PlannedExercise {
   weight: string
   notes?: string
   cues?: string[]
+  muscle?: string
+  muscles?: { primary: string[]; secondary: string[] }
+  tempo?: string
+  match?: number
+  variants?: Variant[]
 }
