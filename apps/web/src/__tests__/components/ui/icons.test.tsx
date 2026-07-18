@@ -22,6 +22,28 @@ describe('Icon', () => {
     expect(svg).toHaveAttribute('width', '30')
     expect(svg).toHaveStyle({ transform: 'rotate(180deg)' })
   })
+
+  it('includes a trophy path in the ICONS map', () => {
+    expect(ICONS.trophy).toBe(
+      'M7 5h10v3a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M9 14h6M10 17h4M9 20h6'
+    )
+  })
+
+  it('includes an arrowUp path in the ICONS map', () => {
+    expect(ICONS.arrowUp).toBe('M12 19V5M6 11l6-6 6 6')
+  })
+
+  it('renders the trophy icon as an svg path', () => {
+    const { container } = render(<Icon name="trophy" size={18} stroke="var(--accent)" />)
+    const path = container.querySelector('path')
+    expect(path).toHaveAttribute('d', ICONS.trophy)
+  })
+
+  it('renders the arrowUp icon as an svg path', () => {
+    const { container } = render(<Icon name="arrowUp" size={13} stroke="var(--accent)" />)
+    const path = container.querySelector('path')
+    expect(path).toHaveAttribute('d', ICONS.arrowUp)
+  })
 })
 
 describe('HelixMark', () => {
