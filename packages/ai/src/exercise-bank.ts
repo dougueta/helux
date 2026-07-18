@@ -5,9 +5,13 @@ export interface ExerciseBankEntry {
   equipment: 'barra' | 'halteres' | 'maquina-cabo' | 'peso-corporal'
   pattern: string
   cues: string[]
+  muscles: { primary: string[]; secondary: string[] }
+  tempo: string
 }
 
-export const EXERCISE_BANK: ExerciseBankEntry[] = [
+type RawEntry = Omit<ExerciseBankEntry, 'muscles' | 'tempo'>
+
+const RAW_ENTRIES: RawEntry[] = [
   // ---- agachar ----
   {
     id: 'agachamento-livre-barra',
@@ -1350,3 +1354,72 @@ export const EXERCISE_BANK: ExerciseBankEntry[] = [
     ],
   },
 ]
+
+// ---- muscle-map + tempo derivation ----
+// v1 limitation: the MuscleMap SVG only has 7 drawable regions (peito, ombro,
+// triceps, biceps, core, dorsal, quadriceps). muscleGroup values with no
+// dedicated region (gluteo, posterior, panturrilha) collapse onto quadriceps,
+// the closest lower-body region, rather than being invented from scratch.
+const MUSCLE_GROUP_TO_MM_KEY: Record<string, string> = {
+  peito: 'peito',
+  ombro: 'ombro',
+  triceps: 'triceps',
+  biceps: 'biceps',
+  costas: 'dorsal',
+  core: 'core',
+  quadriceps: 'quadriceps',
+  gluteo: 'quadriceps',
+  posterior: 'quadriceps',
+  panturrilha: 'quadriceps',
+}
+
+export const MUSCLE_GROUP_LABEL: Record<string, string> = {
+  peito: 'Peito',
+  ombro: 'Ombro',
+  triceps: 'Tríceps',
+  biceps: 'Bíceps',
+  costas: 'Costas',
+  core: 'Core',
+  quadriceps: 'Quadríceps',
+  gluteo: 'Glúteos',
+  posterior: 'Posterior de Coxa',
+  panturrilha: 'Panturrilha',
+}
+
+const PATTERN_SECONDARY: Record<string, string[]> = {
+  agachar: ['core'],
+  'dobrar-quadril': ['core', 'quadriceps'],
+  'empurrar-horizontal': ['ombro', 'triceps'],
+  'empurrar-vertical': ['triceps'],
+  'puxar-horizontal': ['biceps'],
+  'puxar-vertical': ['biceps'],
+  core: [],
+  isolamento: [],
+}
+
+const PATTERN_TEMPO: Record<string, string> = {
+  agachar: '2 · 0 · 1',
+  'dobrar-quadril': '2 · 0 · 1',
+  'empurrar-horizontal': '2 · 0 · 1',
+  'empurrar-vertical': '2 · 0 · 1',
+  'puxar-horizontal': '2 · 1 · 1',
+  'puxar-vertical': '2 · 1 · 1',
+  core: '2 · 1 · 2',
+  isolamento: '3 · 1 · 1',
+}
+
+function deriveMuscles(entry: RawEntry): { primary: string[]; secondary: string[] } {
+  const primary = MUSCLE_GROUP_TO_MM_KEY[entry.muscleGroup] ?? entry.muscleGroup
+  const secondary = (PATTERN_SECONDARY[entry.pattern] ?? []).filter((key) => key !== primary)
+  return { primary: [primary], secondary }
+}
+
+function deriveTempo(entry: RawEntry): string {
+  return PATTERN_TEMPO[entry.pattern] ?? '2 · 0 · 1'
+}
+
+export const EXERCISE_BANK: ExerciseBankEntry[] = RAW_ENTRIES.map((entry) => ({
+  ...entry,
+  muscles: deriveMuscles(entry),
+  tempo: deriveTempo(entry),
+}))
