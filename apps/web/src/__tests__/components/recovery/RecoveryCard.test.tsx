@@ -16,8 +16,8 @@ const mockData: RecoveryData = {
 describe('RecoveryCard', () => {
   it('renders 5 metric tiles', () => {
     render(<RecoveryCard data={mockData} isStale={false} />)
-    expect(screen.getByText(/58/)).toBeInTheDocument()  // HRV
-    expect(screen.getByText(/52/)).toBeInTheDocument()  // HR
+    expect(screen.getByText(/58/)).toBeInTheDocument() // HRV
+    expect(screen.getByText(/52/)).toBeInTheDocument() // HR
     expect(screen.getByText(/420/)).toBeInTheDocument() // Calories
     expect(screen.getByText(/7\.5/)).toBeInTheDocument() // Sleep
     expect(screen.getByText(/28/)).toBeInTheDocument() // Cardio Recovery
@@ -26,6 +26,11 @@ describe('RecoveryCard', () => {
   it('shows staleness badge when isStale', () => {
     render(<RecoveryCard data={mockData} isStale={true} />)
     expect(screen.getByText(/dados antigos/i)).toBeInTheDocument()
+  })
+
+  it('does not show the staleness badge when data is fresh', () => {
+    render(<RecoveryCard data={mockData} isStale={false} />)
+    expect(screen.queryByText(/dados antigos/i)).not.toBeInTheDocument()
   })
 
   it('renders empty-state guidance when no data', () => {
