@@ -13,6 +13,9 @@ export const ICONS = {
   plus:     'M12 5v14M5 12h14',
   minus:    'M5 12h14',
   timer:    'M12 8v5l3 2M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9 3h6',
+  pause:    'M9 5v14M15 5v14',
+  swap:     'M7 7h11l-3-3M17 17H6l3 3',
+  bolt:     'M13 3 5 13h6l-1 8 8-10h-6z',
 } as const
 
 export type IconName = keyof typeof ICONS
