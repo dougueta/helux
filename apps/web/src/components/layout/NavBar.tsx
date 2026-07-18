@@ -26,7 +26,7 @@ function Icon({ name, size = 22, stroke = 'currentColor', sw = 1.9 }: { name: ke
 
 const tabs = [
   { href: '/', label: 'Hoje', icon: 'home' as const },
-  { href: '/history', label: 'Treinos', icon: 'dumbbell' as const },
+  { href: '/treinos', label: 'Treinos', icon: 'dumbbell' as const },
   { href: '/dna', label: 'DNA', icon: 'dna' as const },
   { href: '/recovery', label: 'Progresso', icon: 'chart' as const },
 ]
