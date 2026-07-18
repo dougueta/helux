@@ -29,8 +29,10 @@ async function getGeneticInsight() {
     const res = await fetch(`${API}/genetic-profile`, { next: { revalidate: 3600 } })
     if (!res.ok) return null
     const p = await res.json()
-    if (p?.drivers?.[0]) return p.drivers[0]
-    return null
+    const driver = p?.drivers?.[0]
+    const score = typeof p?.score === 'number' ? p.score : undefined
+    if (!driver && score === undefined) return null
+    return { score, title: driver?.title, text: driver?.text }
   } catch { return null }
 }
 

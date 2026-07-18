@@ -7,13 +7,14 @@ import { CheckinCard } from '@/components/checkin/CheckinCard'
 import type { BodyCheckin } from '@helux/types'
 import { Icon, HelixMark } from '@/components/ui/icons'
 import { Ring } from '@/components/ui/Ring'
+import { MatchBadge } from '@/components/ui/MatchBadge'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 interface HomeClientProps {
   plan: any
   recovery: { hrv?: number; restingHR?: number; activeCalories?: number; sleepHours?: number; date?: string } | null
-  insight: { title?: string; text?: string; icon?: string } | null
+  insight: { title?: string; text?: string; score?: number } | null
   firstName: string
   checkins: BodyCheckin[]
   analytics: { thisWeekSessions: number; currentStreakWeeks: number } | null
@@ -108,6 +109,7 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
               <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
                 Treino de hoje
               </span>
+              {insight?.score != null && <MatchBadge value={insight.score} />}
             </div>
             <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', marginBottom: 4, position: 'relative' }}>
               {currentPlan.exercises?.[0]?.name ?? 'Treino Personalizado'}
