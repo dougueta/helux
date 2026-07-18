@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { PlanInput, NextWorkoutPlan, PlannedExercise } from '@helux/types'
+import type { PlanInput, NextWorkoutPlan, PlannedExercise, GeneticProfile } from '@helux/types'
 import { buildSystemPrompt, buildUserPrompt } from './prompts'
-import { EXERCISE_BANK } from './exercise-bank'
+import { EXERCISE_BANK, MUSCLE_GROUP_LABEL } from './exercise-bank'
+import { buildVariants } from './variants'
 
 export async function generateWorkoutPlan(input: PlanInput): Promise<NextWorkoutPlan> {
   const client = new Anthropic()
@@ -36,7 +37,7 @@ export async function generateWorkoutPlan(input: PlanInput): Promise<NextWorkout
   }
 
   const plan = { ...parseJsonResponse(textBlock.text), generatedAt: new Date().toISOString() }
-  plan.exercises = plan.exercises.map(attachCues)
+  plan.exercises = plan.exercises.map((exercise) => enrichExercise(exercise, input.geneticProfile))
 
   return plan
 }
@@ -45,6 +46,28 @@ function attachCues(exercise: PlannedExercise): PlannedExercise {
   const bankEntry = EXERCISE_BANK.find((entry) => entry.name === exercise.name)
   if (!bankEntry) return exercise
   return { ...exercise, cues: bankEntry.cues }
+}
+
+function attachMuscleAndTempo(exercise: PlannedExercise): PlannedExercise {
+  const bankEntry = EXERCISE_BANK.find((entry) => entry.name === exercise.name)
+  if (!bankEntry) return exercise
+  return {
+    ...exercise,
+    muscle: MUSCLE_GROUP_LABEL[bankEntry.muscleGroup] ?? bankEntry.muscleGroup,
+    muscles: bankEntry.muscles,
+    tempo: bankEntry.tempo,
+  }
+}
+
+function attachVariants(exercise: PlannedExercise, geneticProfile: GeneticProfile): PlannedExercise {
+  const variants = buildVariants(exercise.name, geneticProfile)
+  if (variants.length === 0) return exercise
+  const rec = variants.find((v) => v.rec)
+  return { ...exercise, variants, match: rec?.match }
+}
+
+function enrichExercise(exercise: PlannedExercise, geneticProfile: GeneticProfile): PlannedExercise {
+  return attachVariants(attachMuscleAndTempo(attachCues(exercise)), geneticProfile)
 }
 
 function parseJsonResponse(text: string): NextWorkoutPlan {

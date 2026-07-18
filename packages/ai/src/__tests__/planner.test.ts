@@ -226,3 +226,46 @@ describe('generateWorkoutPlan — anexação de cues do catálogo', () => {
     expect(result.exercises[0].cues).toBeUndefined()
   })
 })
+
+describe('generateWorkoutPlan — anexação de músculo, tempo e variantes', () => {
+  it('anexa muscle, muscles, tempo, match e variants quando o nome bate com o catálogo', async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: 'text', text: JSON.stringify({
+        generatedAt: '2026-07-18T10:00:00.000Z',
+        exercises: [{ name: 'Agachamento Livre (Barra)', sets: 4, reps: '8-10', weight: '100kg' }],
+        rationale: 'Teste',
+      }) }],
+      usage: { input_tokens: 100, output_tokens: 200, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
+    })
+
+    const result = await generateWorkoutPlan(MOCK_INPUT)
+    const exercise = result.exercises[0]
+
+    expect(exercise.muscle).toBe('Quadríceps')
+    expect(exercise.muscles).toEqual({ primary: ['quadriceps'], secondary: ['core'] })
+    expect(exercise.tempo).toBe('2 · 0 · 1')
+    expect(exercise.match).toBe(68)
+    expect(exercise.variants).toBeDefined()
+    expect(exercise.variants!.find((v) => v.rec)?.name).toBe('Agachamento Livre (Barra)')
+  })
+
+  it('não anexa muscle/tempo/variants quando o nome não bata com o catálogo', async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: 'text', text: JSON.stringify({
+        generatedAt: '2026-07-18T10:00:00.000Z',
+        exercises: [{ name: 'Exercício Inventado Pela IA', sets: 3, reps: '10', weight: '20kg' }],
+        rationale: 'Teste',
+      }) }],
+      usage: { input_tokens: 100, output_tokens: 200, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
+    })
+
+    const result = await generateWorkoutPlan(MOCK_INPUT)
+    const exercise = result.exercises[0]
+
+    expect(exercise.muscle).toBeUndefined()
+    expect(exercise.muscles).toBeUndefined()
+    expect(exercise.tempo).toBeUndefined()
+    expect(exercise.match).toBeUndefined()
+    expect(exercise.variants).toBeUndefined()
+  })
+})
