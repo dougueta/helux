@@ -15,6 +15,7 @@ export function MiniStep({
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
       <button
+        type="button"
         onClick={() => press(-1)}
         style={{
           width: 24,
@@ -43,6 +44,7 @@ export function MiniStep({
         {value}
       </span>
       <button
+        type="button"
         onClick={() => press(1)}
         style={{
           width: 24,
