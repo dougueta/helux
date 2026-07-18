@@ -46,16 +46,27 @@ async function getLatestCheckins(token: string) {
   } catch { return [] }
 }
 
+async function getAnalytics(token: string) {
+  try {
+    const res = await fetch(`${API}/api/workouts/analytics`, {
+      headers: { Authorization: `Bearer ${token}` },
+      next: { revalidate: 300 }
+    })
+    return res.ok ? res.json() : null
+  } catch { return null }
+}
+
 export default async function HomePage() {
   const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) redirect('/login')
 
-  const [plan, recovery, insight, checkinsRaw] = await Promise.all([
+  const [plan, recovery, insight, checkinsRaw, analytics] = await Promise.all([
     getLatestPlan(session.access_token),
     getRecovery(session.access_token),
     getGeneticInsight(),
     getLatestCheckins(session.access_token),
+    getAnalytics(session.access_token),
   ])
 
   const checkins = checkinsRaw.sort((a: { month: string }, b: { month: string }) => b.month.localeCompare(a.month))
@@ -69,6 +80,7 @@ export default async function HomePage() {
       insight={insight}
       firstName={firstName}
       checkins={checkins}
+      analytics={analytics}
     />
   )
 }

@@ -16,6 +16,7 @@ interface HomeClientProps {
   insight: { title?: string; text?: string; icon?: string } | null
   firstName: string
   checkins: BodyCheckin[]
+  analytics: { thisWeekSessions: number; currentStreakWeeks: number } | null
 }
 
 function todayLabel() {
@@ -36,11 +37,12 @@ function recoveryLabel(score: number): string {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function HomeClient({ plan: initialPlan, recovery, insight, firstName, checkins }: HomeClientProps) {
+export function HomeClient({ plan: initialPlan, recovery, insight, firstName, checkins, analytics }: HomeClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
   const { plan, generating, generationError, generatePlan } = useWorkoutPlan()
   const currentPlan = plan ?? initialPlan
+  const WEEKLY_TARGET = 4
 
   function handleStart() {
     if (!currentPlan) return
@@ -60,6 +62,23 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
             helux
           </span>
         </div>
+        {analytics && analytics.currentStreakWeeks > 0 && (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '6px 11px',
+            borderRadius: 'var(--r-pill)',
+            background: 'var(--surface-2)',
+            border: '1px solid var(--hairline)',
+          }}>
+            <Icon name="flame" size={14} stroke="var(--accent)" />
+            <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+              {analytics.currentStreakWeeks}
+            </span>
+            <span style={{ color: 'var(--text-faint)', fontSize: 11 }}>sem</span>
+          </div>
+        )}
       </div>
 
       {/* Greeting */}
@@ -176,8 +195,24 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
           </div>
           <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: '14px 14px' }}>
             <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>Semana</div>
-            <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--text)' }}>
-              — <span style={{ fontSize: 15, color: 'var(--text-faint)', fontWeight: 500 }}>/ 5</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
+              <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--text)' }}>
+                {analytics?.thisWeekSessions ?? 0}
+              </span>
+              <span style={{ fontSize: 15, color: 'var(--text-faint)', fontWeight: 500 }}>/ {WEEKLY_TARGET}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {Array.from({ length: WEEKLY_TARGET }).map((_, i) => (
+                <span
+                  key={i}
+                  style={{
+                    flex: 1,
+                    height: 6,
+                    borderRadius: 3,
+                    background: i < (analytics?.thisWeekSessions ?? 0) ? 'var(--accent)' : 'var(--surface-3)',
+                  }}
+                />
+              ))}
             </div>
           </div>
         </div>
