@@ -62,6 +62,49 @@ describe('useActiveWorkout', () => {
     expect(result.current.session?.exerciseStates[0]).toHaveLength(4)
   })
 
+  it('startWorkout initialises variantByExerciseIndex as empty', async () => {
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const { result } = renderHook(() => useActiveWorkout())
+    act(() => { result.current.startWorkout(mockPlan as any) })
+    expect(result.current.session?.variantByExerciseIndex).toEqual({})
+  })
+
+  it('selectVariant records the chosen variant id for an exercise index', async () => {
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const { result } = renderHook(() => useActiveWorkout())
+    act(() => { result.current.startWorkout(mockPlan as any) })
+    act(() => { result.current.selectVariant(0, 'e1b') })
+    expect(result.current.session?.variantByExerciseIndex[0]).toBe('e1b')
+  })
+
+  it('selectVariant persists to localStorage', async () => {
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const { result } = renderHook(() => useActiveWorkout())
+    act(() => { result.current.startWorkout(mockPlan as any) })
+    act(() => { result.current.selectVariant(1, 'e2c') })
+    const saved = JSON.parse(localStorageMock.getItem('helux:active-workout')!)
+    expect(saved.variantByExerciseIndex[1]).toBe('e2c')
+  })
+
+  it('hydrates a legacy session with no variantByExerciseIndex field without crashing', async () => {
+    const legacySession = {
+      planExercises: mockPlan,
+      exerciseStates: [
+        [{ weight: 80, reps: 8, done: false }, { weight: 80, reps: 8, done: false }, { weight: 80, reps: 8, done: false }],
+        [{ weight: 70, reps: 6, done: false }, { weight: 70, reps: 6, done: false }, { weight: 70, reps: 6, done: false }],
+      ],
+      currentExerciseIndex: 0,
+      startedAt: '2026-07-18T10:00:00.000Z',
+    }
+    localStorageMock.setItem('helux:active-workout', JSON.stringify(legacySession))
+
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const { result } = renderHook(() => useActiveWorkout())
+
+    expect(result.current.session?.variantByExerciseIndex).toEqual({})
+    expect(result.current.session?.currentExerciseIndex).toBe(0)
+  })
+
   it('finishWorkout calls apiFetch and clears session', async () => {
     const { apiFetch } = await import('@/services/api-client')
     const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
