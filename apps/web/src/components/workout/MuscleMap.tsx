@@ -62,7 +62,7 @@ export function MuscleMap({
             <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-faint)' }}>primário</span>
           </div>
         ))}
-        {secondary.map((k) => (
+        {secondary.filter((k) => !primary.includes(k)).map((k) => (
           <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
             <span style={{ width: 13, height: 13, borderRadius: 4, background: 'var(--accent-soft)', border: '1px solid var(--accent-line)' }} />
             {MM_LABEL[k] || k}
