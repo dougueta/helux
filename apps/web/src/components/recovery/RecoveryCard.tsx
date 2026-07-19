@@ -9,17 +9,39 @@ interface MetricTileProps {
   label: string
   value: number | undefined
   unit: string
-  color?: string
+  accent?: boolean
 }
 
-function MetricTile({ label, value, unit, color = 'text-white' }: MetricTileProps) {
+function MetricTile({ label, value, unit, accent = false }: MetricTileProps) {
   return (
-    <div className="bg-helux-dark rounded-xl border border-helux-border p-4 flex flex-col gap-1">
-      <p className="text-helux-muted text-xs uppercase tracking-wider font-sans">{label}</p>
-      <p className={`font-mono text-2xl font-bold ${color}`}>
+    <div
+      style={{
+        background: 'var(--surface-1)',
+        border: '1px solid var(--hairline)',
+        borderRadius: 'var(--r-card)',
+        padding: 14,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+      }}
+    >
+      <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-faint)', margin: 0 }}>
+        {label}
+      </p>
+      <p
+        style={{
+          fontFamily: 'var(--font-jetbrains-mono)',
+          fontSize: 22,
+          fontWeight: 700,
+          color: accent ? 'var(--accent)' : 'var(--text)',
+          margin: 0,
+        }}
+      >
         {value != null ? value : '—'}
       </p>
-      <p className="text-helux-muted text-xs font-mono">{unit}</p>
+      <p style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text-faint)', margin: 0 }}>
+        {unit}
+      </p>
     </div>
   )
 }
@@ -27,24 +49,33 @@ function MetricTile({ label, value, unit, color = 'text-white' }: MetricTileProp
 export function RecoveryCard({ data, isStale }: RecoveryCardProps) {
   if (!data) {
     return (
-      <div className="bg-helux-surface border border-helux-border rounded-2xl p-6 text-center space-y-3">
-        <p className="text-white font-sans text-lg">Sem dados de recovery</p>
-        <p className="text-helux-muted text-sm">
-          Execute o <span className="text-helux-accent font-mono">Shortcut</span> no iPhone para sincronizar os dados do Apple Watch.
+      <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: 24, textAlign: 'center' }}>
+        <p style={{ color: 'var(--text)', fontSize: 16, margin: '0 0 8px' }}>Sem dados de recovery</p>
+        <p style={{ color: 'var(--text-dim)', fontSize: 13, margin: 0 }}>
+          Execute o{' '}
+          <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-jetbrains-mono)' }}>Shortcut</span> no
+          iPhone para sincronizar os dados do Apple Watch.
         </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {isStale && (
-        <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-xl px-4 py-2">
-          <p className="text-yellow-400 text-sm font-sans">⚠️ Dados antigos — sincronize novamente</p>
+        <div
+          style={{
+            background: 'rgba(245,183,62,0.14)',
+            border: '1px solid rgba(245,183,62,0.34)',
+            borderRadius: 'var(--r-sm)',
+            padding: '8px 14px',
+          }}
+        >
+          <p style={{ color: 'var(--warn)', fontSize: 13, margin: 0 }}>Dados antigos — sincronize novamente</p>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-3">
-        <MetricTile label="HRV" value={data.hrv} unit="ms" color="text-helux-accent" />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <MetricTile label="HRV" value={data.hrv} unit="ms" accent />
         <MetricTile label="FC Repouso" value={data.restingHR} unit="bpm" />
         <MetricTile label="Calorias" value={data.activeCalories} unit="kcal" />
         <MetricTile
@@ -54,7 +85,7 @@ export function RecoveryCard({ data, isStale }: RecoveryCardProps) {
         />
         <MetricTile label="Recup. Cardio" value={data.cardioRecovery} unit="bpm" />
       </div>
-      <p className="text-helux-muted text-xs font-mono text-right">
+      <p style={{ color: 'var(--text-faint)', fontSize: 11, fontFamily: 'var(--font-jetbrains-mono)', textAlign: 'right', margin: 0 }}>
         Atualizado: {new Date(data.date).toLocaleDateString('pt-BR')}
       </p>
     </div>
