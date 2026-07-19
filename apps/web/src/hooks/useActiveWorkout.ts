@@ -18,6 +18,7 @@ export interface ActiveWorkoutState {
   currentExerciseIndex: number
   startedAt: string
   restUntil?: string
+  variantByExerciseIndex: Record<number, string>
 }
 
 function parseWeight(weight: string): number {
@@ -44,7 +45,8 @@ export function useActiveWorkout() {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       try {
-        setSession(JSON.parse(raw) as ActiveWorkoutState)
+        const parsed = JSON.parse(raw) as ActiveWorkoutState
+        setSession({ ...parsed, variantByExerciseIndex: parsed.variantByExerciseIndex ?? {} })
       } catch {
         localStorage.removeItem(STORAGE_KEY)
       }
@@ -67,6 +69,7 @@ export function useActiveWorkout() {
       exerciseStates,
       currentExerciseIndex: 0,
       startedAt: new Date().toISOString(),
+      variantByExerciseIndex: {},
     }
     save(state)
     setSession(state)
@@ -129,6 +132,18 @@ export function useActiveWorkout() {
     })
   }, [])
 
+  const selectVariant = useCallback((exerciseIndex: number, variantId: string) => {
+    setSession(prev => {
+      if (!prev) return prev
+      const next: ActiveWorkoutState = {
+        ...prev,
+        variantByExerciseIndex: { ...prev.variantByExerciseIndex, [exerciseIndex]: variantId },
+      }
+      save(next)
+      return next
+    })
+  }, [])
+
   const finishWorkout = useCallback(async () => {
     if (!session) return
     const durationS = Math.round(
@@ -166,6 +181,7 @@ export function useActiveWorkout() {
     toggleSetDone,
     updateSet,
     addSet,
+    selectVariant,
     finishWorkout,
   }
 }

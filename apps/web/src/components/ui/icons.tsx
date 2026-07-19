@@ -15,6 +15,9 @@ export const ICONS = {
   timer:    'M12 8v5l3 2M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9 3h6',
   trophy:   'M7 5h10v3a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M9 14h6M10 17h4M9 20h6',
   arrowUp:  'M12 19V5M6 11l6-6 6 6',
+  pause:    'M9 5v14M15 5v14',
+  swap:     'M7 7h11l-3-3M17 17H6l3 3',
+  bolt:     'M13 3 5 13h6l-1 8 8-10h-6z',
 } as const
 
 export type IconName = keyof typeof ICONS

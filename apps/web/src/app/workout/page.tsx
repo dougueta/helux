@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
+import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
+import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import { Icon } from '@/components/ui/icons'
 import { Ring } from '@/components/ui/Ring'
 import { MiniStep } from '@/components/ui/MiniStep'
@@ -21,12 +23,14 @@ export default function WorkoutPage() {
     toggleSetDone,
     updateSet,
     addSet,
+    selectVariant,
     finishWorkout,
   } = useActiveWorkout()
 
   const [restLeft, setRestLeft] = useState(0)
   const [restTotal, setRestTotal] = useState(0)
   const [showDone, setShowDone] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const restActive = restLeft > 0
 
@@ -56,6 +60,12 @@ export default function WorkoutPage() {
   const currentIdx = session.currentExerciseIndex
   const currentEx = session.planExercises[currentIdx]
   const currentSets = session.exerciseStates[currentIdx] ?? []
+
+  const variants = currentEx?.variants ?? []
+  const recVariant = variants.find(v => v.rec)
+  const currentVariantId = session.variantByExerciseIndex?.[currentIdx]
+  const selectedVariant = variants.find(v => v.id === currentVariantId) ?? recVariant
+  const betterFitAvailable = variants.some(v => v.betterFit)
 
   const totalSets = session.exerciseStates.reduce((acc, sets) => acc + sets.length, 0)
   const totalDone = session.exerciseStates.reduce(
@@ -385,6 +395,134 @@ export default function WorkoutPage() {
                   {currentEx.notes}
                 </span>
               )}
+
+              {variants.length > 0 && selectedVariant && (
+                <>
+                  <button
+                    onClick={() => setSheetOpen(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 13,
+                      width: '100%',
+                      textAlign: 'left',
+                      marginTop: 16,
+                      padding: '10px 14px 10px 10px',
+                      background: 'var(--surface-1)',
+                      border: '1px solid var(--hairline)',
+                      borderRadius: 16,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: 'relative',
+                        width: 72,
+                        height: 64,
+                        flexShrink: 0,
+                        borderRadius: 11,
+                        overflow: 'hidden',
+                        background: 'radial-gradient(120% 120% at 50% 0%, var(--surface-2), #0c0f0c)',
+                        border: '1px solid var(--hairline)',
+                      }}
+                    >
+                      <ExerciseDemo
+                        motion={selectedVariant.motion}
+                        implement={selectedVariant.implement}
+                        playing={true}
+                        nonce={`${currentIdx}:${selectedVariant.id}`}
+                      />
+                      <span
+                        style={{
+                          position: 'absolute',
+                          right: 5,
+                          bottom: 5,
+                          width: 20,
+                          height: 20,
+                          borderRadius: '50%',
+                          background: 'var(--accent)',
+                          display: 'grid',
+                          placeItems: 'center',
+                        }}
+                      >
+                        <Icon name="play" size={11} stroke="var(--accent-ink)" />
+                      </span>
+                    </span>
+                    <span style={{ flex: 1 }}>
+                      <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Ver execução</span>
+                      <span style={{ display: 'block', fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>
+                        técnica · músculos · {variants.length} variantes
+                      </span>
+                    </span>
+                    <Icon name="chevron" size={18} stroke="var(--text-faint)" />
+                  </button>
+
+                  {!selectedVariant.rec && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginTop: 10,
+                        padding: '9px 13px',
+                        background: 'var(--accent-soft)',
+                        border: '1px solid var(--accent-line)',
+                        borderRadius: 12,
+                        fontSize: 12.5,
+                        color: 'var(--accent)',
+                      }}
+                    >
+                      <Icon name="swap" size={14} stroke="var(--accent)" />
+                      <span style={{ flex: 1 }}>
+                        Variante ativa <b>· {selectedVariant.equip}</b>
+                      </span>
+                      {recVariant && (
+                        <button
+                          onClick={() => selectVariant(currentIdx, recVariant.id)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--accent)',
+                            fontSize: 12.5,
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          Voltar à recomendada
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedVariant.rec && betterFitAvailable && (
+                    <button
+                      onClick={() => setSheetOpen(true)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        width: '100%',
+                        marginTop: 10,
+                        padding: '9px 13px',
+                        background: 'var(--surface-2)',
+                        border: '1px dashed var(--hairline-2)',
+                        borderRadius: 12,
+                        fontSize: 12.5,
+                        color: 'var(--text-dim)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <Icon name="bolt" size={14} stroke="var(--accent)" />
+                      <span style={{ flex: 1 }}>
+                        Variante com <b>fit maior</b> disponível
+                      </span>
+                      <Icon name="chevron" size={15} stroke="var(--text-faint)" />
+                    </button>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Sets table */}
@@ -659,6 +797,15 @@ export default function WorkoutPage() {
           )}
         </button>
       </div>
+
+      {sheetOpen && currentEx && (
+        <ExerciseSheet
+          exercise={currentEx}
+          currentVariantId={currentVariantId}
+          onApply={(variantId) => selectVariant(currentIdx, variantId)}
+          onClose={() => setSheetOpen(false)}
+        />
+      )}
     </div>
   )
 }
