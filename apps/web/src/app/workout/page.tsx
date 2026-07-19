@@ -1,165 +1,11 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
-
-// ---------------------------------------------------------------------------
-// Icons
-// ---------------------------------------------------------------------------
-
-const ICONS: Record<string, string> = {
-  close:   'M6 6l12 12M18 6 6 18',
-  check:   'M5 12.5 10 17.5 19.5 7',
-  plus:    'M12 5v14M5 12h14',
-  minus:   'M5 12h14',
-  timer:   'M12 8v5l3 2M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9 3h6',
-  chevron: 'M9 6l6 6-6 6',
-  dna:     'M8 3c0 5 8 7 8 12s-8 6-8 9M16 3c0 5-8 7-8 12s8 6 8 9M8.5 7h7M7.5 12h9M8.5 17h7',
-}
-
-function Icon({
-  name,
-  size = 22,
-  stroke = 'currentColor',
-  sw = 1.9,
-  style,
-}: {
-  name: string
-  size?: number
-  stroke?: string
-  sw?: number
-  style?: CSSProperties
-}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={stroke}
-      strokeWidth={sw}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      style={style}
-    >
-      <path d={ICONS[name] ?? ''} />
-    </svg>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Ring (Done screen)
-// ---------------------------------------------------------------------------
-
-function Ring({ value, size = 120, sw = 8 }: { value: number; size?: number; sw?: number }) {
-  const r = (size - sw) / 2
-  const c = 2 * Math.PI * r
-  const off = c * (1 - value / 100)
-  return (
-    <div
-      style={{
-        position: 'relative',
-        width: size,
-        height: size,
-        display: 'grid',
-        placeItems: 'center',
-      }}
-    >
-      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke="rgba(255,255,255,0.08)"
-          strokeWidth={sw}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth={sw}
-          strokeDasharray={c}
-          strokeDashoffset={off}
-          strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 0.9s cubic-bezier(.2,.8,.2,1)' }}
-        />
-      </svg>
-      <div style={{ position: 'absolute' }}>
-        <Icon name="check" size={48} stroke="var(--accent)" sw={2.4} />
-      </div>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// MiniStepper
-// ---------------------------------------------------------------------------
-
-function MiniStepper({
-  value,
-  step,
-  onChange,
-  done,
-}: {
-  value: number
-  step: number
-  onChange: (v: number) => void
-  done: boolean
-}) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
-      <button
-        onClick={() => onChange(Math.max(0, Math.round((value - step) * 100) / 100))}
-        style={{
-          width: 24,
-          height: 24,
-          borderRadius: 6,
-          background: done ? 'var(--accent-soft)' : 'var(--surface-2)',
-          border: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-        }}
-      >
-        <Icon name="minus" size={11} stroke={done ? 'var(--accent)' : 'var(--text-dim)'} sw={2.4} />
-      </button>
-      <span
-        style={{
-          fontFamily: 'var(--font-jetbrains-mono)',
-          fontSize: 14,
-          fontWeight: 600,
-          color: done ? 'var(--accent)' : 'var(--text)',
-          minWidth: 28,
-          textAlign: 'center',
-        }}
-      >
-        {value}
-      </span>
-      <button
-        onClick={() => onChange(Math.round((value + step) * 100) / 100)}
-        style={{
-          width: 24,
-          height: 24,
-          borderRadius: 6,
-          background: done ? 'var(--accent-soft)' : 'var(--surface-2)',
-          border: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-        }}
-      >
-        <Icon name="plus" size={11} stroke={done ? 'var(--accent)' : 'var(--text-dim)'} sw={2.4} />
-      </button>
-    </div>
-  )
-}
+import { Icon } from '@/components/ui/icons'
+import { Ring } from '@/components/ui/Ring'
+import { MiniStep } from '@/components/ui/MiniStep'
 
 // ---------------------------------------------------------------------------
 // Page
@@ -283,7 +129,9 @@ export default function WorkoutPage() {
             pointerEvents: 'none',
           }}
         />
-        <Ring value={100} size={120} sw={8} />
+        <Ring value={100} size={120} sw={8}>
+          <Icon name="check" size={48} stroke="var(--accent)" sw={2.4} />
+        </Ring>
         <h2
           style={{
             fontSize: 25,
@@ -601,13 +449,13 @@ export default function WorkoutPage() {
                   >
                     —
                   </span>
-                  <MiniStepper
+                  <MiniStep
                     value={s.weight}
                     step={2.5}
                     onChange={v => updateSet(currentIdx, si, 'weight', v)}
                     done={s.done}
                   />
-                  <MiniStepper
+                  <MiniStep
                     value={s.reps}
                     step={1}
                     onChange={v => updateSet(currentIdx, si, 'reps', v)}
