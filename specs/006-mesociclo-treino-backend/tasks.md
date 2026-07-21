@@ -16,7 +16,7 @@
 
 **Purpose**: Criar o schema novo no banco.
 
-- [ ] T001 Criar `supabase/migrations/20260722000000_create_mesocycle_plans.sql` com a tabela `mesocycle_plans` (`id`, `user_id`, `generated_at`, `days_per_week`, `split_type`, `sessions` JSONB, `rationale`, `created_at`), RLS (`auth.uid() = user_id`) e índice `(user_id, created_at DESC)` — conforme `data-model.md`
+- [X] T001 Criar `supabase/migrations/20260722000000_create_mesocycle_plans.sql` com a tabela `mesocycle_plans` (`id`, `user_id`, `generated_at`, `days_per_week`, `split_type`, `sessions` JSONB, `rationale`, `created_at`), RLS (`auth.uid() = user_id`) e índice `(user_id, created_at DESC)` — conforme `data-model.md`
 
 ---
 
@@ -26,13 +26,13 @@
 
 **⚠️ CRÍTICO**: Nenhuma tarefa das user stories pode começar sem esta fase.
 
-- [ ] T002 [P] Escrever teste em `packages/types/src/__tests__/types.test.ts` (novo `describe('MesocyclePlan')`): aceita `sessions` com `completed_at: null` e com `completed_at` preenchido — **confirmar FAIL**
-- [ ] T003 [P] Escrever teste em `packages/types/src/__tests__/types.test.ts` (novo `describe('AdjustedWorkoutPlanView')`): aceita `today` presente e `today: null` com `status: 'generating'`, e `upcoming` como array de `{letter, focus}` — **confirmar FAIL**
-- [ ] T004 Rodar `pnpm test --filter @helux/types` — confirmar que os novos testes falham (RED)
-- [ ] T005 Criar `packages/types/src/mesocycle.ts` com `MesocycleSession`, `MesocyclePlan`, `AdjustedSession`, `UpcomingSessionSummary`, `AdjustedWorkoutPlanView` conforme `data-model.md` e `contracts/api.md`
-- [ ] T006 Exportar os novos tipos em `packages/types/src/index.ts`
-- [ ] T007 Rodar `pnpm test --filter @helux/types` — confirmar que todos os testes passam (GREEN)
-- [ ] T008 Aplicar a migração localmente (`supabase migration up`) e confirmar que a tabela `mesocycle_plans` foi criada
+- [X] T002 [P] Escrever teste em `packages/types/src/__tests__/types.test.ts` (novo `describe('MesocyclePlan')`): aceita `sessions` com `completed_at: null` e com `completed_at` preenchido — **confirmar FAIL**
+- [X] T003 [P] Escrever teste em `packages/types/src/__tests__/types.test.ts` (novo `describe('AdjustedWorkoutPlanView')`): aceita `today` presente e `today: null` com `status: 'generating'`, e `upcoming` como array de `{letter, focus}` — **confirmar FAIL**
+- [X] T004 Rodar `pnpm test --filter @helux/types` — confirmar que os novos testes falham (RED) — RED confirmado via `tsc --noEmit` (o `vitest run` sozinho não falha em erro de tipo puro, ver Notes)
+- [X] T005 Criar `packages/types/src/mesocycle.ts` com `MesocycleSession`, `MesocyclePlan`, `AdjustedSession`, `UpcomingSessionSummary`, `AdjustedWorkoutPlanView` conforme `data-model.md` e `contracts/api.md`
+- [X] T006 Exportar os novos tipos em `packages/types/src/index.ts`
+- [X] T007 Rodar `pnpm test --filter @helux/types` — confirmar que todos os testes passam (GREEN)
+- [ ] T008 Aplicar a migração localmente (`supabase migration up`) e confirmar que a tabela `mesocycle_plans` foi criada — **bloqueado neste ambiente**: Supabase CLI está instalado mas o Docker Desktop não está rodando aqui, então `supabase status`/`migration up` não conseguem conectar. Arquivo da migração está pronto e sintaticamente consistente com as migrações existentes; rodar manualmente com Docker disponível
 
 **Checkpoint**: Tipos e schema prontos — user stories podem começar.
 
@@ -52,18 +52,18 @@ expect(plan.sessions.every(s => s.completed_at === null)).toBe(true)
 
 ### TDD — Testes para User Story 1 (escrever e confirmar FAIL antes de implementar)
 
-- [ ] T009 [P] [US1] Escrever teste em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: `generateMesocyclePlan()` com SDK mockado retorna `MesocyclePlan` com `sessions.length` igual ao número de dias/semana da divisão esperada (ex.: 4 dias → 4 sessões ABCD) — **confirmar FAIL**
-- [ ] T010 [P] [US1] Escrever teste em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: cada sessão retornada tem `completed_at: null` e `letter`/`focus` preenchidos — **confirmar FAIL**
-- [ ] T011 [P] [US1] Escrever teste em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: o system prompt (`buildMesocycleSystemPrompt`) reaproveita o catálogo de exercícios e as restrições de treino já usados em `prompts.ts`, e pede explicitamente o ciclo inteiro — **confirmar FAIL**
-- [ ] T012 [P] [US1] Escrever teste em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: lança erro descritivo quando `ANTHROPIC_API_KEY` ausente (mesmo padrão de `planner.test.ts`) — **confirmar FAIL**
-- [ ] T013 [US1] Rodar `pnpm test --filter @helux/ai` — confirmar que os novos testes falham (RED)
+- [X] T009 [P] [US1] Escrever teste em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: `generateMesocyclePlan()` com SDK mockado retorna `MesocyclePlan` com `sessions.length` igual ao número de dias/semana da divisão esperada (ex.: 4 dias → 4 sessões ABCD) — **confirmar FAIL**
+- [X] T010 [P] [US1] Escrever teste em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: cada sessão retornada tem `completed_at: null` e `letter`/`focus` preenchidos — **confirmar FAIL**
+- [X] T011 [P] [US1] Escrever teste em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: o system prompt (`buildMesocycleSystemPrompt`) reaproveita o catálogo de exercícios e as restrições de treino já usados em `prompts.ts`, e pede explicitamente o ciclo inteiro — **confirmar FAIL**
+- [X] T012 [P] [US1] Escrever teste em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: lança erro descritivo quando `ANTHROPIC_API_KEY` ausente (mesmo padrão de `planner.test.ts`) — **confirmar FAIL**
+- [X] T013 [US1] Rodar `pnpm test --filter @helux/ai` — confirmar que os novos testes falham (RED)
 
 ### Implementação — User Story 1
 
-- [ ] T014 [P] [US1] Criar `packages/ai/src/mesocycle-prompts.ts` com `buildMesocycleSystemPrompt(profile, constraints)` e `buildMesocycleUserPrompt(history, recovery, goals, level, daysPerWeek, checkins?)` — adapta `prompts.ts` para pedir um array de sessões cobrindo o ciclo completo, mantendo a mesma metodologia de periodização (divisão A/B/C/D, catálogo de exercícios, regras de progressão)
-- [ ] T015 [US1] Criar `packages/ai/src/mesocycle-planner.ts` com `generateMesocyclePlan(input: PlanInput): Promise<MesocyclePlan>` (1 chamada Claude, mesmo padrão de cache do `planner.ts`, parse do array de sessões, `completed_at: null` em todas)
-- [ ] T016 [US1] Exportar `generateMesocyclePlan` em `packages/ai/src/index.ts`
-- [ ] T017 [US1] Rodar `pnpm test --filter @helux/ai` — confirmar que todos os testes passam (GREEN)
+- [X] T014 [P] [US1] Criar `packages/ai/src/mesocycle-prompts.ts` com `buildMesocycleSystemPrompt(profile, constraints)` e `buildMesocycleUserPrompt(history, recovery, goals, level, daysPerWeek, checkins?)` — adapta `prompts.ts` para pedir um array de sessões cobrindo o ciclo completo, mantendo a mesma metodologia de periodização (divisão A/B/C/D, catálogo de exercícios, regras de progressão)
+- [X] T015 [US1] Criar `packages/ai/src/mesocycle-planner.ts` com `generateMesocyclePlan(input: PlanInput): Promise<MesocyclePlan>` (1 chamada Claude, mesmo padrão de cache do `planner.ts`, parse do array de sessões, `completed_at: null` em todas) — retorna `Omit<MesocyclePlan, 'id'>`; o `id` é atribuído pelo caller após o insert no banco
+- [X] T016 [US1] Exportar `generateMesocyclePlan` em `packages/ai/src/index.ts`
+- [X] T017 [US1] Rodar `pnpm test --filter @helux/ai` — confirmar que todos os testes passam (GREEN)
 
 **Checkpoint**: `generateMesocyclePlan` funcional e testado isoladamente (sem integração com API ainda).
 

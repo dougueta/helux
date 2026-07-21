@@ -9,6 +9,11 @@ import type {
   NextWorkoutPlan,
   PlannedExercise,
   Variant,
+  MesocyclePlan,
+  MesocycleSession,
+  AdjustedSession,
+  AdjustedWorkoutPlanView,
+  UpcomingSessionSummary,
 } from '../index'
 
 describe('GeneticProfile', () => {
@@ -157,5 +162,102 @@ describe('PlannedExercise — campos opcionais de variantes', () => {
     const exercicio: PlannedExercise = { name: 'Agachamento', sets: 3, reps: '8-10', weight: '100kg' }
     expect(exercicio.variants).toBeUndefined()
     expect(exercicio.muscle).toBeUndefined()
+  })
+})
+
+describe('MesocyclePlan', () => {
+  it('aceita sessions com completed_at null (pendente) e preenchido (concluída)', () => {
+    const plano: MesocyclePlan = {
+      id: 'meso-001',
+      generatedAt: '2026-07-21T10:00:00Z',
+      daysPerWeek: 4,
+      splitType: 'ABCD',
+      rationale: 'Ciclo de 4 semanas focado em hipertrofia.',
+      sessions: [
+        {
+          letter: 'A',
+          focus: 'Peito + Tríceps',
+          exercises: [{ name: 'Supino Reto', sets: 4, reps: '8-10', weight: '80kg' }],
+          completedAt: '2026-07-20T10:00:00Z',
+        },
+        {
+          letter: 'B',
+          focus: 'Costas + Bíceps',
+          exercises: [{ name: 'Remada Curvada', sets: 4, reps: '8-10', weight: '60kg' }],
+          completedAt: null,
+        },
+      ],
+    }
+    expect(plano.sessions).toHaveLength(2)
+    expect(plano.sessions[0].completedAt).toBe('2026-07-20T10:00:00Z')
+    expect(plano.sessions[1].completedAt).toBeNull()
+  })
+})
+
+describe('MesocycleSession', () => {
+  it('carrega prescrição completa e identificação de posição no ciclo', () => {
+    const sessao: MesocycleSession = {
+      letter: 'C',
+      focus: 'Pernas',
+      exercises: [{ name: 'Agachamento', sets: 4, reps: '6-8', weight: '100kg' }],
+      completedAt: null,
+    }
+    expect(sessao.letter).toBe('C')
+    expect(sessao.exercises[0].name).toBe('Agachamento')
+  })
+})
+
+describe('AdjustedWorkoutPlanView', () => {
+  it('aceita today presente com upcoming e progress', () => {
+    const view: AdjustedWorkoutPlanView = {
+      mesocycleId: 'meso-001',
+      generatedAt: '2026-07-21T10:00:00Z',
+      today: {
+        letter: 'B',
+        focus: 'Costas + Bíceps',
+        exercises: [{ name: 'Remada Curvada', sets: 3, reps: '8-10', weight: '60kg' }],
+        adjusted: true,
+        adjustmentReason: 'HRV moderado (52ms)',
+      },
+      upcoming: [{ letter: 'C', focus: 'Pernas' }],
+      progress: { completed: 1, total: 4 },
+    }
+    expect(view.today?.adjusted).toBe(true)
+    expect(view.upcoming[0].letter).toBe('C')
+    expect(view.progress?.total).toBe(4)
+  })
+
+  it('aceita today null com status generating quando não há sessão pendente', () => {
+    const view: AdjustedWorkoutPlanView = {
+      mesocycleId: null,
+      generatedAt: null,
+      today: null,
+      upcoming: [],
+      progress: null,
+      status: 'generating',
+    }
+    expect(view.today).toBeNull()
+    expect(view.status).toBe('generating')
+  })
+})
+
+describe('UpcomingSessionSummary', () => {
+  it('carrega só letra e foco, sem prescrição completa', () => {
+    const resumo: UpcomingSessionSummary = { letter: 'D', focus: 'Ombro + Core' }
+    expect(resumo.letter).toBe('D')
+    expect(resumo.focus).toBe('Ombro + Core')
+  })
+})
+
+describe('AdjustedSession', () => {
+  it('sinaliza adjusted false quando nenhum ajuste foi aplicado', () => {
+    const sessao: AdjustedSession = {
+      letter: 'A',
+      focus: 'Peito + Tríceps',
+      exercises: [{ name: 'Supino Reto', sets: 4, reps: '8-10', weight: '80kg' }],
+      adjusted: false,
+    }
+    expect(sessao.adjusted).toBe(false)
+    expect(sessao.adjustmentReason).toBeUndefined()
   })
 })
