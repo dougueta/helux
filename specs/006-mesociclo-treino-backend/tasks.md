@@ -82,25 +82,25 @@ curl -H "Authorization: Bearer <token>" http://localhost:3001/workout/latest-pla
 
 ### TDD — Testes para User Story 2 (escrever e confirmar FAIL antes de implementar)
 
-- [ ] T018 [P] [US2] Escrever teste em `packages/ai/src/__tests__/recovery-adjustment.test.ts`: HRV ≥60 → sessão retornada sem alteração, `adjusted: false` — **confirmar FAIL**
-- [ ] T019 [P] [US2] Escrever teste em `packages/ai/src/__tests__/recovery-adjustment.test.ts`: HRV 40–59 → reduz 1 série por exercício composto (mínimo 2), `adjusted: true` — **confirmar FAIL**
-- [ ] T020 [P] [US2] Escrever teste em `packages/ai/src/__tests__/recovery-adjustment.test.ts`: HRV <40 → reduz série (mínimo 2) e adiciona nota de redução de carga, `adjusted: true` — **confirmar FAIL**
-- [ ] T021 [P] [US2] Escrever teste em `packages/ai/src/__tests__/recovery-adjustment.test.ts`: sem dado de HRV disponível → sessão original sem alteração, `adjusted: false` — **confirmar FAIL**
-- [ ] T022 [P] [US2] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `getActiveMesocycle` retorna `null` quando o usuário não tem nenhum `mesocycle_plans` (mock Supabase) — **confirmar FAIL**
-- [ ] T023 [P] [US2] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `findPendingSession` retorna a primeira sessão do array sem `completed_at` — **confirmar FAIL**
-- [ ] T024 [P] [US2] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `findPendingSession` retorna `null` quando todas as sessões têm `completed_at` — **confirmar FAIL**
-- [ ] T025 [P] [US2] Escrever teste em `apps/api/src/__tests__/workout-latest-plan.test.ts`: retorna 200 com `today` ajustado, `upcoming` e `progress` quando há mesociclo ativo com sessão pendente — **confirmar FAIL**
-- [ ] T026 [P] [US2] Escrever teste em `apps/api/src/__tests__/workout-latest-plan.test.ts`: quando o usuário não tem nenhum `mesocycle_plans`, retorna `{today: null, status: 'generating'}` **e** dispara `generateMesocyclePlan` em background (mock) — **confirmar FAIL**
-- [ ] T027 [P] [US2] Escrever teste em `apps/api/src/__tests__/workout-latest-plan.test.ts`: quando o mesociclo ativo existe mas está 100% completo, retorna `{today: null, status: 'generating'}` **sem** disparar nova geração (a geração já foi disparada pelo write-path da US3) — **confirmar FAIL**
-- [ ] T028 [US2] Rodar `pnpm test --filter @helux/ai` e `pnpm test --filter @helux/api` — confirmar que os novos testes falham (RED)
+- [X] T018 [P] [US2] Escrever teste em `packages/ai/src/__tests__/recovery-adjustment.test.ts`: HRV ≥60 → sessão retornada sem alteração, `adjusted: false` — **confirmar FAIL**
+- [X] T019 [P] [US2] Escrever teste em `packages/ai/src/__tests__/recovery-adjustment.test.ts`: HRV 40–59 → reduz 1 série por exercício composto (mínimo 2), `adjusted: true` — **confirmar FAIL**
+- [X] T020 [P] [US2] Escrever teste em `packages/ai/src/__tests__/recovery-adjustment.test.ts`: HRV <40 → reduz série (mínimo 2) e adiciona nota de redução de carga, `adjusted: true` — **confirmar FAIL**
+- [X] T021 [P] [US2] Escrever teste em `packages/ai/src/__tests__/recovery-adjustment.test.ts`: sem dado de HRV disponível → sessão original sem alteração, `adjusted: false` — **confirmar FAIL**
+- [X] T022 [P] [US2] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `getActiveMesocycle` retorna `null` quando o usuário não tem nenhum `mesocycle_plans` (mock Supabase) — **confirmar FAIL**
+- [X] T023 [P] [US2] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `findPendingSession` retorna a primeira sessão do array sem `completed_at` — **confirmar FAIL**
+- [X] T024 [P] [US2] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `findPendingSession` retorna `null` quando todas as sessões têm `completed_at` — **confirmar FAIL**
+- [X] T025 [P] [US2] Escrever teste em `apps/api/src/__tests__/workout-latest-plan.test.ts`: retorna 200 com `today` ajustado, `upcoming` e `progress` quando há mesociclo ativo com sessão pendente — **confirmar FAIL**
+- [X] T026 [P] [US2] Escrever teste em `apps/api/src/__tests__/workout-latest-plan.test.ts`: quando o usuário não tem nenhum `mesocycle_plans`, retorna `{today: null, status: 'generating'}` **e** dispara `generateMesocyclePlan` em background (mock) — **confirmar FAIL**
+- [X] T027 [P] [US2] Escrever teste em `apps/api/src/__tests__/workout-latest-plan.test.ts`: quando o mesociclo ativo existe mas está 100% completo, retorna `{today: null, status: 'generating'}` **sem** disparar nova geração (a geração já foi disparada pelo write-path da US3) — **confirmar FAIL**
+- [X] T028 [US2] Rodar `pnpm test --filter @helux/ai` e `pnpm test --filter @helux/api` — confirmar que os novos testes falham (RED)
 
 ### Implementação — User Story 2
 
-- [ ] T029 [P] [US2] Criar `packages/ai/src/recovery-adjustment.ts` com `applyRecoveryAdjustment(session: MesocycleSession, recovery: RecoveryData[]): AdjustedSession`, reaproveitando os limiares de HRV (`>=60`/`40-59`/`<40`) já usados em `prompts.ts`
-- [ ] T030 [US2] Exportar `applyRecoveryAdjustment` em `packages/ai/src/index.ts`
-- [ ] T031 [P] [US2] Criar `apps/api/src/services/mesocycle.service.ts` com `getActiveMesocycle(userId, supabase)` e `findPendingSession(sessions)`
-- [ ] T032 [US2] Reescrever `apps/api/src/routes/workout-latest-plan.ts`: busca o mesociclo ativo via `getActiveMesocycle`; se não existir nenhum, dispara `generateMesocyclePlan` fire-and-forget (bootstrap) e retorna `status: 'generating'`; se existir, deriva `findPendingSession`, aplica `applyRecoveryAdjustment` quando há sessão pendente, monta `upcoming`/`progress`, ou retorna `status: 'generating'` sem novo disparo quando não há sessão pendente
-- [ ] T033 [US2] Rodar `pnpm test --filter @helux/ai` e `pnpm test --filter @helux/api` — confirmar que todos os testes passam (GREEN)
+- [X] T029 [P] [US2] Criar `packages/ai/src/recovery-adjustment.ts` com `applyRecoveryAdjustment(session: MesocycleSession, recovery: RecoveryData[]): AdjustedSession`, reaproveitando os limiares de HRV (`>=60`/`40-59`/`<40`) já usados em `prompts.ts`
+- [X] T030 [US2] Exportar `applyRecoveryAdjustment` em `packages/ai/src/index.ts`
+- [X] T031 [P] [US2] Criar `apps/api/src/services/mesocycle.service.ts` com `getActiveMesocycle(userId, supabase)` e `findPendingSession(sessions)`
+- [X] T032 [US2] Reescrever `apps/api/src/routes/workout-latest-plan.ts`: busca o mesociclo ativo via `getActiveMesocycle`; se não existir nenhum, dispara `generateMesocyclePlan` fire-and-forget (bootstrap) e retorna `status: 'generating'`; se existir, deriva `findPendingSession`, aplica `applyRecoveryAdjustment` quando há sessão pendente, monta `upcoming`/`progress`, ou retorna `status: 'generating'` sem novo disparo quando não há sessão pendente
+- [X] T033 [US2] Rodar `pnpm test --filter @helux/ai` e `pnpm test --filter @helux/api` — confirmar que todos os testes passam (GREEN)
 
 **Checkpoint**: Leitura do treino do dia com ajuste por recovery funcional, incluindo bootstrap do primeiro mesociclo — testável mesmo antes da US3 (usando dados mockados com sessões já marcadas como concluídas).
 
