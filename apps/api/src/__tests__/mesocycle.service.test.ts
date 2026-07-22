@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import type { MesocycleSession } from '@helux/types'
-import { getActiveMesocycle, findPendingSessionIndex } from '../services/mesocycle.service'
+import { getActiveMesocycle, findPendingSessionIndex, markSessionCompleted, isMesocycleComplete } from '../services/mesocycle.service'
 
 function buildSupabaseMock(row: unknown) {
   const mockMaybeSingle = vi.fn().mockResolvedValue({ data: row, error: null })
@@ -67,5 +67,44 @@ describe('findPendingSessionIndex', () => {
 
   it('retorna -1 quando o array está vazio', () => {
     expect(findPendingSessionIndex([])).toBe(-1)
+  })
+})
+
+describe('markSessionCompleted', () => {
+  it('marca completedAt na sessão do índice indicado', () => {
+    const sessions = [SESSION_DONE, SESSION_PENDING]
+    const result = markSessionCompleted(sessions, 1)
+
+    expect(result[1].completedAt).not.toBeNull()
+    expect(result[0]).toBe(SESSION_DONE)
+  })
+
+  it('é idempotente — chamar duas vezes no mesmo índice não sobrescreve o completedAt original', () => {
+    const sessions = [SESSION_DONE, SESSION_PENDING]
+    const firstCall = markSessionCompleted(sessions, 1)
+    const secondCall = markSessionCompleted(firstCall, 1)
+
+    expect(secondCall[1].completedAt).toBe(firstCall[1].completedAt)
+  })
+
+  it('não altera o array quando o índice é inválido', () => {
+    const sessions = [SESSION_DONE, SESSION_PENDING]
+    const result = markSessionCompleted(sessions, -1)
+
+    expect(result).toBe(sessions)
+  })
+})
+
+describe('isMesocycleComplete', () => {
+  it('retorna true só quando todas as sessões têm completedAt preenchido', () => {
+    expect(isMesocycleComplete([SESSION_DONE, { ...SESSION_PENDING, completedAt: '2026-07-21T10:00:00.000Z' }])).toBe(true)
+  })
+
+  it('retorna false quando alguma sessão ainda está pendente', () => {
+    expect(isMesocycleComplete([SESSION_DONE, SESSION_PENDING])).toBe(false)
+  })
+
+  it('retorna false para um array vazio', () => {
+    expect(isMesocycleComplete([])).toBe(false)
   })
 })

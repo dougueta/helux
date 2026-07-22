@@ -26,3 +26,16 @@ export async function getActiveMesocycle(userId: string, supabase: SupabaseClien
 export function findPendingSessionIndex(sessions: MesocycleSession[]): number {
   return sessions.findIndex((session) => session.completedAt === null)
 }
+
+export function markSessionCompleted(sessions: MesocycleSession[], index: number): MesocycleSession[] {
+  if (index < 0 || index >= sessions.length) return sessions
+  if (sessions[index].completedAt !== null) return sessions
+
+  return sessions.map((session, i) =>
+    i === index ? { ...session, completedAt: new Date().toISOString() } : session,
+  )
+}
+
+export function isMesocycleComplete(sessions: MesocycleSession[]): boolean {
+  return sessions.length > 0 && sessions.every((session) => session.completedAt !== null)
+}

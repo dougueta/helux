@@ -119,20 +119,20 @@ curl -H "Authorization: Bearer <token>" http://localhost:3001/workout/latest-pla
 
 ### TDD — Testes para User Story 3 (escrever e confirmar FAIL antes de implementar)
 
-- [ ] T034 [P] [US3] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `markSessionCompleted` marca `completed_at` na sessão pendente atual do mesociclo ativo — **confirmar FAIL**
-- [ ] T035 [P] [US3] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `markSessionCompleted` é idempotente — chamar duas vezes não sobrescreve o `completed_at` original — **confirmar FAIL**
-- [ ] T036 [P] [US3] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `isMesocycleComplete` retorna `true` só quando todas as sessões têm `completed_at` preenchido — **confirmar FAIL**
-- [ ] T037 [P] [US3] Escrever teste em `apps/api/src/__tests__/plan-generation.service.test.ts`: `triggerBackgroundPlanGeneration` **não** chama `generateMesocyclePlan` quando ainda há sessão pendente após marcar a conclusão — **confirmar FAIL**
-- [ ] T038 [P] [US3] Escrever teste em `apps/api/src/__tests__/plan-generation.service.test.ts`: `triggerBackgroundPlanGeneration` chama `generateMesocyclePlan` e insere em `mesocycle_plans` quando o ciclo acabou de ficar 100% completo — **confirmar FAIL**
-- [ ] T039 [P] [US3] Estender teste em `apps/api/src/__tests__/workout-sessions.test.ts`: `POST /api/workouts/sessions` chama `markSessionCompleted` antes de avaliar regeneração — **confirmar FAIL**
-- [ ] T040 [US3] Rodar `pnpm test --filter @helux/api` — confirmar que os novos testes falham (RED)
+- [X] T034 [P] [US3] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `markSessionCompleted` marca `completed_at` na sessão pendente atual do mesociclo ativo — **confirmar FAIL**
+- [X] T035 [P] [US3] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `markSessionCompleted` é idempotente — chamar duas vezes não sobrescreve o `completed_at` original — **confirmar FAIL**
+- [X] T036 [P] [US3] Escrever teste em `apps/api/src/__tests__/mesocycle.service.test.ts`: `isMesocycleComplete` retorna `true` só quando todas as sessões têm `completed_at` preenchido — **confirmar FAIL**
+- [X] T037 [P] [US3] Escrever teste em `apps/api/src/__tests__/plan-generation.service.test.ts`: `triggerBackgroundPlanGeneration` **não** chama `generateMesocyclePlan` quando ainda há sessão pendente após marcar a conclusão — **confirmar FAIL**
+- [X] T038 [P] [US3] Escrever teste em `apps/api/src/__tests__/plan-generation.service.test.ts`: `triggerBackgroundPlanGeneration` chama `generateMesocyclePlan` e insere em `mesocycle_plans` quando o ciclo acabou de ficar 100% completo — **confirmar FAIL**
+- [X] T039 [P] [US3] ~~Estender teste em `workout-sessions.test.ts`~~ — **não necessário**: o teste existente já cobre `POST /api/workouts/sessions` chamando `triggerBackgroundPlanGeneration(userId, token, supabase, logger)`, e toda a lógica de marcar/checar/regenerar passou a viver dentro dessa função (T042), então a rota não precisou de nenhuma mudança nem de teste adicional
+- [X] T040 [US3] Rodar `pnpm test --filter @helux/api` — confirmar que os novos testes falham (RED)
 
 ### Implementação — User Story 3
 
-- [ ] T041 [US3] Adicionar `markSessionCompleted(mesocycleId, sessions, supabase)` e `isMesocycleComplete(sessions)` em `apps/api/src/services/mesocycle.service.ts`
-- [ ] T042 [US3] Modificar `apps/api/src/services/plan-generation.service.ts`: `triggerBackgroundPlanGeneration` passa a chamar `generateMesocyclePlan` (não mais `generateWorkoutPlan`) e só insere um novo `mesocycle_plans` quando `isMesocycleComplete` for `true` após a marcação
-- [ ] T043 [US3] Modificar `apps/api/src/routes/workout-sessions.ts`: após inserir a sessão em `workout_sessions`, chamar `markSessionCompleted` antes de `triggerBackgroundPlanGeneration`
-- [ ] T044 [US3] Rodar `pnpm test --filter @helux/api` — confirmar que todos os testes passam (GREEN)
+- [X] T041 [US3] Adicionar `markSessionCompleted(sessions, index)` (pura, idempotente por índice) e `isMesocycleComplete(sessions)` em `apps/api/src/services/mesocycle.service.ts` — desenhada como função pura em vez de receber `supabase`/`mesocycleId` diretamente: o caller (`plan-generation.service.ts`) é quem persiste o resultado, o que manteve a idempotência trivialmente testável
+- [X] T042 [US3] Modificar `apps/api/src/services/plan-generation.service.ts`: `triggerBackgroundPlanGeneration` agora busca o mesociclo ativo, marca a sessão pendente, persiste via `update`, e só chama `generateAndSaveMesocycle` (reaproveitado de US2) quando `isMesocycleComplete` for `true`
+- [X] T043 [US3] ~~Modificar `workout-sessions.ts`~~ — **não necessário**: a rota já chama `triggerBackgroundPlanGeneration(userId, token, supabase, logger)` fire-and-forget; toda a lógica nova (marcar sessão, checar conclusão, regenerar) ficou dentro dessa função (T042), sem precisar tocar a rota
+- [X] T044 [US3] Rodar `pnpm test --filter @helux/api` — confirmar que todos os testes passam (GREEN)
 
 **Checkpoint**: Fluxo completo — geração, leitura ajustada, e progressão por conclusão — funcional de ponta a ponta.
 
@@ -142,9 +142,9 @@ curl -H "Authorization: Bearer <token>" http://localhost:3001/workout/latest-pla
 
 **Purpose**: Garantir que toda a pipeline do monorepo está limpa.
 
-- [ ] T045 [P] Rodar `pnpm typecheck` na raiz — confirmar 0 erros em todos os workspaces afetados (`@helux/types`, `@helux/ai`, `@helux/api`)
-- [ ] T046 Rodar `pnpm test` na raiz — confirmar que todos os testes passam
-- [ ] T047 Seguir o fluxo manual de `quickstart.md` de ponta a ponta (bootstrap, ajuste por recovery em dois cenários, pular dias, completar o ciclo inteiro e confirmar regeneração automática)
+- [X] T045 [P] Rodar `pnpm typecheck` na raiz — confirmar 0 erros em todos os workspaces afetados (`@helux/types`, `@helux/ai`, `@helux/api`) — 8/8 workspaces do monorepo passaram
+- [X] T046 Rodar `pnpm test` na raiz — confirmar que todos os testes passam — 8/8 workspaces, 340 testes no total, todos verdes
+- [ ] T047 Seguir o fluxo manual de `quickstart.md` de ponta a ponta (bootstrap, ajuste por recovery em dois cenários, pular dias, completar o ciclo inteiro e confirmar regeneração automática) — **bloqueado neste ambiente**, mesma limitação do T008 (sem Docker/Supabase local rodando não há como exercitar o fluxo real fim a fim); a cobertura automatizada (T009-T044) já exercita cada cenário individualmente com mocks
 
 ---
 

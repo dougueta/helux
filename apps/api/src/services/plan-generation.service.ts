@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { generateWorkoutPlan, generateMesocyclePlan } from '@helux/ai'
+import { generateMesocyclePlan } from '@helux/ai'
 import { gatherPlanInput } from './plan-context.service'
+import { getActiveMesocycle, findPendingSessionIndex, markSessionCompleted, isMesocycleComplete } from './mesocycle.service'
 
 interface MinimalLogger {
   error: (obj: unknown, msg?: string) => void
@@ -43,10 +44,12 @@ export async function generateAndSaveMesocycle(
 }
 
 /**
- * Generates the next workout plan for a user and saves it to workout_plans.
- * Meant to be called fire-and-forget (not awaited) right after a workout
- * session is saved, so the plan is ready by the time the user next opens
- * the app — never throws, since callers don't await it.
+ * Advances the active mesocycle after a workout session is saved: marks the
+ * session that was just completed, and only generates the next mesocycle
+ * (fire-and-forget) once the active one is fully completed. Bootstrapping
+ * a user's very first mesocycle is handled separately by
+ * GET /workout/latest-plan (generateAndSaveMesocycle) — this function does
+ * nothing if the user has no active mesocycle yet.
  */
 export async function triggerBackgroundPlanGeneration(
   userId: string,
@@ -55,21 +58,25 @@ export async function triggerBackgroundPlanGeneration(
   logger: MinimalLogger,
 ): Promise<void> {
   try {
-    const planInput = await gatherPlanInput(userId, token)
-    if (!planInput) return
+    const mesocycle = await getActiveMesocycle(userId, supabase)
+    if (!mesocycle) return
 
-    const plan = await generateWorkoutPlan(planInput)
+    const pendingIndex = findPendingSessionIndex(mesocycle.sessions)
+    const updatedSessions = markSessionCompleted(mesocycle.sessions, pendingIndex)
 
-    const { error } = await supabase.from('workout_plans').insert({
-      user_id: userId,
-      generated_at: plan.generatedAt,
-      exercises: plan.exercises,
-      rationale: plan.rationale,
-    })
+    const { error: updateError } = await supabase
+      .from('mesocycle_plans')
+      .update({ sessions: updatedSessions })
+      .eq('id', mesocycle.id)
 
-    if (error) {
-      logger.error(error, 'background plan generation: failed to save plan')
+    if (updateError) {
+      logger.error(updateError, 'plan generation: failed to mark session completed')
+      return
     }
+
+    if (!isMesocycleComplete(updatedSessions)) return
+
+    await generateAndSaveMesocycle(userId, token, supabase, logger)
   } catch (err) {
     logger.error(err, 'background plan generation failed')
   }
