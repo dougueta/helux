@@ -54,7 +54,7 @@ ${lines.join('\n')}
 ${lines.join('\n')}`
 }
 
-function buildExerciseCatalogSection(): string {
+export function buildExerciseCatalogSection(): string {
   const byPattern = new Map<string, ExerciseBankEntry[]>()
   for (const entry of EXERCISE_BANK) {
     const list = byPattern.get(entry.pattern) ?? []
@@ -217,7 +217,7 @@ A justificativa deve:
 5. Sugerir o próximo passo ou progressão para a próxima sessão`
 }
 
-export function buildUserPrompt(
+export function buildContextBody(
   history: WorkoutSession[],
   recovery: RecoveryData[],
   goals: string,
@@ -290,7 +290,18 @@ ${historySection}
 ${recoverySection}
 
 ---
-${checkinSection ? `\n${checkinSection}\n\n---` : ''}
+${checkinSection ? `\n${checkinSection}\n\n---` : ''}`
+}
+
+export function buildUserPrompt(
+  history: WorkoutSession[],
+  recovery: RecoveryData[],
+  goals: string,
+  level: string,
+  daysPerWeek: number,
+  checkins?: BodyCheckin[],
+): string {
+  return `${buildContextBody(history, recovery, goals, level, daysPerWeek, checkins)}
 
 Com base neste contexto e no perfil genético fornecido, prescreva o próximo treino ideal. Lembre-se de respeitar todas as restrições genéticas e o estado atual de recuperação.`
 }
