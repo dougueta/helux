@@ -1,9 +1,9 @@
 import { apiFetch } from '@/services/api-client'
-import type { NextWorkoutPlan, WorkoutSession, WorkoutAnalytics, BodyCheckin } from '@helux/types'
+import type { NextWorkoutPlan, WorkoutSession, WorkoutAnalytics, BodyCheckin, AdjustedWorkoutPlanView } from '@helux/types'
 
-export async function getLatestPlan(): Promise<NextWorkoutPlan | null> {
+export async function getLatestPlan(): Promise<AdjustedWorkoutPlanView | null> {
   try {
-    return (await apiFetch('/workout/latest-plan')) as NextWorkoutPlan
+    return (await apiFetch('/workout/latest-plan')) as AdjustedWorkoutPlanView
   } catch {
     return null
   }

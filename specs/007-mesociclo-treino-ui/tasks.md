@@ -17,7 +17,7 @@
 
 **Purpose**: Confirmar que os tipos de `006-mesociclo-treino-backend` estão disponíveis — nenhuma dependência nova é necessária nesta spec.
 
-- [ ] T001 Confirmar que `AdjustedWorkoutPlanView`, `UpcomingSessionSummary` e `AdjustedSession` estão exportados por `@helux/types` (`pnpm --filter @helux/types build` se necessário); os componentes desta spec podem ser desenvolvidos com props mockadas (`contracts/ui-contracts.md`) mesmo antes do endpoint real estar pronto
+- [X] T001 Confirmar que `AdjustedWorkoutPlanView`, `UpcomingSessionSummary` e `AdjustedSession` estão exportados por `@helux/types` (`pnpm --filter @helux/types build` se necessário); os componentes desta spec podem ser desenvolvidos com props mockadas (`contracts/ui-contracts.md`) mesmo antes do endpoint real estar pronto
 
 ---
 
@@ -27,12 +27,14 @@
 
 **⚠️ CRÍTICO**: A integração em `HomeClient.tsx` de qualquer user story não pode começar sem esta fase. Desenvolvimento isolado de componente (com props mockadas) pode acontecer em paralelo.
 
-- [ ] T002 [P] Atualizar teste em `apps/web/src/__tests__/services/workout.service.test.ts`: `getLatestPlan()` retorna `AdjustedWorkoutPlanView` (`today`/`upcoming`/`progress`) em vez do `NextWorkoutPlan` antigo — **confirmar FAIL**
-- [ ] T003 [P] Atualizar teste em `apps/web/src/__tests__/hooks/useWorkoutPlan.test.ts`: hook expõe `plan` tipado como `AdjustedWorkoutPlanView | null` — **confirmar FAIL**
-- [ ] T004 Rodar `pnpm --filter @helux/web test` — confirmar que os testes atualizados falham (RED)
-- [ ] T005 Atualizar `apps/web/src/services/workout.service.ts`: `getLatestPlan()` tipado como `Promise<AdjustedWorkoutPlanView | null>`
-- [ ] T006 Atualizar `apps/web/src/hooks/useWorkoutPlan.ts`: estado `plan` tipado como `AdjustedWorkoutPlanView | null`; cache local (`localStorage`) mantido com o novo shape
-- [ ] T007 Rodar `pnpm --filter @helux/web test` — confirmar que os testes passam (GREEN)
+- [X] T002 [P] Atualizar teste em `apps/web/src/__tests__/services/workout.service.test.ts`: `getLatestPlan()` retorna `AdjustedWorkoutPlanView` (`today`/`upcoming`/`progress`) em vez do `NextWorkoutPlan` antigo — **confirmar FAIL**
+- [X] T003 [P] Atualizar teste em `apps/web/src/__tests__/hooks/useWorkoutPlan.test.ts`: hook expõe `plan` tipado como `AdjustedWorkoutPlanView | null` — **confirmar FAIL**
+- [X] T004 Rodar `pnpm --filter @helux/web test` — confirmar que os testes atualizados falham (RED)
+- [X] T005 Atualizar `apps/web/src/services/workout.service.ts`: `getLatestPlan()` tipado como `Promise<AdjustedWorkoutPlanView | null>`
+- [X] T006 Atualizar `apps/web/src/hooks/useWorkoutPlan.ts`: estado `plan` tipado como `AdjustedWorkoutPlanView | null`; cache local (`localStorage`) mantido com o novo shape
+- [X] T007 Rodar `pnpm --filter @helux/web test` — confirmar que os testes passam (GREEN)
+
+**Nota descoberta durante a implementação**: `useWorkoutPlan` tinha um segundo consumidor não mapeado no plano — `apps/web/src/app/treinos/TreinosClient.tsx` (rota `/treinos`). Foi ajustado para ler `plan.today` em vez do formato antigo, e o botão manual "Gerar Novo Plano" (`generatePlan`, fora de escopo) passou a ter seu resultado envolvido num `AdjustedWorkoutPlanView` mínimo (`mesocycleId: null`, sem `upcoming`/`progress`) para continuar compilando e funcionando — documentado inline no hook como o mesmo gap de `006-mesociclo-treino-backend`.
 
 **Checkpoint**: Hook e serviço prontos para o novo formato — a integração final de qualquer user story pode começar.
 

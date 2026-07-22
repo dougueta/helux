@@ -5,27 +5,27 @@ import { getLatestPlan, generatePlan as generatePlanService, getWorkoutHistory }
 import { getGeneticProfile } from '@/services/genetics.service'
 import { getLatestRecovery } from '@/services/recovery.service'
 import { getCheckins } from '@/services/checkin.service'
-import type { NextWorkoutPlan } from '@helux/types'
+import type { AdjustedWorkoutPlanView } from '@helux/types'
 
 const STORAGE_KEY = 'helux:workout-plan'
 
-function loadFromStorage(): NextWorkoutPlan | null {
+function loadFromStorage(): AdjustedWorkoutPlanView | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as NextWorkoutPlan) : null
+    return raw ? (JSON.parse(raw) as AdjustedWorkoutPlanView) : null
   } catch {
     return null
   }
 }
 
-function saveToStorage(plan: NextWorkoutPlan) {
+function saveToStorage(plan: AdjustedWorkoutPlanView) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(plan))
   } catch {}
 }
 
 export function useWorkoutPlan() {
-  const [plan, setPlanState] = useState<NextWorkoutPlan | null>(null)
+  const [plan, setPlanState] = useState<AdjustedWorkoutPlanView | null>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -58,7 +58,23 @@ export function useWorkoutPlan() {
         getCheckins(2),
       ])
       const checkinsSorted = [...checkins].sort((a, b) => a.month.localeCompare(b.month))
-      const newPlan = await generatePlanService(profile, recovery, history, checkinsSorted)
+      const generated = await generatePlanService(profile, recovery, history, checkinsSorted)
+      // POST /workout/generate (manual button) still returns the legacy single-session
+      // shape — wrap it into an AdjustedWorkoutPlanView-compatible view so it can be
+      // stored alongside mesocycle-backed plans. Known gap: this bypasses the mesocycle
+      // entirely (see specs/006-mesociclo-treino-backend/plan.md — Complexity Tracking).
+      const newPlan: AdjustedWorkoutPlanView = {
+        mesocycleId: null,
+        generatedAt: generated.generatedAt,
+        today: {
+          letter: '',
+          focus: '',
+          exercises: generated.exercises,
+          adjusted: false,
+        },
+        upcoming: [],
+        progress: null,
+      }
       saveToStorage(newPlan)
       setPlanState(newPlan)
     } catch (e) {
@@ -68,7 +84,7 @@ export function useWorkoutPlan() {
     }
   }
 
-  function setPlan(p: NextWorkoutPlan | null) {
+  function setPlan(p: AdjustedWorkoutPlanView | null) {
     if (p) saveToStorage(p)
     setPlanState(p)
   }
