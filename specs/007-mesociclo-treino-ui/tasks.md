@@ -72,16 +72,16 @@
 
 ### TDD — Testes para User Story 2 (escrever e confirmar FAIL antes de implementar)
 
-- [ ] T016 [P] [US2] Escrever teste em `apps/web/src/__tests__/components/workout/UpcomingSessionsList.test.tsx`: retorna `null` quando `sessions` está vazio — **confirmar FAIL**
-- [ ] T017 [P] [US2] Escrever teste em `apps/web/src/__tests__/components/workout/UpcomingSessionsList.test.tsx`: renderiza um `Chip` por sessão com o texto `"Treino {letter} — {focus}"`, na ordem do array — **confirmar FAIL**
-- [ ] T018 [US2] Rodar `pnpm --filter @helux/web test -- UpcomingSessionsList` — confirmar que os testes falham (RED)
+- [X] T016 [P] [US2] Escrever teste em `apps/web/src/__tests__/components/workout/UpcomingSessionsList.test.tsx`: retorna `null` quando `sessions` está vazio — **confirmar FAIL**
+- [X] T017 [P] [US2] Escrever teste em `apps/web/src/__tests__/components/workout/UpcomingSessionsList.test.tsx`: renderiza um `Chip` por sessão com o texto `"Treino {letter} — {focus}"`, na ordem do array — **confirmar FAIL**
+- [X] T018 [US2] Rodar `pnpm --filter @helux/web test -- UpcomingSessionsList` — confirmar que os testes falham (RED)
 
 ### Implementação — User Story 2
 
-- [ ] T019 [US2] Criar `apps/web/src/components/workout/UpcomingSessionsList.tsx` (lista horizontal, `overflow-x: auto` contido, sem scroll horizontal na página), conforme `contracts/ui-contracts.md`
-- [ ] T020 [US2] Rodar `pnpm --filter @helux/web test -- UpcomingSessionsList` — confirmar que os testes passam (GREEN)
-- [ ] T021 [US2] Modificar `apps/web/src/app/HomeClient.tsx`: renderizar `UpcomingSessionsList` com `plan.upcoming` abaixo do card de hoje, quando `plan.upcoming.length > 0`
-- [ ] T022 [US2] Verificar manualmente em viewport de iPhone que a lista rola horizontalmente sem afetar o scroll vertical da página
+- [X] T019 [US2] Criar `apps/web/src/components/workout/UpcomingSessionsList.tsx` (lista horizontal, `overflow-x: auto` contido, sem scroll horizontal na página), conforme `contracts/ui-contracts.md`
+- [X] T020 [US2] Rodar `pnpm --filter @helux/web test -- UpcomingSessionsList` — confirmar que os testes passam (GREEN)
+- [X] T021 [US2] Modificar `apps/web/src/app/HomeClient.tsx`: renderizar `UpcomingSessionsList` com `plan.upcoming` abaixo do card de hoje, quando `plan.upcoming.length > 0`
+- [ ] T022 [US2] Verificar manualmente em viewport de iPhone que a lista rola horizontalmente sem afetar o scroll vertical da página — **bloqueado neste ambiente**, mesma limitação de T015 (sem app rodando com dados reais); `overflow-x: auto` contido em `UpcomingSessionsList.tsx` segue o padrão já usado em outros componentes horizontais do projeto
 
 **Checkpoint**: User Stories 1 e 2 funcionais — usuário vê hoje + próximos treinos.
 

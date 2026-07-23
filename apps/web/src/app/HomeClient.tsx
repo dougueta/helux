@@ -9,6 +9,7 @@ import { Icon, HelixMark } from '@/components/ui/icons'
 import { Ring } from '@/components/ui/Ring'
 import { MatchBadge } from '@/components/ui/MatchBadge'
 import { RecoveryAdjustedBadge } from '@/components/workout/RecoveryAdjustedBadge'
+import { UpcomingSessionsList } from '@/components/workout/UpcomingSessionsList'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -166,6 +167,11 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
               </>
             )}
           </div>
+        )}
+
+        {/* Próximos treinos do mesociclo */}
+        {currentPlan?.upcoming && currentPlan.upcoming.length > 0 && (
+          <UpcomingSessionsList sessions={currentPlan.upcoming} />
         )}
 
         {/* Generate button */}
