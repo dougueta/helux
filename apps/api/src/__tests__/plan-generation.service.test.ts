@@ -139,6 +139,23 @@ describe('triggerBackgroundPlanGeneration', () => {
     expect(generateMesocyclePlanMock).not.toHaveBeenCalled()
   })
 
+  it('não faz nada quando o mesociclo ativo já está 100% completo (ex.: POST retido/duplicado após o ciclo já ter avançado)', async () => {
+    getActiveMesocycleMock.mockResolvedValue({
+      id: 'meso-001',
+      generated_at: '2026-07-20T10:00:00.000Z',
+      days_per_week: 4,
+      split_type: 'ABCD',
+      rationale: 'Ciclo atual',
+      sessions: [DONE_SESSION, { ...PENDING_SESSION, completedAt: '2026-07-21T10:00:00.000Z' }],
+    })
+    const { triggerBackgroundPlanGeneration } = await import('../services/plan-generation.service')
+
+    await triggerBackgroundPlanGeneration('user-123', 'token-abc', supabase, logger as never)
+
+    expect(updateMock).not.toHaveBeenCalled()
+    expect(generateMesocyclePlanMock).not.toHaveBeenCalled()
+  })
+
   it('marca a sessão pendente como concluída e NÃO gera um novo mesociclo quando ainda restam sessões pendentes', async () => {
     getActiveMesocycleMock.mockResolvedValue({
       id: 'meso-001',

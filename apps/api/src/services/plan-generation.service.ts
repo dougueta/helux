@@ -62,6 +62,11 @@ export async function triggerBackgroundPlanGeneration(
     if (!mesocycle) return
 
     const pendingIndex = findPendingSessionIndex(mesocycle.sessions)
+    // Already fully completed (e.g. a retried/duplicate session POST arriving
+    // after the cycle was already advanced) — nothing new to mark, and
+    // regenerating here would spuriously create an extra mesocycle.
+    if (pendingIndex === -1) return
+
     const updatedSessions = markSessionCompleted(mesocycle.sessions, pendingIndex)
 
     const { error: updateError } = await supabase
