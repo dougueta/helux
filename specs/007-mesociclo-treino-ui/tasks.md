@@ -95,15 +95,15 @@
 
 ### TDD — Testes para User Story 3 (escrever e confirmar FAIL antes de implementar)
 
-- [ ] T023 [P] [US3] Escrever teste em `apps/web/src/__tests__/components/workout/MesocycleProgress.test.tsx`: renderiza `total` dots, com os primeiros `completed` no estado preenchido — **confirmar FAIL**
-- [ ] T024 [P] [US3] Escrever teste em `apps/web/src/__tests__/components/workout/MesocycleProgress.test.tsx`: renderiza o texto `"{completed} de {total} treinos concluídos"` — **confirmar FAIL**
-- [ ] T025 [US3] Rodar `pnpm --filter @helux/web test -- MesocycleProgress` — confirmar que os testes falham (RED)
+- [X] T023 [P] [US3] Escrever teste em `apps/web/src/__tests__/components/workout/MesocycleProgress.test.tsx`: renderiza `total` dots, com os primeiros `completed` no estado preenchido — **confirmar FAIL**
+- [X] T024 [P] [US3] Escrever teste em `apps/web/src/__tests__/components/workout/MesocycleProgress.test.tsx`: renderiza o texto `"{completed} de {total} treinos concluídos"` — **confirmar FAIL**
+- [X] T025 [US3] Rodar `pnpm --filter @helux/web test -- MesocycleProgress` — confirmar que os testes falham (RED)
 
 ### Implementação — User Story 3
 
-- [ ] T026 [US3] Criar `apps/web/src/components/workout/MesocycleProgress.tsx`, extraindo o padrão visual de "dots" já usado inline no card "Semana" de `HomeClient.tsx`
-- [ ] T027 [US3] Rodar `pnpm --filter @helux/web test -- MesocycleProgress` — confirmar que os testes passam (GREEN)
-- [ ] T028 [US3] Modificar `apps/web/src/app/HomeClient.tsx`: renderizar `MesocycleProgress` com `plan.progress.completed`/`plan.progress.total` quando `plan.progress !== null`
+- [X] T026 [US3] Criar `apps/web/src/components/workout/MesocycleProgress.tsx`, extraindo o padrão visual de "dots" já usado inline no card "Semana" de `HomeClient.tsx`
+- [X] T027 [US3] Rodar `pnpm --filter @helux/web test -- MesocycleProgress` — confirmar que os testes passam (GREEN)
+- [X] T028 [US3] Modificar `apps/web/src/app/HomeClient.tsx`: renderizar `MesocycleProgress` com `plan.progress.completed`/`plan.progress.total` quando `plan.progress !== null`
 
 **Checkpoint**: Todas as user stories funcionais — home completa com hoje, próximos treinos e progresso do ciclo.
 
@@ -113,9 +113,9 @@
 
 **Purpose**: Garantir que toda a pipeline do monorepo está limpa e o fluxo manual funciona de ponta a ponta.
 
-- [ ] T029 [P] Rodar `pnpm typecheck --filter @helux/web` — confirmar 0 erros
-- [ ] T030 Rodar `pnpm test --filter @helux/web` — confirmar que todos os testes passam
-- [ ] T031 Seguir o fluxo manual de `quickstart.md` de ponta a ponta (badge de ajuste, lista de próximos treinos sem datas, estado de transição, progresso, viewport iPhone)
+- [X] T029 [P] Rodar `pnpm typecheck --filter @helux/web` — confirmar 0 erros — 8/8 workspaces do monorepo passaram (`pnpm typecheck` na raiz)
+- [X] T030 Rodar `pnpm test --filter @helux/web` — confirmar que todos os testes passam — `@helux/web` com 133 testes verdes; `pnpm test` na raiz confirma 8/8 workspaces do monorepo passando
+- [ ] T031 Seguir o fluxo manual de `quickstart.md` de ponta a ponta (badge de ajuste, lista de próximos treinos sem datas, estado de transição, progresso, viewport iPhone) — **bloqueado neste ambiente**, mesma limitação de T015/T022/T008(backend)/T047(backend): sem Docker/Supabase local nem sessão autenticada, não há como exercitar o fluxo real fim a fim; cobertura automatizada (T002-T028) já exercita cada estado isoladamente
 
 ---
 

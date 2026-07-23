@@ -10,6 +10,7 @@ import { Ring } from '@/components/ui/Ring'
 import { MatchBadge } from '@/components/ui/MatchBadge'
 import { RecoveryAdjustedBadge } from '@/components/workout/RecoveryAdjustedBadge'
 import { UpcomingSessionsList } from '@/components/workout/UpcomingSessionsList'
+import { MesocycleProgress } from '@/components/workout/MesocycleProgress'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -172,6 +173,11 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
         {/* Próximos treinos do mesociclo */}
         {currentPlan?.upcoming && currentPlan.upcoming.length > 0 && (
           <UpcomingSessionsList sessions={currentPlan.upcoming} />
+        )}
+
+        {/* Progresso do mesociclo */}
+        {currentPlan?.progress && (
+          <MesocycleProgress completed={currentPlan.progress.completed} total={currentPlan.progress.total} />
         )}
 
         {/* Generate button */}
