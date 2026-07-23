@@ -48,17 +48,17 @@
 
 ### TDD — Testes para User Story 1 (escrever e confirmar FAIL antes de implementar)
 
-- [ ] T008 [P] [US1] Escrever teste em `apps/web/src/__tests__/components/workout/RecoveryAdjustedBadge.test.tsx`: retorna `null` (nada renderizado) quando `reason` é `undefined` — **confirmar FAIL**
-- [ ] T009 [P] [US1] Escrever teste em `apps/web/src/__tests__/components/workout/RecoveryAdjustedBadge.test.tsx`: renderiza um `Chip` com ícone `bolt` e texto quando `reason` está presente — **confirmar FAIL**
-- [ ] T010 [US1] Rodar `pnpm --filter @helux/web test -- RecoveryAdjustedBadge` — confirmar que os testes falham (RED)
+- [X] T008 [P] [US1] Escrever teste em `apps/web/src/__tests__/components/workout/RecoveryAdjustedBadge.test.tsx`: retorna `null` (nada renderizado) quando `reason` é `undefined` — **confirmar FAIL**
+- [X] T009 [P] [US1] Escrever teste em `apps/web/src/__tests__/components/workout/RecoveryAdjustedBadge.test.tsx`: renderiza um `Chip` com ícone `bolt` e texto quando `reason` está presente — **confirmar FAIL**
+- [X] T010 [US1] Rodar `pnpm --filter @helux/web test -- RecoveryAdjustedBadge` — confirmar que os testes falham (RED)
 
 ### Implementação — User Story 1
 
-- [ ] T011 [P] [US1] Criar `apps/web/src/components/workout/RecoveryAdjustedBadge.tsx` (`Chip` `accent` + `Icon name="bolt"`), conforme `contracts/ui-contracts.md`
-- [ ] T012 [US1] Rodar `pnpm --filter @helux/web test -- RecoveryAdjustedBadge` — confirmar que os testes passam (GREEN)
-- [ ] T013 [US1] Modificar `apps/web/src/app/HomeClient.tsx`: consumir `plan.today` (novo shape) no card de hoje; renderizar `RecoveryAdjustedBadge` com `reason={plan.today.adjustmentReason}` quando `plan.today.adjusted`
-- [ ] T014 [US1] Modificar `apps/web/src/app/HomeClient.tsx`: quando `plan.today === null`, exibir mensagem de estado diferenciando `status === 'generating'` ("Preparando seu próximo ciclo…") de primeiro uso ("Nenhum plano gerado ainda"), reaproveitando o card vazio já existente
-- [ ] T015 [US1] Verificar manualmente no navegador (`pnpm --filter @helux/web dev`) os três estados: com ajuste, sem ajuste, sem `today`
+- [X] T011 [P] [US1] Criar `apps/web/src/components/workout/RecoveryAdjustedBadge.tsx` (`Chip` `accent` + `Icon name="bolt"`), conforme `contracts/ui-contracts.md`
+- [X] T012 [US1] Rodar `pnpm --filter @helux/web test -- RecoveryAdjustedBadge` — confirmar que os testes passam (GREEN)
+- [X] T013 [US1] Modificar `apps/web/src/app/HomeClient.tsx`: consumir `plan.today` (novo shape) no card de hoje; renderizar `RecoveryAdjustedBadge` com `reason={plan.today.adjustmentReason}` quando `plan.today.adjusted`
+- [X] T014 [US1] Modificar `apps/web/src/app/HomeClient.tsx`: quando `plan.today === null`, exibir mensagem de estado diferenciando `status === 'generating'` ("Preparando seu próximo ciclo…") de primeiro uso ("Nenhum plano gerado ainda"), reaproveitando o card vazio já existente
+- [ ] T015 [US1] Verificar manualmente no navegador (`pnpm --filter @helux/web dev`) os três estados: com ajuste, sem ajuste, sem `today` — **bloqueado neste ambiente**: exige login Supabase real + `apps/api` rodando contra um banco com dados; cobertura automatizada (T008-T009, RTL) já exercita os três estados dos componentes isoladamente
 
 **Checkpoint**: User Story 1 funcional e testável independentemente — o treino de hoje comunica corretamente se foi ajustado, e o estado vazio nunca aparece quebrado.
 
