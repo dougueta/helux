@@ -8,6 +8,9 @@ import type { BodyCheckin } from '@helux/types'
 import { Icon, HelixMark } from '@/components/ui/icons'
 import { Ring } from '@/components/ui/Ring'
 import { MatchBadge } from '@/components/ui/MatchBadge'
+import { RecoveryAdjustedBadge } from '@/components/workout/RecoveryAdjustedBadge'
+import { UpcomingSessionsList } from '@/components/workout/UpcomingSessionsList'
+import { MesocycleProgress } from '@/components/workout/MesocycleProgress'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -43,11 +46,12 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
   const { startWorkout } = useActiveWorkout()
   const { plan, generating, generationError, generatePlan } = useWorkoutPlan()
   const currentPlan = plan ?? initialPlan
+  const today = currentPlan?.today
   const WEEKLY_TARGET = 4
 
   function handleStart() {
-    if (!currentPlan) return
-    startWorkout(currentPlan.exercises)
+    if (!today) return
+    startWorkout(today.exercises)
     router.push('/workout')
   }
 
@@ -93,7 +97,7 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
 
       <div className="px-4 space-y-3">
         {/* Hero — Treino de hoje */}
-        {currentPlan ? (
+        {today ? (
           <div style={{
             background: 'linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%)',
             border: '1px solid var(--hairline-2)',
@@ -109,18 +113,21 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
               <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
                 Treino de hoje
               </span>
-              {insight?.score != null && <MatchBadge value={insight.score} />}
+              <div className="flex items-center gap-2">
+                {today.adjusted && <RecoveryAdjustedBadge reason={today.adjustmentReason} />}
+                {insight?.score != null && <MatchBadge value={insight.score} />}
+              </div>
             </div>
             <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', marginBottom: 4, position: 'relative' }}>
-              {currentPlan.exercises?.[0]?.name ?? 'Treino Personalizado'}
+              {today.exercises?.[0]?.name ?? 'Treino Personalizado'}
             </div>
             <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 12, position: 'relative' }}>
-              {currentPlan.exercises?.slice(1,3).map((e: any) => e.name).join(' · ')}
+              {today.exercises?.slice(1,3).map((e: any) => e.name).join(' · ')}
             </div>
             <div className="flex items-center gap-4" style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 14, position: 'relative' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Icon name="dumbbell" size={15} stroke="var(--text-dim)" />
-                {currentPlan.exercises?.length ?? 0} exercícios
+                {today.exercises?.length ?? 0} exercícios
               </span>
             </div>
             <button onClick={handleStart} style={{
@@ -149,9 +156,28 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
           </div>
         ) : (
           <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: 20, textAlign: 'center' }}>
-            <p style={{ color: 'var(--text)', marginBottom: 4 }}>Nenhum plano gerado ainda.</p>
-            <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Use o botão abaixo para gerar seu primeiro plano.</p>
+            {currentPlan?.status === 'generating' ? (
+              <>
+                <p style={{ color: 'var(--text)', marginBottom: 4 }}>Preparando seu próximo ciclo…</p>
+                <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Isso leva só alguns instantes. Volte a checar em breve.</p>
+              </>
+            ) : (
+              <>
+                <p style={{ color: 'var(--text)', marginBottom: 4 }}>Nenhum plano gerado ainda.</p>
+                <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Use o botão abaixo para gerar seu primeiro plano.</p>
+              </>
+            )}
           </div>
+        )}
+
+        {/* Próximos treinos do mesociclo */}
+        {currentPlan?.upcoming && currentPlan.upcoming.length > 0 && (
+          <UpcomingSessionsList sessions={currentPlan.upcoming} />
+        )}
+
+        {/* Progresso do mesociclo */}
+        {currentPlan?.progress && (
+          <MesocycleProgress completed={currentPlan.progress.completed} total={currentPlan.progress.total} />
         )}
 
         {/* Generate button */}

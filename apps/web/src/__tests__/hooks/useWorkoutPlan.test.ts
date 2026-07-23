@@ -24,22 +24,28 @@ describe('useWorkoutPlan', () => {
   it('loads plan on mount', async () => {
     const { getLatestPlan } = await import('@/services/workout.service')
     vi.mocked(getLatestPlan).mockResolvedValueOnce({
-      generatedAt: '2026-06-15T10:00:00Z', exercises: [], rationale: 'test'
+      mesocycleId: 'meso-001',
+      generatedAt: '2026-07-21T10:00:00Z',
+      today: { letter: 'A', focus: 'Peito + Tríceps', exercises: [], adjusted: false },
+      upcoming: [{ letter: 'B', focus: 'Costas + Bíceps' }],
+      progress: { completed: 0, total: 4 },
     })
     const { useWorkoutPlan } = await import('@/hooks/useWorkoutPlan')
     const { result } = renderHook(() => useWorkoutPlan())
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.plan).not.toBeNull()
+    expect(result.current.plan?.today?.letter).toBe('A')
   })
 
-  it('generatePlan sets generating true then updates plan', async () => {
+  it('generatePlan sets generating true then wraps the legacy single-session result into the plan view', async () => {
     const { generatePlan } = await import('@/services/workout.service')
-    const newPlan = { generatedAt: new Date().toISOString(), exercises: [], rationale: 'new' }
+    const newPlan = { generatedAt: new Date().toISOString(), exercises: [{ name: 'Supino Reto', sets: 4, reps: '8-10', weight: '80kg' }], rationale: 'new' }
     vi.mocked(generatePlan).mockResolvedValueOnce(newPlan)
     const { useWorkoutPlan } = await import('@/hooks/useWorkoutPlan')
     const { result } = renderHook(() => useWorkoutPlan())
     await act(async () => { await result.current.generatePlan() })
-    expect(result.current.plan).toEqual(newPlan)
+    expect(result.current.plan?.today?.exercises).toEqual(newPlan.exercises)
+    expect(result.current.plan?.mesocycleId).toBeNull()
     expect(result.current.generating).toBe(false)
   })
 })

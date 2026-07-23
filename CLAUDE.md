@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/006-mesociclo-treino-backend/plan.md
+at specs/007-mesociclo-treino-ui/plan.md
 <!-- SPECKIT END -->

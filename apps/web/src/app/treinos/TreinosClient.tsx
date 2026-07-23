@@ -6,10 +6,10 @@ import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
 import { formatDuration } from '@/lib/format-duration'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
-import type { NextWorkoutPlan, PlannedExercise } from '@helux/types'
+import type { AdjustedWorkoutPlanView, PlannedExercise } from '@helux/types'
 
 interface TreinosClientProps {
-  plan: NextWorkoutPlan | null
+  plan: AdjustedWorkoutPlanView | null
   recentSessions: WorkoutSessionRow[]
 }
 
@@ -18,10 +18,11 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
   const { startWorkout } = useActiveWorkout()
   const { plan, generating, generationError, generatePlan } = useWorkoutPlan()
   const currentPlan = plan ?? initialPlan
+  const today = currentPlan?.today
 
   function handleStart() {
-    if (!currentPlan) return
-    startWorkout(currentPlan.exercises)
+    if (!today) return
+    startWorkout(today.exercises)
     router.push('/workout')
   }
 
@@ -36,13 +37,13 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
         </h1>
       </header>
 
-      {currentPlan ? (
+      {today ? (
         <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: 16, marginBottom: 12 }}>
-          {currentPlan.rationale && (
-            <p style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5, marginBottom: 14 }}>{currentPlan.rationale}</p>
+          {today.focus && (
+            <p style={{ fontSize: 13, color: 'var(--text-dim)', lineHeight: 1.5, marginBottom: 14 }}>{today.focus}</p>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {currentPlan.exercises?.map((ex: PlannedExercise, i: number) => (
+            {today.exercises?.map((ex: PlannedExercise, i: number) => (
               <div
                 key={i}
                 style={{
