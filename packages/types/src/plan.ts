@@ -12,6 +12,9 @@ export interface PlanInput {
   userLevel: 'iniciante' | 'intermediario' | 'avancado'
   availableDaysPerWeek: number
   bodyCheckins?: BodyCheckin[]
+  trainingTime?: string
+  timeOff?: string
+  currentInjury?: string
 }
 
 export interface NextWorkoutPlan {

@@ -33,7 +33,7 @@ export async function gatherPlanInput(userId: string, token: string): Promise<Pl
 
   const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
 
-  const [samplesRes, historyRes, checkinsRes] = await Promise.all([
+  const [samplesRes, historyRes, checkinsRes, profileRes] = await Promise.all([
     supabase
       .from('health_samples')
       .select('type, value, unit, start_at')
@@ -52,6 +52,11 @@ export async function gatherPlanInput(userId: string, token: string): Promise<Pl
       .eq('user_id', userId)
       .order('month', { ascending: false })
       .range(0, 1),
+    supabase
+      .from('user_training_profile')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle(),
   ])
 
   const samples = (samplesRes.data ?? []) as HealthSample[]
@@ -61,14 +66,25 @@ export async function gatherPlanInput(userId: string, token: string): Promise<Pl
     .slice()
     .sort((a, b) => a.month.localeCompare(b.month))
 
+  const profile = profileRes.data as {
+    goal: string | null
+    level: 'iniciante' | 'intermediario' | 'avancado' | null
+    training_time: string | null
+    time_off: string | null
+    current_injury: string | null
+  } | null
+
   return {
     geneticProfile,
     constraints: DEFAULT_CONSTRAINTS,
     workoutHistory,
     recoveryData,
-    userGoals: 'Hipertrofia e condicionamento geral',
-    userLevel: 'intermediario',
+    userGoals: profile?.goal ?? 'Hipertrofia e condicionamento geral',
+    userLevel: profile?.level ?? 'intermediario',
     availableDaysPerWeek: 4,
     bodyCheckins,
+    trainingTime: profile?.training_time ?? undefined,
+    timeOff: profile?.time_off ?? undefined,
+    currentInjury: profile?.current_injury ?? undefined,
   }
 }

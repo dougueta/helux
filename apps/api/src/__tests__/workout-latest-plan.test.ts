@@ -19,7 +19,16 @@ const mockHealthSamplesOrder = vi.fn().mockResolvedValue({ data: [], error: null
 const mockHealthSamplesGte = vi.fn(() => ({ order: mockHealthSamplesOrder }))
 const mockHealthSamplesEq = vi.fn(() => ({ gte: mockHealthSamplesGte }))
 const mockHealthSamplesSelect = vi.fn(() => ({ eq: mockHealthSamplesEq }))
-const mockFrom = vi.fn(() => ({ select: mockHealthSamplesSelect }))
+
+const mockTirednessMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null })
+const mockTirednessEqDate = vi.fn(() => ({ maybeSingle: mockTirednessMaybeSingle }))
+const mockTirednessEqUser = vi.fn(() => ({ eq: mockTirednessEqDate }))
+const mockTirednessSelect = vi.fn(() => ({ eq: mockTirednessEqUser }))
+
+const mockFrom = vi.fn((table: string) => {
+  if (table === 'daily_tiredness_signals') return { select: mockTirednessSelect }
+  return { select: mockHealthSamplesSelect }
+})
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
@@ -76,6 +85,7 @@ describe('GET /workout/latest-plan', () => {
     process.env.SUPABASE_URL = 'https://test.supabase.co'
     process.env.SUPABASE_ANON_KEY = 'test-key'
     mockHealthSamplesOrder.mockResolvedValue({ data: [], error: null })
+    mockTirednessMaybeSingle.mockResolvedValue({ data: null, error: null })
     mockGenerateAndSaveMesocycle.mockResolvedValue(undefined)
     app = await buildApp()
   })
@@ -162,5 +172,60 @@ describe('GET /workout/latest-plan', () => {
     expect(body.status).toBe('generating')
     expect(body.progress).toEqual({ completed: 3, total: 3 })
     expect(mockGenerateAndSaveMesocycle).not.toHaveBeenCalled()
+  })
+
+  it('US2: aplica ajuste conservador quando há cansaço sinalizado hoje, mesmo sem HRV sincronizado (FR-006/FR-007)', async () => {
+    mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
+    mockFindPendingSessionIndex.mockReturnValue(1)
+    mockHealthSamplesOrder.mockResolvedValue({ data: [], error: null })
+    mockTirednessMaybeSingle.mockResolvedValue({ data: { id: 'sig-1' }, error: null })
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/workout/latest-plan',
+      headers: { Authorization: 'Bearer valid-token' },
+    })
+
+    const body = JSON.parse(response.body)
+    expect(body.today.adjusted).toBe(true)
+    expect(body.today.exercises[0].sets).toBeLessThan(4)
+    expect(body.today.adjustmentReason).toMatch(/cansaço/i)
+  })
+
+  it('US2: não aplica ajuste quando não há cansaço sinalizado nem HRV baixo', async () => {
+    mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
+    mockFindPendingSessionIndex.mockReturnValue(1)
+    mockHealthSamplesOrder.mockResolvedValue({ data: [], error: null })
+    mockTirednessMaybeSingle.mockResolvedValue({ data: null, error: null })
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/workout/latest-plan',
+      headers: { Authorization: 'Bearer valid-token' },
+    })
+
+    const body = JSON.parse(response.body)
+    expect(body.today.adjusted).toBe(false)
+  })
+
+  it('US2: combina HRV baixo + cansaço manual sem ficar menos conservador que o HRV isolado (FR-009)', async () => {
+    mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
+    mockFindPendingSessionIndex.mockReturnValue(1)
+    mockHealthSamplesOrder.mockResolvedValue({
+      data: [{ type: 'hrv', value: 30, unit: 'ms', start_at: '2026-07-21T08:00:00.000Z' }],
+      error: null,
+    })
+    mockTirednessMaybeSingle.mockResolvedValue({ data: { id: 'sig-1' }, error: null })
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/workout/latest-plan',
+      headers: { Authorization: 'Bearer valid-token' },
+    })
+
+    const body = JSON.parse(response.body)
+    expect(body.today.adjusted).toBe(true)
+    expect(body.today.exercises[0].sets).toBe(3)
+    expect(body.today.adjustmentReason).toMatch(/hrv/i)
   })
 })

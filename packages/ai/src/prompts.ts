@@ -224,6 +224,8 @@ export function buildContextBody(
   level: string,
   daysPerWeek: number,
   checkins?: BodyCheckin[],
+  trainingTime?: string,
+  timeOff?: string,
 ): string {
   const recentHistory = history.slice(-5)
   const recentRecovery = recovery.slice(-7)
@@ -277,6 +279,7 @@ export function buildContextBody(
 **Objetivos**: ${goals}
 **Nível de experiência**: ${level}
 **Dias disponíveis por semana**: ${daysPerWeek}
+${trainingTime ? `**Tempo treinando**: ${trainingTime}\n` : ''}${timeOff ? `**Tempo parado sem treinar**: ${timeOff}\n` : ''}
 
 **Status de recuperação**: ${recoveryStatus}
 ${lastSessionAlert ? `\n${lastSessionAlert}` : ''}
@@ -300,8 +303,10 @@ export function buildUserPrompt(
   level: string,
   daysPerWeek: number,
   checkins?: BodyCheckin[],
+  trainingTime?: string,
+  timeOff?: string,
 ): string {
-  return `${buildContextBody(history, recovery, goals, level, daysPerWeek, checkins)}
+  return `${buildContextBody(history, recovery, goals, level, daysPerWeek, checkins, trainingTime, timeOff)}
 
 Com base neste contexto e no perfil genético fornecido, prescreva o próximo treino ideal. Lembre-se de respeitar todas as restrições genéticas e o estado atual de recuperação.`
 }

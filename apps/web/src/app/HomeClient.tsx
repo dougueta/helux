@@ -1,8 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
+import { useTiredness } from '@/hooks/useTiredness'
 import { CheckinCard } from '@/components/checkin/CheckinCard'
 import type { BodyCheckin } from '@helux/types'
 import { Icon, HelixMark } from '@/components/ui/icons'
@@ -10,6 +12,7 @@ import { Ring } from '@/components/ui/Ring'
 import { MatchBadge } from '@/components/ui/MatchBadge'
 import { RecoveryAdjustedBadge } from '@/components/workout/RecoveryAdjustedBadge'
 import { UpcomingSessionsList } from '@/components/workout/UpcomingSessionsList'
+import { TirednessToggle } from '@/components/workout/TirednessToggle'
 import { MesocycleProgress } from '@/components/workout/MesocycleProgress'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -44,7 +47,13 @@ function recoveryLabel(score: number): string {
 export function HomeClient({ plan: initialPlan, recovery, insight, firstName, checkins, analytics }: HomeClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
-  const { plan, generating, generationError, generatePlan } = useWorkoutPlan()
+  const { plan, generating, generationError, generatePlan, refetch } = useWorkoutPlan()
+  const tiredness = useTiredness()
+
+  async function handleTirednessToggle() {
+    await tiredness.toggle()
+    await refetch()
+  }
   const currentPlan = plan ?? initialPlan
   const today = currentPlan?.today
   const WEEKLY_TARGET = 4
@@ -67,23 +76,41 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
             helux
           </span>
         </div>
-        {analytics && analytics.currentStreakWeeks > 0 && (
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            padding: '6px 11px',
-            borderRadius: 'var(--r-pill)',
-            background: 'var(--surface-2)',
-            border: '1px solid var(--hairline)',
-          }}>
-            <Icon name="flame" size={14} stroke="var(--accent)" />
-            <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
-              {analytics.currentStreakWeeks}
-            </span>
-            <span style={{ color: 'var(--text-faint)', fontSize: 11 }}>sem</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {analytics && analytics.currentStreakWeeks > 0 && (
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              padding: '6px 11px',
+              borderRadius: 'var(--r-pill)',
+              background: 'var(--surface-2)',
+              border: '1px solid var(--hairline)',
+            }}>
+              <Icon name="flame" size={14} stroke="var(--accent)" />
+              <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                {analytics.currentStreakWeeks}
+              </span>
+              <span style={{ color: 'var(--text-faint)', fontSize: 11 }}>sem</span>
+            </div>
+          )}
+          <Link
+            href="/perfil"
+            aria-label="Perfil de treino"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 32,
+              height: 32,
+              borderRadius: 'var(--r-pill)',
+              background: 'var(--surface-2)',
+              border: '1px solid var(--hairline)',
+            }}
+          >
+            <Icon name="user" size={15} stroke="var(--text-dim)" />
+          </Link>
+        </div>
       </div>
 
       {/* Greeting */}
@@ -115,6 +142,7 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
               </span>
               <div className="flex items-center gap-2">
                 {today.adjusted && <RecoveryAdjustedBadge reason={today.adjustmentReason} />}
+                <TirednessToggle active={tiredness.active} onToggle={handleTirednessToggle} />
                 {insight?.score != null && <MatchBadge value={insight.score} />}
               </div>
             </div>

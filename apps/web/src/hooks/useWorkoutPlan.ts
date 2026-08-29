@@ -24,6 +24,12 @@ function saveToStorage(plan: AdjustedWorkoutPlanView) {
   } catch {}
 }
 
+export function clearCachedPlan() {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {}
+}
+
 export function useWorkoutPlan() {
   const [plan, setPlanState] = useState<AdjustedWorkoutPlanView | null>(null)
   const [loading, setLoading] = useState(true)
@@ -89,5 +95,12 @@ export function useWorkoutPlan() {
     setPlanState(p)
   }
 
-  return { plan, loading, generating, error, generationError, setPlan, generatePlan }
+  async function refetch() {
+    clearCachedPlan()
+    const p = await getLatestPlan()
+    setPlan(p)
+    return p
+  }
+
+  return { plan, loading, generating, error, generationError, setPlan, generatePlan, refetch }
 }

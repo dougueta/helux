@@ -1,7 +1,11 @@
 import type { GeneticProfile, WorkoutConstraints, WorkoutSession, RecoveryData, BodyCheckin } from '@helux/types'
 import { buildExerciseCatalogSection, buildContextBody } from './prompts'
 
-export function buildMesocycleSystemPrompt(profile: GeneticProfile, constraints: WorkoutConstraints): string {
+export function buildMesocycleSystemPrompt(
+  profile: GeneticProfile,
+  constraints: WorkoutConstraints,
+  currentInjury?: string,
+): string {
   const profileDefaults: GeneticProfile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] }
   const constraintDefaults: WorkoutConstraints = { maxWeeklyFrequency: 4, preferredVolume: 'medio', restBetweenSets: '90-120s', cardioIntensityLimit: 'moderado', forbiddenExerciseTypes: [] }
   profile = { ...profileDefaults, ...profile }
@@ -48,6 +52,8 @@ ${profile.predisposicao === 'endurance' ? '→ Predisposição para resistência
 ${profile.predisposicao === 'misto' ? '→ Predisposição mista: adaptação equilibrada tanto a treinos de força quanto de resistência, versatilidade para diferentes estímulos.' : ''}
 
 ${profile.alertas.length > 0 ? `**Alertas Genéticos — OBRIGATÓRIO RESPEITAR**:\n${profile.alertas.map(a => `- ⚠️ ${a}`).join('\n')}` : ''}
+
+${currentInjury ? `## Alertas Situacionais — OBRIGATÓRIO RESPEITAR\n\n- ⚠️ ${currentInjury}\n\nEvite ou adapte exercícios que agravariam essa condição. Mencione explicitamente na justificativa (\`rationale\`) qual adaptação foi feita por conta deste alerta.` : ''}
 
 ## Restrições de Treino Derivadas do Perfil
 
@@ -141,8 +147,10 @@ export function buildMesocycleUserPrompt(
   level: string,
   daysPerWeek: number,
   checkins?: BodyCheckin[],
+  trainingTime?: string,
+  timeOff?: string,
 ): string {
-  return `${buildContextBody(history, recovery, goals, level, daysPerWeek, checkins)}
+  return `${buildContextBody(history, recovery, goals, level, daysPerWeek, checkins, trainingTime, timeOff)}
 
 Com base neste contexto e no perfil genético fornecido, prescreva o mesociclo completo (todas as sessões do ciclo de divisão muscular, na ordem em que devem ser executadas). Lembre-se de respeitar todas as restrições genéticas.`
 }

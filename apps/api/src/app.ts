@@ -10,6 +10,8 @@ import { workoutSessionsRoutes } from './routes/workout-sessions'
 import { workoutHistoryRoutes } from './routes/workout-history'
 import { workoutAnalyticsRoutes } from './routes/workout-analytics'
 import { checkinsRoutes } from './routes/checkins'
+import { profileRoutes } from './routes/profile'
+import { tirednessTodayRoutes } from './routes/tiredness-today'
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({
@@ -19,6 +21,7 @@ export function buildApp(): FastifyInstance {
   app.register(cors, {
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
     credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'DELETE'],
   })
 
   app.register(healthRoutes)
@@ -31,6 +34,8 @@ export function buildApp(): FastifyInstance {
   app.register(workoutHistoryRoutes)
   app.register(workoutAnalyticsRoutes)
   app.register(checkinsRoutes)
+  app.register(profileRoutes)
+  app.register(tirednessTodayRoutes)
 
   return app
 }

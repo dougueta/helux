@@ -22,7 +22,7 @@ vi.mock('@helux/genetics', () => ({
   parseGeneraJson: vi.fn(() => PARSED_PROFILE),
 }))
 
-function mockTable(rows: Record<string, unknown[]>) {
+function mockTable(rows: Record<string, unknown[]>, profileRow: Record<string, unknown> | null = null) {
   return vi.fn((table: string) => ({
     select: vi.fn(() => ({
       eq: vi.fn(() => ({
@@ -32,6 +32,10 @@ function mockTable(rows: Record<string, unknown[]>) {
         order: vi.fn(() => ({
           range: vi.fn().mockResolvedValue({ data: rows[table] ?? [], error: null }),
         })),
+        maybeSingle: vi.fn().mockResolvedValue({
+          data: table === 'user_training_profile' ? profileRow : null,
+          error: null,
+        }),
       })),
     })),
   }))
@@ -87,5 +91,40 @@ describe('gatherPlanInput', () => {
     expect(result?.recoveryData).toEqual([])
     expect(result?.workoutHistory).toEqual([])
     expect(result?.bodyCheckins).toEqual([])
+  })
+
+  it('usa os defaults atuais quando o usuário nunca preencheu o perfil (FR-005)', async () => {
+    const { createClient } = await import('@supabase/supabase-js')
+    vi.mocked(createClient).mockReturnValue({ from: mockTable({}, null) } as never)
+
+    const { gatherPlanInput } = await import('../services/plan-context.service')
+    const result = await gatherPlanInput('user-123', 'token-abc')
+
+    expect(result?.userGoals).toBe('Hipertrofia e condicionamento geral')
+    expect(result?.userLevel).toBe('intermediario')
+    expect(result?.trainingTime).toBeUndefined()
+    expect(result?.timeOff).toBeUndefined()
+    expect(result?.currentInjury).toBeUndefined()
+  })
+
+  it('usa os dados reais do user_training_profile quando existem', async () => {
+    const { createClient } = await import('@supabase/supabase-js')
+    vi.mocked(createClient).mockReturnValue({
+      from: mockTable({}, {
+        goal: 'Resistência para maratona',
+        level: 'avancado',
+        training_time: '5 anos',
+        time_off: null,
+        current_injury: 'Dor no joelho direito',
+      }),
+    } as never)
+
+    const { gatherPlanInput } = await import('../services/plan-context.service')
+    const result = await gatherPlanInput('user-123', 'token-abc')
+
+    expect(result?.userGoals).toBe('Resistência para maratona')
+    expect(result?.userLevel).toBe('avancado')
+    expect(result?.trainingTime).toBe('5 anos')
+    expect(result?.currentInjury).toBe('Dor no joelho direito')
   })
 })

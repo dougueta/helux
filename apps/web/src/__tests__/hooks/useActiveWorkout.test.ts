@@ -115,4 +115,14 @@ describe('useActiveWorkout', () => {
     expect(apiFetch).toHaveBeenCalledWith('/api/workouts/sessions', expect.objectContaining({ method: 'POST' }))
     expect(result.current.session).toBeNull()
   })
+
+  it('finishWorkout clears the cached workout plan so the home page refetches', async () => {
+    localStorageMock.setItem('helux:workout-plan', JSON.stringify({ mesocycleId: null, today: null }))
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const { result } = renderHook(() => useActiveWorkout())
+    act(() => { result.current.startWorkout(mockPlan as any) })
+    act(() => { result.current.toggleSetDone(0, 0) })
+    await act(async () => { await result.current.finishWorkout() })
+    expect(localStorageMock.getItem('helux:workout-plan')).toBeNull()
+  })
 })

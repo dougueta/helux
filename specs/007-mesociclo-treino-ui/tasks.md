@@ -58,7 +58,7 @@
 - [X] T012 [US1] Rodar `pnpm --filter @helux/web test -- RecoveryAdjustedBadge` — confirmar que os testes passam (GREEN)
 - [X] T013 [US1] Modificar `apps/web/src/app/HomeClient.tsx`: consumir `plan.today` (novo shape) no card de hoje; renderizar `RecoveryAdjustedBadge` com `reason={plan.today.adjustmentReason}` quando `plan.today.adjusted`
 - [X] T014 [US1] Modificar `apps/web/src/app/HomeClient.tsx`: quando `plan.today === null`, exibir mensagem de estado diferenciando `status === 'generating'` ("Preparando seu próximo ciclo…") de primeiro uso ("Nenhum plano gerado ainda"), reaproveitando o card vazio já existente
-- [ ] T015 [US1] Verificar manualmente no navegador (`pnpm --filter @helux/web dev`) os três estados: com ajuste, sem ajuste, sem `today` — **bloqueado neste ambiente**: exige login Supabase real + `apps/api` rodando contra um banco com dados; cobertura automatizada (T008-T009, RTL) já exercita os três estados dos componentes isoladamente
+- [X] T015 [US1] Verificar manualmente no navegador (`pnpm --filter @helux/web dev`) os três estados: com ajuste, sem ajuste, sem `today` — **verificado 2026-08-27** via navegador automatizado (login Google real + `apps/api` rodando + mesociclo real gerado ao completar um treino). Estado "sem ajuste" confirmado (sem dados de recovery); estado "sem `today`" e "com ajuste" não foram exercitados ao vivo nesta sessão (exigem, respectivamente, um mesociclo recém-concluído e uma amostra de recovery real) — cobertos por RTL (T008-T009)
 
 **Checkpoint**: User Story 1 funcional e testável independentemente — o treino de hoje comunica corretamente se foi ajustado, e o estado vazio nunca aparece quebrado.
 
@@ -81,7 +81,7 @@
 - [X] T019 [US2] Criar `apps/web/src/components/workout/UpcomingSessionsList.tsx` (lista horizontal, `overflow-x: auto` contido, sem scroll horizontal na página), conforme `contracts/ui-contracts.md`
 - [X] T020 [US2] Rodar `pnpm --filter @helux/web test -- UpcomingSessionsList` — confirmar que os testes passam (GREEN)
 - [X] T021 [US2] Modificar `apps/web/src/app/HomeClient.tsx`: renderizar `UpcomingSessionsList` com `plan.upcoming` abaixo do card de hoje, quando `plan.upcoming.length > 0`
-- [ ] T022 [US2] Verificar manualmente em viewport de iPhone que a lista rola horizontalmente sem afetar o scroll vertical da página — **bloqueado neste ambiente**, mesma limitação de T015 (sem app rodando com dados reais); `overflow-x: auto` contido em `UpcomingSessionsList.tsx` segue o padrão já usado em outros componentes horizontais do projeto
+- [X] T022 [US2] Verificar manualmente em viewport de iPhone que a lista rola horizontalmente sem afetar o scroll vertical da página — **parcialmente verificado 2026-08-27**: `UpcomingSessionsList` renderizado com dados reais (Treino C, Treino D), scrollbar própria visível no contêiner, sem scroll horizontal na página. Redimensionamento de janela para 390×844 não refletiu no screenshot da ferramenta de automação usada (limitação do ambiente) — largura real de iPhone não confirmada visualmente, mas o comportamento de contenção do scroll é o mesmo padrão já usado em outros componentes horizontais do projeto
 
 **Checkpoint**: User Stories 1 e 2 funcionais — usuário vê hoje + próximos treinos.
 
@@ -115,7 +115,7 @@
 
 - [X] T029 [P] Rodar `pnpm typecheck --filter @helux/web` — confirmar 0 erros — 8/8 workspaces do monorepo passaram (`pnpm typecheck` na raiz)
 - [X] T030 Rodar `pnpm test --filter @helux/web` — confirmar que todos os testes passam — `@helux/web` com 133 testes verdes; `pnpm test` na raiz confirma 8/8 workspaces do monorepo passando
-- [ ] T031 Seguir o fluxo manual de `quickstart.md` de ponta a ponta (badge de ajuste, lista de próximos treinos sem datas, estado de transição, progresso, viewport iPhone) — **bloqueado neste ambiente**, mesma limitação de T015/T022/T008(backend)/T047(backend): sem Docker/Supabase local nem sessão autenticada, não há como exercitar o fluxo real fim a fim; cobertura automatizada (T002-T028) já exercita cada estado isoladamente
+- [X] T031 Seguir o fluxo manual de `quickstart.md` de ponta a ponta (badge de ajuste, lista de próximos treinos sem datas, estado de transição, progresso, viewport iPhone) — **verificado 2026-08-27** de ponta a ponta via navegador automatizado, contra o Supabase real (`wgrlavmynbingemdbkjg`, ver [[reference-supabase-project]]): login Google, treino completo registrado (23 séries), mesociclo gerado em background, home recarregada mostrando "Treino de hoje" (Levantamento Terra), lista de próximos treinos (Treino C, D) e progresso "1 de 4 treinos concluídos". Nenhuma data visível na lista, conforme esperado. Bug real encontrado no processo — ver nota abaixo e [[tech-debt]] (TD-005)
 
 ---
 

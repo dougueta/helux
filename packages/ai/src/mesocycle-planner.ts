@@ -21,7 +21,7 @@ interface RawMesocyclePlan {
 export async function generateMesocyclePlan(input: PlanInput): Promise<Omit<MesocyclePlan, 'id'>> {
   const client = new Anthropic()
 
-  const systemPrompt = buildMesocycleSystemPrompt(input.geneticProfile, input.constraints)
+  const systemPrompt = buildMesocycleSystemPrompt(input.geneticProfile, input.constraints, input.currentInjury)
   const userPrompt = buildMesocycleUserPrompt(
     input.workoutHistory,
     input.recoveryData,
@@ -29,6 +29,8 @@ export async function generateMesocyclePlan(input: PlanInput): Promise<Omit<Meso
     input.userLevel,
     input.availableDaysPerWeek,
     input.bodyCheckins,
+    input.trainingTime,
+    input.timeOff,
   )
 
   const response = await client.messages.create({
