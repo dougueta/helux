@@ -118,6 +118,24 @@ describe('generateAndSaveMesocycle', () => {
     ).resolves.not.toThrow()
     expect(logger.error).toHaveBeenCalled()
   })
+
+  it('US3 (FR-010): usa o perfil mais recente a cada chamada, sem reaproveitar um PlanInput de uma geração anterior', async () => {
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+
+    gatherPlanInputMock.mockResolvedValueOnce({ ...MOCK_PLAN_INPUT, userGoals: 'Hipertrofia', userLevel: 'intermediario' })
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+    expect(generateMesocyclePlanMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ userGoals: 'Hipertrofia', userLevel: 'intermediario' }),
+    )
+
+    // Perfil atualizado pelo usuário entre a criação do mesociclo anterior e esta nova geração
+    gatherPlanInputMock.mockResolvedValueOnce({ ...MOCK_PLAN_INPUT, userGoals: 'Resistência para maratona', userLevel: 'avancado' })
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+    expect(generateMesocyclePlanMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ userGoals: 'Resistência para maratona', userLevel: 'avancado' }),
+    )
+    expect(gatherPlanInputMock).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe('triggerBackgroundPlanGeneration', () => {

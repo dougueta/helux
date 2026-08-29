@@ -14,8 +14,32 @@ function reduceSets(exercises: PlannedExercise[], note?: string): PlannedExercis
   })
 }
 
-export function applyRecoveryAdjustment(session: MesocycleSession, recovery: RecoveryData[]): AdjustedSession {
+export function applyRecoveryAdjustment(
+  session: MesocycleSession,
+  recovery: RecoveryData[],
+  manualTirednessToday?: boolean,
+): AdjustedSession {
   const latestHrv = recovery.length > 0 ? recovery[recovery.length - 1].hrv : undefined
+
+  if (latestHrv !== undefined && latestHrv < 40) {
+    return {
+      letter: session.letter,
+      focus: session.focus,
+      exercises: reduceSets(session.exercises, 'Carga reduzida hoje por recovery comprometido.'),
+      adjusted: true,
+      adjustmentReason: `HRV baixo (${latestHrv}ms) — recuperação comprometida`,
+    }
+  }
+
+  if (manualTirednessToday) {
+    return {
+      letter: session.letter,
+      focus: session.focus,
+      exercises: reduceSets(session.exercises, 'Carga reduzida hoje por cansaço sinalizado manualmente.'),
+      adjusted: true,
+      adjustmentReason: 'Cansaço sinalizado manualmente hoje',
+    }
+  }
 
   if (latestHrv === undefined) {
     return { letter: session.letter, focus: session.focus, exercises: session.exercises, adjusted: false }
@@ -25,21 +49,11 @@ export function applyRecoveryAdjustment(session: MesocycleSession, recovery: Rec
     return { letter: session.letter, focus: session.focus, exercises: session.exercises, adjusted: false }
   }
 
-  if (latestHrv >= 40) {
-    return {
-      letter: session.letter,
-      focus: session.focus,
-      exercises: reduceSets(session.exercises),
-      adjusted: true,
-      adjustmentReason: `HRV moderado (${latestHrv}ms)`,
-    }
-  }
-
   return {
     letter: session.letter,
     focus: session.focus,
-    exercises: reduceSets(session.exercises, 'Carga reduzida hoje por recovery comprometido.'),
+    exercises: reduceSets(session.exercises),
     adjusted: true,
-    adjustmentReason: `HRV baixo (${latestHrv}ms) — recuperação comprometida`,
+    adjustmentReason: `HRV moderado (${latestHrv}ms)`,
   }
 }

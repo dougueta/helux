@@ -67,4 +67,42 @@ describe('applyRecoveryAdjustment', () => {
 
     expect(BASE_SESSION.exercises[0].sets).toBe(4)
   })
+
+  describe('manualTirednessToday (US2, FR-009)', () => {
+    it('sem HRV sincronizado: aplica a faixa alta e cita o cansaço manual no motivo', () => {
+      const result = applyRecoveryAdjustment(BASE_SESSION, [], true)
+
+      expect(result.adjusted).toBe(true)
+      expect(result.adjustmentReason).toMatch(/cansaço/i)
+      expect(result.exercises[0].sets).toBe(3)
+    })
+
+    it('com HRV bom (>=60): o sinal manual ainda força o ajuste (nunca menos conservador)', () => {
+      const result = applyRecoveryAdjustment(BASE_SESSION, recoveryWithHrv(70), true)
+
+      expect(result.adjusted).toBe(true)
+      expect(result.adjustmentReason).toMatch(/cansaço/i)
+    })
+
+    it('com HRV moderado (40-59): o sinal manual eleva para a faixa alta', () => {
+      const result = applyRecoveryAdjustment(BASE_SESSION, recoveryWithHrv(52), true)
+
+      expect(result.adjusted).toBe(true)
+      expect(result.adjustmentReason).toMatch(/cansaço/i)
+    })
+
+    it('com HRV já baixo (<40): o motivo permanece o do HRV, não fica menos conservador', () => {
+      const result = applyRecoveryAdjustment(BASE_SESSION, recoveryWithHrv(30), true)
+
+      expect(result.adjusted).toBe(true)
+      expect(result.adjustmentReason).toMatch(/hrv/i)
+      expect(result.exercises[0].sets).toBe(3)
+    })
+
+    it('manualTirednessToday false/undefined não muda o comportamento existente', () => {
+      const result = applyRecoveryAdjustment(BASE_SESSION, recoveryWithHrv(70), false)
+
+      expect(result.adjusted).toBe(false)
+    })
+  })
 })

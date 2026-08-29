@@ -15,6 +15,8 @@ export async function generateWorkoutPlan(input: PlanInput): Promise<NextWorkout
     input.userLevel,
     input.availableDaysPerWeek,
     input.bodyCheckins,
+    input.trainingTime,
+    input.timeOff,
   )
 
   const response = await client.messages.create({
