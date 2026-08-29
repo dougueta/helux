@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { apiFetch } from '@/services/api-client'
+import { clearCachedPlan } from './useWorkoutPlan'
 import type { PlannedExercise } from '@helux/types'
 
 const STORAGE_KEY = 'helux:active-workout'
@@ -169,6 +170,7 @@ export function useActiveWorkout() {
     })
 
     save(null)
+    clearCachedPlan()
     setSession(null)
   }, [session])
 
