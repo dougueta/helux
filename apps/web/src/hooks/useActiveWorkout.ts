@@ -145,20 +145,27 @@ export function useActiveWorkout() {
     })
   }, [])
 
+  const getSkippedExercises = useCallback((): PlannedExercise[] => {
+    if (!session) return []
+    return session.planExercises.filter(
+      (_, ei) => (session.exerciseStates[ei] ?? []).every(s => !s.done)
+    )
+  }, [session])
+
   const finishWorkout = useCallback(async () => {
     if (!session) return
     const durationS = Math.round(
       (Date.now() - new Date(session.startedAt).getTime()) / 1000
     )
 
-    const exercises = session.planExercises
-      .map((ex, ei) => ({
-        name: ex.name,
-        sets: (session.exerciseStates[ei] ?? [])
-          .filter(s => s.done)
-          .map(s => ({ reps: s.reps, weight: s.weight, effort: 8 })),
-      }))
-      .filter(e => e.sets.length > 0)
+    const exercises = session.planExercises.map((ex, ei) => {
+      const doneSets = (session.exerciseStates[ei] ?? [])
+        .filter(s => s.done)
+        .map(s => ({ reps: s.reps, weight: s.weight, effort: 8 }))
+      return doneSets.length > 0
+        ? { name: ex.name, sets: doneSets }
+        : { name: ex.name, sets: doneSets, skipped: true }
+    })
 
     await apiFetch('/api/workouts/sessions', {
       method: 'POST',
@@ -184,6 +191,7 @@ export function useActiveWorkout() {
     updateSet,
     addSet,
     selectVariant,
+    getSkippedExercises,
     finishWorkout,
   }
 }

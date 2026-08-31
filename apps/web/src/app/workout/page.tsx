@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
 import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
+import { FinishWorkoutConfirmDialog } from '@/components/workout/FinishWorkoutConfirmDialog'
 import { Icon } from '@/components/ui/icons'
 import { Ring } from '@/components/ui/Ring'
 import { MiniStep } from '@/components/ui/MiniStep'
@@ -24,6 +25,7 @@ export default function WorkoutPage() {
     updateSet,
     addSet,
     selectVariant,
+    getSkippedExercises,
     finishWorkout,
   } = useActiveWorkout()
 
@@ -31,6 +33,7 @@ export default function WorkoutPage() {
   const [restTotal, setRestTotal] = useState(0)
   const [showDone, setShowDone] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [finishConfirmOpen, setFinishConfirmOpen] = useState(false)
 
   const restActive = restLeft > 0
 
@@ -92,9 +95,16 @@ export default function WorkoutPage() {
     if (currentIdx < session!.planExercises.length - 1) {
       setExercise(currentIdx + 1)
       setRestLeft(0)
+    } else if (getSkippedExercises().length > 0) {
+      setFinishConfirmOpen(true)
     } else {
       setShowDone(true)
     }
+  }
+
+  function handleConfirmFinish() {
+    setFinishConfirmOpen(false)
+    setShowDone(true)
   }
 
   async function handleSaveAndExit() {
@@ -804,6 +814,14 @@ export default function WorkoutPage() {
           currentVariantId={currentVariantId}
           onApply={(variantId) => selectVariant(currentIdx, variantId)}
           onClose={() => setSheetOpen(false)}
+        />
+      )}
+
+      {finishConfirmOpen && (
+        <FinishWorkoutConfirmDialog
+          skippedNames={getSkippedExercises().map(e => e.name)}
+          onConfirm={handleConfirmFinish}
+          onCancel={() => setFinishConfirmOpen(false)}
         />
       )}
     </div>

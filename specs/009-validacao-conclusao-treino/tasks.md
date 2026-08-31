@@ -32,7 +32,7 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 **⚠️ CRITICAL**: Nenhuma user story pode começar antes desta fase.
 
-- [ ] T001 [P] Adicionar campo opcional `skipped?: boolean` à interface `ExerciseSet` em `packages/types/src/workout.ts`, exatamente como definido em `data-model.md`
+- [X] T001 [P] Adicionar campo opcional `skipped?: boolean` à interface `ExerciseSet` em `packages/types/src/workout.ts`, exatamente como definido em `data-model.md`
 
 **Checkpoint**: Tipo pronto — US1, US2 e US3 podem começar (US3 depende também de T001 para o contrato da API).
 
@@ -46,14 +46,14 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 ### Tests for User Story 1 ⚠️ (escrever e confirmar falha antes de implementar)
 
-- [ ] T002 [P] [US1] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`: novo seletor `getSkippedExercises()` retorna os exercícios do plano com `sets.length === 0` no estado atual da sessão; retorna lista vazia quando todos têm ao menos 1 série
-- [ ] T003 [P] [US1] Criar `apps/web/src/__tests__/components/workout/FinishWorkoutConfirmDialog.test.tsx` (novo arquivo, seguir padrão de testes de `ExerciseSheet.test.tsx` se existir, senão de `TirednessToggle.test.tsx`): renderiza a contagem e os nomes dos exercícios pulados recebidos via prop; chama `onConfirm` ao tocar em confirmar; chama `onCancel` ao tocar em cancelar; não renderiza nada quando a lista de pulados está vazia
+- [X] T002 [P] [US1] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`: novo seletor `getSkippedExercises()` retorna os exercícios do plano com `sets.length === 0` no estado atual da sessão; retorna lista vazia quando todos têm ao menos 1 série
+- [X] T003 [P] [US1] Criar `apps/web/src/__tests__/components/workout/FinishWorkoutConfirmDialog.test.tsx` (novo arquivo, seguir padrão de testes de `ExerciseSheet.test.tsx` se existir, senão de `TirednessToggle.test.tsx`): renderiza a contagem e os nomes dos exercícios pulados recebidos via prop; chama `onConfirm` ao tocar em confirmar; chama `onCancel` ao tocar em cancelar; não renderiza nada quando a lista de pulados está vazia
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Implementar `getSkippedExercises()` em `apps/web/src/hooks/useActiveWorkout.ts`, derivado de `session.planExercises` + séries registradas no estado atual (depende de T001; torna T002 verde)
-- [ ] T005 [P] [US1] Criar `FinishWorkoutConfirmDialog` em `apps/web/src/components/workout/FinishWorkoutConfirmDialog.tsx` com props `{ skippedNames: string[], onConfirm: () => void, onCancel: () => void }`, reaproveitando o padrão de overlay/backdrop de `ExerciseSheet.tsx` (`research.md` Decisão 3) — sem criar um `Modal` genérico novo (torna T003 verde)
-- [ ] T006 [US1] Em `apps/web/src/app/workout/page.tsx`, o botão "Finalizar treino" passa a chamar `getSkippedExercises()` primeiro; se a lista não estiver vazia, abre `FinishWorkoutConfirmDialog` em vez de chamar `finishWorkout` diretamente; ao confirmar, chama `finishWorkout`; ao cancelar, fecha o diálogo sem salvar e mantém o usuário no treino ativo (depende de T004, T005)
+- [X] T004 [US1] Implementar `getSkippedExercises()` em `apps/web/src/hooks/useActiveWorkout.ts`, derivado de `session.planExercises` + séries registradas no estado atual (depende de T001; torna T002 verde)
+- [X] T005 [P] [US1] Criar `FinishWorkoutConfirmDialog` em `apps/web/src/components/workout/FinishWorkoutConfirmDialog.tsx` com props `{ skippedNames: string[], onConfirm: () => void, onCancel: () => void }`, reaproveitando o padrão de overlay/backdrop de `ExerciseSheet.tsx` (`research.md` Decisão 3) — sem criar um `Modal` genérico novo (torna T003 verde)
+- [X] T006 [US1] Em `apps/web/src/app/workout/page.tsx`, o botão "Finalizar treino" passa a chamar `getSkippedExercises()` primeiro; se a lista não estiver vazia, abre `FinishWorkoutConfirmDialog` em vez de chamar `finishWorkout` diretamente; ao confirmar, chama `finishWorkout`; ao cancelar, fecha o diálogo sem salvar e mantém o usuário no treino ativo (depende de T004, T005)
 
 **Checkpoint**: US1 completa e testável de forma independente — pular exercícios dispara confirmação antes de salvar.
 
@@ -67,11 +67,11 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 ### Tests for User Story 2 ⚠️ (escrever e confirmar falha antes de implementar)
 
-- [ ] T007 [P] [US2] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts` (mesmo arquivo de T002): caso de borda em que `getSkippedExercises()` retorna **todos** os exercícios do plano quando nenhum tem nenhuma série registrada (FR-003)
+- [X] T007 [P] [US2] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts` (mesmo arquivo de T002): caso de borda em que `getSkippedExercises()` retorna **todos** os exercícios do plano quando nenhum tem nenhuma série registrada (FR-003)
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] Revisar `page.tsx` (T006): confirmar que não existe nenhum atalho/exceção que finalize diretamente quando a lista de pulados é igual ao plano inteiro — o caminho é idêntico ao de US1, sem branch especial para "vazio" (torna T007 verde; tarefa de verificação, não de código novo se T004/T006 já foram implementadas corretamente)
+- [X] T008 [US2] Revisar `page.tsx` (T006): confirmar que não existe nenhum atalho/exceção que finalize diretamente quando a lista de pulados é igual ao plano inteiro — o caminho é idêntico ao de US1, sem branch especial para "vazio" (torna T007 verde; tarefa de verificação, não de código novo se T004/T006 já foram implementadas corretamente)
 
 **Checkpoint**: US1 e US2 juntas — nenhuma forma de finalizar silenciosamente um treino parcial ou totalmente vazio.
 
@@ -85,13 +85,13 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 ### Tests for User Story 3 ⚠️ (escrever e confirmar falha antes de implementar)
 
-- [ ] T009 [P] [US3] Estender `apps/api/src/__tests__/workout-sessions.test.ts`: retorna `400` quando um exercício tem `sets: []` e `skipped` ausente/`false`; retorna `201` quando o mesmo exercício vem com `skipped: true`, e o objeto inserido via Supabase (`mockInsert`) preserva o campo `skipped: true` nesse item (torna `contracts/api.md` verde)
-- [ ] T010 [P] [US3] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`: `finishWorkout` inclui `skipped: true` no payload enviado para cada exercício presente em `getSkippedExercises()`, e omite/`false` nos demais
+- [X] T009 [P] [US3] Estender `apps/api/src/__tests__/workout-sessions.test.ts`: retorna `400` quando um exercício tem `sets: []` e `skipped` ausente/`false`; retorna `201` quando o mesmo exercício vem com `skipped: true`, e o objeto inserido via Supabase (`mockInsert`) preserva o campo `skipped: true` nesse item (torna `contracts/api.md` verde)
+- [X] T010 [P] [US3] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`: `finishWorkout` inclui `skipped: true` no payload enviado para cada exercício presente em `getSkippedExercises()`, e omite/`false` nos demais
 
 ### Implementation for User Story 3
 
-- [ ] T011 [US3] Em `apps/api/src/routes/workout-sessions.ts`, adicionar `skipped: z.boolean().optional()` a `ExerciseSchema` e o `superRefine` em `SessionBodySchema` exatamente como em `contracts/api.md` (torna T009 verde)
-- [ ] T012 [US3] Em `finishWorkout` (`apps/web/src/hooks/useActiveWorkout.ts`), marcar `skipped: true` no payload para cada exercício de `getSkippedExercises()` antes de enviar ao `POST /api/workouts/sessions` (depende de T004; torna T010 verde)
+- [X] T011 [US3] Em `apps/api/src/routes/workout-sessions.ts`, adicionar `skipped: z.boolean().optional()` a `ExerciseSchema` e o `superRefine` em `SessionBodySchema` exatamente como em `contracts/api.md` (torna T009 verde)
+- [X] T012 [US3] Em `finishWorkout` (`apps/web/src/hooks/useActiveWorkout.ts`), marcar `skipped: true` no payload para cada exercício de `getSkippedExercises()` antes de enviar ao `POST /api/workouts/sessions` (depende de T004; torna T010 verde)
 
 **Checkpoint**: Todas as user stories completas — histórico distingue pulado de executado, e a regra vale tanto na UI quanto na API.
 
@@ -101,8 +101,8 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 **Purpose**: Validação final cruzando as três user stories.
 
-- [ ] T013 [P] Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test` e o typecheck do monorepo, confirmando que todos os testes novos (T002–T003, T007, T009–T010) passam em verde e nenhum teste existente quebrou
-- [ ] T014 Executar o fluxo manual de verificação de `quickstart.md` (passos 1–6) contra o app rodando localmente
+- [X] T013 [P] Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test` e o typecheck do monorepo, confirmando que todos os testes novos (T002–T003, T007, T009–T010) passam em verde e nenhum teste existente quebrou
+- [ ] T014 Executar o fluxo manual de verificação de `quickstart.md` (passos 1–6) contra o app rodando localmente — **pendente**: requer login real (Google OAuth) e app rodando, não executável neste ambiente headless; ver Notes
 
 ---
 
