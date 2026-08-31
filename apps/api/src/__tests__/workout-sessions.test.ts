@@ -81,4 +81,35 @@ describe('POST /api/workouts/sessions', () => {
     })
     expect(res.statusCode).toBe(400)
   })
+
+  it('returns 400 when an exercise has no sets and is not marked skipped', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/workouts/sessions',
+      headers: { Authorization: 'Bearer valid-token' },
+      payload: {
+        date: '2026-06-15',
+        exercises: [{ name: 'Supino', sets: [] }],
+      },
+    })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 201 and preserves skipped: true when an empty exercise is explicitly marked skipped', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/workouts/sessions',
+      headers: { Authorization: 'Bearer valid-token' },
+      payload: {
+        date: '2026-06-15',
+        exercises: [
+          { name: 'Agachamento', sets: [{ reps: 8, weight: 80, effort: 8 }] },
+          { name: 'Supino', sets: [], skipped: true },
+        ],
+      },
+    })
+    expect(res.statusCode).toBe(201)
+    const insertedPayload = (mockInsert.mock.calls[0] as any[])[0]
+    expect(insertedPayload.exercises[1]).toEqual({ name: 'Supino', sets: [], skipped: true })
+  })
 })

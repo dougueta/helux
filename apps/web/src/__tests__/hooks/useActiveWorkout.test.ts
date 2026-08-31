@@ -125,4 +125,53 @@ describe('useActiveWorkout', () => {
     await act(async () => { await result.current.finishWorkout() })
     expect(localStorageMock.getItem('helux:workout-plan')).toBeNull()
   })
+
+  describe('getSkippedExercises', () => {
+    it('returns an empty list when every exercise has at least one done set', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlan as any) })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      act(() => { result.current.toggleSetDone(1, 0) })
+      expect(result.current.getSkippedExercises()).toEqual([])
+    })
+
+    it('returns the exercises that have no done sets', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlan as any) })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      const skipped = result.current.getSkippedExercises()
+      expect(skipped).toHaveLength(1)
+      expect(skipped[0].name).toBe('Supino')
+    })
+
+    it('returns every exercise when none has a done set (fully empty workout)', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlan as any) })
+      const skipped = result.current.getSkippedExercises()
+      expect(skipped.map(e => e.name)).toEqual(['Agachamento', 'Supino'])
+    })
+  })
+
+  describe('finishWorkout skipped payload', () => {
+    it('marks skipped: true only on exercises with no done sets', async () => {
+      const { apiFetch } = await import('@/services/api-client')
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlan as any) })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      await act(async () => { await result.current.finishWorkout() })
+
+      const call = (apiFetch as any).mock.calls[0]
+      const body = JSON.parse(call[1].body)
+      expect(body.exercises).toHaveLength(2)
+      const agachamento = body.exercises.find((e: any) => e.name === 'Agachamento')
+      const supino = body.exercises.find((e: any) => e.name === 'Supino')
+      expect(agachamento.skipped).toBeUndefined()
+      expect(supino.skipped).toBe(true)
+      expect(supino.sets).toEqual([])
+    })
+  })
 })

@@ -12,13 +12,26 @@ const SetSchema = z.object({
 const ExerciseSchema = z.object({
   name: z.string().min(1),
   sets: z.array(SetSchema),
+  skipped: z.boolean().optional(),
 })
 
-const SessionBodySchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  duration_s: z.number().int().nonnegative().optional(),
-  exercises: z.array(ExerciseSchema),
-})
+const SessionBodySchema = z
+  .object({
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    duration_s: z.number().int().nonnegative().optional(),
+    exercises: z.array(ExerciseSchema),
+  })
+  .superRefine((body, ctx) => {
+    for (const [i, ex] of body.exercises.entries()) {
+      if (ex.sets.length === 0 && ex.skipped !== true) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['exercises', i, 'skipped'],
+          message: 'Exercício sem séries precisa ser marcado skipped: true',
+        })
+      }
+    }
+  })
 
 export async function workoutSessionsRoutes(app: FastifyInstance): Promise<void> {
   const supabaseUrl = process.env.SUPABASE_URL!
