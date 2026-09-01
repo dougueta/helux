@@ -69,6 +69,7 @@ export default function WorkoutPage() {
   const currentVariantId = session.variantByExerciseIndex?.[currentIdx]
   const selectedVariant = variants.find(v => v.id === currentVariantId) ?? recVariant
   const betterFitAvailable = variants.some(v => v.betterFit)
+  const fitScore = selectedVariant?.match ?? currentEx?.match
 
   const totalSets = session.exerciseStates.reduce((acc, sets) => acc + sets.length, 0)
   const totalDone = session.exerciseStates.reduce(
@@ -359,19 +360,21 @@ export default function WorkoutPage() {
                 >
                   Musculação
                 </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: 'var(--accent)',
-                    background: 'var(--accent-soft)',
-                    borderRadius: 'var(--r-pill)',
-                    padding: '3px 10px',
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  96 fit
-                </span>
+                {fitScore !== undefined && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: 'var(--accent)',
+                      background: 'var(--accent-soft)',
+                      borderRadius: 'var(--r-pill)',
+                      padding: '3px 10px',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    {fitScore} fit
+                  </span>
+                )}
               </div>
               <h2
                 style={{
@@ -484,7 +487,7 @@ export default function WorkoutPage() {
                     >
                       <Icon name="swap" size={14} stroke="var(--accent)" />
                       <span style={{ flex: 1 }}>
-                        Variante ativa <b>· {selectedVariant.equip}</b>
+                        Variante ativa <b>{selectedVariant.name} · {selectedVariant.equip}</b>
                       </span>
                       {recVariant && (
                         <button

@@ -19,6 +19,21 @@ const mockPlan = [
   { name: 'Supino', sets: 3, reps: '6-8', weight: '70kg', notes: '' },
 ]
 
+const mockPlanWithVariants = [
+  {
+    name: 'Supino Reto (Barra)',
+    sets: 3,
+    reps: '8-10',
+    weight: '80kg',
+    notes: '',
+    match: 96,
+    variants: [
+      { id: 'rec1', name: 'Supino Reto (Barra)', equip: 'Barra', level: 'Avançado', match: 96, rec: true, motion: 'press-flat', implement: 'barbell', why: '' },
+      { id: 'alt1', name: 'Supino Reto com Halteres', equip: 'Halteres', level: 'Intermediário', match: 84, motion: 'press-flat', implement: 'dumbbell', why: '' },
+    ],
+  },
+]
+
 describe('useActiveWorkout', () => {
   beforeEach(() => { localStorageMock.clear(); vi.clearAllMocks() })
 
@@ -152,6 +167,79 @@ describe('useActiveWorkout', () => {
       act(() => { result.current.startWorkout(mockPlan as any) })
       const skipped = result.current.getSkippedExercises()
       expect(skipped.map(e => e.name)).toEqual(['Agachamento', 'Supino'])
+    })
+  })
+
+  describe('executedVariantByExerciseIndex locking', () => {
+    it('locks to the active variant on the first done toggle for that exercise', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlanWithVariants as any) })
+      act(() => { result.current.selectVariant(0, 'alt1') })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      expect(result.current.session?.executedVariantByExerciseIndex[0]).toBe('alt1')
+    })
+
+    it('defaults to undefined when no variant was ever selected before the first done toggle', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlanWithVariants as any) })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      expect(result.current.session?.executedVariantByExerciseIndex[0]).toBeUndefined()
+    })
+
+    it('does not change after a later variant switch, once locked', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlanWithVariants as any) })
+      act(() => { result.current.selectVariant(0, 'alt1') })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      act(() => { result.current.selectVariant(0, 'rec1') })
+      expect(result.current.session?.executedVariantByExerciseIndex[0]).toBe('alt1')
+    })
+  })
+
+  describe('finishWorkout executedVariant payload', () => {
+    it('includes executedVariant when the locked variant differs from the recommended one', async () => {
+      const { apiFetch } = await import('@/services/api-client')
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlanWithVariants as any) })
+      act(() => { result.current.selectVariant(0, 'alt1') })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      await act(async () => { await result.current.finishWorkout() })
+
+      const call = (apiFetch as any).mock.calls[0]
+      const body = JSON.parse(call[1].body)
+      expect(body.exercises[0].executedVariant).toEqual({ name: 'Supino Reto com Halteres', match: 84 })
+    })
+
+    it('omits executedVariant when no variant was ever switched', async () => {
+      const { apiFetch } = await import('@/services/api-client')
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlanWithVariants as any) })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      await act(async () => { await result.current.finishWorkout() })
+
+      const call = (apiFetch as any).mock.calls[0]
+      const body = JSON.parse(call[1].body)
+      expect(body.exercises[0].executedVariant).toBeUndefined()
+    })
+
+    it('omits executedVariant when the user switches away and back to the recommended variant before logging any set', async () => {
+      const { apiFetch } = await import('@/services/api-client')
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(mockPlanWithVariants as any) })
+      act(() => { result.current.selectVariant(0, 'alt1') })
+      act(() => { result.current.selectVariant(0, 'rec1') })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      await act(async () => { await result.current.finishWorkout() })
+
+      const call = (apiFetch as any).mock.calls[0]
+      const body = JSON.parse(call[1].body)
+      expect(body.exercises[0].executedVariant).toBeUndefined()
     })
   })
 

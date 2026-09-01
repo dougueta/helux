@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/services/api-client'
+import type { ExerciseSet } from '@helux/types'
 
 export interface WorkoutSessionRow {
   id: string
   date: string
   duration_s: number | null
-  exercises: Array<{ name: string; sets: Array<{ reps: number; weight: number; effort: number }> }>
+  exercises: ExerciseSet[]
   created_at: string
 }
 

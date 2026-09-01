@@ -32,7 +32,7 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 **⚠️ CRITICAL**: Nenhuma user story pode começar antes desta fase.
 
-- [ ] T001 [P] Adicionar campo opcional `executedVariant?: { name: string; match: number }` à interface `ExerciseSet` em `packages/types/src/workout.ts`, exatamente como definido em `data-model.md`
+- [X] T001 [P] Adicionar campo opcional `executedVariant?: { name: string; match: number }` à interface `ExerciseSet` em `packages/types/src/workout.ts`, exatamente como definido em `data-model.md`
 
 **Checkpoint**: Tipo pronto — US1, US2 e US3 podem começar.
 
@@ -46,17 +46,17 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 ### Tests for User Story 1 ⚠️ (escrever e confirmar falha antes de implementar)
 
-- [ ] T002 [US1] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`: ao marcar a primeira série de um exercício como feita, `executedVariantByExerciseIndex` daquele índice trava no valor atual de `variantByExerciseIndex` naquele momento; trocas de variante feitas depois de já haver uma série marcada não alteram mais esse valor travado
-- [ ] T003 [US1] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts` (mesmo arquivo de T002): `finishWorkout` inclui `executedVariant: { name, match }` no payload do exercício cuja variante travada difere da variante recomendada; omite o campo quando a variante travada é a recomendada (nenhuma troca real ocorreu) ou quando nenhuma série foi registrada
-- [ ] T004 [P] [US1] Estender `apps/api/src/__tests__/workout-sessions.test.ts`: aceita (`201`) um exercício cujo item inclui `executedVariant: { name, match }` válido, e o objeto inserido via Supabase (`mockInsert`) preserva esse campo
+- [X] T002 [US1] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`: ao marcar a primeira série de um exercício como feita, `executedVariantByExerciseIndex` daquele índice trava no valor atual de `variantByExerciseIndex` naquele momento; trocas de variante feitas depois de já haver uma série marcada não alteram mais esse valor travado
+- [X] T003 [US1] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts` (mesmo arquivo de T002): `finishWorkout` inclui `executedVariant: { name, match }` no payload do exercício cuja variante travada difere da variante recomendada; omite o campo quando a variante travada é a recomendada (nenhuma troca real ocorreu) ou quando nenhuma série foi registrada
+- [X] T004 [P] [US1] Estender `apps/api/src/__tests__/workout-sessions.test.ts`: aceita (`201`) um exercício cujo item inclui `executedVariant: { name, match }` válido, e o objeto inserido via Supabase (`mockInsert`) preserva esse campo
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Adicionar `executedVariantByExerciseIndex: Record<number, string | undefined>` a `ActiveWorkoutState` em `apps/web/src/hooks/useActiveWorkout.ts`: inicializar vazio em `startWorkout`; na hidratação de sessões salvas em `localStorage`, aplicar fallback `?? {}` para sessões legadas sem o campo (mesmo padrão já usado para `variantByExerciseIndex`)
-- [ ] T006 [US1] Implementar a lógica de trava em `toggleSetDone` (`useActiveWorkout.ts`): na transição de uma série para `done: true`, se `executedVariantByExerciseIndex[exerciseIndex]` ainda não tiver entrada, gravar ali o valor atual de `variantByExerciseIndex[exerciseIndex]` (depende de T005; torna T002 verde)
-- [ ] T007 [US1] Atualizar `finishWorkout` (`useActiveWorkout.ts`): para cada exercício com `doneSets.length > 0`, resolver a variante travada em `executedVariantByExerciseIndex[ei]` contra `ex.variants`; se ela existir e não for a variante recomendada, incluir `executedVariant: { name: variante.name, match: variante.match }` no item do payload (depende de T001, T006; torna T003 verde)
-- [ ] T008 [P] [US1] Em `apps/api/src/routes/workout-sessions.ts`, adicionar `executedVariant: ExecutedVariantSchema.optional()` a `ExerciseSchema`, com `ExecutedVariantSchema = z.object({ name: z.string().min(1), match: z.number().min(0).max(100) })`, exatamente como em `contracts/api.md` (torna T004 verde; arquivo independente de T005–T007)
-- [ ] T009 [US1] Em `apps/web/src/app/history/[id]/page.tsx`, quando `ex.executedVariant` estiver presente no exercício da sessão, exibir seu nome junto ao nome do exercício originalmente planejado (ex: "Supino Reto com Halteres — variante de Supino Reto (Barra)"); sem exibir nada extra quando ausente (comportamento atual preservado) — depende de T007/T008 (precisa do campo existir de fato numa sessão salva para ser visível); sem teste automatizado dedicado (ver nota em "Tests" no topo do arquivo); validar via `quickstart.md` passos 2–4
+- [X] T005 [US1] Adicionar `executedVariantByExerciseIndex: Record<number, string | undefined>` a `ActiveWorkoutState` em `apps/web/src/hooks/useActiveWorkout.ts`: inicializar vazio em `startWorkout`; na hidratação de sessões salvas em `localStorage`, aplicar fallback `?? {}` para sessões legadas sem o campo (mesmo padrão já usado para `variantByExerciseIndex`)
+- [X] T006 [US1] Implementar a lógica de trava em `toggleSetDone` (`useActiveWorkout.ts`): na transição de uma série para `done: true`, se `executedVariantByExerciseIndex[exerciseIndex]` ainda não tiver entrada, gravar ali o valor atual de `variantByExerciseIndex[exerciseIndex]` (depende de T005; torna T002 verde)
+- [X] T007 [US1] Atualizar `finishWorkout` (`useActiveWorkout.ts`): para cada exercício com `doneSets.length > 0`, resolver a variante travada em `executedVariantByExerciseIndex[ei]` contra `ex.variants`; se ela existir e não for a variante recomendada, incluir `executedVariant: { name: variante.name, match: variante.match }` no item do payload (depende de T001, T006; torna T003 verde)
+- [X] T008 [P] [US1] Em `apps/api/src/routes/workout-sessions.ts`, adicionar `executedVariant: ExecutedVariantSchema.optional()` a `ExerciseSchema`, com `ExecutedVariantSchema = z.object({ name: z.string().min(1), match: z.number().min(0).max(100) })`, exatamente como em `contracts/api.md` (torna T004 verde; arquivo independente de T005–T007)
+- [X] T009 [US1] Em `apps/web/src/app/history/[id]/page.tsx`, quando `ex.executedVariant` estiver presente no exercício da sessão, exibir seu nome junto ao nome do exercício originalmente planejado (ex: "Supino Reto com Halteres — variante de Supino Reto (Barra)"); sem exibir nada extra quando ausente (comportamento atual preservado) — depende de T007/T008 (precisa do campo existir de fato numa sessão salva para ser visível); sem teste automatizado dedicado (ver nota em "Tests" no topo do arquivo); validar via `quickstart.md` passos 2–4
 
 **Checkpoint**: US1 completa e testável de forma independente — trocar de variante, registrar séries e finalizar já reflete corretamente no histórico salvo e na tela de detalhe.
 
@@ -70,7 +70,7 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Em `apps/web/src/app/workout/page.tsx`, no indicador "Variante ativa · {equip}" (bloco exibido quando `!selectedVariant.rec`), incluir o nome da variante (`selectedVariant.name`) além do equipamento, para que a identificação completa fique visível sem reabrir o `ExerciseSheet`; sem teste automatizado dedicado (ver nota em "Tests"); validar via `quickstart.md` passo 1
+- [X] T010 [US2] Em `apps/web/src/app/workout/page.tsx`, no indicador "Variante ativa · {equip}" (bloco exibido quando `!selectedVariant.rec`), incluir o nome da variante (`selectedVariant.name`) além do equipamento, para que a identificação completa fique visível sem reabrir o `ExerciseSheet`; sem teste automatizado dedicado (ver nota em "Tests"); validar via `quickstart.md` passo 1
 
 **Checkpoint**: US2 completa e testável de forma independente — não depende de US1 (é só leitura do estado `variantByExerciseIndex` já existente).
 
@@ -84,7 +84,7 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 ### Implementation for User Story 3
 
-- [ ] T011 [US3] Em `apps/web/src/app/workout/page.tsx`, substituir o badge "96 fit" hardcoded pelo valor real: `{selectedVariant?.match ?? currentEx.match} fit` (usa o match da variante ativa quando há variantes; cai para o match do exercício planejado quando não há); sem teste automatizado dedicado (ver nota em "Tests"); validar via `quickstart.md` passos 1 e 5
+- [X] T011 [US3] Em `apps/web/src/app/workout/page.tsx`, substituir o badge "96 fit" hardcoded pelo valor real: `{selectedVariant?.match ?? currentEx.match} fit`, só renderizando o badge quando esse valor existir (exercícios sem variantes na base podem não ter `match`, ver `packages/ai/src/variants.ts:106`) — usa o match da variante ativa quando há variantes; cai para o match do exercício planejado quando não há; sem teste automatizado dedicado (ver nota em "Tests"); validar via `quickstart.md` passos 1 e 5
 
 **Checkpoint**: US3 completa e testável de forma independente — não depende de US1 nem de US2 (é só leitura do estado `selectedVariant` já existente).
 
@@ -94,8 +94,8 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 **Purpose**: Remover duplicação lateral encontrada durante o planejamento e validar tudo em conjunto.
 
-- [ ] T012 [P] Em `apps/web/src/hooks/useWorkoutHistory.ts`, trocar o shape duplicado manualmente no campo `exercises` de `WorkoutSessionRow` por `import type { ExerciseSet } from '@helux/types'` (`research.md` Decisão 3) — refactor puro, sem mudança de comportamento; `apps/web/src/__tests__/hooks/useWorkoutHistory.test.ts` não faz nenhuma asserção sobre o shape do exercício, então nenhum teste novo é necessário, só confirmar que a suíte existente continua verde
-- [ ] T013 [P] Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test` e o typecheck do monorepo, confirmando que todos os testes novos (T002–T004) passam em verde e nenhum teste existente quebrou (incluindo `useWorkoutHistory.test.ts` após T012)
+- [X] T012 [P] Em `apps/web/src/hooks/useWorkoutHistory.ts`, trocar o shape duplicado manualmente no campo `exercises` de `WorkoutSessionRow` por `import type { ExerciseSet } from '@helux/types'` (`research.md` Decisão 3) — refactor puro, sem mudança de comportamento; `apps/web/src/__tests__/hooks/useWorkoutHistory.test.ts` não faz nenhuma asserção sobre o shape do exercício, então nenhum teste novo é necessário, só confirmar que a suíte existente continua verde
+- [X] T013 [P] Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test` e o typecheck do monorepo, confirmando que todos os testes novos (T002–T004) passam em verde e nenhum teste existente quebrou (incluindo `useWorkoutHistory.test.ts` após T012)
 - [ ] T014 Executar o fluxo manual de verificação de `quickstart.md` (passos 1–5) contra o app rodando localmente
 
 ---
