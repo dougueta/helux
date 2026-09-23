@@ -92,7 +92,7 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
 
   Confirmar que falha
 - [X] T021 [US2] GREEN: `src/lib/tipItems.ts` com `parseTipItems` e `TipItem`, conforme research R7 (divisão conservadora; regex de gene `\(([A-Z][A-Z0-9]{1,}[^)]*)\)`; nunca perde texto). Fazer T020 passar
-- [ ] T022 [US2] RED→GREEN: `src/__tests__/components/workout/ExecutionTips.test.tsx` e `src/components/workout/ExecutionTips.tsx`, conforme o contrato:
+- [X] T022 [US2] RED→GREEN: `src/__tests__/components/workout/ExecutionTips.test.tsx` e `src/components/workout/ExecutionTips.tsx`, conforme o contrato:
   - texto vazio retorna `null`;
   - 1 item aparece sem marcador de lista;
   - 2 ou mais itens aparecem como `<ul>` com um `<li>` por orientação;
