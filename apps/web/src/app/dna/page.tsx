@@ -1,4 +1,5 @@
 import { DnaClient } from './DnaClient'
+import { pageContainer } from '@/components/ui/layout'
 
 async function getGeneticProfile() {
   try {
@@ -15,8 +16,8 @@ export default async function DnaPage() {
   const profile = await getGeneticProfile()
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-12 pb-24">
-      <header className="mb-4">
+    <div style={{ ...pageContainer, paddingTop: 48, paddingBottom: 96 }}>
+      <header style={{ marginBottom: 16 }}>
         <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 6 }}>
           Perfil Helux
         </p>

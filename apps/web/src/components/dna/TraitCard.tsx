@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
+import { Card } from '@/components/ui/Card'
+import { Chip } from '@/components/ui/Chip'
 
 interface TraitCardProps {
   name: string
@@ -9,10 +12,11 @@ interface TraitCardProps {
   level: 'low' | 'medium' | 'high'
 }
 
-const levelColors = {
-  low: 'text-blue-400 bg-blue-900/20 border-blue-800/40',
-  medium: 'text-yellow-400 bg-yellow-900/20 border-yellow-800/40',
-  high: 'text-helux-accent bg-helux-accent/10 border-helux-accent/30',
+// Os tons azul/amarelo antigos não existiam no tema; agora só cores do tema (FR-005).
+const levelStyles: Record<TraitCardProps['level'], CSSProperties> = {
+  low: { color: 'var(--text-dim)', background: 'var(--surface-2)', border: '1px solid var(--hairline-2)' },
+  medium: { color: 'var(--warn)', background: 'rgba(245,183,62,0.12)', border: '1px solid rgba(245,183,62,0.3)' },
+  high: { color: 'var(--accent)', background: 'var(--accent-soft)', border: '1px solid var(--accent-line)' },
 }
 
 const levelLabels = { low: 'Baixo', medium: 'Médio', high: 'Alto' }
@@ -21,30 +25,39 @@ export function TraitCard({ name, summary, detail, level }: TraitCardProps) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="bg-helux-surface border border-helux-border rounded-2xl overflow-hidden">
+    <Card padding={0} style={{ overflow: 'hidden' }}>
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full p-4 text-left flex items-start justify-between gap-3 min-h-[56px]"
+        style={{
+          width: '100%', padding: 16, textAlign: 'left', display: 'flex', alignItems: 'flex-start',
+          justifyContent: 'space-between', gap: 12, minHeight: 56,
+        }}
       >
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-sans font-medium text-white text-sm">{name}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-mono ${levelColors[level]}`}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <span style={{ fontWeight: 500, color: 'var(--text)', fontSize: 14, lineHeight: '20px' }}>{name}</span>
+            <Chip style={{ ...levelStyles[level], fontFamily: 'var(--font-jetbrains-mono), monospace', padding: '2px 8px', fontWeight: 400 }}>
               {levelLabels[level]}
-            </span>
+            </Chip>
           </div>
-          <p className="text-helux-muted text-sm">{summary}</p>
+          <p style={{ color: 'var(--text-dim)', fontSize: 14, lineHeight: '20px' }}>{summary}</p>
         </div>
-        <span className={`text-helux-muted transition-transform ${open ? 'rotate-180' : ''} shrink-0 mt-0.5`}>
+        <span
+          style={{
+            color: 'var(--text-dim)', flexShrink: 0, marginTop: 2, display: 'inline-block',
+            transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: open ? 'rotate(180deg)' : undefined,
+          }}
+        >
           ▾
         </span>
       </button>
 
       {open && (
-        <div className="px-4 pb-4 border-t border-helux-border pt-3">
-          <p className="text-white/80 text-sm leading-relaxed">{detail}</p>
+        <div style={{ padding: '12px 16px 16px', borderTop: '1px solid var(--hairline)' }}>
+          <p style={{ color: 'var(--text)', opacity: 0.8, fontSize: 14, lineHeight: 1.625 }}>{detail}</p>
         </div>
       )}
-    </div>
+    </Card>
   )
 }

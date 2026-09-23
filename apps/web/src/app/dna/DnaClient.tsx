@@ -2,6 +2,7 @@
 
 import { Icon } from '@/components/ui/icons'
 import { Ring } from '@/components/ui/Ring'
+import { Card } from '@/components/ui/Card'
 
 interface DnaClientProps {
   profile: Record<string, unknown> | null
@@ -12,12 +13,12 @@ interface DnaClientProps {
 export function DnaClient({ profile }: DnaClientProps) {
   if (!profile) {
     return (
-      <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: 24, textAlign: 'center', marginTop: 8 }}>
+      <Card padding={24} style={{ textAlign: 'center', marginTop: 8 }}>
         <p style={{ color: 'var(--text)', marginBottom: 4 }}>Perfil genético não carregado</p>
         <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>
           Adicione o arquivo Genera em <code style={{ color: 'var(--accent)', fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12 }}>data/genetics/genera.json</code> na API.
         </p>
-      </div>
+      </Card>
     )
   }
 
@@ -27,7 +28,7 @@ export function DnaClient({ profile }: DnaClientProps) {
   const drivers = Array.isArray(profile.drivers) ? profile.drivers as Array<{icon:string;title:string;text:string}> : []
 
   return (
-    <div className="space-y-4 mt-2">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 8 }}>
       {/* Score hero */}
       {(score !== null || summary) && (
         <div style={{ background: 'linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%)', border: '1px solid var(--hairline-2)', borderRadius: 'var(--r-card)', padding: '28px 20px 20px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -39,7 +40,7 @@ export function DnaClient({ profile }: DnaClientProps) {
             </svg>
           </div>
           {score !== null && (
-            <div className="flex justify-center mb-4">
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
               <Ring value={score} size={108} sw={9}>
                 <div style={{ fontSize: 32, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--accent)' }}>{score}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>índice</div>
@@ -53,20 +54,20 @@ export function DnaClient({ profile }: DnaClientProps) {
       {/* Genetic markers */}
       {traits.length > 0 && (
         <>
-          <div className="flex items-center gap-2 pt-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8 }}>
             <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Marcadores genéticos</h3>
           </div>
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {traits.map(t => (
-              <div key={t.key} style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: '14px 16px' }}>
-                <div className="flex items-center justify-between mb-2">
+              <Card key={t.key} padding="14px 16px">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{t.label}</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: t.warn ? 'var(--warn)' : 'var(--accent)', fontFamily: 'var(--font-jetbrains-mono)' }}>{t.value}</span>
                 </div>
                 <div style={{ height: 4, background: 'var(--surface-3)', borderRadius: 2, marginBottom: 8, overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${Math.round(t.level * 100)}%`, background: t.warn ? 'var(--warn)' : 'var(--accent)', borderRadius: 2, transition: 'width 0.9s cubic-bezier(.2,.8,.2,1)' }} />
                 </div>
-                <div className="flex items-center justify-between">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 12, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Icon name="dna" size={12} stroke="var(--text-faint)" /> {t.gene}
                   </span>
@@ -77,7 +78,7 @@ export function DnaClient({ profile }: DnaClientProps) {
                   )}
                 </div>
                 {t.note && <p style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 8, lineHeight: 1.5 }}>{t.note}</p>}
-              </div>
+              </Card>
             ))}
           </div>
         </>
@@ -86,18 +87,18 @@ export function DnaClient({ profile }: DnaClientProps) {
       {/* Drivers */}
       {drivers.length > 0 && (
         <>
-          <div className="flex items-center gap-2 pt-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8 }}>
             <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Como molda seu treino</h3>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
             {drivers.map((d, i) => (
-              <div key={i} style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: '14px 14px' }}>
+              <Card key={i} padding="14px 14px">
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
                   <Icon name="dumbbell" size={16} stroke="var(--accent)" />
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{d.title}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.4 }}>{d.text}</div>
-              </div>
+              </Card>
             ))}
           </div>
         </>
