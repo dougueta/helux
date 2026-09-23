@@ -204,6 +204,39 @@ describe('useTirednessFlow', () => {
       expect(setTirednessToday).toHaveBeenCalledWith('cansado', false)
     })
 
+    it('FR-019: toque duplo em "Sim, ajustar" no início grava e inicia uma única vez', async () => {
+      // Discordância sem mudanças a mostrar: relógio "normal" (HRV 70) × candidato
+      // "cansado", com exercícios já no mínimo de séries e carga não numérica —
+      // "Sim, ajustar" grava e inicia direto, sem passar pelo resumo.
+      const minimal: PlannedExercise[] = [{ name: 'Flexão', sets: 2, reps: '15', weight: 'peso corporal' }]
+      const assessment = assessTiredness({ date: DATE, manualLevel: null, overrideAutomatic: false, hrv: 70 })
+      const today = buildAdjustedSession({ letter: 'A', focus: 'Peito', exercises: minimal }, assessment)
+
+      const pending: Array<(v: TirednessAssessment) => void> = []
+      vi.mocked(setTirednessToday).mockImplementation(
+        () => new Promise<TirednessAssessment>((r) => { pending.push(r) }),
+      )
+      const refetch = vi.fn().mockResolvedValue(planWith(today))
+      const onStart = vi.fn()
+      const { result } = renderHook(() => useTirednessFlow({ today, refetch, onStart }))
+
+      act(() => result.current.openStart())
+      act(() => result.current.selectCandidate('cansado'))
+      await act(() => result.current.continueQuestion())
+      expect(result.current.step).toBe('conflict')
+
+      await act(async () => {
+        const first = result.current.confirmConflict()
+        const second = result.current.confirmConflict()
+        pending.forEach((resolve) => resolve({} as TirednessAssessment))
+        await Promise.all([first, second])
+      })
+
+      expect(setTirednessToday).toHaveBeenCalledTimes(1)
+      expect(refetch).toHaveBeenCalledTimes(1)
+      expect(onStart).toHaveBeenCalledTimes(1)
+    })
+
     it('no início, recusar a discordância volta à pergunta', async () => {
       const { result } = setup(sessionFor({ hrv: 45 }))
       act(() => result.current.openStart())

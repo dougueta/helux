@@ -101,5 +101,11 @@ describe('TirednessDialog', () => {
       await user.click(screen.getByRole('button', { name: 'Manter o relógio' }))
       expect(p.onDeclineConflict).toHaveBeenCalled()
     })
+
+    it('FR-019: botões desabilitados enquanto salva', () => {
+      render(<TirednessDialog {...props({ step: 'conflict', candidate: 'otimo', automaticLevel: 'cansado', saving: true })} />)
+      expect(screen.getByRole('button', { name: 'Sim, ajustar' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Manter o relógio' })).toBeDisabled()
+    })
   })
 })

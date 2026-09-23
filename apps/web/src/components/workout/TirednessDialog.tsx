@@ -104,8 +104,8 @@ export function TirednessDialog(props: TirednessDialogProps) {
           Quer mesmo ajustar o treino de hoje pelo que você marcou?
         </p>
         <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-          <SecondaryButton onClick={props.onDeclineConflict}>Manter o relógio</SecondaryButton>
-          <PrimaryButton onClick={props.onConfirmConflict}>Sim, ajustar</PrimaryButton>
+          <SecondaryButton onClick={props.onDeclineConflict} disabled={saving}>Manter o relógio</SecondaryButton>
+          <PrimaryButton onClick={props.onConfirmConflict} disabled={saving}>Sim, ajustar</PrimaryButton>
         </div>
       </>
     )

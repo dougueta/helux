@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type {
   AdjustedSession,
   AdjustedWorkoutPlanView,
@@ -60,6 +60,7 @@ export function useTirednessFlow({ today, refetch, onStart }: UseTirednessFlowOp
   const [state, setState] = useState<FlowState>(CLOSED)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const busyRef = useRef(false)
 
   const assessment = today?.tiredness ?? emptyAssessment()
   const currentExercises = today?.exercises ?? []
@@ -70,23 +71,31 @@ export function useTirednessFlow({ today, refetch, onStart }: UseTirednessFlowOp
   }
 
   async function commit(mode: TirednessFlowMode, candidate: TirednessLevel, p: TirednessChoicePreview) {
-    let exercises = currentExercises
-    if (p.needsSave) {
-      setSaving(true)
-      setError(null)
-      try {
-        await setTirednessToday(candidate, p.overrideAutomatic)
-        const plan = await refetch()
-        exercises = plan?.today?.exercises ?? p.nextExercises
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Erro ao salvar o nível de cansaço')
-        return
-      } finally {
-        setSaving(false)
+    // Trava síncrona contra toque duplo (FR-019): `saving` só aparece após o
+    // re-render e não impede dois cliques no mesmo tick.
+    if (busyRef.current) return
+    busyRef.current = true
+    try {
+      let exercises = currentExercises
+      if (p.needsSave) {
+        setSaving(true)
+        setError(null)
+        try {
+          await setTirednessToday(candidate, p.overrideAutomatic)
+          const plan = await refetch()
+          exercises = plan?.today?.exercises ?? p.nextExercises
+        } catch (e) {
+          setError(e instanceof Error ? e.message : 'Erro ao salvar o nível de cansaço')
+          return
+        } finally {
+          setSaving(false)
+        }
       }
+      setState(CLOSED)
+      if (mode === 'start') onStart(exercises)
+    } finally {
+      busyRef.current = false
     }
-    setState(CLOSED)
-    if (mode === 'start') onStart(exercises)
   }
 
   /** Decide a próxima etapa depois que o candidato (e a eventual sobreposição) foi definido. */

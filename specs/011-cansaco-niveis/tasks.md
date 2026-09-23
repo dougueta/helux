@@ -73,11 +73,11 @@
 
 ## Phase 9: Correções do code-review do PR #7 (2026-09-22)
 
-- [ ] T037 [P] RED: `apps/api/src/__tests__/dockerfile.test.ts` — para toda dependência `@helux/*` (`workspace:*`) da API, inclusive transitivas, `apps/api/Dockerfile` tem `COPY packages/<nome>/package.json` e `COPY packages/<nome>/` (FR-020)
-- [ ] T038 GREEN: adicionar as linhas `COPY` de `packages/workouts` em `apps/api/Dockerfile`; verificação extra com `docker build -f apps/api/Dockerfile .`
-- [ ] T039 [P] RED: `TirednessDialog.test.tsx` — botões "Manter o relógio"/"Sim, ajustar" desabilitados durante `saving`; `useTirednessFlow.test.ts` — dois `confirmConflict` seguidos no modo início (sem mudanças a mostrar) resultam em um único PUT e um único `onStart` (FR-019)
-- [ ] T040 GREEN: desabilitar botões da etapa `conflict` durante `saving` em `apps/web/src/components/workout/TirednessDialog.tsx` e trava de reentrada (`useRef`) na gravação em `apps/web/src/hooks/useTirednessFlow.ts`
-- [ ] T041 Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test`, `pnpm typecheck` — tudo verde
+- [X] T037 [P] RED: `apps/api/src/__tests__/dockerfile.test.ts` — para toda dependência `@helux/*` (`workspace:*`) da API, inclusive transitivas, `apps/api/Dockerfile` tem `COPY packages/<nome>/package.json` e `COPY packages/<nome>/` (FR-020)
+- [X] T038 GREEN: adicionar as linhas `COPY` de `packages/workouts` em `apps/api/Dockerfile`; verificação extra com `docker build -f apps/api/Dockerfile .` (não executada: daemon do Docker Desktop parado na máquina; regressão coberta por T037)
+- [X] T039 [P] RED: `TirednessDialog.test.tsx` — botões "Manter o relógio"/"Sim, ajustar" desabilitados durante `saving`; `useTirednessFlow.test.ts` — dois `confirmConflict` seguidos no modo início (sem mudanças a mostrar) resultam em um único PUT e um único `onStart` (FR-019)
+- [X] T040 GREEN: desabilitar botões da etapa `conflict` durante `saving` em `apps/web/src/components/workout/TirednessDialog.tsx` e trava de reentrada (`useRef`) na gravação em `apps/web/src/hooks/useTirednessFlow.ts`
+- [X] T041 Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test`, `pnpm typecheck` — tudo verde
 
 ## Dependencies
 
