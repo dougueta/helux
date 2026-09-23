@@ -1,12 +1,18 @@
 /**
- * Teste de guarda do design system (spec 012, FR-008).
+ * Guarda do design system v2 (spec 012, FR-010, research V3).
  *
- * O padrão único do app web é estilo inline + variáveis CSS declaradas no
- * `:root` de `src/app/globals.css`. Este teste falha, apontando arquivo e
- * linha, quando algum arquivo de `src/` (fora de `__tests__`):
- *   1. usa `className` (classes utilitárias antigas);
- *   2. usa `var(--x)` sem `--x` declarado no `:root` de `globals.css`;
- *   3. usa uma cor hexadecimal literal (as cores vivem só em `globals.css`).
+ * A aparência vem da folha do sistema `src/app/helux-v2.css` e dos tokens
+ * declarados nos `:root` de `globals.css` e `helux-v2.css`. Este teste falha,
+ * apontando arquivo e linha, quando algum arquivo `.ts`/`.tsx` de `src/`
+ * (fora de `__tests__`):
+ *   1. usa em `className` uma classe que não está definida em `helux-v2.css`.
+ *      Também vale para qualquer string com prefixo `hx-` no código (classes
+ *      montadas em mapas/arrays), o que obriga nomes de classe completos;
+ *   2. usa `var(--x)` sem `--x` declarado num dos `:root` (exceto `--font-*`,
+ *      injetadas pelo next/font);
+ *   3. usa cor literal (hex, `rgb()`, `rgba()`) fora da camada de tokens;
+ *   4. usa `--accent-glow` (em qualquer lugar, inclusive CSS) ou um
+ *      `box-shadow` externo com o acento (brilho).
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
@@ -14,90 +20,158 @@ import { describe, expect, it } from 'vitest'
 
 const SRC = path.resolve(__dirname, '..')
 const GLOBALS_CSS = path.join(SRC, 'app', 'globals.css')
+const SYSTEM_CSS = path.join(SRC, 'app', 'helux-v2.css')
 
-/**
- * Exceção única de `className`: o `<html>` de `app/layout.tsx` recebe as
- * classes geradas pelo `next/font` (que injetam `--font-space-grotesk` e
- * `--font-jetbrains-mono`). Não há como aplicar essas variáveis sem className.
- */
-const CLASSNAME_ALLOWED: Array<{ file: string; pattern: RegExp }> = [
-  { file: 'app/layout.tsx', pattern: /<html\b[^>]*className=\{`\$\{\w+\.variable\} \$\{\w+\.variable\}`\}/ },
-]
-
-/**
- * Variáveis com prefixo `--font-` são injetadas em tempo de execução pelo
- * `next/font` (via className do `<html>`), então não aparecem no `:root`.
- */
+/** Variáveis injetadas em tempo de execução pelo next/font (className do `<html>`). */
 const RUNTIME_VAR_PREFIXES = ['--font-']
 
-function listSourceFiles(dir: string): string[] {
+function listFiles(dir: string, ext: RegExp): string[] {
   const out: string[] = []
   for (const entry of readdirSync(dir)) {
     const full = path.join(dir, entry)
     if (statSync(full).isDirectory()) {
       if (entry === '__tests__' || entry === 'node_modules') continue
-      out.push(...listSourceFiles(full))
-    } else if (/\.(ts|tsx)$/.test(entry) && !/\.d\.ts$/.test(entry)) {
+      out.push(...listFiles(full, ext))
+    } else if (ext.test(entry) && !/\.d\.ts$/.test(entry)) {
       out.push(full)
     }
   }
   return out
 }
 
-function declaredRootVars(): Set<string> {
-  const css = readFileSync(GLOBALS_CSS, 'utf-8')
-  const root = css.match(/:root\s*\{([^}]*)\}/)
+const stripComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')
+
+function rootVars(file: string): Set<string> {
+  const css = stripComments(readFileSync(file, 'utf-8'))
   const vars = new Set<string>()
-  if (!root) return vars
-  for (const m of root[1].matchAll(/(--[\w-]+)\s*:/g)) vars.add(m[1])
+  for (const root of css.matchAll(/:root\s*\{([^}]*)\}/g)) {
+    for (const m of root[1].matchAll(/(--[\w-]+)\s*:/g)) vars.add(m[1])
+  }
   return vars
+}
+
+/** Classes definidas na folha do sistema: todo `.nome` que aparece num seletor. */
+function systemClasses(): Set<string> {
+  const css = stripComments(readFileSync(SYSTEM_CSS, 'utf-8'))
+  const classes = new Set<string>()
+  for (const sel of css.matchAll(/([^{}]+)\{/g)) {
+    if (sel[1].trim().startsWith('@')) continue
+    for (const m of sel[1].matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) classes.add(m[1])
+  }
+  return classes
+}
+
+/** Conteúdo dos literais de string de um trecho, sem as interpolações `${...}`. */
+function stringLiterals(code: string): string[] {
+  const out: string[] = []
+  for (const m of code.matchAll(/'([^'\n]*)'|"([^"\n]*)"|`([^`]*)`/g)) {
+    const raw = m[1] ?? m[2] ?? m[3] ?? ''
+    out.push(raw.replace(/\$\{[^}]*\}/g, ' '))
+  }
+  return out
 }
 
 const rel = (file: string) => path.relative(SRC, file).split(path.sep).join('/')
 
 function scan() {
-  const declared = declaredRootVars()
-  const classNames: string[] = []
+  const declared = new Set([...rootVars(GLOBALS_CSS), ...rootVars(SYSTEM_CSS)])
+  const classes = systemClasses()
+  const unknownClasses: string[] = []
   const undeclaredVars: string[] = []
-  const hexColors: string[] = []
+  const literalColors: string[] = []
+  const glow: string[] = []
 
-  for (const file of listSourceFiles(SRC)) {
+  for (const file of listFiles(SRC, /\.(ts|tsx)$/)) {
     const name = rel(file)
     const lines = readFileSync(file, 'utf-8').split(/\r?\n/)
     lines.forEach((line, i) => {
       const where = `${name}:${i + 1}`
 
-      if (/\bclassName\b/.test(line)) {
-        const allowed = CLASSNAME_ALLOWED.some(a => a.file === name && a.pattern.test(line))
-        if (!allowed) classNames.push(where)
+      // 1a. classes em className (string, template ou expressão na mesma linha)
+      const cn = line.indexOf('className=')
+      if (cn >= 0) {
+        for (const lit of stringLiterals(line.slice(cn))) {
+          for (const token of lit.split(/\s+/).filter(Boolean)) {
+            if (!classes.has(token)) unknownClasses.push(`${where} ${token}`)
+          }
+        }
+      }
+      // 1b. qualquer literal com prefixo hx- precisa ser uma classe completa
+      for (const lit of stringLiterals(line)) {
+        for (const token of lit.split(/\s+/).filter(t => t.startsWith('hx-'))) {
+          if (!classes.has(token)) unknownClasses.push(`${where} ${token}`)
+        }
       }
 
+      // 2. tokens
       for (const m of line.matchAll(/var\(\s*(--[\w-]+)/g)) {
         const v = m[1]
         if (declared.has(v) || RUNTIME_VAR_PREFIXES.some(p => v.startsWith(p))) continue
         undeclaredVars.push(`${where} ${v}`)
       }
 
-      for (const m of line.matchAll(/#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g)) {
-        hexColors.push(`${where} ${m[0]}`)
+      // 3. cores literais
+      for (const m of line.matchAll(/#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b|\brgba?\(/g)) {
+        literalColors.push(`${where} ${m[0]}`)
+      }
+
+      // 4. brilho do acento
+      if (line.includes('--accent-glow')) glow.push(`${where} --accent-glow`)
+      if (/box-?shadow/i.test(line) && /--accent\b/.test(line) && !/inset/.test(line)) {
+        glow.push(`${where} box-shadow com acento`)
       }
     })
   }
-  return { classNames, undeclaredVars, hexColors }
+
+  for (const file of listFiles(path.join(SRC, 'app'), /\.css$/)) {
+    const name = rel(file)
+    readFileSync(file, 'utf-8')
+      .split(/\r?\n/)
+      .forEach((line, i) => {
+        if (line.includes('--accent-glow')) glow.push(`${name}:${i + 1} --accent-glow`)
+      })
+  }
+
+  return { unknownClasses, undeclaredVars, literalColors, glow }
 }
 
-describe('design system — teste de guarda (FR-008)', () => {
-  const result = scan()
-
-  it('nenhum className fora da exceção do next/font no <html>', () => {
-    expect(result.classNames).toEqual([])
+describe('design system v2 — leitura da folha do sistema', () => {
+  it('extrai as classes dos seletores, inclusive modificadores e estados', () => {
+    const classes = systemClasses()
+    for (const c of ['hx-btn', 'hx-btn--primary', 't-display', 'n-md', 'u', 'on', 'cur', 'is-gene', 'hx-page']) {
+      expect(classes, c).toContain(c)
+    }
   })
 
-  it('toda var(--x) usada está declarada no :root de globals.css', () => {
+  it('não contém as classes que só existiam no protótipo', () => {
+    const classes = systemClasses()
+    for (const c of ['hx-phone', 'hx-status', 'hx-status-r', 'hx-scroll', 'hx-home-ind']) {
+      expect(classes, c).not.toContain(c)
+    }
+  })
+
+  it('lê os tokens dos dois :root', () => {
+    expect(rootVars(SYSTEM_CSS)).toContain('--fit-hi')
+    expect(rootVars(SYSTEM_CSS)).toContain('--z-sheet')
+  })
+})
+
+describe('design system v2 — teste de guarda (FR-010)', () => {
+  const result = scan()
+
+  it('toda classe usada está definida em app/helux-v2.css', () => {
+    expect(result.unknownClasses).toEqual([])
+  })
+
+  it('toda var(--x) usada está declarada num :root (globals.css ou helux-v2.css)', () => {
     expect(result.undeclaredVars).toEqual([])
   })
 
-  it('nenhuma cor hexadecimal literal fora de globals.css', () => {
-    expect(result.hexColors).toEqual([])
+  it('nenhuma cor literal (hex, rgb, rgba) fora da camada de tokens', () => {
+    expect(result.literalColors).toEqual([])
+  })
+
+  it('nenhum brilho do acento (--accent-glow ou box-shadow externo com acento)', () => {
+    expect(result.glow).toEqual([])
   })
 })

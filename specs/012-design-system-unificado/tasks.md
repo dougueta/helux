@@ -49,7 +49,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
   - invariante "nada se perde".
 
   Atualizar os casos existentes, inclusive o texto real do Agachamento: espera-se o primeiro item com `gene {COL1A1, C,C}` e sem "ATENÇÃO".
-- [ ] T035 RED: reescrever `src/__tests__/design-system-guard.test.ts` para o guarda v2 (research V3), com classes validadas contra os seletores de `app/helux-v2.css`, `var()` checado contra os dois `:root`, cores literais (hex, `rgb`, `rgba`) e `--accent-glow`. Confirmar que ele falha e listar o trabalho restante. O guarda só fica verde na T061.
+- [X] T035 RED: reescrever `src/__tests__/design-system-guard.test.ts` para o guarda v2 (research V3), com classes validadas contra os seletores de `app/helux-v2.css`, `var()` checado contra os dois `:root`, cores literais (hex, `rgb`, `rgba`) e `--accent-glow`. Confirmar que ele falha e listar o trabalho restante. O guarda só fica verde na T061.
 - [ ] T036 [P] RED→GREEN: `ui/icons.tsx` com os paths do objeto `IC` de `v2-core.jsx` e `HelixMark` v2, mantendo os nomes de ícone usados hoje. Testes em `src/__tests__/components/ui/icons.test.tsx`.
 - [ ] T037 [P] RED→GREEN: `ui/Button.tsx` (`Button` e `IconButton`), conforme o contrato.
 - [ ] T038 [P] RED→GREEN: `ui/Tag.tsx` (`Tag` e `GeneTag`), conforme o contrato.
