@@ -82,7 +82,7 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
 
 **Independent Test**: `quickstart.md` passo 5.
 
-- [ ] T020 [P] [US2] RED: `src/__tests__/lib/tipItems.test.ts` com todos os casos de `contracts/ui-components.md` → `parseTipItems`:
+- [X] T020 [P] [US2] RED: `src/__tests__/lib/tipItems.test.ts` com todos os casos de `contracts/ui-components.md` → `parseTipItems`:
   - o texto de referência de 3 frases vira 4 itens, com os marcadores WNT16 e "COL1A1 C,C";
   - "+2.5kg" não é dividido;
   - "(usado em 2026-08-29)" continua no texto;
@@ -91,7 +91,7 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
   - propriedade "nada se perde": toda palavra da entrada aparece em algum `text` ou `markers`.
 
   Confirmar que falha
-- [ ] T021 [US2] GREEN: `src/lib/tipItems.ts` com `parseTipItems` e `TipItem`, conforme research R7 (divisão conservadora; regex de gene `\(([A-Z][A-Z0-9]{1,}[^)]*)\)`; nunca perde texto). Fazer T020 passar
+- [X] T021 [US2] GREEN: `src/lib/tipItems.ts` com `parseTipItems` e `TipItem`, conforme research R7 (divisão conservadora; regex de gene `\(([A-Z][A-Z0-9]{1,}[^)]*)\)`; nunca perde texto). Fazer T020 passar
 - [ ] T022 [US2] RED→GREEN: `src/__tests__/components/workout/ExecutionTips.test.tsx` e `src/components/workout/ExecutionTips.tsx`, conforme o contrato:
   - texto vazio retorna `null`;
   - 1 item aparece sem marcador de lista;
