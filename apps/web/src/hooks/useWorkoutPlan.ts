@@ -12,7 +12,12 @@ const STORAGE_KEY = 'helux:workout-plan'
 function loadFromStorage(): AdjustedWorkoutPlanView | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as AdjustedWorkoutPlanView) : null
+    if (!raw) return null
+    const plan = JSON.parse(raw) as AdjustedWorkoutPlanView
+    // Spec 011: o ajuste por cansaço vale só para o dia — cache de outro dia é descartado.
+    const tirednessDate = plan.today?.tiredness?.date
+    if (tirednessDate && tirednessDate !== new Date().toISOString().slice(0, 10)) return null
+    return plan
   } catch {
     return null
   }

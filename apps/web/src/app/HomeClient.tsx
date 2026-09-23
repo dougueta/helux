@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
-import { useTiredness } from '@/hooks/useTiredness'
+import { useTirednessFlow } from '@/hooks/useTirednessFlow'
 import { CheckinCard } from '@/components/checkin/CheckinCard'
 import type { BodyCheckin } from '@helux/types'
 import { Icon, HelixMark } from '@/components/ui/icons'
@@ -12,7 +12,8 @@ import { Ring } from '@/components/ui/Ring'
 import { MatchBadge } from '@/components/ui/MatchBadge'
 import { RecoveryAdjustedBadge } from '@/components/workout/RecoveryAdjustedBadge'
 import { UpcomingSessionsList } from '@/components/workout/UpcomingSessionsList'
-import { TirednessToggle } from '@/components/workout/TirednessToggle'
+import { TirednessSelector } from '@/components/workout/TirednessSelector'
+import { TirednessDialog } from '@/components/workout/TirednessDialog'
 import { MesocycleProgress } from '@/components/workout/MesocycleProgress'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -48,20 +49,24 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
   const { plan, generating, generationError, generatePlan, refetch } = useWorkoutPlan()
-  const tiredness = useTiredness()
-
-  async function handleTirednessToggle() {
-    await tiredness.toggle()
-    await refetch()
-  }
   const currentPlan = plan ?? initialPlan
   const today = currentPlan?.today
   const WEEKLY_TARGET = 4
 
+  // Spec 011: nível de cansaço com resumo das mudanças antes de aplicar; o
+  // fluxo chama refetch() depois de salvar (TD-006) e só então inicia o treino.
+  const tiredness = useTirednessFlow({
+    today,
+    refetch,
+    onStart: (exercises) => {
+      startWorkout(exercises)
+      router.push('/workout')
+    },
+  })
+
   function handleStart() {
     if (!today) return
-    startWorkout(today.exercises)
-    router.push('/workout')
+    tiredness.openStart()
   }
 
   const score = recoveryScore(recovery?.hrv)
@@ -142,7 +147,6 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
               </span>
               <div className="flex items-center gap-2">
                 {today.adjusted && <RecoveryAdjustedBadge reason={today.adjustmentReason} />}
-                <TirednessToggle active={tiredness.active} onToggle={handleTirednessToggle} />
                 {insight?.score != null && <MatchBadge value={insight.score} />}
               </div>
             </div>
@@ -157,6 +161,16 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
                 <Icon name="dumbbell" size={15} stroke="var(--text-dim)" />
                 {today.exercises?.length ?? 0} exercícios
               </span>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <TirednessSelector
+                assessment={tiredness.assessment}
+                changes={today.changes ?? []}
+                reason={today.adjustmentReason}
+                onChoose={(level) => { void tiredness.chooseFromHome(level) }}
+                disabled={tiredness.saving}
+                error={tiredness.open ? null : tiredness.error}
+              />
             </div>
             <button onClick={handleStart} style={{
               width: '100%',
@@ -299,6 +313,25 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
           </button>
         )}
       </div>
+
+      <TirednessDialog
+        open={tiredness.open}
+        mode={tiredness.mode}
+        step={tiredness.step}
+        candidate={tiredness.candidate}
+        automaticLevel={tiredness.assessment.automaticLevel}
+        changes={tiredness.changes}
+        changesBase={tiredness.changesBase}
+        saving={tiredness.saving}
+        error={tiredness.error}
+        onSelectCandidate={tiredness.selectCandidate}
+        onContinue={() => { void tiredness.continueQuestion() }}
+        onConfirmConflict={() => { void tiredness.confirmConflict() }}
+        onDeclineConflict={tiredness.declineConflict}
+        onConfirmChanges={() => { void tiredness.confirmChanges() }}
+        onCancelChanges={tiredness.cancelChanges}
+        onClose={tiredness.close}
+      />
     </div>
   )
 }

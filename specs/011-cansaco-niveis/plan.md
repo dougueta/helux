@@ -75,6 +75,7 @@ apps/web/src/
 ├── components/workout/TirednessSelector.tsx   # NOVO (substitui TirednessToggle.tsx)
 ├── components/workout/TirednessDialog.tsx     # NOVO: pergunta / discordância / resumo
 ├── components/workout/AdjustmentChangesList.tsx  # NOVO: lista "séries/carga antes → depois"
+├── components/workout/TirednessLevelPicker.tsx   # NOVO: 4 botões de nível (Home + pergunta)
 ├── app/HomeClient.tsx              # integra seletor + fluxo de início
 └── __tests__/...
 
