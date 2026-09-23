@@ -89,6 +89,9 @@ Quando o treino do dia está ajustado (pelo relógio ou pelo nível manual), o u
 - **Sem treino pendente** (mesociclo sendo gerado): o seletor não é exibido na Home, e não há treino a iniciar.
 - **Dado automático chega depois do nível manual no mesmo dia**: se o usuário não tinha sobreposto explicitamente o relógio, o relógio passa a prevalecer; o app sinaliza a discordância (se houver) na Home para o usuário confirmar ou não a sobreposição na próxima escolha.
 - **Sinal legado da spec 008** ("muito cansado" registrado antes desta feature): é tratado como "exausto".
+- **Gravar o nível a partir do navegador** (achado na verificação manual, 2026-09-22): o app web chama a API a partir de outra origem; a gravação do nível precisa ser aceita pelo navegador tanto na Home quanto no fluxo "Iniciar treino" — se a gravação for bloqueada, o usuário não consegue nem iniciar o treino (FR-016).
+- **Diálogo sobre o menu inferior** (achado na verificação manual): a pergunta, a confirmação de discordância e o resumo de mudanças aparecem na parte de baixo da tela, onde fica o menu de navegação da Home; os botões de ação do diálogo NÃO podem ficar cobertos pelo menu (FR-017).
+- **Plano guardado pela versão anterior no mesmo dia** (achado na verificação manual): um plano salvo localmente antes desta feature não traz a avaliação de cansaço nem o treino planejado; ele deve ser descartado e buscado de novo, sem esperar a virada do dia (FR-018).
 
 ## Requirements *(mandatory)*
 
@@ -109,6 +112,9 @@ Quando o treino do dia está ajustado (pelo relógio ou pelo nível manual), o u
 - **FR-013**: O treino ajustado DEVE continuar exibindo o motivo do ajuste (ex.: "Você marcou exausto hoje", "Relógio indica cansaço (HRV 45 ms)").
 - **FR-014**: O "sinal de cansaço do dia" (níveis manual, automático, vigente e origem) DEVE ser exposto como um conceito único e consultável, reutilizável por outras funcionalidades (ex.: descanso personalizado, spec 015), sem que esta feature implemente esses outros usos.
 - **FR-015**: Sinais registrados antes desta feature (binários, "muito cansado") DEVEM ser interpretados como "exausto".
+- **FR-016**: A gravação do nível de cansaço DEVE funcionar a partir do app web no navegador (inclusive a verificação prévia de permissão que o navegador faz para chamadas entre origens).
+- **FR-017**: O diálogo de cansaço (pergunta, discordância, resumo) DEVE ficar acima de qualquer elemento fixo da tela, em especial o menu inferior, com todos os botões visíveis e clicáveis.
+- **FR-018**: Um plano guardado localmente que não traga a avaliação de cansaço do dia DEVE ser descartado e buscado de novo.
 
 ### Key Entities
 

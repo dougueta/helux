@@ -35,6 +35,12 @@
 - **Rationale**: o GET é o ponto de consumo reaproveitável pela spec 015 (FR-014).
 
 
+## R7 — Correções da verificação manual (2026-09-22)
+
+- **CORS**: `@fastify/cors` em `apps/api/src/app.ts` lista os métodos permitidos explicitamente (`GET, HEAD, POST, DELETE`); o `PUT` introduzido em R6 não passava no preflight. **Decision**: incluir `PUT` na lista (mantendo a lista explícita). Teste via `buildApp()` + `app.inject` com `OPTIONS` e `access-control-request-method: PUT`, pois os testes de rota isolados não registram o CORS. **Alternativa rejeitada**: trocar `PUT` por `POST` no contrato — contornaria o sintoma e deixaria a armadilha para o próximo método.
+- **Diálogo coberto pelo menu**: o `NavBar` é `fixed` com `z-50` e vem depois no DOM; o diálogo também usava `zIndex: 50`, então o menu ficava por cima. **Decision**: renderizar o `TirednessDialog` via portal em `document.body` com camada dedicada `zIndex: 60` (constante exportada `TIREDNESS_DIALOG_Z_INDEX`), acima do menu, e com padding inferior que respeita a safe area. Verificável em teste: o backdrop é filho direto de `document.body` e seu `z-index` é maior que 50. **Alternativa rejeitada**: esconder o `NavBar` enquanto o diálogo está aberto (acoplaria o layout ao estado da Home).
+- **Cache de formato antigo**: **Decision**: `useWorkoutPlan` descarta o cache de um plano de mesociclo (`mesocycleId` preenchido) cujo `today` não tem `tiredness` (formato anterior à 011), além do caso de outro dia (R5). Planos sem `today` (ex.: `status: 'generating'`) e o plano legado do botão "gerar" (`mesocycleId: null`, que nunca traz avaliação) continuam aproveitando o cache.
+
 ## Compatibilidade da migration com a API em produção (2026-09-22)
 
 **Decisão**: a coluna `level` mantém o default `'exausto'` (a versão inicial da migration o removia com `drop default`).
