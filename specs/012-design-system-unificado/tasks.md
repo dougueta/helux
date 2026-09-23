@@ -98,7 +98,7 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
   - 2 ou mais itens aparecem como `<ul>` com um `<li>` por orientação;
   - cada marcador aparece como `Chip` com `aria-label="marcador genético X"`;
   - há os visuais `inline` e `panel`.
-- [ ] T023 [US2] Integrar `ExecutionTips`:
+- [X] T023 [US2] Integrar `ExecutionTips`:
   - em `src/app/workout/page.tsx`, trocar o chip verde que renderiza `display.tip` por `<ExecutionTips text={display.tip} variant="inline" />`. Isso cobre também a justificativa da variante, FR-011;
   - em `src/components/workout/ExerciseSheet.tsx`, aba Execução, trocar o bloco `display.tip` por `<ExecutionTips text={display.tip} variant="panel" />`, mantendo a lista de `cues` e o mapa muscular como estão.
 

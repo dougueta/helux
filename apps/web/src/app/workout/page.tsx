@@ -11,6 +11,7 @@ import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { Icon } from '@/components/ui/icons'
 import { MiniStep } from '@/components/ui/MiniStep'
+import { ExecutionTips } from '@/components/workout/ExecutionTips'
 
 // ---------------------------------------------------------------------------
 // Page
@@ -318,24 +319,7 @@ export default function WorkoutPage() {
               <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: '0 0 10px' }}>
                 {currentEx.sets} × {currentEx.reps} reps · descanso 90s
               </p>
-              {display?.tip && (
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: 'var(--accent)',
-                    background: 'var(--accent-soft)',
-                    borderRadius: 'var(--r-pill)',
-                    padding: '3px 10px',
-                  }}
-                >
-                  <Icon name="dna" size={12} stroke="var(--accent)" sw={1.8} />
-                  {display.tip}
-                </span>
-              )}
+              <ExecutionTips text={display?.tip} variant="inline" />
 
               {variants.length > 0 && selectedVariant && (
                 <>
