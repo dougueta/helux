@@ -23,7 +23,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 
 ## Phase 1: Setup (Parte 2)
 
-- [ ] T030 Criar `src/app/helux-v2.css` a partir de `design_handoff_helux_v2/v2/helux-v2.css`, com as adaptações de research V1:
+- [X] T030 Criar `src/app/helux-v2.css` a partir de `design_handoff_helux_v2/v2/helux-v2.css`, com as adaptações de research V1:
   - `--font` e `--mono` passam a usar as variáveis do next/font;
   - `--safe-b` vira `env(safe-area-inset-bottom, 0px)`;
   - removidas as classes que só existem no protótipo: `.hx-phone`, `.hx-status`, `.hx-status-r`, `.hx-scroll`, `.hx-home-ind`;
@@ -32,7 +32,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
   - escala de z-index `--z-dock`, `--z-nav`, `--z-scrim`, `--z-sheet`, `--z-dialog` e `--z-toast`, aplicada às classes.
 
   Importar no `src/app/layout.tsx` depois do `globals.css`.
-- [ ] T031 Em `src/app/layout.tsx`, carregar via `next/font` os pesos da v2: Space Grotesk 400/500/600/700 e JetBrains Mono 400/500/600 mais o itálico. Em `src/app/globals.css`, manter o reset e remover do `:root` os tokens que agora vêm de `helux-v2.css`. Os tokens antigos ainda usados (`--r-card`, `--accent-glow`, `--demo-bg-*`) ficam marcados com um comentário "legado: remover na T061".
+- [X] T031 Em `src/app/layout.tsx`, carregar via `next/font` os pesos da v2: Space Grotesk 400/500/600/700 e JetBrains Mono 400/500/600 mais o itálico. Em `src/app/globals.css`, manter o reset e remover do `:root` os tokens que agora vêm de `helux-v2.css`. Os tokens antigos ainda usados (`--r-card`, `--accent-glow`, `--demo-bg-*`) ficam marcados com um comentário "legado: remover na T061".
 
 ---
 
