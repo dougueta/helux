@@ -38,11 +38,11 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 
 ## Phase 2: Foundational (bloqueia todas as histórias)
 
-- [ ] T032 [P] RED→GREEN: `src/__tests__/lib/format.test.ts` e `src/lib/format.ts`:
+- [X] T032 [P] RED→GREEN: `src/__tests__/lib/format.test.ts` e `src/lib/format.ts`:
   - `formatNumber`: 82 → "82", 82 com 1 casa → "82,0", 9840 → "9.840", 17.4 → "17,4";
   - `formatDuration`.
-- [ ] T033 [P] RED→GREEN: `src/__tests__/lib/fit.test.ts` e `src/lib/fit.ts`, com `fitBand` nas bordas 49/50/74/75 e o token de cada faixa (research V6).
-- [ ] T034 [P] RED→GREEN: evoluir `src/__tests__/lib/tipItems.test.ts` e `src/lib/tipItems.ts` para o TipItem v2 (research V4):
+- [X] T033 [P] RED→GREEN: `src/__tests__/lib/fit.test.ts` e `src/lib/fit.ts`, com `fitBand` nas bordas 49/50/74/75 e o token de cada faixa (research V6).
+- [X] T034 [P] RED→GREEN: evoluir `src/__tests__/lib/tipItems.test.ts` e `src/lib/tipItems.ts` para o TipItem v2 (research V4):
   - `gene: {symbol, genotype}`;
   - gene sem parênteses ("COL1A1 C,C");
   - remoção do prefixo "ATENÇÃO:";

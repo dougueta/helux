@@ -44,7 +44,7 @@ function ItemContent({ item }: { item: TipItem }) {
   return (
     <>
       <span style={{ color: 'var(--text)' }}>{item.text}</span>
-      {item.markers.map(m => (
+      {(item.gene ? [[item.gene.symbol, item.gene.genotype].filter(Boolean).join(' ')] : []).map(m => (
         <Chip key={m} aria-label={`marcador genético ${m}`} style={markerStyle}>
           {m}
         </Chip>
