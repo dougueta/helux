@@ -27,3 +27,9 @@
 
 - **Decision**: Teste unitário do hook (renderHook + promessas controladas), teste do componente (três estados e callbacks) e um teste de integração da página renderizando `WorkoutPage` com `useActiveWorkout` real (localStorage semeado), `apiFetch` mockado e `next/navigation` mockado (padrão já usado em `CheckinForm.test.tsx`).
 - **Rationale**: `page.tsx` não tinha teste; o risco principal está na fiação (redirecionamento, momento do POST), que só um teste da página pega.
+
+## Fechamento — TD-007 (2026-09-22)
+
+TD-007 (a tela "Treino concluído" afirmava o registro, mas o POST só acontecia em "Voltar ao início") foi resolvido pela implementação desta spec: o POST sai ao finalizar, a tela tem os estados salvando/salvo/erro e "Voltar ao início" só navega.
+
+Notas de TDD: os testes de T007 (US2) e T009 (US3, no hook) passaram na primeira execução, porque a fiação de `onRetry`/`onBackToWorkout` (T006) e a guarda contra duplicidade (T002) já existiam. Para confirmar que os testes pegam uma regressão, ambos foram validados com uma mutação temporária: com a fiação removida, 2 testes da página falharam; sem a guarda do hook, 2 testes do hook falharam. Depois disso o código foi restaurado.
