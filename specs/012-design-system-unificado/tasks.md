@@ -31,16 +31,16 @@ description: "Tarefas da spec 012 — design system unificado no app web"
 
 **Purpose**: tokens, componentes compartilhados e teste de guarda de que todas as migrações dependem.
 
-- [ ] T002 Em `src/app/globals.css`, acrescentar no `:root` os tokens `--success: #4ade80`, `--demo-bg-1: #14180f`, `--demo-bg-2: #0a0d09` e `--demo-bg-3: #070906` (research R5.1; o `#0c0f0c` de `workout/page.tsx` passa a usar `--demo-bg-2`, tom praticamente igual). Acrescentar também `@keyframes helux-pulse` (opacidade 1 → 0.5 → 1, 1.6 s) para o `Skeleton`. **Não** remover `@tailwind` ainda (é a T024)
-- [ ] T003 [P] Criar `src/components/ui/layout.ts` exportando `pageContainer: CSSProperties = { maxWidth: 512, margin: '0 auto', padding: '0 16px' }` (equivale ao `max-w-lg mx-auto px-4` usado em 11 telas, research R4)
-- [ ] T004 RED: criar `src/__tests__/design-system-guard.test.ts` conforme `contracts/ui-components.md` → "Teste de guarda". Ele percorre `src/**/*.{ts,tsx}` (fora de `__tests__`) e falha, com arquivo e linha, em três casos:
+- [X] T002 Em `src/app/globals.css`, acrescentar no `:root` os tokens `--success: #4ade80`, `--demo-bg-1: #14180f`, `--demo-bg-2: #0a0d09` e `--demo-bg-3: #070906` (research R5.1; o `#0c0f0c` de `workout/page.tsx` passa a usar `--demo-bg-2`, tom praticamente igual). Acrescentar também `@keyframes helux-pulse` (opacidade 1 → 0.5 → 1, 1.6 s) para o `Skeleton`. **Não** remover `@tailwind` ainda (é a T024)
+- [X] T003 [P] Criar `src/components/ui/layout.ts` exportando `pageContainer: CSSProperties = { maxWidth: 512, margin: '0 auto', padding: '0 16px' }` (equivale ao `max-w-lg mx-auto px-4` usado em 11 telas, research R4)
+- [X] T004 RED: criar `src/__tests__/design-system-guard.test.ts` conforme `contracts/ui-components.md` → "Teste de guarda". Ele percorre `src/**/*.{ts,tsx}` (fora de `__tests__`) e falha, com arquivo e linha, em três casos:
   - `className` em qualquer arquivo, exceto o `<html>` de `src/app/layout.tsx` com as variáveis de `next/font`;
   - `var(--x)` não declarado no `:root` de `src/app/globals.css`, aceitando o prefixo `--font-`, que o `next/font` injeta;
   - cor hex literal fora de `globals.css`.
 
   Rodar e confirmar que falha listando os 19 arquivos de `research.md` R1 e as 11 cores de R5.1. Os `var(--success)` já passam depois da T002
-- [ ] T005 [P] RED→GREEN: `src/__tests__/components/ui/Card.test.tsx` (renderiza filhos; aplica `--surface-1`, borda `--hairline`, raio `--r-card`, padding padrão 16; mescla `style` por último; respeita `as`) e depois `src/components/ui/Card.tsx` conforme o contrato
-- [ ] T006 [P] RED→GREEN: `src/__tests__/components/ui/Skeleton.test.tsx` (aplica largura, altura e raio; tem `aria-hidden="true"`; usa a animação `helux-pulse`) e depois `src/components/ui/Skeleton.tsx` conforme o contrato
+- [X] T005 [P] RED→GREEN: `src/__tests__/components/ui/Card.test.tsx` (renderiza filhos; aplica `--surface-1`, borda `--hairline`, raio `--r-card`, padding padrão 16; mescla `style` por último; respeita `as`) e depois `src/components/ui/Card.tsx` conforme o contrato
+- [X] T006 [P] RED→GREEN: `src/__tests__/components/ui/Skeleton.test.tsx` (aplica largura, altura e raio; tem `aria-hidden="true"`; usa a animação `helux-pulse`) e depois `src/components/ui/Skeleton.tsx` conforme o contrato
 
 **Checkpoint**: tokens, `Card`, `Skeleton` e `pageContainer` prontos. O teste de guarda está RED listando o trabalho restante.
 

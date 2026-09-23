@@ -19,6 +19,10 @@
   --accent-glow: rgba(200,250,75,0.30);
   --warn: #F5B73E;
   --danger: #FF6F5E;
+  --success: #4ade80;
+  --demo-bg-1: #14180f;
+  --demo-bg-2: #0a0d09;
+  --demo-bg-3: #070906;
   --r-card: 20px;
   --r-sm: 12px;
   --r-pill: 999px;
@@ -32,3 +36,8 @@ body {
 }
 
 * { box-sizing: border-box; }
+
+@keyframes helux-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
