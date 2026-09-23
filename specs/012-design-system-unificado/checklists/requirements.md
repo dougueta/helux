@@ -1,7 +1,7 @@
-# Specification Quality Checklist: Design System Unificado no App Web
+# Specification Quality Checklist: Helux Design System v2 no App Web
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-09-23
+**Created**: 2026-09-23 (reescrita a partir do Design System v2)
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -31,6 +31,6 @@
 
 ## Notes
 
-- A spec é inevitavelmente sobre aparência, então cita "tokens do tema", "classes utilitárias" e "componentes compartilhados" em termos de produto (fonte única de estilo), sem nomear framework ou arquivos; nomes de arquivo e contagens concretas ficam no plano.
-- Única ambiguidade genuína: o formato das dicas (FR-009). As três opções têm impacto de UX diferente e nenhum default óbvio. O resto usa defaults documentados em Assumptions.
-- FR-009 resolvido em 2026-09-23: opção A (uma orientação por linha, referência genética como etiqueta junto ao item).
+- A spec referencia o handoff por seção (1, 4, 5.x, 6) como fonte das medidas e tokens, em vez de copiá-los. As medidas exatas são responsabilidade do plano e do CSS do handoff, que é a fonte da verdade.
+- Duas ambiguidades de escopo foram resolvidas com o usuário antes da escrita (seção Clarifications): "só visual" para blocos sem dado e Progresso junto com o Histórico.
+- Versão anterior da spec (unificação no padrão antigo) substituída. O trabalho feito nela é base reaproveitável (Assumptions).
