@@ -1,9 +1,12 @@
 import type { FastifyInstance, FastifyReply } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
+import { z } from 'zod'
+import { getTodayTirednessAssessment, todaySlug } from '../services/tiredness.service'
 
-function todaySlug(): string {
-  return new Date().toISOString().slice(0, 10)
-}
+const PutBodySchema = z.object({
+  level: z.enum(['otimo', 'normal', 'cansado', 'exausto']),
+  overrideAutomatic: z.boolean().optional().default(false),
+})
 
 export async function tirednessTodayRoutes(app: FastifyInstance): Promise<void> {
   const supabaseUrl = process.env.SUPABASE_URL!
@@ -21,50 +24,56 @@ export async function tirednessTodayRoutes(app: FastifyInstance): Promise<void> 
       await reply.code(401).send({ error: 'Unauthorized' })
       return null
     }
-    return { user, token }
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    })
+    return { user, supabase }
   }
 
-  app.post('/api/tiredness-today', async (request, reply) => {
+  app.get('/api/tiredness-today', async (request, reply) => {
     const auth = await getUser(request.headers.authorization, reply)
     if (!auth) return
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: `Bearer ${auth.token}` } },
-    })
+    try {
+      return reply.send(await getTodayTirednessAssessment(auth.user.id, auth.supabase))
+    } catch (error) {
+      app.log.error(error, 'tiredness-today: failed to load assessment')
+      return reply.code(500).send({ error: 'Internal Server Error' })
+    }
+  })
 
-    const { error } = await supabase
+  app.put('/api/tiredness-today', async (request, reply) => {
+    const auth = await getUser(request.headers.authorization, reply)
+    if (!auth) return
+
+    const parsed = PutBodySchema.safeParse(request.body)
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Bad Request', details: parsed.error.errors })
+    }
+
+    const { error } = await auth.supabase
       .from('daily_tiredness_signals')
-      .upsert({ user_id: auth.user.id, date: todaySlug() }, { onConflict: 'user_id,date' })
-      .select('id')
-      .single()
+      .upsert(
+        {
+          user_id: auth.user.id,
+          date: todaySlug(),
+          level: parsed.data.level,
+          override_automatic: parsed.data.overrideAutomatic,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,date' },
+      )
 
     if (error) {
       app.log.error(error, 'tiredness-today upsert error')
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
 
-    return reply.send({ active: true })
-  })
-
-  app.delete('/api/tiredness-today', async (request, reply) => {
-    const auth = await getUser(request.headers.authorization, reply)
-    if (!auth) return
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: `Bearer ${auth.token}` } },
-    })
-
-    const { error } = await supabase
-      .from('daily_tiredness_signals')
-      .delete()
-      .eq('user_id', auth.user.id)
-      .eq('date', todaySlug())
-
-    if (error) {
-      app.log.error(error, 'tiredness-today delete error')
+    try {
+      return reply.send(await getTodayTirednessAssessment(auth.user.id, auth.supabase))
+    } catch (err) {
+      app.log.error(err, 'tiredness-today: failed to reload assessment')
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
-
-    return reply.send({ active: false })
   })
 }

@@ -14,7 +14,3 @@ export interface UserTrainingProfileInput {
   timeOff?: string
   currentInjury?: string
 }
-
-export interface DailyTirednessSignal {
-  active: boolean
-}
