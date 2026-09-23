@@ -70,7 +70,7 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
 - [X] T016 [P] [US1] Migrar `src/components/workout/TirednessSelector.tsx`. Trocar também o `#e5484d` por `var(--danger)` nele e em `src/components/workout/TirednessDialog.tsx` (R5.1)
 - [X] T017 [P] [US1] Migrar `src/app/recovery/page.tsx` (Progresso), `src/app/treinos/TreinosClient.tsx` e `src/app/perfil/page.tsx`
 - [X] T018 [P] [US1] Migrar `src/app/checkin/page.tsx` e `src/app/checkin/history/page.tsx`. Trocar `#f87171` por `var(--danger)` e `#4ade80` por `var(--success)` em `src/components/checkin/CheckinForm.tsx`, `CheckinCard.tsx` e `CheckinHistoryTable.tsx` (R5.1)
-- [ ] T019 [P] [US1] Trocar as cores hex da área de demonstração por `var(--demo-bg-1/2/3)` em `src/components/workout/ExerciseSheet.tsx` e em `src/app/workout/page.tsx` (`#0c0f0c` vira `var(--demo-bg-2)`), sem outra mudança visual
+- [X] T019 [P] [US1] Trocar as cores hex da área de demonstração por `var(--demo-bg-1/2/3)` em `src/components/workout/ExerciseSheet.tsx` e em `src/app/workout/page.tsx` (`#0c0f0c` vira `var(--demo-bg-2)`), sem outra mudança visual
 
 **Checkpoint**: teste de guarda **verde** (nenhum `className` fora da exceção, nenhuma var não declarada, nenhuma cor hex solta). Todos os testes existentes continuam verdes.
 

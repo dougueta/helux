@@ -84,7 +84,7 @@ export function ExerciseSheet({
               height: 220,
               borderRadius: 18,
               overflow: 'hidden',
-              background: 'radial-gradient(130% 110% at 50% 0%, #14180f 0%, #0a0d09 60%, #070906 100%)',
+              background: 'radial-gradient(130% 110% at 50% 0%, var(--demo-bg-1) 0%, var(--demo-bg-2) 60%, var(--demo-bg-3) 100%)',
               border: '1px solid var(--hairline)',
               marginTop: 8,
             }}

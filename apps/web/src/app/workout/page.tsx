@@ -363,7 +363,7 @@ export default function WorkoutPage() {
                         flexShrink: 0,
                         borderRadius: 11,
                         overflow: 'hidden',
-                        background: 'radial-gradient(120% 120% at 50% 0%, var(--surface-2), #0c0f0c)',
+                        background: 'radial-gradient(120% 120% at 50% 0%, var(--surface-2), var(--demo-bg-2))',
                         border: '1px solid var(--hairline)',
                       }}
                     >
