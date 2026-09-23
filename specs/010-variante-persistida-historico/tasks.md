@@ -96,7 +96,7 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 - [X] T012 [P] Em `apps/web/src/hooks/useWorkoutHistory.ts`, trocar o shape duplicado manualmente no campo `exercises` de `WorkoutSessionRow` por `import type { ExerciseSet } from '@helux/types'` (`research.md` Decisão 3) — refactor puro, sem mudança de comportamento; `apps/web/src/__tests__/hooks/useWorkoutHistory.test.ts` não faz nenhuma asserção sobre o shape do exercício, então nenhum teste novo é necessário, só confirmar que a suíte existente continua verde
 - [X] T013 [P] Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test` e o typecheck do monorepo, confirmando que todos os testes novos (T002–T004) passam em verde e nenhum teste existente quebrou (incluindo `useWorkoutHistory.test.ts` após T012)
-- [ ] T014 Executar o fluxo manual de verificação de `quickstart.md` (passos 1–5) contra o app rodando localmente
+- [X] T014 Executar o fluxo manual de verificação de `quickstart.md` (passos 1–5) contra o app rodando localmente
 
 ---
 
