@@ -74,6 +74,9 @@ Quando o usuário escolhe uma variante, ele passa a treinar *aquele* exercício.
 ### Edge Cases
 
 - Um exercício sem variantes disponíveis não é afetado por esta mudança — comportamento atual mantido.
+- Sair do treino e retomá-lo (inclusive recarregando a página) depois de já ter registrado a primeira série de um exercício não pode alterar a variante registrada para ele — a regra do FR-006 vale mesmo quando a primeira série foi feita no exercício planejado, sem nenhuma troca. (Encontrado na revisão do PR #5, 2026-09-22.)
+- Se o usuário desmarcar todas as séries registradas de um exercício, é como se nenhuma série tivesse sido registrada: a próxima série marcada volta a definir a variante executada. (Revisão do PR #5, 2026-09-22.)
+- Quando um exercício tem variantes mas nenhuma está marcada como recomendada, a primeira da lista é tratada como a recomendada — a mesma regra vale para a tela e para o histórico, que nunca podem discordar sobre se há uma variante alternativa ativa. (Revisão do PR #5, 2026-09-22.)
 - Trocar de variante múltiplas vezes antes de registrar qualquer série no exercício não deixa rastro — só a variante ativa no momento em que a primeira série é registrada (ou no momento da finalização, se nenhuma série foi registrada) importa para o histórico.
 - Sessões já salvas antes desta mudança não são corrigidas retroativamente — o efeito vale só para novas finalizações, como na spec 009.
 - Com uma variante ativa, as dicas personalizadas de execução geradas para o exercício planejado não se aplicam diretamente à variante — ver FR-011 sobre o que exibir no lugar.

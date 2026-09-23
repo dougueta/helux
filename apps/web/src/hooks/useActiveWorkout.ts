@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { apiFetch } from '@/services/api-client'
 import { clearCachedPlan } from './useWorkoutPlan'
+import { recommendedVariant } from '@/lib/exerciseDisplay'
 import type { PlannedExercise, Variant } from '@helux/types'
 
 const STORAGE_KEY = 'helux:active-workout'
@@ -20,7 +21,8 @@ export interface ActiveWorkoutState {
   startedAt: string
   restUntil?: string
   variantByExerciseIndex: Record<number, string>
-  executedVariantByExerciseIndex: Record<number, string | undefined>
+  /** Variant locked at the first done set; `null` = planned exercise (survives JSON, unlike `undefined`). */
+  executedVariantByExerciseIndex: Record<number, string | null>
 }
 
 function parseWeight(weight: string): number {
@@ -102,7 +104,9 @@ export function useActiveWorkout() {
       )
       const executedVariantByExerciseIndex = { ...prev.executedVariantByExerciseIndex }
       if (!wasDone && !(exerciseIndex in executedVariantByExerciseIndex)) {
-        executedVariantByExerciseIndex[exerciseIndex] = prev.variantByExerciseIndex[exerciseIndex]
+        executedVariantByExerciseIndex[exerciseIndex] = prev.variantByExerciseIndex[exerciseIndex] ?? null
+      } else if (wasDone && !newExerciseStates[exerciseIndex].some(s => s.done)) {
+        delete executedVariantByExerciseIndex[exerciseIndex]
       }
       const next: ActiveWorkoutState = {
         ...prev,
@@ -180,7 +184,7 @@ export function useActiveWorkout() {
       }
 
       const lockedVariantId = session.executedVariantByExerciseIndex[ei]
-      const recommendedVariantId = ex.variants?.find((v: Variant) => v.rec)?.id ?? ex.variants?.[0]?.id
+      const recommendedVariantId = recommendedVariant(ex)?.id
       const executedVariant = lockedVariantId && lockedVariantId !== recommendedVariantId
         ? ex.variants?.find((v: Variant) => v.id === lockedVariantId)
         : undefined

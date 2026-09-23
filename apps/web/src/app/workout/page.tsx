@@ -6,7 +6,7 @@ import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
 import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import { FinishWorkoutConfirmDialog } from '@/components/workout/FinishWorkoutConfirmDialog'
-import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { Icon } from '@/components/ui/icons'
 import { Ring } from '@/components/ui/Ring'
 import { MiniStep } from '@/components/ui/MiniStep'
@@ -66,7 +66,7 @@ export default function WorkoutPage() {
   const currentSets = session.exerciseStates[currentIdx] ?? []
 
   const variants = currentEx?.variants ?? []
-  const recVariant = variants.find(v => v.rec)
+  const recVariant = currentEx ? recommendedVariant(currentEx) : undefined
   const currentVariantId = session.variantByExerciseIndex?.[currentIdx]
   const selectedVariant = variants.find(v => v.id === currentVariantId) ?? recVariant
   const betterFitAvailable = variants.some(v => v.betterFit)
@@ -476,7 +476,7 @@ export default function WorkoutPage() {
                     <Icon name="chevron" size={18} stroke="var(--text-faint)" />
                   </button>
 
-                  {!selectedVariant.rec && (
+                  {display?.plannedName && (
                     <div
                       style={{
                         display: 'flex',
@@ -514,7 +514,7 @@ export default function WorkoutPage() {
                     </div>
                   )}
 
-                  {selectedVariant.rec && betterFitAvailable && (
+                  {!display?.plannedName && betterFitAvailable && (
                     <button
                       onClick={() => setSheetOpen(true)}
                       style={{

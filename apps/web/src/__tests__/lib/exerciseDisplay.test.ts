@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { PlannedExercise } from '@helux/types'
-import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 
 const EXERCISE: PlannedExercise = {
   name: 'Supino reto com barra',
@@ -75,5 +75,44 @@ describe('resolveExerciseDisplay', () => {
     expect(display.tip).toBeNull()
     expect(display.tipKind).toBeNull()
     expect(display.showPlannedCues).toBe(false)
+  })
+
+  describe('when no variant is marked rec', () => {
+    const NO_REC: PlannedExercise = {
+      ...EXERCISE,
+      variants: EXERCISE.variants!.map(({ rec: _rec, ...v }) => v),
+    }
+
+    it('treats the first variant as the recommended one when nothing was chosen', () => {
+      const display = resolveExerciseDisplay(NO_REC, undefined)
+      expect(display.plannedName).toBeNull()
+      expect(display.showPlannedCues).toBe(true)
+      expect(display.fit).toBe(96)
+    })
+
+    it('treats choosing the first variant as the planned exercise', () => {
+      expect(resolveExerciseDisplay(NO_REC, 'e1').plannedName).toBeNull()
+    })
+
+    it('treats any other variant as an alternative', () => {
+      const display = resolveExerciseDisplay(NO_REC, 'e1b')
+      expect(display.plannedName).toBe('Supino reto com barra')
+      expect(display.tipKind).toBe('variant-why')
+    })
+  })
+
+  describe('recommendedVariant', () => {
+    it('returns the variant marked rec', () => {
+      expect(recommendedVariant(EXERCISE)?.id).toBe('e1')
+    })
+
+    it('falls back to the first variant when none is marked rec', () => {
+      const reordered = { ...EXERCISE, variants: [EXERCISE.variants![1], EXERCISE.variants![2]] }
+      expect(recommendedVariant(reordered)?.id).toBe('e1b')
+    })
+
+    it('returns undefined when the exercise has no variants', () => {
+      expect(recommendedVariant({ ...EXERCISE, variants: [] })).toBeUndefined()
+    })
   })
 })

@@ -7,7 +7,7 @@ import { MatchBadge } from '@/components/ui/MatchBadge'
 import { Chip } from '@/components/ui/Chip'
 import { ExerciseDemo } from './ExerciseDemo'
 import { MuscleMap } from './MuscleMap'
-import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 
 export function ExerciseSheet({
   exercise,
@@ -21,7 +21,7 @@ export function ExerciseSheet({
   onClose: () => void
 }) {
   const variants = exercise.variants ?? []
-  const recVariant = variants.find((v) => v.rec) ?? variants[0]
+  const recVariant = recommendedVariant(exercise)
   const activeId = currentVariantId ?? recVariant?.id
 
   const [selectedId, setSelectedId] = useState(activeId)

@@ -130,6 +130,28 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 ---
 
+## Phase 9: Correções da revisão do PR #5 (2026-09-22)
+
+**Goal**: Corrigir os dois defeitos encontrados pelo `code-review` do PR #5 (`research.md` Decisão 7), com testes que reproduzem cada um antes da correção.
+
+### Tests (escrever ANTES da correção e confirmar que falham) ⚠️
+
+- [X] T024 [P] [US1] Em `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`, novo `describe('lock survives reload and unticking')`: (a) iniciar treino com `mockPlanWithVariants`, marcar a série 0 do exercício 0 sem trocar variante, desmontar, remontar o hook (hidrata do `localStorage`), `selectVariant(0, 'alt1')`, marcar a série 1, `finishWorkout` → o payload do exercício 0 **não** tem `executedVariant`; (b) o mesmo com a primeira série feita em `alt1`, reload, `selectVariant(0, 'rec1')`, marcar a série 1 → o payload tem `executedVariant.name === 'Supino Reto com Halteres'`; (c) marcar e desmarcar a série 0 no planejado, `selectVariant(0, 'alt1')`, marcar a série 0 de novo, `finishWorkout` → payload com `executedVariant` de `alt1`; (d) com duas séries marcadas, desmarcar só uma não libera a trava: trocar para `alt1` e marcar outra série continua sem `executedVariant`
+- [X] T025 [P] [US4] Em `apps/web/src/__tests__/lib/exerciseDisplay.test.ts`, novos casos para variantes sem nenhuma `rec`: (a) `variantId` undefined → trata `variants[0]` como a recomendada: `plannedName = null`, `showPlannedCues = true`, `fit = variants[0].match`; (b) `variantId` de `variants[0]` → mesmo resultado; (c) `variantId` de `variants[1]` → variante alternativa (`plannedName = exercise.name`, `tipKind = 'variant-why'`); (d) `recommendedVariant(exercise)` devolve a `rec` quando existe, `variants[0]` quando não existe e `undefined` sem variantes
+- [X] T026 [P] [US1] Em `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`, caso de `finishWorkout` com variantes sem nenhuma `rec`: `selectVariant(0, <id de variants[1]>)`, marcar série, finalizar → payload tem `executedVariant` de `variants[1]`; sem troca → sem `executedVariant` (consistente com T025)
+
+### Implementation
+
+- [X] T027 [US1] Em `apps/web/src/hooks/useActiveWorkout.ts`: mudar o tipo da trava para `Record<number, string | null>`; em `toggleSetDone`, ao travar gravar `prev.variantByExerciseIndex[exerciseIndex] ?? null`; ao desmarcar (`wasDone`), se nenhuma série do exercício continuar `done`, remover a entrada da trava. Fazer T024 passar
+- [X] T028 [US4] Em `apps/web/src/lib/exerciseDisplay.ts`: exportar `recommendedVariant(exercise: PlannedExercise): Variant | undefined` (`rec ?? variants[0]`) e fazer `resolveExerciseDisplay` usar a variante ativa `variants.find(id) ?? recommendedVariant(exercise)` e considerar "alternativa" quando `active.id !== recommendedVariant(exercise)?.id`. Fazer T025 passar
+- [X] T029 [US1] Trocar os cálculos locais de variante recomendada por `recommendedVariant` em `apps/web/src/hooks/useActiveWorkout.ts` (`finishWorkout`), `apps/web/src/components/workout/ExerciseSheet.tsx` (`recVariant`) e `apps/web/src/app/workout/page.tsx` (`recVariant`, que alimenta `selectedVariant` e "Voltar à recomendada"); o banner "Variante ativa" em `page.tsx` passa a aparecer quando `display.plannedName` existe, em vez de `!selectedVariant.rec`. Fazer T026 passar sem quebrar T015–T017
+
+### Polish
+
+- [X] T030 Rodar `pnpm --filter @helux/web test` e `pnpm typecheck`; conferir que T024–T026 passam e que nenhum teste existente quebrou
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

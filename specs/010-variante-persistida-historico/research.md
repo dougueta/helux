@@ -47,3 +47,15 @@ Nenhum `[NEEDS CLARIFICATION]` restou do `spec.md` (o único ponto ambíguo — 
 **Decisão**: com uma variante alternativa ativa, a tela principal troca o chip `notes` pelo `why` da variante, e a aba Execução do sheet esconde `cues` e `notes` do planejado e mostra o `why`. O mapa muscular e o tempo continuam sendo os do planejado.
 
 **Rationale**: decisão do usuário (opção A, 2026-09-22). Músculos e tempo ficam porque as variantes vêm do mesmo padrão de movimento (`buildVariants` filtra por `pattern`), então o grupo muscular é o mesmo, e `Variant` não tem mapa muscular próprio. Séries, repetições e carga sugerida não mudam (fora de escopo, spec 014).
+
+## Decisão 7 (correções da revisão do PR #5, 2026-09-22) — Trava explícita e regra única de "recomendada"
+
+**Problema 1**: a trava de `executedVariantByExerciseIndex` guardava `undefined` quando a primeira série era feita no exercício planejado. `JSON.stringify` descarta chaves com `undefined`, então, depois de recarregar a página, a trava sumia e uma troca posterior de variante passava a ser registrada no histórico, violando o FR-006. Além disso, desmarcar a série nunca liberava a trava.
+
+**Decisão**: a trava passa a ser `Record<number, string | null>`, em que `null` significa "travado no exercício planejado". `null` sobrevive ao JSON. Quando a última série marcada de um exercício é desmarcada, a entrada da trava é removida. Estados legados no `localStorage` que já perderam a chave não são recuperáveis, mas o efeito só atinge treinos em andamento no momento do deploy.
+
+**Problema 2**: `finishWorkout` e `ExerciseSheet` usavam `rec ?? variants[0]` como variante recomendada, e `resolveExerciseDisplay` (e o `recVariant` de `page.tsx`) usava só `rec`. Com variantes sem nenhuma `rec`, a tela mostrava uma variante alternativa que o histórico não registrava.
+
+**Decisão**: exportar `recommendedVariant(exercise)` de `apps/web/src/lib/exerciseDisplay.ts` (`rec ?? variants[0]`) e usá-la em todos os quatro pontos. "Variante alternativa" passa a significar variante ativa cujo `id` difere do da recomendada, em vez de `rec !== true`.
+
+**Alternativa rejeitada**: guardar o id da variante recomendada na trava em vez de `null`. Funciona, mas mistura "sem troca" com "trocou para a recomendada", e `null` deixa a intenção explícita.

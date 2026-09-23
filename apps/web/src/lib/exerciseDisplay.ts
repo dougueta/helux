@@ -1,4 +1,10 @@
-import type { PlannedExercise } from '@helux/types'
+import type { PlannedExercise, Variant } from '@helux/types'
+
+/** The variant marked `rec`, or the first one when none is — the single rule for "recommended". */
+export function recommendedVariant(exercise: PlannedExercise): Variant | undefined {
+  const variants = exercise.variants ?? []
+  return variants.find(v => v.rec) ?? variants[0]
+}
 
 export interface ExerciseDisplay {
   title: string
@@ -20,10 +26,10 @@ export function resolveExerciseDisplay(
   exercise: PlannedExercise,
   variantId: string | undefined,
 ): ExerciseDisplay {
-  const variants = exercise.variants ?? []
-  const active = variants.find(v => v.id === variantId) ?? variants.find(v => v.rec)
+  const recommended = recommendedVariant(exercise)
+  const active = exercise.variants?.find(v => v.id === variantId) ?? recommended
 
-  if (active && !active.rec) {
+  if (active && active.id !== recommended?.id) {
     const tip = active.why || null
     return {
       title: active.name,
