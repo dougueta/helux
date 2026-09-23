@@ -38,3 +38,16 @@ export interface ActiveWorkoutState {
 
 - **Regra de negócio**: `executedVariant`, quando presente, deve ter `name` não-vazio e `match` entre 0 e 100 — mesma faixa de `Variant.match` já usada no restante do app.
 - Não introduz nenhuma entidade nova de banco — é uma extensão do tipo `ExerciseSet` já existente (ver spec 009).
+
+## Incremento US4 (2026-09-22)
+
+Nenhuma mudança de dados persistidos, tipos compartilhados ou contrato da API. `resolveExerciseDisplay` devolve um modelo de *visualização* derivado, sem persistência:
+
+| Campo | Tipo | Regra |
+|---|---|---|
+| `title` | string | nome da variante alternativa ativa; senão `exercise.name` |
+| `plannedName` | string \| null | `exercise.name` quando há variante alternativa ativa; senão `null` |
+| `fit` | number \| undefined | `match` da variante ativa (alternativa ou recomendada); senão `exercise.match` |
+| `tip` | string \| null | `why` da variante alternativa ativa; senão `exercise.notes ?? null` |
+| `tipKind` | `'variant-why'` \| `'notes'` \| `null` | origem de `tip` |
+| `showPlannedCues` | boolean | `false` com variante alternativa ativa; senão `true` |

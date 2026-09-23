@@ -1,11 +1,13 @@
 # Implementation Plan: Variante Executada Persistida no Histórico
 
-**Branch**: `010-variante-persistida-historico` | **Date**: 2026-08-31 | **Spec**: [spec.md](./spec.md)
+**Branch**: `010-variante-persistida-historico` | **Date**: 2026-08-31 (incremento US4: 2026-09-22) | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `specs/010-variante-persistida-historico/spec.md`
 
 ## Summary
 
 Fechar o débito técnico TD-004: hoje, trocar de variante durante o treino ativo (`ExerciseSheet` → "Usar esta variante") só atualiza `variantByExerciseIndex` no cliente para fins de exibição — `finishWorkout` sempre grava `ex.name` (o exercício originalmente planejado), nunca a variante escolhida. A sessão salva passa a carregar, por exercício, um campo opcional `executedVariant` (nome + match genético) quando o usuário de fato registrou séries sob uma variante diferente da recomendada — sem substituir o campo `name` existente (que continua sendo o exercício planejado). A tela de treino ativo passa a exibir o nome da variante ativa (não só o equipamento) e o indicador de fit passa a refletir o match real da variante ativa, no lugar do "96 fit" hardcoded.
+
+**Incremento 2026-09-22 (US4, FR-008–FR-012)**: T001–T014 já implementadas e verificadas. O incremento faz a tela inteira do exercício refletir a variante ativa. A demonstração (`ExerciseDemo`) e o nome, equipamento e nível no `ExerciseSheet` já usam a variante; a persistência pelo resto do treino (FR-012) já existe via `variantByExerciseIndex` salvo no `localStorage`. Faltam: (1) o título principal (`currentEx.name`); (2) o cabeçalho, fixo em `planExercises[0]` (bug B1); (3) o chip de dica (`currentEx.notes`) na tela principal; (4) as dicas (`cues`/`notes`) da aba Execução do `ExerciseSheet`. Tudo isso passa por um helper puro novo, `resolveExerciseDisplay(exercise, variantId)`, que devolve o que exibir (título, exercício planejado de referência ou `null`, fit, dica) e é testável isoladamente, já que `page.tsx` não tem teste de componente. Nenhuma mudança em API, tipos compartilhados ou dados persistidos.
 
 ## Technical Context
 
@@ -101,6 +103,41 @@ apps/web/src/
 ```
 
 **Structure Decision**: Estende os workspaces já existentes seguindo o padrão de `006`–`009` — nenhuma nova app/serviço, nenhuma migration. `executedVariant` vive dentro do mesmo item de `exercises` que já ganhou `skipped` na spec 009, evitando um segundo campo/tabela paralela para o mesmo registro histórico.
+
+### Incremento US4 (2026-09-22)
+
+```text
+apps/web/src/
+├── lib/
+│   └── exerciseDisplay.ts                        ← NOVO: resolveExerciseDisplay(exercise,
+│                                                    variantId) → { title, plannedName,
+│                                                    fit, tip, tipKind, showPlannedCues }
+├── app/workout/
+│   └── page.tsx                                  ← MODIFICADO: título usa display.title +
+│                                                    linha secundária "variante de
+│                                                    {plannedName}"; cabeçalho usa o
+│                                                    título do exercício em andamento
+│                                                    (FR-009, absorve B1); chip de dica
+│                                                    usa display.tip; badge de fit usa
+│                                                    display.fit
+├── components/workout/
+│   └── ExerciseSheet.tsx                         ← MODIFICADO: com uma variante não
+│                                                    recomendada selecionada, a aba
+│                                                    Execução esconde cues/notes do
+│                                                    planejado e mostra a justificativa
+│                                                    genética da variante (FR-011);
+│                                                    mapa muscular e tempo ficam
+└── __tests__/
+    ├── lib/exerciseDisplay.test.ts               ← NOVO: sem variante, variante
+    │                                                recomendada, variante alternativa,
+    │                                                variantId inexistente, exercício
+    │                                                sem variantes
+    └── components/workout/ExerciseSheet.test.tsx ← MODIFICADO: aba Execução com
+                                                     variante alternativa mostra o
+                                                     "why" e esconde as cues do planejado
+```
+
+**Constitution Check (incremento)**: I ✅ (só `apps/web`); II ✅ (helper e sheet com teste antes: RED → GREEN); III ✅ (nenhum contrato HTTP muda); IV ✅ (o helper vive em `apps/web` porque só a web o consome; subir para `packages/` seria prematuro); V ✅ (um helper puro, sem estado novo; FR-012 reaproveita o estado existente).
 
 ## Complexity Tracking
 

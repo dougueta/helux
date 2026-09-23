@@ -27,3 +27,23 @@ Nenhum `[NEEDS CLARIFICATION]` restou do `spec.md` (o único ponto ambíguo — 
 **Rationale**: evita que o tipo do histórico (`WorkoutSessionRow.exercises`) fique dessincronizado do tipo real gravado pela API (`ExerciseSet`) — hoje já estava desatualizado (não tinha `skipped`, adicionado na spec 009, sem que `WorkoutSessionRow` fosse atualizado). Corrige essa duplicação lateral, alinhado ao Princípio IV (Shared Code via Packages) da constituição, sem introduzir abstração nova.
 
 **Alternativas consideradas**: manter a duplicação e só adicionar `executedVariant` também em `WorkoutSessionRow` (rejeitado — perpetua o mesmo problema que já causou o tipo ficar desatualizado uma vez).
+
+## Decisão 4 (incremento US4) — Helper puro `resolveExerciseDisplay` em vez de lógica espalhada no JSX
+
+**Decisão**: centralizar em `apps/web/src/lib/exerciseDisplay.ts` a regra "variante alternativa ativa → exibir variante; caso contrário → exibir planejado" (título, referência ao planejado, fit, dica). `page.tsx` e `ExerciseSheet.tsx` consomem o resultado.
+
+**Rationale**: hoje essa decisão já está duplicada e parcial (`selectedVariant`/`recVariant`/`fitScore` em `page.tsx`; `selectedVariant` de novo no sheet). A US4 multiplica os pontos de uso (título, cabeçalho, chip de dica, aba Execução), e `page.tsx` não tem teste de componente, então um helper puro é a forma mais barata de cumprir TDD e garantir SC-005/SC-006 (nenhum elemento contradiz a variante, e voltar à recomendada restaura tudo).
+
+**Alternativas consideradas**: um hook (`useExerciseDisplay`), rejeitado porque não há estado nem efeito, então uma função pura basta; e substituir o exercício pela variante no estado do treino, rejeitado porque quebraria o registro histórico (que precisa do planejado em `name`) e a volta à recomendada.
+
+## Decisão 5 (incremento US4) — "Variante alternativa" = variante ativa com `rec !== true`
+
+**Decisão**: a variante recomendada é o próprio exercício planejado (mesmo nome; ver Assumptions da spec), então nunca conta como "alternativa": com ela ativa, a tela mostra o planejado com as dicas personalizadas. Só variantes com `rec !== true` trocam título, dica e referência. Um `variantId` que não existe mais na lista cai no planejado.
+
+**Rationale**: é a mesma regra que `finishWorkout` já usa para decidir se grava `executedVariant` (variante travada ≠ recomendada), o que mantém a tela e o histórico consistentes.
+
+## Decisão 6 (incremento US4) — Dicas: justificativa genética no lugar (FR-011, opção A); músculos e tempo ficam
+
+**Decisão**: com uma variante alternativa ativa, a tela principal troca o chip `notes` pelo `why` da variante, e a aba Execução do sheet esconde `cues` e `notes` do planejado e mostra o `why`. O mapa muscular e o tempo continuam sendo os do planejado.
+
+**Rationale**: decisão do usuário (opção A, 2026-09-22). Músculos e tempo ficam porque as variantes vêm do mesmo padrão de movimento (`buildVariants` filtra por `pattern`), então o grupo muscular é o mesmo, e `Variant` não tem mapa muscular próprio. Séries, repetições e carga sugerida não mudam (fora de escopo, spec 014).
