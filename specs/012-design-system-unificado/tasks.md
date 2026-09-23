@@ -23,7 +23,7 @@ description: "Tarefas da spec 012 — design system unificado no app web"
 
 ## Phase 1: Setup
 
-- [ ] T001 Capturar, com o app local rodando e **antes de qualquer mudança**, screenshots de referência da tela de treino ativo, da Home e da folha "Ver execução" (aba Execução) em 375 px e 1280 px, e salvar em `specs/012-design-system-unificado/baseline/` (usados no passo 1 do `quickstart.md` para provar que o reset novo não muda telas já no padrão)
+- [X] T001 Capturar, com o app local rodando e **antes de qualquer mudança**, screenshots de referência da tela de treino ativo, da Home e da folha "Ver execução" (aba Execução) em 375 px e 1280 px, e salvar em `specs/012-design-system-unificado/baseline/` (usados no passo 1 do `quickstart.md` para provar que o reset novo não muda telas já no padrão) — feita em 2026-09-23: `home-desktop.jpg`, `workout-desktop.jpg`, `sheet-execucao-desktop.jpg` (largura da janela ~1864 px; o Chrome estava maximizado e não aceitou redimensionar) e `home-mobile-375.jpg` (via iframe de 375 px). As capturas de treino e da folha em 375 px não saíram (aba do Chrome em segundo plano travava a captura); ficam para a verificação manual da T027
 
 ---
 
