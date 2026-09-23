@@ -62,9 +62,9 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
 - [X] T008 [P] [US1] Migrar `src/components/layout/NavBar.tsx` e `src/components/layout/Shell.tsx`. No NavBar, `fixed bottom-0 left-0 right-0 z-50` vira inline, mantendo o `zIndex: 50` porque o diálogo de cansaço (spec 011) depende dele. O `pb-safe` sem efeito vira `paddingBottom: 'env(safe-area-inset-bottom, 0px)'` (research R6)
 - [X] T009 [P] [US1] Migrar `src/app/loading.tsx` e `src/app/dna/loading.tsx` para `Skeleton` e `pageContainer`, com a mesma estrutura de blocos de hoje
 - [X] T010 [P] [US1] Migrar `src/components/ErrorBoundary.tsx` (tela de erro) para `Card` e tokens
-- [ ] T011 [P] [US1] Migrar `src/app/login/page.tsx`. Precisa funcionar sem usuário logado e só com o tema
-- [ ] T012 [P] [US1] Migrar `src/app/history/page.tsx`, incluindo o estado vazio
-- [ ] T013 [P] [US1] Migrar `src/app/history/[id]/page.tsx`, o arquivo com mais classes (24). O cabeçalho da variante executada (spec 010, "variante de … · N fit") passa a usar `MatchBadge` e `Chip`, se equivalentes
+- [X] T011 [P] [US1] Migrar `src/app/login/page.tsx`. Precisa funcionar sem usuário logado e só com o tema
+- [X] T012 [P] [US1] Migrar `src/app/history/page.tsx`, incluindo o estado vazio
+- [X] T013 [P] [US1] Migrar `src/app/history/[id]/page.tsx`, o arquivo com mais classes (24). O cabeçalho da variante executada (spec 010, "variante de … · N fit") passa a usar `MatchBadge` e `Chip`, se equivalentes
 - [ ] T014 [P] [US1] Migrar `src/components/dna/TraitCard.tsx` (bug B3 original), `src/app/dna/DnaClient.tsx` e `src/app/dna/page.tsx`
 - [ ] T015 [P] [US1] Migrar `src/app/HomeClient.tsx` (10 classes), sem alterar o card de treino de hoje nem o `TirednessSelector` além das classes
 - [ ] T016 [P] [US1] Migrar `src/components/workout/TirednessSelector.tsx`. Trocar também o `#e5484d` por `var(--danger)` nele e em `src/components/workout/TirednessDialog.tsx` (R5.1)

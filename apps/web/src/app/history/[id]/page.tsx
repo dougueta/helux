@@ -1,10 +1,18 @@
 'use client'
 
+import type { CSSProperties } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Shell } from '@/components/layout/Shell'
+import { Card } from '@/components/ui/Card'
+import { MatchBadge } from '@/components/ui/MatchBadge'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { apiFetch } from '@/services/api-client'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
+
+const mono = 'var(--font-jetbrains-mono), monospace'
+const cell: CSSProperties = { padding: '8px 16px', fontFamily: mono }
+const headCell: CSSProperties = { padding: '8px 16px' }
 
 export default function SessionDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -24,9 +32,9 @@ export default function SessionDetailPage() {
   if (loading) {
     return (
       <Shell>
-        <div className="space-y-3">
+        <div aria-busy="true" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-helux-surface rounded-xl border border-helux-border h-16 animate-pulse" />
+            <Skeleton key={i} height={64} radius="var(--r-sm)" style={{ border: '1px solid var(--hairline)' }} />
           ))}
         </div>
       </Shell>
@@ -36,8 +44,11 @@ export default function SessionDetailPage() {
   if (!session) {
     return (
       <Shell>
-        <p className="text-helux-muted text-center py-12">Sessão não encontrada.</p>
-        <button onClick={() => router.back()} className="text-helux-accent text-sm underline min-h-[44px]">
+        <p style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '48px 0' }}>Sessão não encontrada.</p>
+        <button
+          onClick={() => router.back()}
+          style={{ color: 'var(--accent)', fontSize: 14, lineHeight: '20px', textDecoration: 'underline', minHeight: 44 }}
+        >
           ← Voltar
         </button>
       </Shell>
@@ -46,54 +57,62 @@ export default function SessionDetailPage() {
 
   return (
     <Shell>
-      <div className="mb-6 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-helux-muted text-sm min-h-[44px] pr-2">←</button>
+      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button
+          onClick={() => router.back()}
+          style={{ color: 'var(--text-dim)', fontSize: 14, lineHeight: '20px', minHeight: 44, paddingRight: 8 }}
+        >
+          ←
+        </button>
         <div>
-          <h1 className="font-sans font-semibold text-lg text-white">
+          <h1 style={{ fontWeight: 600, fontSize: 18, lineHeight: '28px', color: 'var(--text)' }}>
             {new Date(session.date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
           </h1>
           {session.duration_s && (
-            <p className="text-helux-muted text-sm font-mono">
+            <p style={{ color: 'var(--text-dim)', fontSize: 14, lineHeight: '20px', fontFamily: mono }}>
               {Math.floor(session.duration_s / 60)}min
             </p>
           )}
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {session.exercises.map((ex, i) => (
-          <div key={i} className="bg-helux-surface border border-helux-border rounded-2xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-helux-border">
-              <p className="font-sans font-medium text-white">
+          <Card key={i} padding={0} style={{ overflow: 'hidden' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--hairline)' }}>
+              <p style={{ fontWeight: 500, color: 'var(--text)' }}>
                 {ex.executedVariant ? ex.executedVariant.name : ex.name}
               </p>
               {ex.executedVariant && (
-                <p className="text-helux-muted text-xs mt-0.5">
-                  variante de {ex.name} · {ex.executedVariant.match} fit
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, flexWrap: 'wrap' }}>
+                  <span style={{ color: 'var(--text-dim)', fontSize: 12, lineHeight: '16px' }}>
+                    variante de {ex.name}
+                  </span>
+                  <MatchBadge value={ex.executedVariant.match} size="sm" />
+                </div>
               )}
             </div>
-            <table className="w-full text-sm">
+            <table style={{ width: '100%', fontSize: 14, lineHeight: '20px' }}>
               <thead>
-                <tr className="text-helux-muted text-xs font-mono border-b border-helux-border">
-                  <th className="px-4 py-2 text-left">Série</th>
-                  <th className="px-4 py-2 text-right">Reps</th>
-                  <th className="px-4 py-2 text-right">Peso</th>
-                  <th className="px-4 py-2 text-right">RPE</th>
+                <tr style={{ color: 'var(--text-dim)', fontSize: 12, lineHeight: '16px', fontFamily: mono, borderBottom: '1px solid var(--hairline)' }}>
+                  <th style={{ ...headCell, textAlign: 'left' }}>Série</th>
+                  <th style={{ ...headCell, textAlign: 'right' }}>Reps</th>
+                  <th style={{ ...headCell, textAlign: 'right' }}>Peso</th>
+                  <th style={{ ...headCell, textAlign: 'right' }}>RPE</th>
                 </tr>
               </thead>
               <tbody>
                 {ex.sets.map((set, j) => (
-                  <tr key={j} className="border-b border-helux-border/50 last:border-0">
-                    <td className="px-4 py-2 font-mono text-helux-muted">{j + 1}</td>
-                    <td className="px-4 py-2 font-mono text-white text-right">{set.reps}</td>
-                    <td className="px-4 py-2 font-mono text-helux-accent text-right">{set.weight}kg</td>
-                    <td className="px-4 py-2 font-mono text-helux-muted text-right">{set.effort}</td>
+                  <tr key={j} style={{ borderBottom: j < ex.sets.length - 1 ? '1px solid var(--hairline)' : 0 }}>
+                    <td style={{ ...cell, color: 'var(--text-dim)' }}>{j + 1}</td>
+                    <td style={{ ...cell, color: 'var(--text)', textAlign: 'right' }}>{set.reps}</td>
+                    <td style={{ ...cell, color: 'var(--accent)', textAlign: 'right' }}>{set.weight}kg</td>
+                    <td style={{ ...cell, color: 'var(--text-dim)', textAlign: 'right' }}>{set.effort}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
         ))}
       </div>
     </Shell>
