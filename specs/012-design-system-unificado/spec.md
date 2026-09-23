@@ -2,7 +2,7 @@
 
 **Feature Branch**: `012-design-system-unificado`
 **Created**: 2026-09-23
-**Status**: Draft
+**Status**: Pausada em 2026-09-23 — o usuário está desenhando uma reestruturação visual no Claude Design; retomar a partir desse desenho (a decisão "sem mockup" do roadmap deixou de valer)
 **Input**: User description: "Spec 012 — Design system unificado no app web. Auditar todas as telas e unificar num único padrão visual (estilo inline + variáveis CSS, o padrão já majoritário), migrando as telas e componentes que ainda usam classes utilitárias; resolver o bug B3 (classes de estilo inexistentes que viram no-op); reapresentar a descrição/dicas de execução do exercício com melhor hierarquia visual (item #10 do roadmap). Sem mockup, sem redesign de identidade visual, sem app mobile."
 
 ## Contexto
