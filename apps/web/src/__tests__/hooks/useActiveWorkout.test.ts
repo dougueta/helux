@@ -199,6 +199,30 @@ describe('useActiveWorkout', () => {
     })
   })
 
+  describe('chosen variant persists for the rest of the workout (FR-012)', () => {
+    it('keeps the variant when navigating to another exercise and back', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout([...mockPlanWithVariants, ...mockPlan] as any) })
+      act(() => { result.current.selectVariant(0, 'alt1') })
+      act(() => { result.current.setExercise(1) })
+      act(() => { result.current.setExercise(0) })
+      expect(result.current.session?.variantByExerciseIndex[0]).toBe('alt1')
+    })
+
+    it('keeps the variant when the workout is resumed from storage', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const first = renderHook(() => useActiveWorkout())
+      act(() => { first.result.current.startWorkout(mockPlanWithVariants as any) })
+      act(() => { first.result.current.selectVariant(0, 'alt1') })
+      first.unmount()
+
+      const { result } = renderHook(() => useActiveWorkout())
+      await vi.waitFor(() => expect(result.current.loaded).toBe(true))
+      expect(result.current.session?.variantByExerciseIndex[0]).toBe('alt1')
+    })
+  })
+
   describe('finishWorkout executedVariant payload', () => {
     it('includes executedVariant when the locked variant differs from the recommended one', async () => {
       const { apiFetch } = await import('@/services/api-client')

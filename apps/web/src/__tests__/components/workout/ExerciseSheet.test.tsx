@@ -103,4 +103,18 @@ describe('ExerciseSheet', () => {
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Supino reto com halteres')
     expect(screen.getByText('Fechar')).toBeInTheDocument()
   })
+
+  it('Execução tab with an alternative variant active shows its genetic reason instead of the planned cues and notes', () => {
+    render(<ExerciseSheet exercise={EXERCISE} currentVariantId="e1b" onApply={vi.fn()} onClose={vi.fn()} />)
+    expect(screen.queryByText('Escápulas retraídas e pés firmes no chão')).not.toBeInTheDocument()
+    expect(screen.queryByText('Cargas altas — seu forte')).not.toBeInTheDocument()
+    expect(screen.getByText('Maior amplitude e estabilização; corrige assimetrias.')).toBeInTheDocument()
+    expect(screen.getByText('Músculos trabalhados')).toBeInTheDocument()
+  })
+
+  it('Execução tab with the recommended variant active keeps the planned cues and notes', () => {
+    render(<ExerciseSheet exercise={EXERCISE} currentVariantId="e1" onApply={vi.fn()} onClose={vi.fn()} />)
+    expect(screen.getByText('Escápulas retraídas e pés firmes no chão')).toBeInTheDocument()
+    expect(screen.getByText('Cargas altas — seu forte')).toBeInTheDocument()
+  })
 })
