@@ -1,165 +1,208 @@
 ---
 
-description: "Tarefas da spec 012 — design system unificado no app web"
+description: "Tarefas da spec 012 — Helux Design System v2 no app web"
 ---
 
-# Tasks: Design System Unificado no App Web
+# Tasks: Helux Design System v2 no App Web
 
-**Input**: Design documents from `specs/012-design-system-unificado/`
-**Prerequisites**: plan.md, spec.md, research.md (R1–R7, R5.1), data-model.md, contracts/ui-components.md, quickstart.md
+**Input**: `specs/012-design-system-unificado/` (spec, plan, research Parte 2 V1–V11, data-model, contracts/ui-components.md, quickstart) + `design_handoff_helux_v2/`
+**Caminhos**: relativos a `apps/web/`, salvo indicação.
 
-**Tests**: TDD é obrigatório (constituição, Princípio II).
-- Código novo nasce com teste RED antes: parser de dicas, `ExecutionTips`, `Card`, `Skeleton` e o teste de guarda.
-- A migração das telas é refactor visual. A rede de segurança é o **teste de guarda** (T004), que fica RED listando os arquivos pendentes e vai tirando cada um da lista a cada migração, mais os testes de comportamento existentes, que continuam verdes, e a verificação manual (quickstart).
+**Tests**: TDD obrigatório (constituição, Princípio II).
+- **Componentes e helpers novos** nascem com teste RED, segundo o contrato de `contracts/ui-components.md`.
+- **Telas** são composição de componentes. A rede de segurança delas é:
+  - os testes de comportamento existentes, que continuam verdes. Só se ajusta o que o desenho muda de propósito (texto, papel ARIA), e cada ajuste é documentado no commit;
+  - o **guarda v2**;
+  - a verificação manual (quickstart).
 
-**Organization**: por user story (spec.md). Todos os caminhos são relativos a `apps/web/`.
+## Parte 1 (histórico): versão anterior da spec, concluída
 
-## Format: `[ID] [P?] [Story] Description`
-
-- **[P]**: pode rodar em paralelo (arquivos diferentes, sem dependência de tarefa incompleta)
-- **[Story]**: US1, US2 ou US3
-
----
-
-## Phase 1: Setup
-
-- [X] T001 Capturar, com o app local rodando e **antes de qualquer mudança**, screenshots de referência da tela de treino ativo, da Home e da folha "Ver execução" (aba Execução) em 375 px e 1280 px, e salvar em `specs/012-design-system-unificado/baseline/` (usados no passo 1 do `quickstart.md` para provar que o reset novo não muda telas já no padrão) — feita em 2026-09-23: `home-desktop.jpg`, `workout-desktop.jpg`, `sheet-execucao-desktop.jpg` (largura da janela ~1864 px; o Chrome estava maximizado e não aceitou redimensionar) e `home-mobile-375.jpg` (via iframe de 375 px). As capturas de treino e da folha em 375 px não saíram (aba do Chrome em segundo plano travava a captura); ficam para a verificação manual da T027
+Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T001–T026. Eles removeram o Tailwind, criaram o reset próprio, os tokens em variáveis, `Card`, `Skeleton`, `pageContainer`, `parseTipItems` e `ExecutionTips`, o guarda da Parte 1 e a correção do `viewport-fit`. A T027 (verificação manual da versão anterior) foi **cancelada**: a v2 substitui aquele visual.
 
 ---
 
-## Phase 2: Foundational (Blocking Prerequisites)
+## Phase 1: Setup (Parte 2)
 
-**Purpose**: tokens, componentes compartilhados e teste de guarda de que todas as migrações dependem.
+- [ ] T030 Criar `src/app/helux-v2.css` a partir de `design_handoff_helux_v2/v2/helux-v2.css`, com as adaptações de research V1:
+  - `--font` e `--mono` passam a usar as variáveis do next/font;
+  - `--safe-b` vira `env(safe-area-inset-bottom, 0px)`;
+  - removidas as classes que só existem no protótipo: `.hx-phone`, `.hx-status`, `.hx-status-r`, `.hx-scroll`, `.hx-home-ind`;
+  - `.hx-scrim`, `.hx-sheet` e `.hx-dialog` passam a `position: fixed`;
+  - `.hx-dock` vira contêiner fixo do rodapé, alinhado à coluna de 512 px no desktop;
+  - escala de z-index `--z-dock`, `--z-nav`, `--z-scrim`, `--z-sheet`, `--z-dialog` e `--z-toast`, aplicada às classes.
 
-- [X] T002 Em `src/app/globals.css`, acrescentar no `:root` os tokens `--success: #4ade80`, `--demo-bg-1: #14180f`, `--demo-bg-2: #0a0d09` e `--demo-bg-3: #070906` (research R5.1; o `#0c0f0c` de `workout/page.tsx` passa a usar `--demo-bg-2`, tom praticamente igual). Acrescentar também `@keyframes helux-pulse` (opacidade 1 → 0.5 → 1, 1.6 s) para o `Skeleton`. **Não** remover `@tailwind` ainda (é a T024)
-- [X] T003 [P] Criar `src/components/ui/layout.ts` exportando `pageContainer: CSSProperties = { maxWidth: 512, margin: '0 auto', padding: '0 16px' }` (equivale ao `max-w-lg mx-auto px-4` usado em 11 telas, research R4)
-- [X] T004 RED: criar `src/__tests__/design-system-guard.test.ts` conforme `contracts/ui-components.md` → "Teste de guarda". Ele percorre `src/**/*.{ts,tsx}` (fora de `__tests__`) e falha, com arquivo e linha, em três casos:
-  - `className` em qualquer arquivo, exceto o `<html>` de `src/app/layout.tsx` com as variáveis de `next/font`;
-  - `var(--x)` não declarado no `:root` de `src/app/globals.css`, aceitando o prefixo `--font-`, que o `next/font` injeta;
-  - cor hex literal fora de `globals.css`.
-
-  Rodar e confirmar que falha listando os 19 arquivos de `research.md` R1 e as 11 cores de R5.1. Os `var(--success)` já passam depois da T002
-- [X] T005 [P] RED→GREEN: `src/__tests__/components/ui/Card.test.tsx` (renderiza filhos; aplica `--surface-1`, borda `--hairline`, raio `--r-card`, padding padrão 16; mescla `style` por último; respeita `as`) e depois `src/components/ui/Card.tsx` conforme o contrato
-- [X] T006 [P] RED→GREEN: `src/__tests__/components/ui/Skeleton.test.tsx` (aplica largura, altura e raio; tem `aria-hidden="true"`; usa a animação `helux-pulse`) e depois `src/components/ui/Skeleton.tsx` conforme o contrato
-
-**Checkpoint**: tokens, `Card`, `Skeleton` e `pageContainer` prontos. O teste de guarda está RED listando o trabalho restante.
+  Importar no `src/app/layout.tsx` depois do `globals.css`.
+- [ ] T031 Em `src/app/layout.tsx`, carregar via `next/font` os pesos da v2: Space Grotesk 400/500/600/700 e JetBrains Mono 400/500/600 mais o itálico. Em `src/app/globals.css`, manter o reset e remover do `:root` os tokens que agora vêm de `helux-v2.css`. Os tokens antigos ainda usados (`--r-card`, `--accent-glow`, `--demo-bg-*`) ficam marcados com um comentário "legado: remover na T061".
 
 ---
 
-## Phase 3: User Story 1 — Telas com aparência consistente (Priority: P1) 🎯 MVP
+## Phase 2: Foundational (bloqueia todas as histórias)
 
-**Goal**: as 11 telas e seus estados de carregamento, erro e vazio no padrão único, com o B3 resolvido.
+- [ ] T032 [P] RED→GREEN: `src/__tests__/lib/format.test.ts` e `src/lib/format.ts`:
+  - `formatNumber`: 82 → "82", 82 com 1 casa → "82,0", 9840 → "9.840", 17.4 → "17,4";
+  - `formatDuration`.
+- [ ] T033 [P] RED→GREEN: `src/__tests__/lib/fit.test.ts` e `src/lib/fit.ts`, com `fitBand` nas bordas 49/50/74/75 e o token de cada faixa (research V6).
+- [ ] T034 [P] RED→GREEN: evoluir `src/__tests__/lib/tipItems.test.ts` e `src/lib/tipItems.ts` para o TipItem v2 (research V4):
+  - `gene: {symbol, genotype}`;
+  - gene sem parênteses ("COL1A1 C,C");
+  - remoção do prefixo "ATENÇÃO:";
+  - invariante "nada se perde".
 
-**Independent Test**: `quickstart.md` passos 2, 3, 4, 6 e 7. O teste de guarda deixa de listar os arquivos migrados.
+  Atualizar os casos existentes, inclusive o texto real do Agachamento: espera-se o primeiro item com `gene {COL1A1, C,C}` e sem "ATENÇÃO".
+- [ ] T035 RED: reescrever `src/__tests__/design-system-guard.test.ts` para o guarda v2 (research V3), com classes validadas contra os seletores de `app/helux-v2.css`, `var()` checado contra os dois `:root`, cores literais (hex, `rgb`, `rgba`) e `--accent-glow`. Confirmar que ele falha e listar o trabalho restante. O guarda só fica verde na T061.
+- [ ] T036 [P] RED→GREEN: `ui/icons.tsx` com os paths do objeto `IC` de `v2-core.jsx` e `HelixMark` v2, mantendo os nomes de ícone usados hoje. Testes em `src/__tests__/components/ui/icons.test.tsx`.
+- [ ] T037 [P] RED→GREEN: `ui/Button.tsx` (`Button` e `IconButton`), conforme o contrato.
+- [ ] T038 [P] RED→GREEN: `ui/Tag.tsx` (`Tag` e `GeneTag`), conforme o contrato.
+- [ ] T039 [P] RED→GREEN: `ui/Helix.tsx` e `ui/Fit.tsx`, conforme o contrato e research V6. O modo `sequential` desliga em movimento reduzido, via `matchMedia`.
+- [ ] T040 [P] RED→GREEN: `ui/Segmented.tsx`, com os modos grupo e abas, conforme o contrato.
+- [ ] T041 [P] RED→GREEN: `ui/Stepper.tsx` e `ui/Field.tsx`, conforme o contrato.
+- [ ] T042 [P] RED→GREEN: `ui/Check.tsx`, `ui/SetRow.tsx` e `ui/CurrentSet.tsx`, conforme o contrato.
+- [ ] T043 [P] RED→GREEN: `ui/WorkoutProgress.tsx`, `ui/CycleProgress.tsx` e `ui/Ring.tsx` (v2), conforme o contrato.
+- [ ] T044 [P] RED→GREEN: `ui/Tips.tsx`, que substitui `workout/ExecutionTips`, e `ui/Steps.tsx`, conforme o contrato.
+- [ ] T045 [P] RED→GREEN: `ui/ScreenHeader.tsx` e `ui/SectionHeader.tsx`.
+- [ ] T046 [P] RED→GREEN: `ui/Sheet.tsx`, `ui/Dialog.tsx` e `ui/Toast.tsx`, com portal, foco, Esc e scrim, conforme o contrato.
+- [ ] T047 [P] RED→GREEN: `ui/Banner.tsx`, `ui/Bars.tsx`, `ui/HistoryRow.tsx`, `ui/PRRow.tsx` e `ui/Skeleton.tsx` (v2, `hx-sk`), conforme o contrato.
+- [ ] T048 RED→GREEN: `components/layout/NavBar.tsx` v2 (`.hx-nav`, `aria-current`, rotas ocultas, research V8), com testes em `src/__tests__/components/layout/NavBar.test.tsx`.
 
-Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das classes antigas"):
-- Trocar cada `className` por estilo inline com os tokens: `text-helux-muted` vira `var(--text-dim)`, `border-helux-border` vira `var(--hairline)`, `bg-helux-surface` vira `var(--surface-1)`, `text-white` vira `var(--text)`, e o contêiner `max-w-lg mx-auto px-4` vira `pageContainer`.
-- Usar `Card`, `Skeleton`, `Chip`, `Label` e `MatchBadge` onde houver elemento equivalente.
-- Não mudar texto, dados nem comportamento (FR-006).
-- Ao terminar, rodar os testes do arquivo, se houver, e o teste de guarda, e confirmar que o arquivo saiu da lista de falhas.
-
-- [X] T007 [P] [US1] Migrar `src/app/layout.tsx`. Tirar as classes do `<body>` (o `globals.css` já define fundo e cor) e do `<main>` (vira `style={{ paddingBottom: 80 }}`). Manter no `<html>` só as variáveis do `next/font`, que é a exceção do teste de guarda
-- [X] T008 [P] [US1] Migrar `src/components/layout/NavBar.tsx` e `src/components/layout/Shell.tsx`. No NavBar, `fixed bottom-0 left-0 right-0 z-50` vira inline, mantendo o `zIndex: 50` porque o diálogo de cansaço (spec 011) depende dele. O `pb-safe` sem efeito vira `paddingBottom: 'env(safe-area-inset-bottom, 0px)'` (research R6)
-- [X] T009 [P] [US1] Migrar `src/app/loading.tsx` e `src/app/dna/loading.tsx` para `Skeleton` e `pageContainer`, com a mesma estrutura de blocos de hoje
-- [X] T010 [P] [US1] Migrar `src/components/ErrorBoundary.tsx` (tela de erro) para `Card` e tokens
-- [X] T011 [P] [US1] Migrar `src/app/login/page.tsx`. Precisa funcionar sem usuário logado e só com o tema
-- [X] T012 [P] [US1] Migrar `src/app/history/page.tsx`, incluindo o estado vazio
-- [X] T013 [P] [US1] Migrar `src/app/history/[id]/page.tsx`, o arquivo com mais classes (24). O cabeçalho da variante executada (spec 010, "variante de … · N fit") passa a usar `MatchBadge` e `Chip`, se equivalentes
-- [X] T014 [P] [US1] Migrar `src/components/dna/TraitCard.tsx` (bug B3 original), `src/app/dna/DnaClient.tsx` e `src/app/dna/page.tsx`
-- [X] T015 [P] [US1] Migrar `src/app/HomeClient.tsx` (10 classes), sem alterar o card de treino de hoje nem o `TirednessSelector` além das classes
-- [X] T016 [P] [US1] Migrar `src/components/workout/TirednessSelector.tsx`. Trocar também o `#e5484d` por `var(--danger)` nele e em `src/components/workout/TirednessDialog.tsx` (R5.1)
-- [X] T017 [P] [US1] Migrar `src/app/recovery/page.tsx` (Progresso), `src/app/treinos/TreinosClient.tsx` e `src/app/perfil/page.tsx`
-- [X] T018 [P] [US1] Migrar `src/app/checkin/page.tsx` e `src/app/checkin/history/page.tsx`. Trocar `#f87171` por `var(--danger)` e `#4ade80` por `var(--success)` em `src/components/checkin/CheckinForm.tsx`, `CheckinCard.tsx` e `CheckinHistoryTable.tsx` (R5.1)
-- [X] T019 [P] [US1] Trocar as cores hex da área de demonstração por `var(--demo-bg-1/2/3)` em `src/components/workout/ExerciseSheet.tsx` e em `src/app/workout/page.tsx` (`#0c0f0c` vira `var(--demo-bg-2)`), sem outra mudança visual
-
-**Checkpoint**: teste de guarda **verde** (nenhum `className` fora da exceção, nenhuma var não declarada, nenhuma cor hex solta). Todos os testes existentes continuam verdes.
-
----
-
-## Phase 4: User Story 2 — Dicas de execução legíveis (Priority: P1)
-
-**Goal**: dicas com uma orientação por linha e marcadores genéticos como etiqueta (FR-009 opção A, FR-010, FR-011).
-
-**Independent Test**: `quickstart.md` passo 5.
-
-- [X] T020 [P] [US2] RED: `src/__tests__/lib/tipItems.test.ts` com todos os casos de `contracts/ui-components.md` → `parseTipItems`:
-  - o texto de referência de 3 frases vira 4 itens, com os marcadores WNT16 e "COL1A1 C,C";
-  - "+2.5kg" não é dividido;
-  - "(usado em 2026-08-29)" continua no texto;
-  - uma frase só vira 1 item;
-  - vazio, nulo ou espaços viram `[]`;
-  - propriedade "nada se perde": toda palavra da entrada aparece em algum `text` ou `markers`.
-
-  Confirmar que falha
-- [X] T021 [US2] GREEN: `src/lib/tipItems.ts` com `parseTipItems` e `TipItem`, conforme research R7 (divisão conservadora; regex de gene `\(([A-Z][A-Z0-9]{1,}[^)]*)\)`; nunca perde texto). Fazer T020 passar
-- [X] T022 [US2] RED→GREEN: `src/__tests__/components/workout/ExecutionTips.test.tsx` e `src/components/workout/ExecutionTips.tsx`, conforme o contrato:
-  - texto vazio retorna `null`;
-  - 1 item aparece sem marcador de lista;
-  - 2 ou mais itens aparecem como `<ul>` com um `<li>` por orientação;
-  - cada marcador aparece como `Chip` com `aria-label="marcador genético X"`;
-  - há os visuais `inline` e `panel`.
-- [X] T023 [US2] Integrar `ExecutionTips`:
-  - em `src/app/workout/page.tsx`, trocar o chip verde que renderiza `display.tip` por `<ExecutionTips text={display.tip} variant="inline" />`. Isso cobre também a justificativa da variante, FR-011;
-  - em `src/components/workout/ExerciseSheet.tsx`, aba Execução, trocar o bloco `display.tip` por `<ExecutionTips text={display.tip} variant="panel" />`, mantendo a lista de `cues` e o mapa muscular como estão.
-
-  Ajustar os testes existentes do `ExerciseSheet` que procuram o texto inteiro da dica, se algum passar a encontrá-lo dividido. O conteúdo não muda, só a quebra. Documentar no commit
-
-**Checkpoint**: dicas legíveis nos dois lugares, inclusive para variante alternativa.
+**Checkpoint**: folha v2, helpers e todos os componentes de `ui/` prontos e testados. O guarda está RED, listando o que falta migrar.
 
 ---
 
-## Phase 5: User Story 3 — Um único jeito de estilizar (Priority: P2)
+## Phase 3: US2 — Treino ativo e folha de execução (P1) 🎯 MVP
 
-**Goal**: Tailwind removido do app, com reset próprio (FR-002, FR-008; research R2, R3).
+**Independent Test**: `quickstart.md` passo 1.
 
-**Independent Test**: `quickstart.md` passos 1 e 8. O teste de guarda continua verde.
+- [ ] T049 [US2] Reescrever a apresentação de `src/app/workout/page.tsx` com os componentes v2 (FR-011, FR-012, FR-013 e research V5):
+  - `ScreenHeader` com encerrar, nome, "N/total séries" e timer;
+  - `WorkoutProgress`, cujo `onPick` chama `setExercise`;
+  - `Tag` e `Fit`;
+  - `.t-title`;
+  - prescrição com números em mono;
+  - `Tips` com `display.tip` (preserva a regra da spec 010);
+  - card `.hx-card` com "Ver execução" e o atalho de variante com fit maior;
+  - seção "Séries" com `SectionHeader`, `SetRow` e `CurrentSet` (`editingSetIndex`, `poppedSetIndex`);
+  - "Adicionar série" (ghost);
+  - rodapé `.hx-dock` / `.hx-cta-dock` com o bloco de descanso (`Ring`, tempo, "+15s", "Pular", `role="timer"`) e o botão "Próximo exercício"/"Finalizar treino", principal ou secundário conforme o descanso.
 
-- [X] T024 [US3] Com o teste de guarda verde (pré-requisito):
-  - em `src/app/globals.css`, trocar as três diretivas `@tailwind` pelo reset mínimo de research R3: `*, ::before, ::after { box-sizing: border-box; border: 0 solid }`; margens zeradas nos elementos listados; listas sem marcador; controles herdando fonte e cor; `button` com fundo transparente e `cursor: pointer`; `img` e `svg` com `display: block` e `max-width: 100%`;
-  - apagar `tailwind.config.ts` e `postcss.config.js`;
-  - remover `tailwindcss` e `autoprefixer` de `package.json`;
-  - rodar `pnpm install` na raiz;
-  - se o `next build` exigir PostCSS, recriar `postcss.config.js` com `module.exports = { plugins: {} }` e registrar isso no commit
-- [X] T025 [US3] Rodar `pnpm --filter @helux/web build` e confirmar que o build passa sem Tailwind
+  Manter `useActiveWorkout`, `useFinishWorkout` e o `FinishWorkoutConfirmDialog` (spec 009, migrado para `ui/Dialog` na T052). Rodar `src/__tests__/app/workout-page.test.tsx`: ajustar só os seletores que o desenho mudou de propósito e registrar no commit.
+- [ ] T050 [US2] Reescrever `src/components/workout/ExerciseSheet.tsx` como conteúdo de `ui/Sheet` (FR-015, research V5):
+  - palco `.hx-stage` com `ExerciseDemo`, cadência "2·0·1" quando houver `tempo`, pausar/reproduzir e "Repetir";
+  - `.t-heading` e `Fit`;
+  - etiquetas;
+  - `Segmented tabs` com Execução e Variantes;
+  - aba Execução: `Steps` a partir de `cues`, com o último item "Erro comum:" como `warn`, quando começar assim;
+  - "Músculos trabalhados" com `MuscleMap` e a legenda v2;
+  - aba Variantes: lista plana com `Fit`, etiquetas, "Atual" (outline) ou `Button` "Trocar" (secondary se o fit for maior que o atual, ghost se for menor), que aplica a variante;
+  - rodapé "Fechar".
 
-**Checkpoint**: nenhuma dependência nem configuração do Tailwind no app. O guarda impede a volta de classes e de cores soltas.
+  Preservar a regra da spec 010. Atualizar `src/__tests__/components/workout/ExerciseSheet.test.tsx` onde o desenho mudou o texto ou o papel.
+- [ ] T051 [P] [US2] `src/components/workout/ExerciseDemo.tsx`: ao desenhar, usar os tokens `--stage` e `--stage-grid` (sem `--demo-bg-*`), a cor `--accent` só no implemento, e parar no meio do movimento em movimento reduzido (FR-008). Manter as animações por padrão de movimento.
+- [ ] T052 [P] [US2] Migrar `src/components/workout/FinishWorkoutConfirmDialog.tsx` para `ui/Dialog`, com ações empilhadas (destrutiva em cima, "Continuar treinando" ghost), preservando o texto e o comportamento da spec 009 e os testes existentes.
+
+**Checkpoint**: treino ativo e folha no v2; fluxos das specs 009, 010 e 016 intactos.
 
 ---
 
-## Phase 6: Polish & Cross-Cutting
+## Phase 4: US3 — Home (P1)
 
-- [X] T026 [P] Rodar `pnpm --filter @helux/web test` e `pnpm typecheck` na raiz. Tudo verde, incluindo o teste de guarda e os testes existentes de comportamento
-- [ ] T027 Executar a verificação manual de `quickstart.md` (passos 1–8) contra o app rodando localmente, comparando o passo 1 com os screenshots da T001
+**Independent Test**: `quickstart.md` passo 3.
+
+- [ ] T053 [US3] Reescrever `src/app/HomeClient.tsx` (FR-017, FR-019):
+  - topo com `HelixMark`, sequência (ghost com o ícone da chama em `--warn`) e `IconButton` de perfil;
+  - `.t-secondary` com a data;
+  - `.t-display` "Bom treino, {nome}", sem verde;
+  - `.hx-focus` com o treino, "N exercícios", o nome 24/28, `Fit md`, "Depois" (2 próximos + "e mais N"), a divisória, "Como você está hoje" com `TirednessSelector` e `Button primary lg` "Iniciar treino" com o ícone de play;
+  - ciclo com `SectionHeader` e `CycleProgress`;
+  - último check-in em `.hx-plain`, com grade 2×2 em `.n-md`/`.u` e os botões "Novo check-in" (secondary) e "Gerar novo plano" (ghost);
+  - skeleton na forma final dentro da área de foco.
+
+  Estados vazios ("Nenhum plano gerado ainda") no padrão v2, convidando à ação.
+- [ ] T054 [US3] Migrar `src/components/workout/TirednessSelector.tsx` e `TirednessLevelPicker.tsx` para `Segmented` neutro, e `TirednessDialog.tsx` para `ui/Sheet`/`ui/Dialog`, com `AdjustmentChangesList` no visual v2 (FR-018). Preservar todo o comportamento da spec 011; os testes existentes continuam verdes, ajustando só os seletores.
+- [ ] T055 [P] [US3] Migrar `src/app/loading.tsx` para skeletons na forma da Home v2.
+
+**Checkpoint**: Home e fluxo da spec 011 no v2.
+
+---
+
+## Phase 5: US4 — Treino concluído (P2)
+
+- [ ] T056 [US4] Reescrever `src/components/workout/WorkoutDoneScreen.tsx` (FR-020, research V10):
+  - `Helix` sequencial com um traço por série do treino;
+  - `.t-display` "Treino concluído";
+  - linha com o nome do treino e a duração;
+  - grade 2×2 com Volume, Séries e Duração (sem Recordes);
+  - estados: salvando (`Button loading` + "Salvando treino…" com `role="status"`), salvo ("Voltar para Hoje") e erro (`Banner err` + "Tentar de novo" com o ícone de sincronizar + "Sair sem sincronizar" ghost).
+
+  Preservar o `useFinishWorkout` e os testes da spec 016, ajustando só os textos que o desenho mudou ("Tentar novamente" → "Tentar de novo"; "Voltar ao início" → "Voltar para Hoje"), com registro no commit.
+
+---
+
+## Phase 6: US5 — Progresso com Histórico (P2)
+
+- [ ] T057 [US5] Reescrever `src/app/recovery/page.tsx` (FR-021, research V9):
+  - `.t-display` "Sua evolução";
+  - "Recovery de hoje", com `Banner warn` quando os dados estiverem antigos e 4 cards `.hx-card` com ícone e `.n-lg` (atenuados quando antigos);
+  - "Volume semanal" em `.hx-plain`, com `.n-xl` e o delta, mais `Bars`;
+  - "Recordes pessoais" com `PRRow`;
+  - "Histórico" com os 3 últimos em `HistoryRow` e o link "Ver todos" para `/history`.
+
+  Estados vazios que convidam a uma ação.
+- [ ] T058 [P] [US5] Migrar `src/app/history/page.tsx` (lista com `HistoryRow`) e `src/app/history/[id]/page.tsx` (detalhe com `ScreenHeader`, variante executada da spec 010 com `Fit`, séries em mono). Remover `components/progress/SessionHistoryRow.tsx`, `PersonalRecordRow.tsx`, `BarChart.tsx` e `StatGrid.tsx` se ficarem sem uso.
+
+---
+
+## Phase 7: US6 — DNA (P2)
+
+- [ ] T059 [US6] Reescrever `src/app/dna/DnaClient.tsx` e `src/components/dna/TraitCard.tsx` (FR-022):
+  - `ScreenHeader` com voltar e "Perfil";
+  - `.t-display` "Seu DNA" com o texto introdutório;
+  - fita de marcadores (`Helix` estática com os loci dos genes do perfil acesos e os nomes em `.gene` embaixo);
+  - "Marcadores genéticos" + "N de N lidos";
+  - cards `.hx-card` com o gene em itálico, o genótipo quando houver, o nível em palavra e 3 barras neutras (`level` 0–1 mapeado para baixo/médio/alto: < 0,34, < 0,67, ≥ 0,67), o nome do traço, o impacto (`note`) e o quadrado âmbar quando `warn`.
+
+  Sem a seção "Como molda seu treino". Migrar também `src/app/dna/loading.tsx` e `src/app/dna/page.tsx`.
+
+---
+
+## Phase 8: US7 — Demais telas e fechamento do sistema (P3)
+
+- [ ] T060 [P] [US7] Migrar para os componentes v2 (FR-023):
+  - `src/app/treinos/TreinosClient.tsx`, `src/app/checkin/page.tsx` e `src/components/checkin/CheckinForm.tsx`, com `Field` para os campos numéricos;
+  - `CheckinCard.tsx`, `CheckinHistoryTable.tsx` e `src/app/checkin/history/page.tsx`;
+  - `src/app/perfil/page.tsx` (e `ProfileForm` se existir), `src/app/login/page.tsx` e `src/components/ErrorBoundary.tsx` (`Banner err` + "Tentar de novo");
+  - `src/components/layout/Shell.tsx`.
+
+  Corrigir o espaço superior duplicado (48 + 48) anotado nos achados da Parte 1, usando o ritmo de espaçamento da v2.
+- [ ] T061 Remover os componentes antigos sem uso (`ui/Card`, `ui/Chip`, `ui/Label`, `ui/MatchBadge`, `ui/MiniStep`, `ui/layout.ts`, `workout/ExecutionTips` e os que o `tsc` apontar sem import) e os tokens legados de `globals.css` (`--r-card`, `--accent-glow`, `--demo-bg-*`), junto com os testes dos componentes removidos. O guarda v2 (T035) precisa ficar **verde**.
+
+---
+
+## Phase 9: Polish
+
+- [ ] T062 Rodar `pnpm --filter @helux/web test`, `pnpm typecheck` e `pnpm --filter @helux/web build`: todos verdes.
+- [ ] T063 Verificação manual de `quickstart.md` (passos 1–8), lado a lado com `design_handoff_helux_v2/Helux Design System v2.html`.
 
 ---
 
 ## Dependencies & Execution Order
 
-- **Setup (T001)**: antes de qualquer mudança (os screenshots são a referência).
-- **Foundational (T002–T006)**: bloqueia US1 e US2. T003, T005 e T006 são paralelas entre si. A T004 depende da T002 (vars novas).
-- **US1 (T007–T019)**: todas [P], porque cada uma mexe em arquivos diferentes. Dependem só da Foundational.
-- **US2 (T020–T023)**: independe da US1. T020 → T021 → T022 → T023. A T023 mexe em `workout/page.tsx` e `ExerciseSheet.tsx`, os mesmos arquivos da T019, então fazer depois da T019 ou na mesma sessão.
-- **US3 (T024–T025)**: depende da US1 **completa**, com o teste de guarda verde. Remover o Tailwind antes quebraria telas não migradas.
-- **Polish (T026–T027)**: depende de tudo.
-
-## Parallel Example: User Story 1
-
-```text
-Task: "T011 Migrar src/app/login/page.tsx"
-Task: "T012 Migrar src/app/history/page.tsx"
-Task: "T014 Migrar TraitCard + DnaClient + dna/page"
-Task: "T018 Migrar checkin/* + cores do check-in"
-```
+- **Setup (T030–T031)** vem antes de tudo.
+- **Foundational (T032–T048)**: a T035 (guarda RED) depende da T030. As tarefas de componente [P] podem andar em paralelo entre si. A T048 depende da T036 (ícones).
+- **US2 (T049–T052)** depende da Foundational. A T049 e a T050 mexem em arquivos diferentes, mas a T049 usa a `Sheet` com o conteúdo da T050: fazer a T050 antes ou junto. T051 e T052 são [P].
+- **US3 (T053–T055)** depende da Foundational e independe da US2, exceto pela T054, que usa `Sheet`/`Dialog`.
+- **US4 (T056), US5 (T057–T058) e US6 (T059)** dependem da Foundational e são independentes entre si.
+- **US7 (T060–T061)**: a T061 depende de **todas** as migrações, porque remove o legado e deixa o guarda verde.
+- **Polish (T062–T063)** vem por último.
 
 ## Implementation Strategy
 
-1. Setup e Foundational, com o guarda RED como mapa do trabalho.
-2. **US1 (MVP)**: migrar tela por tela até o guarda ficar verde; o B3 some no caminho.
-3. **US2**: dicas em itens, independente da US1.
-4. **US3**: remover o Tailwind por último, com a regressão visual coberta pelos screenshots da T001.
-5. Polish: suíte completa e verificação manual.
+1. Folha v2 e fundação testada, com o guarda RED como mapa do trabalho.
+2. **MVP = US2** (treino ativo e folha): é a tela de uso principal e a que o desenho mais muda.
+3. US3 (Home), depois US4, US5 e US6 em paralelo, se houver capacidade.
+4. US7 e a remoção do legado, com o guarda verde.
+5. Polish: suíte completa e verificação lado a lado com o handoff.
 
 ## Notes
 
-- A US1 é a mais longa (13 tarefas), mas mecânica. Cada tarefa é um commit pequeno e verificável.
-- Se durante uma migração aparecer um elemento sem equivalente claro no padrão, usar a aparência da tela de treino ativo como referência e registrar a decisão no commit. Não criar componente novo sem 2 usos (YAGNI, research R4).
+- Nunca inventar dado (FR-024): "Anterior" aparece como "—"; recordes da conclusão e "Como molda seu treino" ficam ocultos.
+- Se o handoff e o comportamento existente conflitarem, o comportamento das specs 009/010/011/016 vence e o conflito é registrado em "Achados da implementação (Parte 2)" no `research.md`.
