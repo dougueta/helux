@@ -1,65 +1,134 @@
-# Contratos de UI: Design System Unificado
+# Contratos de UI: Design System v2
 
-Contratos internos do `apps/web`. Não há API externa nova.
+Os componentes ficam em `apps/web/src/components/ui/` e espelham `design_handoff_helux_v2/v2/v2-core.jsx`, usando as classes de `app/helux-v2.css`. Cada item abaixo diz a **API** e o **que o teste precisa verificar** (TDD).
 
-## `parseTipItems` — `apps/web/src/lib/tipItems.ts`
+## Botões
 
-```ts
-export interface TipItem { text: string; markers: string[] }
-export function parseTipItems(text: string | null | undefined): TipItem[]
-```
+- **`Button`**: `{ kind?: 'primary'|'secondary'|'ghost'|'danger'; size?: 'md'|'lg'; block?; icon?: IconName; iconRight?: IconName; loading?; disabled? } & ButtonHTMLAttributes`.
 
-Casos que o teste precisa cobrir:
+  O teste verifica:
+  - as classes `hx-btn`, `hx-btn--{kind}`, `--lg` e `--block`;
+  - com `loading`: `aria-busy="true"`, a classe `is-loading` e o botão sem efeito ao clicar;
+  - com `disabled`: o atributo `disabled`;
+  - no `primary`, o `iconRight="play"` fica num círculo (`hx-btn-ico`).
+- **`IconButton`**: `{ icon: IconName; label: string; bare? }`.
 
-- **Texto de referência:**
-  - Entrada: "Desça até paralelo ou abaixo — carga óssea controlada favorece densidade (WNT16). Joelhos alinhados com os dedos dos pés; evite valgismo para proteger o ligamento cruzado (COL1A1 C,C). Descanso 90-120s entre séries."
-  - Resultado: 4 itens:
-    - `{text: "Desça até paralelo ou abaixo — carga óssea controlada favorece densidade", markers: ["WNT16"]}`
-    - `{text: "Joelhos alinhados com os dedos dos pés", markers: []}`
-    - `{text: "evite valgismo para proteger o ligamento cruzado", markers: ["COL1A1 C,C"]}`
-    - `{text: "Descanso 90-120s entre séries", markers: []}`
-- **Números com ponto:** "Progressão: +2.5kg quando completar 10 reps" não é dividido no "2.5".
-- **Parêntese que não é gene:** "(usado em 2026-08-29)" continua no texto.
-- **Uma frase só:** vira 1 item.
-- **Vazio, nulo ou só espaços:** `[]`.
-- **Nada se perde:** todo o conteúdo significativo da entrada aparece em algum `text` ou `markers`.
+  O teste verifica o `aria-label` obrigatório, 44×44 e a classe `hx-icbtn--bare` quando `bare`.
 
-## `ExecutionTips` — `apps/web/src/components/workout/ExecutionTips.tsx`
+## Informação
 
-```ts
-export function ExecutionTips(props: { text: string | null | undefined; variant?: 'inline' | 'panel' }): JSX.Element | null
-```
+- **`Tag`**: `{ kind?: 'outline'|'warn' }`.
 
-- Com `text` vazio, retorna `null` (sem bloco vazio).
-- Com 1 item, renderiza o texto sem marcador de lista.
-- Com mais de 1 item, renderiza uma lista (`<ul>`, com semântica de lista acessível) com uma orientação por `<li>`.
-- Cada marcador aparece como `Chip` junto ao item. O texto do marcador fica acessível, por exemplo com `aria-label="marcador genético WNT16"`.
-- Os dois visuais:
-  - `inline`: bloco compacto da tela de treino, no lugar do chip verde atual;
-  - `panel`: aba Execução do `ExerciseSheet`.
-- É usado tanto para `exercise.notes` quanto para a justificativa genética de uma variante (`display.tip`, spec 010).
+  O teste verifica que é um `<span>` sem papel interativo e as classes `hx-tag` e `hx-tag--{kind}`.
+- **`GeneTag`**: `{ symbol; genotype?; warn? }`.
 
-## `Card` — `apps/web/src/components/ui/Card.tsx`
+  O teste verifica:
+  - `<i>` para o símbolo, em itálico pela classe;
+  - o genótipo como texto ao lado;
+  - `hx-gtag--warn` quando `warn`;
+  - o `aria-label` "marcador genético {symbol} {genotype}".
+- **`Helix`**: `{ value; n; h; w?; gap?; sequential?; delayMs? }`.
 
-```ts
-export function Card(props: { children: ReactNode; padding?: number | string; as?: 'div' | 'section' | 'article'; style?: CSSProperties } & HTMLAttributes<HTMLElement>): JSX.Element
-```
+  O teste verifica:
+  - a quantidade de `<rect>` igual a `n`;
+  - a quantidade de acesos igual a `round(n*value/100)`;
+  - as alturas seguindo `|cos|`, com mínimo de 2;
+  - com `sequential`, cada traço com um atraso crescente.
+- **`Fit`**: `{ value; size?: 'sm'|'md'|'lg'; label? }`.
 
-- Visual: fundo `var(--surface-1)`, borda `1px solid var(--hairline)`, raio `var(--r-card)`, padding padrão de 16.
-- O `style` passado é mesclado por último, para permitir ajustes pontuais.
+  O teste verifica o `aria-label` com número e faixa, o número na cor da faixa e o texto "fit".
 
-## `Skeleton` — `apps/web/src/components/ui/Skeleton.tsx`
+## Seletores e entrada
 
-```ts
-export function Skeleton(props: { width?: number | string; height: number | string; radius?: string; style?: CSSProperties }): JSX.Element
-```
+- **`Segmented`**: `{ options: (string|{value,label})[]; value; onChange; tabs?; label; disabled? }`.
 
-- Visual: fundo `var(--surface-1)` com a animação `helux-pulse`, definida em `globals.css`.
-- Acessibilidade: tem `aria-hidden="true"`. A tela de carregamento que usa o componente mantém um texto ou `aria-busy` para leitores de tela.
+  O teste verifica:
+  - `role="group"` com `aria-label`, e botões com `aria-pressed`;
+  - com `tabs`: `role="tablist"`, `role="tab"` e `aria-selected`;
+  - clique chama `onChange`.
+- **`Stepper`**: `{ value; unit; step; min?=0; onChange; label; disabled?; error? }`.
 
-## Teste de guarda — `apps/web/src/__tests__/design-system-guard.test.ts`
+  O teste verifica:
+  - − e + com `aria-label` ("diminuir kg" e "aumentar kg");
+  - o mínimo respeitado;
+  - o valor com `aria-live="polite"`, formatado em pt-BR (82,5);
+  - a classe `is-err` quando há erro.
+- **`Field`**: `{ label; value; onChange; unit?; help?; error?; disabled? }`.
 
-Falha, apontando arquivo e linha, quando encontra em `apps/web/src/**/*.{ts,tsx}` (fora de `__tests__`):
-1. um `className` com qualquer valor. **Exceção**: o `<html>` de `app/layout.tsx`, com as variáveis do `next/font`;
-2. um `var(--x)` cujo `--x` não está declarado no `:root` de `app/globals.css`;
-3. uma cor hexadecimal literal fora de `app/globals.css`.
+  O teste verifica:
+  - label associado ao input;
+  - `inputMode="decimal"`;
+  - a unidade fixa ao lado;
+  - com `error`: `aria-invalid` e a mensagem ligada por `aria-describedby`.
+
+## Treino
+
+- **`Check`**: `{ on; pop?; big?; onClick; label? }`.
+
+  O teste verifica `aria-pressed={on}` e as classes `is-on` e `is-pop`. Tamanho de 44 px, ou 52 px com `big`.
+- **`SetRow`**: `{ no; prev: string|null; weight; reps; done; pop?; onToggle; onEdit }`.
+
+  O teste verifica:
+  - "—" quando `prev` é `null`;
+  - clicar na linha chama `onEdit`, clicar no ✓ chama `onToggle` (sem propagar);
+  - a classe `is-done`.
+- **`CurrentSet`**: `{ no; total; prev; weight; reps; onWeight; onReps; onDone }`.
+
+  O teste verifica "Série {no} de {total}", os dois `Stepper` (kg com passo 2,5, reps com passo 1) e o `Check big`.
+- **`WorkoutProgress`**: `{ groups: number[]; done: number[]; current: number; onPick(i) }`.
+
+  O teste verifica:
+  - `role="progressbar"` com `aria-valuenow` e `aria-valuemax`;
+  - um botão por grupo com `aria-label` ("Exercício 2, 1 de 3 séries");
+  - a classe `is-cur` no grupo atual.
+- **`CycleProgress`**: `{ sessions: {label, state: 'done'|'todo'|'current'}[] }`.
+
+  O teste verifica o rótulo ", hoje" no atual.
+- **`Ring`**: `{ size; stroke; value 0–1; children }`. Hoje ele é usado só no descanso.
+- **`Tips`**: `{ text: string|null }`.
+
+  O teste verifica:
+  - usa `parseTipItems` (v2);
+  - `<ul class="hx-tips">` com um `<li>` por item;
+  - `li.is-gene` e um `GeneTag warn` quando o item tem gene;
+  - nada renderizado quando o texto é vazio;
+  - 1 item continua sendo lista (a v2 usa divisória, não marcador de lista).
+- **`Steps`**: `{ items: {text; warn?}[] }`.
+
+  O teste verifica `<ol class="hx-steps">` e que um item "Erro comum" recebe a classe `is-warn`, com o prefixo "Erro comum:" em âmbar.
+
+## Estrutura e camadas
+
+- **`ScreenHeader`**: `{ title; sub?; left?; right? }`, em grade de 44/1fr/44, com título em elipse.
+- **`SectionHeader`**: `{ title; aside?; action? }`.
+- **`Sheet`**: `{ open; onClose; label; children; footer? }`.
+
+  O teste verifica:
+  - `role="dialog"`, `aria-modal="true"` e `aria-label`;
+  - o scrim fecha ao clicar;
+  - Esc fecha;
+  - o foco vai para a folha ao abrir e volta ao gatilho ao fechar;
+  - renderização via portal em `document.body`.
+- **`Dialog`**: `{ open; onClose; title; actions; children }`. O teste verifica os mesmos papéis da `Sheet` e as ações empilhadas.
+- **`Toast`**: `{ message; actionLabel?; onAction?; kind?: 'default'|'err' }`. O teste verifica `role="status"`, ou `role="alert"` quando o `kind` é `err`.
+- **`Banner`**: `{ kind: 'warn'|'err'; title; children; action? }`. O teste verifica `role="alert"` quando o `kind` é `err`, e o ícone.
+- **`NavBar`**: v2, com o teste verificando:
+  - `aria-current="page"` no item da rota;
+  - ausência em `/login`, `/auth*` e `/workout`;
+  - 4 links: Hoje, Treinos, Check-in, Progresso.
+
+## Dados e carregamento
+
+- **`Bars`**: `{ data: {label, value}[]; currentIndex }`. O teste verifica `role="img"` com `aria-label` descrevendo os valores, e a semana atual com a classe `cur`.
+- **`HistoryRow`**: `{ href; name; date; sets; durationMin; volumeT }`. O teste verifica que é um link, com o volume em mono pt-BR.
+- **`PRRow`**: `{ lift; kg; reps; when?; delta?; fresh? }`. O teste verifica que o acento aparece só com `fresh`.
+- **`Skeleton`**: `{ w?; h; r?; style? }`. O teste verifica `aria-hidden="true"` e a classe `hx-sk`.
+- **`HelixMark`**: 7 traços, os 4 primeiros em acento, `aria-hidden`.
+
+## Guarda v2 (`__tests__/design-system-guard.test.ts`)
+
+Falha, com arquivo e linha, quando:
+1. um `className` contém uma classe não definida em `app/helux-v2.css`. A exceção são as variáveis do `next/font` no `<html>`;
+2. um `var(--x)` não está declarado em nenhum `:root`, exceto `--font-*`;
+3. aparece uma cor literal (hex, `rgb()`, `rgba()`) em `.ts`/`.tsx`;
+4. aparece `--accent-glow`.

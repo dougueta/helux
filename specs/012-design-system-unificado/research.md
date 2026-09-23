@@ -130,3 +130,95 @@ Coisas que o plano não previa, encontradas durante T002–T026, e como foram re
     Resultado: 6 orientações. O caso está coberto em `tipItems.test.ts`.
 12. **Carregamentos com `aria-busy`.** Os contêineres de esqueleto ganharam `aria-busy="true"`, como pede o contrato do `Skeleton`, que é `aria-hidden`.
 13. **`MatchBadge` no detalhe do treino.** "variante de X · N fit" virou "variante de X" seguido do `MatchBadge` (N fit). O conteúdo é o mesmo, só a forma do badge muda.
+
+
+---
+
+# Parte 2 — Design System v2 (replanejamento de 2026-09-23)
+
+A Parte 1 (R1–R7 e achados) documenta a versão anterior da spec. Ela continua valendo como base (Tailwind removido, reset, viewport), exceto onde a Parte 2 a substitui.
+
+## V1 — Folha de estilos do sistema a partir do handoff
+
+- **Decisão**: criar `apps/web/src/app/helux-v2.css` a partir de `design_handoff_helux_v2/v2/helux-v2.css`, importado em `layout.tsx` depois do `globals.css`. Adaptações:
+  1. `--font` e `--mono` passam a apontar para `var(--font-space-grotesk)` e `var(--font-jetbrains-mono)` (next/font), e `layout.tsx` carrega os pesos da v2: Grotesk 400/500/600/700; Mono 400/500/600 e 500 itálico, para os genes.
+  2. `--safe-b` vira `env(safe-area-inset-bottom, 0px)`; o valor fixo de 34 px era só do protótipo.
+  3. Saem as classes que só existem no protótipo: `.hx-phone`, `.hx-status`, `.hx-status-r`, `.hx-scroll`, `.hx-home-ind`.
+  4. `.hx-scrim`, `.hx-sheet` e `.hx-dialog` passam de `position:absolute` (dentro do celular de mentira) para `position:fixed`, e `.hx-dock` vira o contêiner fixo do rodapé. Os z-index ficam em escala explícita no `:root` (`--z-dock`, `--z-nav`, `--z-scrim`, `--z-sheet`, `--z-dialog`, `--z-toast`), para que folha e diálogo fiquem acima do menu (FR-009).
+  5. No desktop, `.hx-dock` e o menu se alinham à coluna de 512 px (seção 5.1).
+- **Rationale**: o README diz que a folha "pode ser adotada quase direto" e é a fonte da verdade. Reescrever em estilo inline duplicaria cerca de 240 linhas e perderia estados como `:hover`, `:active`, `:focus-visible`, `@container` e `@media (prefers-reduced-motion)`, que o estilo inline não expressa.
+- **Consequência para a Parte 1**: a decisão "estilo inline + variáveis" (R2/R5) é **substituída**. As classes da folha do sistema são o caminho principal. Estilo inline fica só para ajuste de layout pontual (margem, grid local), sempre com tokens.
+
+## V2 — Tokens antigos
+
+- **Decisão**: o `:root` passa a ser o da v2. Mudanças que exigem atenção:
+  - `--text-faint` passa a `#858C7F`, por contraste;
+  - `--accent-glow` é **aposentado**, e o guarda proíbe o token;
+  - `--r-card` (20) é substituído por `--r-md` (16) e `--r-lg` (24);
+  - `--demo-bg-*` (Parte 1) é substituído por `--stage` e `--stage-grid`.
+
+  Os tokens antigos ficam declarados só até a última tela que os usa ser migrada. Depois disso são removidos, e o guarda passa a acusar qualquer uso.
+
+## V3 — Guarda v2 (FR-010)
+
+- **Decisão**: `design-system-guard.test.ts` passa a falhar quando:
+  1. um `className` usa uma classe que **não está definida** em `helux-v2.css`. O teste extrai os seletores `.x` da folha; as exceções são as variáveis de fonte do `next/font` no `<html>`;
+  2. um `var(--x)` não está declarado no `:root` de `globals.css` nem no de `helux-v2.css`, exceto `--font-*`, que vem do next/font;
+  3. aparece uma cor literal (hex, `rgb()` ou `rgba()`) em `.ts`/`.tsx` fora da camada de tokens. Ocorrências estruturais do SVG, como `fill="none"`, não contam;
+  4. aparece `--accent-glow` em qualquer lugar, ou um `box-shadow` com o acento.
+- **Rationale**: mantém a garantia do B3 (nunca uma classe ou token que não existe) e acrescenta as regras de "lint" do README que dá para verificar mecanicamente.
+
+## V4 — Dicas v2 (`parseTipItems`)
+
+- **Decisão**: `TipItem` passa a `{ text: string; gene?: { symbol: string; genotype?: string } }`. Nenhuma dica real do app traz mais de um marcador; se trouxer, o primeiro vira etiqueta e os demais ficam no texto. Regras novas:
+  - o marcador entre parênteses "(COL1A1 C,C)" é dividido em `symbol` e `genotype` no primeiro espaço;
+  - um **gene sem parênteses** seguido de genótipo em par de bases (`\b[A-Z][A-Z0-9]{2,}\s+[ACGT],[ACGT]\b`, por exemplo "COL1A1 C,C") também é extraído, porque o padrão do genótipo torna o falso positivo improvável. A frase fica sem o marcador e sem espaços duplicados;
+  - um prefixo "ATENÇÃO:" ou "Atenção:" no começo de uma orientação é removido da exibição. O README proíbe "ATENÇÃO"; a urgência passa a ser comunicada pelo marcador âmbar da dica com gene.
+  - O invariante "nada se perde" continua: todo o conteúdo, exceto o prefixo removido e a pontuação separadora, aparece em `text` ou em `gene`.
+
+  Isso supera o achado da Parte 1 que mantinha "COL1A1 C,C" no texto.
+- **Componente**: `ui/Tips` substitui `workout/ExecutionTips`. A dica com gene recebe a classe `.is-gene` (quadrado âmbar) e um `GeneTag warn` abaixo do texto.
+
+## V5 — Treino ativo
+
+- **Decisão**: `workout/page.tsx` (744 linhas) é decomposto em componentes da `ui/` sem mudar o estado do treino:
+  - `useActiveWorkout`, `useFinishWorkout` e as regras 010/011/016 ficam intactos;
+  - estado de UI novo e local: `editingSetIndex` (série em edição) e `poppedSetIndex` (animação do ✓);
+  - série atual = `editingSetIndex ?? primeira não concluída`;
+  - a barra de progresso é derivada de `exerciseStates` (grupos por exercício, feitas por grupo);
+  - o descanso reaproveita o `restLeft` e o `restTotal` existentes; o bloco de descanso e o botão principal ou secundário mudam só de apresentação.
+- **Adicionar série**: continua usando o `addSet` do hook. O "anterior" mostra "—", porque o dado não existe (FR-024).
+- **Folha de execução**: `ExerciseSheet` vira `ui/Sheet` com o conteúdo da v2. `ExerciseDemo` é mantido (as animações por padrão de movimento são da spec 013) e só ganha o palco `.hx-stage`, a cadência e os controles da v2. `MuscleMap` é mantido, com a legenda da v2.
+
+## V6 — Fit e hélice
+
+- **Decisão**:
+  - `lib/fit.ts`: `fitBand(v)` devolve `'alto'` quando ≥ 75, `'médio'` de 50 a 74 e `'baixo'` abaixo de 50, junto com o token da faixa (`--fit-hi`, `--fit-mid`, `--fit-lo`).
+  - `ui/Helix`: n traços com altura `h*(0.26+0.74*|cos(2πi/10.5)|)`, mínimo de 2 px, e `round(n*fit/100)` traços acesos.
+  - `ui/Fit`: tamanhos `sm`, `md` e `lg` do README; `aria-label="fit genético N de 100, <faixa>"`.
+  - O `MatchBadge` antigo é substituído por `Fit`.
+
+## V7 — Números pt-BR
+
+- **Decisão**: `lib/format.ts` com `formatNumber(n, {decimals})`, usando `Intl.NumberFormat('pt-BR')` para vírgula decimal e ponto de milhar, e `formatDuration`. Todo número de treino passa por eles, com as classes `.n-*` e `.u`.
+
+## V8 — Menu e camadas
+
+- **Decisão**: `NavBar` passa a usar `.hx-nav`, com `aria-current="page"` e itens de 50 px. Continua escondido em `/login`, `/auth` e `/workout`; a conclusão do treino está dentro de `/workout`. Na v2, os z-index do menu, do rodapé, da folha, do diálogo e do toast vêm da escala de V1. O `TirednessDialog` (spec 011) vira `ui/Sheet`/`ui/Dialog` e herda a camada certa, sem o z-index fixo 60.
+
+## V9 — Progresso com Histórico
+
+- **Decisão**: `app/recovery/page.tsx` (Progresso) ganha a seção "Histórico" com os 3 últimos treinos (`useWorkoutHistory`) em `ui/HistoryRow` e o link "Ver todos" para `/history`. `/history` e `/history/[id]` continuam existindo, com `HistoryRow` e o visual da v2. Os recordes usam `ui/PRRow` com os dados de analytics existentes. "fresh" (acento no delta) só com dado de data do recorde; sem esse dado, o delta fica neutro.
+
+## V10 — Conclusão
+
+- **Decisão**: `WorkoutDoneScreen` (spec 016) é reestilizado:
+  - fita de traços pelo `ui/Helix` em modo sequencial (35 ms por traço, 200 ms cada), já acesa em movimento reduzido;
+  - resumo com volume (Σ kg×reps das séries feitas), séries (feitas/total) e duração;
+  - estados de salvando, salvo e erro com `Button loading` e `Banner err`.
+
+  A lógica do `useFinishWorkout` (016) não muda. "Recordes" e "Novo recorde" ficam ocultos (FR-020).
+
+## V11 — Verificação visual
+
+- **Decisão**: comparar lado a lado as 6 telas desenhadas com `design_handoff_helux_v2/Helux Design System v2.html` aberto no navegador, que funciona offline com React e Babel. Largura de 375 px no app, pelo DevTools ou por iframe (Parte 1). Os screenshots da Parte 1 (`baseline/`) passam a ser só histórico: a v2 muda intencionalmente as telas.
