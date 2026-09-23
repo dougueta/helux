@@ -202,7 +202,7 @@ export function CheckinForm() {
         />
       </div>
 
-      {error && <p style={{ color: 'var(--danger, #f87171)', fontSize: 13, marginBottom: 12 }}>{error}</p>}
+      {error && <p style={{ color: 'var(--danger)', fontSize: 13, marginBottom: 12 }}>{error}</p>}
 
       <button type="submit" disabled={saving} style={{
         width: '100%',

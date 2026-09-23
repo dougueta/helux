@@ -7,6 +7,8 @@ import { PersonalRecordRow } from '@/components/progress/PersonalRecordRow'
 import { SessionHistoryRow } from '@/components/progress/SessionHistoryRow'
 import { Icon } from '@/components/ui/icons'
 import { Label } from '@/components/ui/Label'
+import { Skeleton as SkeletonBlock } from '@/components/ui/Skeleton'
+import { pageContainer } from '@/components/ui/layout'
 import { useRecovery } from '@/hooks/useRecovery'
 import { useWorkoutAnalytics } from '@/hooks/useWorkoutAnalytics'
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory'
@@ -17,12 +19,7 @@ import { getWeekLabel, computeWeekDelta } from '@/lib/weekly-volume'
 // ---------------------------------------------------------------------------
 
 function Skeleton({ h = 96 }: { h?: number }) {
-  return (
-    <div
-      className="animate-pulse"
-      style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', height: h }}
-    />
-  )
+  return <SkeletonBlock height={h} style={{ border: '1px solid var(--hairline)' }} />
 }
 
 function SectionHead({ title }: { title: string }) {
@@ -63,7 +60,7 @@ export default function RecoveryPage() {
   const weekDelta = analytics ? computeWeekDelta(analytics.weeklyVolume) : null
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-12 pb-24">
+    <div style={{ ...pageContainer, paddingTop: 48, paddingBottom: 96 }}>
       <header style={{ marginBottom: 20 }}>
         <Label>Sua evolução</Label>
         <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', margin: 0 }}>
@@ -83,7 +80,7 @@ export default function RecoveryPage() {
           <Label>Saúde diária</Label>
         </div>
         {recoveryLoading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} />
             ))}
@@ -95,7 +92,7 @@ export default function RecoveryPage() {
 
       {analyticsLoading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} h={72} />
             ))}
