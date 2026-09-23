@@ -6,9 +6,10 @@ import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
 import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import { FinishWorkoutConfirmDialog } from '@/components/workout/FinishWorkoutConfirmDialog'
+import { WorkoutDoneScreen } from '@/components/workout/WorkoutDoneScreen'
+import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { Icon } from '@/components/ui/icons'
-import { Ring } from '@/components/ui/Ring'
 import { MiniStep } from '@/components/ui/MiniStep'
 
 // ---------------------------------------------------------------------------
@@ -32,16 +33,19 @@ export default function WorkoutPage() {
 
   const [restLeft, setRestLeft] = useState(0)
   const [restTotal, setRestTotal] = useState(0)
-  const [showDone, setShowDone] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [finishConfirmOpen, setFinishConfirmOpen] = useState(false)
+  // Frozen when the workout is finished: the session is cleared after a successful save,
+  // but the done screen must stay up (with its summary) until the user leaves.
+  const [finishSummary, setFinishSummary] = useState<{ totalDone: number; elapsed: number } | null>(null)
+  const { status: finishStatus, submit: submitFinish, reset: resetFinish } = useFinishWorkout(finishWorkout)
 
   const restActive = restLeft > 0
 
-  // Redirect away if no active session
+  // Redirect away if no active session (but never away from the done screen)
   useEffect(() => {
-    if (loaded && !isActive) router.replace('/')
-  }, [loaded, isActive, router])
+    if (loaded && !isActive && !finishSummary) router.replace('/')
+  }, [loaded, isActive, finishSummary, router])
 
   // Rest timer countdown
   useEffect(() => {
@@ -58,6 +62,25 @@ export default function WorkoutPage() {
     return () => clearInterval(t)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restLeft > 0])
+
+  // -------------------------------------------------------------------------
+  // Done screen (saving / saved / error)
+  // -------------------------------------------------------------------------
+  if (finishSummary) {
+    return (
+      <WorkoutDoneScreen
+        status={finishStatus === 'idle' ? 'saving' : finishStatus}
+        totalDone={finishSummary.totalDone}
+        elapsed={finishSummary.elapsed}
+        onGoHome={() => router.replace('/')}
+        onRetry={() => { void submitFinish() }}
+        onBackToWorkout={() => {
+          resetFinish()
+          setFinishSummary(null)
+        }}
+      />
+    )
+  }
 
   if (!session) return null
 
@@ -100,124 +123,23 @@ export default function WorkoutPage() {
     } else if (getSkippedExercises().length > 0) {
       setFinishConfirmOpen(true)
     } else {
-      setShowDone(true)
+      startFinish()
     }
+  }
+
+  // Spec 016: the workout is saved when it is finished, not when leaving the done screen.
+  function startFinish() {
+    setFinishSummary({ totalDone, elapsed })
+    void submitFinish()
   }
 
   function handleConfirmFinish() {
     setFinishConfirmOpen(false)
-    setShowDone(true)
-  }
-
-  async function handleSaveAndExit() {
-    await finishWorkout()
-    router.replace('/')
+    startFinish()
   }
 
   function handleClose() {
     router.replace('/')
-  }
-
-  // -------------------------------------------------------------------------
-  // Done screen
-  // -------------------------------------------------------------------------
-  if (showDone) {
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'var(--bg)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 20,
-          padding: '32px 24px',
-          zIndex: 50,
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 240,
-            height: 240,
-            borderRadius: '50%',
-            background: 'var(--accent-soft)',
-            filter: 'blur(60px)',
-            pointerEvents: 'none',
-          }}
-        />
-        <Ring value={100} size={120} sw={8}>
-          <Icon name="check" size={48} stroke="var(--accent)" sw={2.4} />
-        </Ring>
-        <h2
-          style={{
-            fontSize: 25,
-            fontWeight: 700,
-            color: 'var(--text)',
-            textAlign: 'center',
-            margin: 0,
-          }}
-        >
-          Treino concluído
-        </h2>
-        <p
-          style={{
-            fontSize: 14,
-            color: 'var(--text-dim)',
-            textAlign: 'center',
-            lineHeight: 1.5,
-            margin: 0,
-          }}
-        >
-          Mandou bem! O Helux registrou suas cargas e vai recalibrar o próximo treino.
-        </p>
-        <div style={{ display: 'flex', gap: 24, marginTop: 8 }}>
-          {[
-            { v: totalDone, k: 'séries' },
-            { v: elapsed, k: 'minutos' },
-          ].map(({ v, k }) => (
-            <div key={k} style={{ textAlign: 'center' }}>
-              <div
-                style={{
-                  fontSize: 28,
-                  fontWeight: 700,
-                  fontFamily: 'var(--font-jetbrains-mono)',
-                  color: 'var(--accent)',
-                }}
-              >
-                {v}
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--text-faint)' }}>{k}</div>
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={handleSaveAndExit}
-          style={{
-            width: '100%',
-            maxWidth: 360,
-            height: 52,
-            borderRadius: 'var(--r-pill)',
-            background: 'var(--accent)',
-            border: 'none',
-            color: 'var(--accent-ink)',
-            fontSize: 15,
-            fontWeight: 600,
-            fontFamily: 'var(--font-space-grotesk)',
-            cursor: 'pointer',
-            marginTop: 8,
-            boxShadow: '0 8px 24px -8px var(--accent-glow)',
-          }}
-        >
-          Voltar ao início
-        </button>
-      </div>
-    )
   }
 
   // -------------------------------------------------------------------------
