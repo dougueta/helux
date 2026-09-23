@@ -174,58 +174,92 @@ describe('GET /workout/latest-plan', () => {
     expect(mockGenerateAndSaveMesocycle).not.toHaveBeenCalled()
   })
 
-  it('US2: aplica ajuste conservador quando há cansaço sinalizado hoje, mesmo sem HRV sincronizado (FR-006/FR-007)', async () => {
-    mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
-    mockFindPendingSessionIndex.mockReturnValue(1)
-    mockHealthSamplesOrder.mockResolvedValue({ data: [], error: null })
-    mockTirednessMaybeSingle.mockResolvedValue({ data: { id: 'sig-1' }, error: null })
-
+  async function getToday() {
     const response = await app.inject({
       method: 'GET',
       url: '/workout/latest-plan',
       headers: { Authorization: 'Bearer valid-token' },
     })
+    expect(response.statusCode).toBe(200)
+    return JSON.parse(response.body).today
+  }
 
-    const body = JSON.parse(response.body)
-    expect(body.today.adjusted).toBe(true)
-    expect(body.today.exercises[0].sets).toBeLessThan(4)
-    expect(body.today.adjustmentReason).toMatch(/cansaço/i)
-  })
-
-  it('US2: não aplica ajuste quando não há cansaço sinalizado nem HRV baixo', async () => {
+  it('011: today traz tiredness, plannedExercises e changes vazios quando não há ajuste', async () => {
     mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
     mockFindPendingSessionIndex.mockReturnValue(1)
-    mockHealthSamplesOrder.mockResolvedValue({ data: [], error: null })
-    mockTirednessMaybeSingle.mockResolvedValue({ data: null, error: null })
 
-    const response = await app.inject({
-      method: 'GET',
-      url: '/workout/latest-plan',
-      headers: { Authorization: 'Bearer valid-token' },
-    })
-
-    const body = JSON.parse(response.body)
-    expect(body.today.adjusted).toBe(false)
+    const today = await getToday()
+    expect(today.adjusted).toBe(false)
+    expect(today.plannedExercises).toEqual(PENDING_SESSION.exercises)
+    expect(today.changes).toEqual([])
+    expect(today.tiredness).toMatchObject({ manualLevel: null, automaticLevel: null, effectiveLevel: null, source: 'none' })
   })
 
-  it('US2: combina HRV baixo + cansaço manual sem ficar menos conservador que o HRV isolado (FR-009)', async () => {
+  it('011: nível manual "exausto" sem relógio reduz séries e carga, com motivo e changes', async () => {
+    mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
+    mockFindPendingSessionIndex.mockReturnValue(1)
+    mockTirednessMaybeSingle.mockResolvedValue({ data: { level: 'exausto', override_automatic: false }, error: null })
+
+    const today = await getToday()
+    expect(today.adjusted).toBe(true)
+    expect(today.exercises[0]).toMatchObject({ sets: 3, weight: '54kg' })
+    expect(today.adjustmentReason).toBe('Você marcou "exausto" hoje')
+    expect(today.changes).toEqual([
+      { name: 'Remada Curvada', setsBefore: 4, setsAfter: 3, weightBefore: '60kg', weightAfter: '54kg' },
+    ])
+  })
+
+  it('011: nível manual "cansado" reduz só séries', async () => {
+    mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
+    mockFindPendingSessionIndex.mockReturnValue(1)
+    mockTirednessMaybeSingle.mockResolvedValue({ data: { level: 'cansado', override_automatic: false }, error: null })
+
+    const today = await getToday()
+    expect(today.exercises[0]).toMatchObject({ sets: 3, weight: '60kg' })
+  })
+
+  it('011: HRV prevalece sobre o manual quando não há sobreposição confirmada', async () => {
     mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
     mockFindPendingSessionIndex.mockReturnValue(1)
     mockHealthSamplesOrder.mockResolvedValue({
-      data: [{ type: 'hrv', value: 30, unit: 'ms', start_at: '2026-07-21T08:00:00.000Z' }],
+      data: [{ type: 'hrv', value: 45, unit: 'ms', start_at: '2026-07-21T08:00:00.000Z' }],
       error: null,
     })
-    mockTirednessMaybeSingle.mockResolvedValue({ data: { id: 'sig-1' }, error: null })
+    mockTirednessMaybeSingle.mockResolvedValue({ data: { level: 'otimo', override_automatic: false }, error: null })
+
+    const today = await getToday()
+    expect(today.adjusted).toBe(true)
+    expect(today.exercises[0].sets).toBe(3)
+    expect(today.adjustmentReason).toBe('Relógio indica "cansado" (HRV 45 ms)')
+    expect(today.tiredness).toMatchObject({ source: 'automatic', conflict: true })
+  })
+
+  it('011: sobreposição manual confirmada prevalece sobre o HRV', async () => {
+    mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
+    mockFindPendingSessionIndex.mockReturnValue(1)
+    mockHealthSamplesOrder.mockResolvedValue({
+      data: [{ type: 'hrv', value: 45, unit: 'ms', start_at: '2026-07-21T08:00:00.000Z' }],
+      error: null,
+    })
+    mockTirednessMaybeSingle.mockResolvedValue({ data: { level: 'otimo', override_automatic: true }, error: null })
+
+    const today = await getToday()
+    expect(today.adjusted).toBe(false)
+    expect(today.exercises[0].sets).toBe(4)
+    expect(today.tiredness).toMatchObject({ source: 'manual', effectiveLevel: 'otimo' })
+  })
+
+  it('011: retorna 500 se a leitura do sinal de cansaço falhar', async () => {
+    mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
+    mockFindPendingSessionIndex.mockReturnValue(1)
+    mockTirednessMaybeSingle.mockResolvedValue({ data: null, error: { message: 'boom' } })
 
     const response = await app.inject({
       method: 'GET',
       url: '/workout/latest-plan',
       headers: { Authorization: 'Bearer valid-token' },
     })
-
-    const body = JSON.parse(response.body)
-    expect(body.today.adjusted).toBe(true)
-    expect(body.today.exercises[0].sets).toBe(3)
-    expect(body.today.adjustmentReason).toMatch(/hrv/i)
+    expect(response.statusCode).toBe(500)
   })
 })
+

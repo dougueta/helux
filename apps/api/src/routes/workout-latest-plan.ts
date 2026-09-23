@@ -1,10 +1,10 @@
 import type { FastifyInstance } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
-import { applyRecoveryAdjustment } from '@helux/ai'
+import { buildAdjustedSession } from '@helux/workouts'
 import type { AdjustedWorkoutPlanView } from '@helux/types'
 import { getActiveMesocycle, findPendingSessionIndex } from '../services/mesocycle.service'
 import { generateAndSaveMesocycle } from '../services/plan-generation.service'
-import { computeRecoveryFromSamples, type HealthSample } from '../services/recovery.service'
+import { getTodayTirednessAssessment } from '../services/tiredness.service'
 
 export async function workoutLatestPlanRoutes(app: FastifyInstance): Promise<void> {
   const supabaseUrl = process.env.SUPABASE_URL!
@@ -68,35 +68,16 @@ export async function workoutLatestPlanRoutes(app: FastifyInstance): Promise<voi
       return reply.send(view)
     }
 
-    const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
-    const todaySlug = new Date().toISOString().slice(0, 10)
-    const [{ data: samples, error: samplesError }, { data: tirednessSignal, error: tirednessError }] = await Promise.all([
-      supabase
-        .from('health_samples')
-        .select('type, value, unit, start_at')
-        .eq('user_id', user.id)
-        .gte('start_at', since)
-        .order('start_at', { ascending: false }),
-      supabase
-        .from('daily_tiredness_signals')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('date', todaySlug)
-        .maybeSingle(),
-    ])
-
-    if (samplesError) {
-      app.log.error(samplesError, 'workout-latest-plan: failed to load recovery samples')
-      return reply.code(500).send({ error: 'Internal Server Error' })
-    }
-    if (tirednessError) {
-      app.log.error(tirednessError, 'workout-latest-plan: failed to load tiredness signal')
+    let tiredness
+    try {
+      tiredness = await getTodayTirednessAssessment(user.id, supabase)
+    } catch (error) {
+      app.log.error(error, 'workout-latest-plan: failed to load tiredness assessment')
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
 
-    const recoveryData = samples && samples.length > 0 ? [computeRecoveryFromSamples(samples as HealthSample[])] : []
     const pendingSession = mesocycle.sessions[pendingIndex]
-    const today = applyRecoveryAdjustment(pendingSession, recoveryData, Boolean(tirednessSignal))
+    const today = buildAdjustedSession(pendingSession, tiredness)
     const upcoming = mesocycle.sessions.slice(pendingIndex + 1).map((s) => ({ letter: s.letter, focus: s.focus }))
 
     const view: AdjustedWorkoutPlanView = {

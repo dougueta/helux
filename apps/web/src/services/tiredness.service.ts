@@ -1,10 +1,13 @@
 import { apiFetch } from '@/services/api-client'
-import type { DailyTirednessSignal } from '@helux/types'
+import type { TirednessAssessment, TirednessLevel } from '@helux/types'
 
-export async function markTiredToday(): Promise<DailyTirednessSignal> {
-  return apiFetch('/api/tiredness-today', { method: 'POST' }) as Promise<DailyTirednessSignal>
+export async function getTirednessToday(): Promise<TirednessAssessment> {
+  return apiFetch('/api/tiredness-today') as Promise<TirednessAssessment>
 }
 
-export async function clearTiredToday(): Promise<DailyTirednessSignal> {
-  return apiFetch('/api/tiredness-today', { method: 'DELETE' }) as Promise<DailyTirednessSignal>
+export async function setTirednessToday(level: TirednessLevel, overrideAutomatic: boolean): Promise<TirednessAssessment> {
+  return apiFetch('/api/tiredness-today', {
+    method: 'PUT',
+    body: JSON.stringify({ level, overrideAutomatic }),
+  }) as Promise<TirednessAssessment>
 }

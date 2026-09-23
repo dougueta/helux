@@ -32,6 +32,9 @@ importers:
       '@helux/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@helux/workouts':
+        specifier: workspace:*
+        version: link:../../packages/workouts
       '@supabase/supabase-js':
         specifier: ^2.49.1
         version: 2.108.1
@@ -151,6 +154,9 @@ importers:
       '@helux/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@helux/workouts':
+        specifier: workspace:*
+        version: link:../../packages/workouts
       '@supabase/ssr':
         specifier: ^0.6.1
         version: 0.6.1(@supabase/supabase-js@2.108.1)

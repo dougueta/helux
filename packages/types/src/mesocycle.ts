@@ -1,4 +1,5 @@
 import type { PlannedExercise } from './workout'
+import type { ExerciseAdjustmentChange, TirednessAssessment } from './tiredness'
 
 export interface MesocycleSession {
   letter: string
@@ -22,6 +23,12 @@ export interface AdjustedSession {
   exercises: PlannedExercise[]
   adjusted: boolean
   adjustmentReason?: string
+  /** Exercícios do mesociclo antes de qualquer ajuste do dia (spec 011). */
+  plannedExercises?: PlannedExercise[]
+  /** Diferenças planejado → ajustado (spec 011). */
+  changes?: ExerciseAdjustmentChange[]
+  /** Avaliação de cansaço do dia usada no ajuste (spec 011). */
+  tiredness?: TirednessAssessment
 }
 
 export interface UpcomingSessionSummary {
