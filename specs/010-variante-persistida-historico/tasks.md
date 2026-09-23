@@ -15,7 +15,7 @@ description: "Task list template for feature implementation"
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Pode rodar em paralelo (arquivos diferentes, sem dependência de tarefa incompleta)
-- **[Story]**: US1, US2 ou US3 — mapeia para as user stories de spec.md
+- **[Story]**: US1, US2, US3 ou US4 — mapeia para as user stories de spec.md
 - Cada descrição inclui o caminho exato do arquivo
 
 ---
@@ -100,6 +100,36 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 
 ---
 
+## Phase 7: User Story 4 - Tela inteira do exercício reflete a variante ativa (Priority: P1) — incremento 2026-09-22
+
+**Goal**: Com uma variante alternativa (`rec !== true`) ativa, o título, o cabeçalho, a dica e a aba Execução passam a ser os da variante, e o exercício planejado fica como referência secundária (FR-008 a FR-011). A escolha já persiste pelo resto do treino via `variantByExerciseIndex` (FR-012), então só é preciso cobrir isso com teste. O cabeçalho passa a acompanhar o exercício em andamento, o que absorve o bug B1.
+
+**Independent Test**: `quickstart.md` passos 6–9.
+
+### Tests for User Story 4 (escrever ANTES da implementação, confirmar que falham) ⚠️
+
+- [ ] T015 [P] [US4] Criar `apps/web/src/__tests__/lib/exerciseDisplay.test.ts` testando `resolveExerciseDisplay(exercise: PlannedExercise, variantId: string | undefined)` de `@/lib/exerciseDisplay` (contrato em `data-model.md` → "Incremento US4"). Casos: (a) `variantId` undefined com variantes → `title = exercise.name`, `plannedName = null`, `fit` = `match` da variante `rec`, `tip = exercise.notes`, `tipKind = 'notes'`, `showPlannedCues = true`; (b) `variantId` da variante recomendada → mesmo resultado de (a); (c) `variantId` de uma variante alternativa → `title` = nome da variante, `plannedName = exercise.name`, `fit` = `match` da variante, `tip` = `why` da variante, `tipKind = 'variant-why'`, `showPlannedCues = false`; (d) `variantId` inexistente na lista → mesmo resultado de (a); (e) exercício sem `variants` → `title = exercise.name`, `fit = exercise.match`, `tip = exercise.notes ?? null` (`tipKind` `null` quando não há `notes`); (f) variante alternativa com `why` vazio → `tip = null`, `tipKind = null`, `showPlannedCues = false` (não volta a mostrar as dicas do planejado). Usar uma fixture no formato do `EXERCISE` de `ExerciseSheet.test.tsx`
+- [ ] T016 [P] [US4] Estender `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx`: renderizar com `currentVariantId="e1b"` (variante alternativa) e verificar que, na aba Execução, as cues do planejado (por exemplo, "Escápulas retraídas e pés firmes no chão") e o `notes` ("Cargas altas — seu forte") **não** aparecem, que o `why` da variante ("Maior amplitude e estabilização; corrige assimetrias.") aparece e que a seção "Músculos trabalhados" continua visível. Adicionar também o caso inverso: com `currentVariantId="e1"` (recomendada), as cues e o `notes` continuam aparecendo (regressão)
+- [ ] T017 [P] [US4] Estender `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts` cobrindo o FR-012: depois de `selectVariant(0, 'x')`, `setExercise(1)` e `setExercise(0)`, `session.variantByExerciseIndex[0]` continua `'x'`; e, ao remontar o hook a partir do estado salvo no `localStorage` (retomar o treino), a variante continua lá. Espera-se que este teste já passe (o comportamento existe); ele trava a regressão. Se falhar, é um bug a corrigir em `apps/web/src/hooks/useActiveWorkout.ts`
+
+### Implementation for User Story 4
+
+- [ ] T018 [US4] Criar `apps/web/src/lib/exerciseDisplay.ts` exportando `resolveExerciseDisplay` e o tipo `ExerciseDisplay` (`{ title: string; plannedName: string | null; fit: number | undefined; tip: string | null; tipKind: 'variant-why' | 'notes' | null; showPlannedCues: boolean }`), seguindo as regras de `research.md` Decisões 5 e 6: a variante ativa é `variants.find(v => v.id === variantId) ?? variants.find(v => v.rec)`, e ela é "alternativa" quando existe e `rec !== true`. Fazer T015 passar
+- [ ] T019 [US4] Em `apps/web/src/app/workout/page.tsx`, calcular `const display = resolveExerciseDisplay(currentEx, currentVariantId)` (depois das linhas ~64–72) e: trocar `{currentEx.name}` do `<h2>` do exercício por `{display.title}`; logo abaixo, quando `display.plannedName` existir, renderizar uma linha secundária `variante de {display.plannedName}` (estilo de texto secundário, `fontSize: 13`, `color: 'var(--text-dim)'`, igual à linha de séries × reps); trocar o chip de dica (`currentEx.notes && …`, ~linha 393) por `display.tip && …` exibindo `display.tip`; trocar `fitScore` por `display.fit` no badge e remover as variáveis `fitScore` e `selectedVariant.match` que ficarem sem uso (manter `selectedVariant` se ainda for usado pelo banner "Variante ativa" e pela `ExerciseDemo`)
+- [ ] T020 [US4] Em `apps/web/src/app/workout/page.tsx`, corrigir o cabeçalho (~linha 269): trocar `session.planExercises[0]?.name.split(' ').slice(0, 2).join(' ') ?? 'Treino'` por `display.title.split(' ').slice(0, 2).join(' ')`, com fallback `'Treino'` quando `currentEx` não existir (FR-009; fecha o bug B1). Atenção: o cabeçalho é renderizado fora do bloco `{currentEx && …}`, então `display` precisa ser calculado de forma segura (por exemplo `currentEx ? resolveExerciseDisplay(currentEx, currentVariantId) : null`)
+- [ ] T021 [US4] Em `apps/web/src/components/workout/ExerciseSheet.tsx`, calcular `const display = resolveExerciseDisplay(exercise, selectedId)` (usa a variante selecionada no sheet, a mesma que já define título, demonstração e chips do cabeçalho do sheet) e, na aba Execução: renderizar as `cues` só quando `display.showPlannedCues`; trocar o bloco `exercise.notes && …` por `display.tip && …` exibindo `display.tip` (com a variante alternativa, mostra o `why`); manter "Músculos trabalhados" e o tempo inalterados. Fazer T016 passar
+
+**Checkpoint**: US4 completa. Título, cabeçalho, dica, fit e aba Execução refletem a variante ativa; "Voltar à recomendada" restaura tudo; o registro histórico (US1) não muda.
+
+---
+
+## Phase 8: Polish do incremento US4
+
+- [ ] T022 Rodar `pnpm --filter @helux/web test` e `pnpm typecheck` (monorepo), confirmando que T015–T017 passam e nenhum teste existente quebrou (em especial `ExerciseSheet.test.tsx` e `useActiveWorkout.test.ts`)
+- [ ] T023 Executar `quickstart.md` passos 6–9 contra o app rodando localmente e rodar de novo o passo 5 (badge de fit sem troca) como regressão
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -110,6 +140,8 @@ Não há inicialização de infraestrutura nesta feature — nenhuma dependênci
 - **US2 (Phase 4)**: sem dependência de US1 — só lê `variantByExerciseIndex`, já existente antes desta feature
 - **US3 (Phase 5)**: sem dependência de US1 nem US2 — só lê `selectedVariant`, já existente antes desta feature
 - **Polish (Phase 6)**: depende de US1, US2 e US3 completas
+- **US4 (Phase 7, incremento 2026-09-22)**: depende de US2/US3 já implementadas (reusa `selectedVariant`/`variantByExerciseIndex` e o banner "Variante ativa"). Ordem: testes T015–T017 (em paralelo, arquivos diferentes) → T018 (helper) → T019 e T020 (mesmo arquivo, `page.tsx`: fazer em sequência) e T021 (`ExerciseSheet.tsx`, em paralelo com T019/T020)
+- **Polish US4 (Phase 8)**: depende de T018–T021
 
 ### Dentro de cada User Story
 
