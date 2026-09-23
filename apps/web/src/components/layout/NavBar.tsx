@@ -37,15 +37,23 @@ export function NavBar() {
   if (pathname === '/login' || pathname.startsWith('/auth') || pathname === '/workout') return null
 
   return (
-    <nav style={{ background: 'rgba(22,25,22,0.92)', backdropFilter: 'blur(12px)', borderTop: '1px solid var(--hairline)' }}
-      className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="flex max-w-lg mx-auto pb-safe">
+    <nav style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0,
+      // zIndex 50: o diálogo de cansaço (spec 011) usa 60 e depende de ficar acima do menu
+      zIndex: 50,
+      background: 'rgba(22,25,22,0.92)', backdropFilter: 'blur(12px)', borderTop: '1px solid var(--hairline)',
+    }}>
+      <div style={{ display: 'flex', maxWidth: 512, margin: '0 auto', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {tabs.map(tab => {
           const isActive = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href)
           return (
             <Link key={tab.href} href={tab.href}
-              className="flex-1 flex flex-col items-center py-3 gap-1 min-h-[56px] justify-center transition-colors"
-              style={{ color: isActive ? 'var(--accent)' : 'var(--text-faint)' }}>
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: 4, padding: '12px 0', minHeight: 56,
+                transition: 'color 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+                color: isActive ? 'var(--accent)' : 'var(--text-faint)',
+              }}>
               <Icon name={tab.icon} size={22} stroke="currentColor" />
               <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', fontFamily: 'var(--font-space-grotesk)' }}>
                 {tab.label}

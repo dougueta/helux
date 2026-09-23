@@ -28,8 +28,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
-      <body className="bg-helux-dark text-white antialiased">
-        <main className="pb-20">
+      <body>
+        <main style={{ paddingBottom: 80 }}>
           <ErrorBoundary>
             {children}
           </ErrorBoundary>

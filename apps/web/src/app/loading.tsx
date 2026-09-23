@@ -1,9 +1,17 @@
+import { Skeleton } from '@/components/ui/Skeleton'
+import { pageContainer } from '@/components/ui/layout'
+
+const cardBlock = { border: '1px solid var(--hairline)' }
+
 export default function Loading() {
   return (
-    <div className="max-w-lg mx-auto px-4 pt-6 pb-24 space-y-4">
-      <div className="h-6 w-48 bg-helux-surface rounded-lg animate-pulse" />
-      <div className="bg-helux-surface border border-helux-border rounded-2xl h-48 animate-pulse" />
-      <div className="bg-helux-surface border border-helux-border rounded-2xl h-12 animate-pulse" />
+    <div
+      aria-busy="true"
+      style={{ ...pageContainer, paddingTop: 24, paddingBottom: 96, display: 'flex', flexDirection: 'column', gap: 16 }}
+    >
+      <Skeleton width={192} height={24} radius="var(--r-sm)" />
+      <Skeleton height={192} style={cardBlock} />
+      <Skeleton height={48} style={cardBlock} />
     </div>
   )
 }

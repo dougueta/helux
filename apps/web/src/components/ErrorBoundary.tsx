@@ -1,6 +1,7 @@
 'use client'
 
 import { Component, ReactNode } from 'react'
+import { Card } from '@/components/ui/Card'
 
 interface Props {
   children: ReactNode
@@ -21,17 +22,20 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-helux-dark flex items-center justify-center p-6">
-          <div className="bg-helux-surface border border-helux-border rounded-2xl p-6 max-w-sm w-full text-center space-y-4">
-            <p className="text-white font-sans font-medium">Algo deu errado</p>
-            <p className="text-helux-muted text-sm">{this.state.message}</p>
+        <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <Card
+            padding={24}
+            style={{ maxWidth: 384, width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}
+          >
+            <p style={{ color: 'var(--text)', fontWeight: 500 }}>Algo deu errado</p>
+            <p style={{ color: 'var(--text-dim)', fontSize: 14, lineHeight: '20px' }}>{this.state.message}</p>
             <button
               onClick={() => this.setState({ hasError: false, message: '' })}
-              className="text-helux-accent text-sm underline"
+              style={{ color: 'var(--accent)', fontSize: 14, lineHeight: '20px', textDecoration: 'underline' }}
             >
               Tentar novamente
             </button>
-          </div>
+          </Card>
         </div>
       )
     }

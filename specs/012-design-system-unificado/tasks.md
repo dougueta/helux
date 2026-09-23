@@ -58,10 +58,10 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
 - Não mudar texto, dados nem comportamento (FR-006).
 - Ao terminar, rodar os testes do arquivo, se houver, e o teste de guarda, e confirmar que o arquivo saiu da lista de falhas.
 
-- [ ] T007 [P] [US1] Migrar `src/app/layout.tsx`. Tirar as classes do `<body>` (o `globals.css` já define fundo e cor) e do `<main>` (vira `style={{ paddingBottom: 80 }}`). Manter no `<html>` só as variáveis do `next/font`, que é a exceção do teste de guarda
-- [ ] T008 [P] [US1] Migrar `src/components/layout/NavBar.tsx` e `src/components/layout/Shell.tsx`. No NavBar, `fixed bottom-0 left-0 right-0 z-50` vira inline, mantendo o `zIndex: 50` porque o diálogo de cansaço (spec 011) depende dele. O `pb-safe` sem efeito vira `paddingBottom: 'env(safe-area-inset-bottom, 0px)'` (research R6)
-- [ ] T009 [P] [US1] Migrar `src/app/loading.tsx` e `src/app/dna/loading.tsx` para `Skeleton` e `pageContainer`, com a mesma estrutura de blocos de hoje
-- [ ] T010 [P] [US1] Migrar `src/components/ErrorBoundary.tsx` (tela de erro) para `Card` e tokens
+- [X] T007 [P] [US1] Migrar `src/app/layout.tsx`. Tirar as classes do `<body>` (o `globals.css` já define fundo e cor) e do `<main>` (vira `style={{ paddingBottom: 80 }}`). Manter no `<html>` só as variáveis do `next/font`, que é a exceção do teste de guarda
+- [X] T008 [P] [US1] Migrar `src/components/layout/NavBar.tsx` e `src/components/layout/Shell.tsx`. No NavBar, `fixed bottom-0 left-0 right-0 z-50` vira inline, mantendo o `zIndex: 50` porque o diálogo de cansaço (spec 011) depende dele. O `pb-safe` sem efeito vira `paddingBottom: 'env(safe-area-inset-bottom, 0px)'` (research R6)
+- [X] T009 [P] [US1] Migrar `src/app/loading.tsx` e `src/app/dna/loading.tsx` para `Skeleton` e `pageContainer`, com a mesma estrutura de blocos de hoje
+- [X] T010 [P] [US1] Migrar `src/components/ErrorBoundary.tsx` (tela de erro) para `Card` e tokens
 - [ ] T011 [P] [US1] Migrar `src/app/login/page.tsx`. Precisa funcionar sem usuário logado e só com o tema
 - [ ] T012 [P] [US1] Migrar `src/app/history/page.tsx`, incluindo o estado vazio
 - [ ] T013 [P] [US1] Migrar `src/app/history/[id]/page.tsx`, o arquivo com mais classes (24). O cabeçalho da variante executada (spec 010, "variante de … · N fit") passa a usar `MatchBadge` e `Chip`, se equivalentes
