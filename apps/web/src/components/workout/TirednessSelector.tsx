@@ -35,16 +35,16 @@ export function TirednessSelector({ assessment, changes, reason, onChoose, disab
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
-      <div className="flex items-center justify-between">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-dim)' }}>Como você está hoje</span>
         <span style={{ fontSize: 11.5, color: 'var(--text-faint)' }}>{originText(assessment)}</span>
       </div>
       <TirednessLevelPicker selected={assessment.effectiveLevel} onSelect={onChoose} disabled={disabled} />
       {discordNote && <p style={{ margin: 0, fontSize: 12, color: 'var(--text-dim)' }}>{discordNote}</p>}
-      {error && <p role="alert" style={{ margin: 0, fontSize: 12, color: 'var(--danger, #e5484d)' }}>{error}</p>}
+      {error && <p role="alert" style={{ margin: 0, fontSize: 12, color: 'var(--danger)' }}>{error}</p>}
       {changes.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <div className="flex items-center justify-between" style={{ gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
             {reason && <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>{reason}</span>}
             <button
               type="button"

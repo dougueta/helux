@@ -66,8 +66,8 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
 - [X] T012 [P] [US1] Migrar `src/app/history/page.tsx`, incluindo o estado vazio
 - [X] T013 [P] [US1] Migrar `src/app/history/[id]/page.tsx`, o arquivo com mais classes (24). O cabeçalho da variante executada (spec 010, "variante de … · N fit") passa a usar `MatchBadge` e `Chip`, se equivalentes
 - [X] T014 [P] [US1] Migrar `src/components/dna/TraitCard.tsx` (bug B3 original), `src/app/dna/DnaClient.tsx` e `src/app/dna/page.tsx`
-- [ ] T015 [P] [US1] Migrar `src/app/HomeClient.tsx` (10 classes), sem alterar o card de treino de hoje nem o `TirednessSelector` além das classes
-- [ ] T016 [P] [US1] Migrar `src/components/workout/TirednessSelector.tsx`. Trocar também o `#e5484d` por `var(--danger)` nele e em `src/components/workout/TirednessDialog.tsx` (R5.1)
+- [X] T015 [P] [US1] Migrar `src/app/HomeClient.tsx` (10 classes), sem alterar o card de treino de hoje nem o `TirednessSelector` além das classes
+- [X] T016 [P] [US1] Migrar `src/components/workout/TirednessSelector.tsx`. Trocar também o `#e5484d` por `var(--danger)` nele e em `src/components/workout/TirednessDialog.tsx` (R5.1)
 - [ ] T017 [P] [US1] Migrar `src/app/recovery/page.tsx` (Progresso), `src/app/treinos/TreinosClient.tsx` e `src/app/perfil/page.tsx`
 - [ ] T018 [P] [US1] Migrar `src/app/checkin/page.tsx` e `src/app/checkin/history/page.tsx`. Trocar `#f87171` por `var(--danger)` e `#4ade80` por `var(--success)` em `src/components/checkin/CheckinForm.tsx`, `CheckinCard.tsx` e `CheckinHistoryTable.tsx` (R5.1)
 - [ ] T019 [P] [US1] Trocar as cores hex da área de demonstração por `var(--demo-bg-1/2/3)` em `src/components/workout/ExerciseSheet.tsx` e em `src/app/workout/page.tsx` (`#0c0f0c` vira `var(--demo-bg-2)`), sem outra mudança visual

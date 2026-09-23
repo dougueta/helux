@@ -162,7 +162,7 @@ export function TirednessDialog(props: TirednessDialogProps) {
       >
         <div style={{ width: 38, height: 4, borderRadius: 2, background: 'var(--surface-3)', margin: '-14px auto 4px' }} />
         {body}
-        {error && <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--danger, #e5484d)' }}>{error}</p>}
+        {error && <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--danger)' }}>{error}</p>}
       </div>
     </div>,
     document.body,
