@@ -9,10 +9,16 @@ const SetSchema = z.object({
   effort: z.number().min(1).max(10),
 })
 
+const ExecutedVariantSchema = z.object({
+  name: z.string().min(1),
+  match: z.number().min(0).max(100),
+})
+
 const ExerciseSchema = z.object({
   name: z.string().min(1),
   sets: z.array(SetSchema),
   skipped: z.boolean().optional(),
+  executedVariant: ExecutedVariantSchema.optional(),
 })
 
 const SessionBodySchema = z

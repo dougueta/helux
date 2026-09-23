@@ -6,6 +6,7 @@ import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
 import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import { FinishWorkoutConfirmDialog } from '@/components/workout/FinishWorkoutConfirmDialog'
+import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { Icon } from '@/components/ui/icons'
 import { Ring } from '@/components/ui/Ring'
 import { MiniStep } from '@/components/ui/MiniStep'
@@ -65,10 +66,11 @@ export default function WorkoutPage() {
   const currentSets = session.exerciseStates[currentIdx] ?? []
 
   const variants = currentEx?.variants ?? []
-  const recVariant = variants.find(v => v.rec)
+  const recVariant = currentEx ? recommendedVariant(currentEx) : undefined
   const currentVariantId = session.variantByExerciseIndex?.[currentIdx]
   const selectedVariant = variants.find(v => v.id === currentVariantId) ?? recVariant
   const betterFitAvailable = variants.some(v => v.betterFit)
+  const display = currentEx ? resolveExerciseDisplay(currentEx, currentVariantId) : null
 
   const totalSets = session.exerciseStates.reduce((acc, sets) => acc + sets.length, 0)
   const totalDone = session.exerciseStates.reduce(
@@ -265,7 +267,7 @@ export default function WorkoutPage() {
         </button>
         <div style={{ flex: 1, textAlign: 'center' }}>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
-            {session.planExercises[0]?.name.split(' ').slice(0, 2).join(' ') ?? 'Treino'}
+            {display?.title.split(' ').slice(0, 2).join(' ') ?? 'Treino'}
           </div>
           <div
             style={{
@@ -359,19 +361,21 @@ export default function WorkoutPage() {
                 >
                   Musculação
                 </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: 'var(--accent)',
-                    background: 'var(--accent-soft)',
-                    borderRadius: 'var(--r-pill)',
-                    padding: '3px 10px',
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  96 fit
-                </span>
+                {display?.fit !== undefined && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: 'var(--accent)',
+                      background: 'var(--accent-soft)',
+                      borderRadius: 'var(--r-pill)',
+                      padding: '3px 10px',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    {display.fit} fit
+                  </span>
+                )}
               </div>
               <h2
                 style={{
@@ -382,12 +386,17 @@ export default function WorkoutPage() {
                   fontFamily: 'var(--font-space-grotesk)',
                 }}
               >
-                {currentEx.name}
+                {display?.title}
               </h2>
+              {display?.plannedName && (
+                <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: '0 0 4px' }}>
+                  variante de {display.plannedName}
+                </p>
+              )}
               <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: '0 0 10px' }}>
                 {currentEx.sets} × {currentEx.reps} reps · descanso 90s
               </p>
-              {currentEx.notes && (
+              {display?.tip && (
                 <span
                   style={{
                     display: 'inline-flex',
@@ -402,7 +411,7 @@ export default function WorkoutPage() {
                   }}
                 >
                   <Icon name="dna" size={12} stroke="var(--accent)" sw={1.8} />
-                  {currentEx.notes}
+                  {display.tip}
                 </span>
               )}
 
@@ -467,7 +476,7 @@ export default function WorkoutPage() {
                     <Icon name="chevron" size={18} stroke="var(--text-faint)" />
                   </button>
 
-                  {!selectedVariant.rec && (
+                  {display?.plannedName && (
                     <div
                       style={{
                         display: 'flex',
@@ -484,7 +493,7 @@ export default function WorkoutPage() {
                     >
                       <Icon name="swap" size={14} stroke="var(--accent)" />
                       <span style={{ flex: 1 }}>
-                        Variante ativa <b>· {selectedVariant.equip}</b>
+                        Variante ativa <b>{selectedVariant.name} · {selectedVariant.equip}</b>
                       </span>
                       {recVariant && (
                         <button
@@ -505,7 +514,7 @@ export default function WorkoutPage() {
                     </div>
                   )}
 
-                  {selectedVariant.rec && betterFitAvailable && (
+                  {!display?.plannedName && betterFitAvailable && (
                     <button
                       onClick={() => setSheetOpen(true)}
                       style={{

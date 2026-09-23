@@ -7,6 +7,7 @@ import { MatchBadge } from '@/components/ui/MatchBadge'
 import { Chip } from '@/components/ui/Chip'
 import { ExerciseDemo } from './ExerciseDemo'
 import { MuscleMap } from './MuscleMap'
+import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 
 export function ExerciseSheet({
   exercise,
@@ -20,7 +21,7 @@ export function ExerciseSheet({
   onClose: () => void
 }) {
   const variants = exercise.variants ?? []
-  const recVariant = variants.find((v) => v.rec) ?? variants[0]
+  const recVariant = recommendedVariant(exercise)
   const activeId = currentVariantId ?? recVariant?.id
 
   const [selectedId, setSelectedId] = useState(activeId)
@@ -29,7 +30,8 @@ export function ExerciseSheet({
   const [nonce, setNonce] = useState(0)
 
   const selectedVariant = variants.find((v) => v.id === selectedId) ?? recVariant
-  const cues = exercise.cues ?? []
+  const display = resolveExerciseDisplay(exercise, selectedId)
+  const cues = display.showPlannedCues ? exercise.cues ?? [] : []
   const muscles = exercise.muscles ?? { primary: [], secondary: [] }
   const changed = !!selectedVariant && selectedVariant.id !== activeId
 
@@ -274,7 +276,7 @@ export function ExerciseSheet({
                 <MuscleMap primary={muscles.primary} secondary={muscles.secondary} />
               </div>
 
-              {exercise.notes && (
+              {display.tip && (
                 <div
                   style={{
                     display: 'inline-flex',
@@ -289,7 +291,7 @@ export function ExerciseSheet({
                   }}
                 >
                   <Icon name="dna" size={14} stroke="var(--accent)" />
-                  {exercise.notes}
+                  {display.tip}
                 </div>
               )}
             </div>

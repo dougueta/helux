@@ -2,6 +2,7 @@ export interface ExerciseSet {
   name: string
   sets: Array<{ reps: number; weight: number; effort: number }>
   skipped?: boolean
+  executedVariant?: { name: string; match: number }
 }
 
 export interface WorkoutSession {

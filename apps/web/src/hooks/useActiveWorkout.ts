@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { apiFetch } from '@/services/api-client'
 import { clearCachedPlan } from './useWorkoutPlan'
-import type { PlannedExercise } from '@helux/types'
+import { recommendedVariant } from '@/lib/exerciseDisplay'
+import type { PlannedExercise, Variant } from '@helux/types'
 
 const STORAGE_KEY = 'helux:active-workout'
 
@@ -20,6 +21,8 @@ export interface ActiveWorkoutState {
   startedAt: string
   restUntil?: string
   variantByExerciseIndex: Record<number, string>
+  /** Variant locked at the first done set; `null` = planned exercise (survives JSON, unlike `undefined`). */
+  executedVariantByExerciseIndex: Record<number, string | null>
 }
 
 function parseWeight(weight: string): number {
@@ -47,7 +50,11 @@ export function useActiveWorkout() {
     if (raw) {
       try {
         const parsed = JSON.parse(raw) as ActiveWorkoutState
-        setSession({ ...parsed, variantByExerciseIndex: parsed.variantByExerciseIndex ?? {} })
+        setSession({
+          ...parsed,
+          variantByExerciseIndex: parsed.variantByExerciseIndex ?? {},
+          executedVariantByExerciseIndex: parsed.executedVariantByExerciseIndex ?? {},
+        })
       } catch {
         localStorage.removeItem(STORAGE_KEY)
       }
@@ -71,6 +78,7 @@ export function useActiveWorkout() {
       currentExerciseIndex: 0,
       startedAt: new Date().toISOString(),
       variantByExerciseIndex: {},
+      executedVariantByExerciseIndex: {},
     }
     save(state)
     setSession(state)
@@ -88,14 +96,22 @@ export function useActiveWorkout() {
   const toggleSetDone = useCallback((exerciseIndex: number, setIndex: number) => {
     setSession(prev => {
       if (!prev) return prev
+      const wasDone = prev.exerciseStates[exerciseIndex]?.[setIndex]?.done ?? false
       const newExerciseStates = prev.exerciseStates.map((sets, ei) =>
         ei === exerciseIndex
           ? sets.map((s, si) => si === setIndex ? { ...s, done: !s.done } : s)
           : sets
       )
+      const executedVariantByExerciseIndex = { ...prev.executedVariantByExerciseIndex }
+      if (!wasDone && !(exerciseIndex in executedVariantByExerciseIndex)) {
+        executedVariantByExerciseIndex[exerciseIndex] = prev.variantByExerciseIndex[exerciseIndex] ?? null
+      } else if (wasDone && !newExerciseStates[exerciseIndex].some(s => s.done)) {
+        delete executedVariantByExerciseIndex[exerciseIndex]
+      }
       const next: ActiveWorkoutState = {
         ...prev,
         exerciseStates: newExerciseStates,
+        executedVariantByExerciseIndex,
       }
       save(next)
       return next
@@ -162,9 +178,20 @@ export function useActiveWorkout() {
       const doneSets = (session.exerciseStates[ei] ?? [])
         .filter(s => s.done)
         .map(s => ({ reps: s.reps, weight: s.weight, effort: 8 }))
-      return doneSets.length > 0
-        ? { name: ex.name, sets: doneSets }
-        : { name: ex.name, sets: doneSets, skipped: true }
+
+      if (doneSets.length === 0) {
+        return { name: ex.name, sets: doneSets, skipped: true }
+      }
+
+      const lockedVariantId = session.executedVariantByExerciseIndex[ei]
+      const recommendedVariantId = recommendedVariant(ex)?.id
+      const executedVariant = lockedVariantId && lockedVariantId !== recommendedVariantId
+        ? ex.variants?.find((v: Variant) => v.id === lockedVariantId)
+        : undefined
+
+      return executedVariant
+        ? { name: ex.name, sets: doneSets, executedVariant: { name: executedVariant.name, match: executedVariant.match } }
+        : { name: ex.name, sets: doneSets }
     })
 
     await apiFetch('/api/workouts/sessions', {

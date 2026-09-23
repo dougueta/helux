@@ -64,7 +64,14 @@ export default function SessionDetailPage() {
         {session.exercises.map((ex, i) => (
           <div key={i} className="bg-helux-surface border border-helux-border rounded-2xl overflow-hidden">
             <div className="px-4 py-3 border-b border-helux-border">
-              <p className="font-sans font-medium text-white">{ex.name}</p>
+              <p className="font-sans font-medium text-white">
+                {ex.executedVariant ? ex.executedVariant.name : ex.name}
+              </p>
+              {ex.executedVariant && (
+                <p className="text-helux-muted text-xs mt-0.5">
+                  variante de {ex.name} · {ex.executedVariant.match} fit
+                </p>
+              )}
             </div>
             <table className="w-full text-sm">
               <thead>

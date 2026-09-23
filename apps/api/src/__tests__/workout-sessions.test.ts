@@ -112,4 +112,29 @@ describe('POST /api/workouts/sessions', () => {
     const insertedPayload = (mockInsert.mock.calls[0] as any[])[0]
     expect(insertedPayload.exercises[1]).toEqual({ name: 'Supino', sets: [], skipped: true })
   })
+
+  it('returns 201 and preserves executedVariant when an exercise includes one', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/workouts/sessions',
+      headers: { Authorization: 'Bearer valid-token' },
+      payload: {
+        date: '2026-06-15',
+        exercises: [
+          {
+            name: 'Supino Reto (Barra)',
+            sets: [{ reps: 8, weight: 70, effort: 8 }],
+            executedVariant: { name: 'Supino Reto com Halteres', match: 84 },
+          },
+        ],
+      },
+    })
+    expect(res.statusCode).toBe(201)
+    const insertedPayload = (mockInsert.mock.calls[0] as any[])[0]
+    expect(insertedPayload.exercises[0]).toEqual({
+      name: 'Supino Reto (Barra)',
+      sets: [{ reps: 8, weight: 70, effort: 8 }],
+      executedVariant: { name: 'Supino Reto com Halteres', match: 84 },
+    })
+  })
 })
