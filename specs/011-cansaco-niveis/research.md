@@ -33,3 +33,12 @@
 
 - **Decision**: `GET /api/tiredness-today` → `TirednessAssessment`; `PUT /api/tiredness-today` `{ level, overrideAutomatic }` → `TirednessAssessment`. POST/DELETE (binários) removidos — a web é o único cliente.
 - **Rationale**: o GET é o ponto de consumo reaproveitável pela spec 015 (FR-014).
+
+
+## Compatibilidade da migration com a API em produção (2026-09-22)
+
+**Decisão**: a coluna `level` mantém o default `'exausto'` (a versão inicial da migration o removia com `drop default`).
+
+**Rationale**: a migration é aplicada no banco compartilhado antes do deploy da API nova. A API de produção anterior (spec 008) grava o sinal binário "muito cansado" inserindo em `daily_tiredness_signals` sem `level`; com a coluna `not null` e sem default, esse insert falharia e o botão de cansaço da produção quebraria até o deploy. Com o default, o insert antigo vira `exausto`, que é exatamente o significado do sinal binário (mesma regra usada para as linhas legadas). A API nova sempre envia `level` explicitamente, então o default não afeta o comportamento novo.
+
+**Alternativa rejeitada**: exigir deploy da API antes da migration — inviável, a API nova lê as colunas novas e quebraria sem elas.
