@@ -114,13 +114,13 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
 
 **Independent Test**: `quickstart.md` passos 1 e 8. O teste de guarda continua verde.
 
-- [ ] T024 [US3] Com o teste de guarda verde (pré-requisito):
+- [X] T024 [US3] Com o teste de guarda verde (pré-requisito):
   - em `src/app/globals.css`, trocar as três diretivas `@tailwind` pelo reset mínimo de research R3: `*, ::before, ::after { box-sizing: border-box; border: 0 solid }`; margens zeradas nos elementos listados; listas sem marcador; controles herdando fonte e cor; `button` com fundo transparente e `cursor: pointer`; `img` e `svg` com `display: block` e `max-width: 100%`;
   - apagar `tailwind.config.ts` e `postcss.config.js`;
   - remover `tailwindcss` e `autoprefixer` de `package.json`;
   - rodar `pnpm install` na raiz;
   - se o `next build` exigir PostCSS, recriar `postcss.config.js` com `module.exports = { plugins: {} }` e registrar isso no commit
-- [ ] T025 [US3] Rodar `pnpm --filter @helux/web build` e confirmar que o build passa sem Tailwind
+- [X] T025 [US3] Rodar `pnpm --filter @helux/web build` e confirmar que o build passa sem Tailwind
 
 **Checkpoint**: nenhuma dependência nem configuração do Tailwind no app. O guarda impede a volta de classes e de cores soltas.
 
