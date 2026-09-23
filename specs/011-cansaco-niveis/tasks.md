@@ -59,7 +59,7 @@
 - [X] T026 Remover `TirednessToggle.tsx`, `useTiredness.ts` e seus testes (`apps/web/src/components/workout/`, `apps/web/src/hooks/`, `apps/web/src/__tests__/...`)
 - [X] T027 Rodar `pnpm --filter @helux/workouts test`, `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test`, `pnpm typecheck` — tudo verde
 - [X] T029 Manter o default 'exausto' da coluna `level` em `supabase/migrations/20260922000000_tiredness_levels.sql` (remover o `drop default`) para que a API de produção anterior (spec 008), que insere sem `level`, continue funcionando entre a aplicação da migration e o deploy da API nova (`research.md` → "Compatibilidade da migration"). Sem teste automatizado (o repo não tem testes de SQL); verificação: aplicar a migration e conferir que um insert sem `level` resulta em `exausto`
-- [ ] T028 Verificação manual do `quickstart.md` (a ser feita pelo agente principal)
+- [X] T028 Verificação manual do `quickstart.md` (a ser feita pelo agente principal) — feita em 2026-09-22 (branch de teste 011+016, Supabase real): cenários 1, 2 e 3 ok após as correções T030–T036 (CORS com PUT e diálogo acima do menu confirmados no navegador); cenário 4 (HRV do relógio) e 6 (virada do dia) não verificados manualmente — cobertos por testes automatizados; cenário 5 não verificado
 
 ## Phase 8: Correções da verificação manual (2026-09-22)
 
