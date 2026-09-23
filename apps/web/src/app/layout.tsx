@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
@@ -18,7 +18,14 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Helux',
   description: 'Seu treino personalizado',
-  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+}
+
+// No Next 14, `metadata.viewport` é ignorado ("Unsupported metadata viewport").
+// Sem viewport-fit=cover, env(safe-area-inset-bottom) vale 0 no iPhone (R6).
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({
