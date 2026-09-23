@@ -1,9 +1,15 @@
+import { Skeleton } from '@/components/ui/Skeleton'
+import { pageContainer } from '@/components/ui/layout'
+
 export default function Loading() {
   return (
-    <div className="max-w-lg mx-auto px-4 pt-6 pb-24 space-y-3">
-      <div className="h-6 w-36 bg-helux-surface rounded-lg animate-pulse mb-6" />
+    <div
+      aria-busy="true"
+      style={{ ...pageContainer, paddingTop: 24, paddingBottom: 96, display: 'flex', flexDirection: 'column', gap: 12 }}
+    >
+      <Skeleton width={144} height={24} radius="var(--r-sm)" style={{ marginBottom: 12 }} />
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="bg-helux-surface border border-helux-border rounded-2xl h-20 animate-pulse" />
+        <Skeleton key={i} height={80} style={{ border: '1px solid var(--hairline)' }} />
       ))}
     </div>
   )

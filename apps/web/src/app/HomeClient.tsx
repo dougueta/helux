@@ -72,16 +72,16 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
   const score = recoveryScore(recovery?.hrv)
 
   return (
-    <div className="max-w-lg mx-auto pb-24">
+    <div style={{ maxWidth: 512, margin: '0 auto', paddingBottom: 96 }}>
       {/* Topbar */}
-      <div className="flex items-center justify-between px-4 pt-12 pb-2">
-        <div className="flex items-center gap-2">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '48px 16px 8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <HelixMark size={24} />
           <span style={{ fontFamily: 'var(--font-space-grotesk)', fontWeight: 600, fontSize: 16, color: 'var(--text)' }}>
             helux
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {analytics && analytics.currentStreakWeeks > 0 && (
             <div style={{
               display: 'inline-flex',
@@ -119,7 +119,7 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
       </div>
 
       {/* Greeting */}
-      <header className="px-4 pt-3 pb-4">
+      <header style={{ padding: '12px 16px 16px' }}>
         <p style={{ fontSize: 13, color: 'var(--text-faint)', marginBottom: 4 }}>{todayLabel()}</p>
         <h1 style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.15, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>
           Bom treino,<br />
@@ -127,7 +127,7 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
         </h1>
       </header>
 
-      <div className="px-4 space-y-3">
+      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {/* Hero — Treino de hoje */}
         {today ? (
           <div style={{
@@ -141,11 +141,11 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
             {/* glow */}
             <div style={{ position: 'absolute', top: -40, right: -20, width: 140, height: 140,
               borderRadius: '50%', background: 'var(--accent-soft)', pointerEvents: 'none' }} />
-            <div className="flex items-center justify-between mb-2" style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, position: 'relative' }}>
               <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
                 Treino de hoje
               </span>
-              <div className="flex items-center gap-2">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {today.adjusted && <RecoveryAdjustedBadge reason={today.adjustmentReason} />}
                 {insight?.score != null && <MatchBadge value={insight.score} />}
               </div>
@@ -156,7 +156,7 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
             <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 12, position: 'relative' }}>
               {today.exercises?.slice(1,3).map((e: any) => e.name).join(' · ')}
             </div>
-            <div className="flex items-center gap-4" style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 14, position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 13, color: 'var(--text-dim)', marginBottom: 14, position: 'relative' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Icon name="dumbbell" size={15} stroke="var(--text-dim)" />
                 {today.exercises?.length ?? 0} exercícios
@@ -245,7 +245,7 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
         <CheckinCard checkins={checkins} />
 
         {/* Recovery ring + week */}
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
           <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
             {recovery ? (
               <>

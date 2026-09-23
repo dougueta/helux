@@ -1,8 +1,15 @@
-import type { ReactNode, CSSProperties } from 'react'
+import type { ReactNode, CSSProperties, HTMLAttributes } from 'react'
 
-export function Chip({ children, accent, style }: { children: ReactNode; accent?: boolean; style?: CSSProperties }) {
+type ChipProps = {
+  children: ReactNode
+  accent?: boolean
+  style?: CSSProperties
+} & Omit<HTMLAttributes<HTMLSpanElement>, 'style' | 'children'>
+
+export function Chip({ children, accent, style, ...rest }: ChipProps) {
   return (
     <span
+      {...rest}
       style={{
         display: 'inline-flex',
         alignItems: 'center',

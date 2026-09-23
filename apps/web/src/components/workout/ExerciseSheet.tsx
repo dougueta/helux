@@ -7,6 +7,7 @@ import { MatchBadge } from '@/components/ui/MatchBadge'
 import { Chip } from '@/components/ui/Chip'
 import { ExerciseDemo } from './ExerciseDemo'
 import { MuscleMap } from './MuscleMap'
+import { ExecutionTips } from './ExecutionTips'
 import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 
 export function ExerciseSheet({
@@ -84,7 +85,7 @@ export function ExerciseSheet({
               height: 220,
               borderRadius: 18,
               overflow: 'hidden',
-              background: 'radial-gradient(130% 110% at 50% 0%, #14180f 0%, #0a0d09 60%, #070906 100%)',
+              background: 'radial-gradient(130% 110% at 50% 0%, var(--demo-bg-1) 0%, var(--demo-bg-2) 60%, var(--demo-bg-3) 100%)',
               border: '1px solid var(--hairline)',
               marginTop: 8,
             }}
@@ -276,24 +277,7 @@ export function ExerciseSheet({
                 <MuscleMap primary={muscles.primary} secondary={muscles.secondary} />
               </div>
 
-              {display.tip && (
-                <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    fontSize: 12.5,
-                    color: 'var(--accent)',
-                    background: 'var(--accent-soft)',
-                    border: '1px solid var(--accent-line)',
-                    borderRadius: 12,
-                    padding: '9px 13px',
-                  }}
-                >
-                  <Icon name="dna" size={14} stroke="var(--accent)" />
-                  {display.tip}
-                </div>
-              )}
+              <ExecutionTips text={display.tip} variant="panel" />
             </div>
           ) : (
             <div style={{ padding: '12px 0 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>

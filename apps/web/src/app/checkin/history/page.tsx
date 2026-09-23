@@ -18,7 +18,7 @@ function HistoryContent() {
 export default function CheckinHistoryPage() {
   return (
     <Shell>
-      <div className="max-w-lg mx-auto" style={{ paddingBottom: 96 }}>
+      <div style={{ maxWidth: 512, margin: '0 auto', paddingBottom: 96 }}>
         <header style={{ padding: '48px 16px 16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
           <div>
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 4 }}>

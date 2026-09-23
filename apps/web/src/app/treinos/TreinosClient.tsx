@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
 import { formatDuration } from '@/lib/format-duration'
+import { pageContainer } from '@/components/ui/layout'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
 import type { AdjustedWorkoutPlanView, PlannedExercise } from '@helux/types'
 
@@ -27,7 +28,7 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
   }
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-12 pb-24">
+    <div style={{ ...pageContainer, paddingTop: 48, paddingBottom: 96 }}>
       <header style={{ marginBottom: 20 }}>
         <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 6 }}>
           Seu treino atual

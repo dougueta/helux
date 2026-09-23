@@ -26,7 +26,7 @@ function DeltaSpan({ curr, prev, lowerIsBetter = false, decimals = 1 }: {
   const d = curr - prev
   const neutral = Math.abs(d) < 0.05
   const positive = lowerIsBetter ? d < 0 : d > 0
-  const color = neutral ? 'var(--text-faint)' : positive ? 'var(--success, #4ade80)' : 'var(--danger, #f87171)'
+  const color = neutral ? 'var(--text-faint)' : positive ? 'var(--success)' : 'var(--danger)'
   return (
     <span style={{ color, fontSize: 12, marginLeft: 2 }}>
       {deltaStr(curr, prev, decimals)}

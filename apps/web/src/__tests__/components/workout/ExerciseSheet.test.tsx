@@ -108,7 +108,9 @@ describe('ExerciseSheet', () => {
     render(<ExerciseSheet exercise={EXERCISE} currentVariantId="e1b" onApply={vi.fn()} onClose={vi.fn()} />)
     expect(screen.queryByText('Escápulas retraídas e pés firmes no chão')).not.toBeInTheDocument()
     expect(screen.queryByText('Cargas altas — seu forte')).not.toBeInTheDocument()
-    expect(screen.getByText('Maior amplitude e estabilização; corrige assimetrias.')).toBeInTheDocument()
+    // spec 012 (FR-009/FR-011): a justificativa da variante aparece uma orientação por item
+    expect(screen.getByText('Maior amplitude e estabilização')).toBeInTheDocument()
+    expect(screen.getByText('corrige assimetrias')).toBeInTheDocument()
     expect(screen.getByText('Músculos trabalhados')).toBeInTheDocument()
   })
 
