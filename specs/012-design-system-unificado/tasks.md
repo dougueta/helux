@@ -128,7 +128,7 @@ Regras para **toda** tarefa de migração abaixo (data-model → "Mapeamento das
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T026 [P] Rodar `pnpm --filter @helux/web test` e `pnpm typecheck` na raiz. Tudo verde, incluindo o teste de guarda e os testes existentes de comportamento
+- [X] T026 [P] Rodar `pnpm --filter @helux/web test` e `pnpm typecheck` na raiz. Tudo verde, incluindo o teste de guarda e os testes existentes de comportamento
 - [ ] T027 Executar a verificação manual de `quickstart.md` (passos 1–8) contra o app rodando localmente, comparando o passo 1 com os screenshots da T001
 
 ---

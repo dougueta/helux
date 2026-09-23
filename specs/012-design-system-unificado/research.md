@@ -107,3 +107,26 @@
 | `ExerciseSheet` (3 tons), `workout/page.tsx` (1 tom) | `#14180f`, `#0a0d09`, `#070906`, `#0c0f0c` | fundos escuros da área de demonstração; viram os tokens `--demo-bg-1`, `--demo-bg-2` e `--demo-bg-3`, reutilizados nos dois arquivos (tons quase iguais são unificados) |
 
 Trocar `#e5484d` e `#f87171` por `--danger` muda levemente o tom desses vermelhos para o vermelho do tema, o que é exatamente a unificação pedida (FR-004, FR-005: nenhuma cor nova, só as do tema).
+
+## Achados da implementação (2026-09-23)
+
+Coisas que o plano não previa, encontradas durante T002–T026, e como foram resolvidas (sempre tomando a tela de treino ativo como referência).
+
+1. **As cores "hex soltas" eram fallbacks de `var()`.** `#e5484d`, `#f87171` e `#4ade80` apareciam como `var(--danger, #e5484d)` etc. Como `--danger` já existia, o fallback vermelho nunca era usado: trocar por `var(--danger)` **não muda nada na tela**. Já `--success` não existia, então o verde vinha do fallback `#4ade80`; o token novo tem o mesmo valor, e também não há mudança visual.
+2. **O viewport nunca teve `viewport-fit=cover`.** O `layout.tsx` declarava o viewport em `metadata.viewport`, que o Next 14 ignora (o build avisava "Unsupported metadata viewport"). Sem isso, `env(safe-area-inset-bottom)` vale 0 no iPhone, e o R6 (e o `TirednessDialog` da spec 011) não teria efeito. Corrigido com `export const viewport` no `layout.tsx`; o HTML gerado agora sai com `viewport-fit=cover`.
+3. **Pseudo-classes sem equivalente inline.** `active:scale-95` (Login e cartões do Histórico) não tem como ser expresso em estilo inline. A tela de treino ativo não tem esse efeito, então ele foi retirado.
+4. **Cores do `TraitCard` fora do tema.** Os níveis usavam `blue-400`/`yellow-400` do Tailwind, que não pertencem ao tema. Agora: Baixo = neutro (`--text-dim`/`--surface-2`), Médio = `--warn`, Alto = `--accent`, os mesmos tons que o `DnaClient` já usava nas etiquetas.
+5. **Bordas "invisíveis" eram, na verdade, cinza claro.** Com `border` + uma cor inexistente (`border-helux-border`), o Tailwind aplicava a cor de borda padrão do preflight (`#e5e7eb`). Agora todas usam `--hairline`.
+6. **Reset maior que o R3.** Por conservadorismo, o reset próprio reproduz quase todo o preflight do Tailwind 3, incluindo o que o R3 não listava e as telas usam: `line-height: 1.5` no `html` (muitos textos não definem `lineHeight`), `h1`–`h6` herdando `font-size`/`font-weight`, `a` herdando cor e decoração, `table` com `border-collapse`, a cor de borda padrão, `placeholder`, `:disabled` e `[hidden]`.
+7. **`postcss` também saiu.** O `next build` passa sem `postcss.config.js`, porque o Next usa o PostCSS embutido. Por isso o `postcss` saiu de `apps/web` junto com `tailwindcss` e `autoprefixer`.
+8. **`Shell` aceitava `className`.** Ninguém passava esse valor, e a prop virou `style`.
+9. **Espaçamento duplo em Perfil, Check-in e Histórico de check-ins (não corrigido).** Essas páginas usam `Shell` (`padding-top` de 48) **e** um `header` com mais 48 de `padding-top`, e ainda um contêiner interno de 512 px com `paddingBottom` de 96. A migração preservou o espaçamento atual, sem mudança visual. Fica anotado para uma revisão futura do espaçamento.
+10. **`Chip` passa a repassar atributos HTML.** Isso era necessário para o `aria-label` dos marcadores do `ExecutionTips`, e não muda nada no visual.
+11. **Caso real de dica, fora do R7** (Agachamento Livre (Barra), plano do usuário). O texto tem o marcador **sem parênteses e no meio da frase**: "alerta COL1A1 C,C indica…". **Decisão:** ele fica no texto e não vira etiqueta. Um gene sem parênteses não pode ser separado da frase sem quebrar a gramática, e reconhecer "GENE genótipo" solto no texto correria risco de falso positivo (por exemplo, com "RPE 8" ou siglas). O importante (nada se perde) está garantido. O texto também confirmou outras regras:
+    - "(3s)" começa com dígito, não é gene e fica no texto;
+    - "3s" e "5km" não quebram a orientação;
+    - o ponto só divide quando vem seguido de espaço e **letra maiúscula**, o que também protege abreviações como "aprox. 3".
+
+    Resultado: 6 orientações. O caso está coberto em `tipItems.test.ts`.
+12. **Carregamentos com `aria-busy`.** Os contêineres de esqueleto ganharam `aria-busy="true"`, como pede o contrato do `Skeleton`, que é `aria-hidden`.
+13. **`MatchBadge` no detalhe do treino.** "variante de X · N fit" virou "variante de X" seguido do `MatchBadge` (N fit). O conteúdo é o mesmo, só a forma do badge muda.
