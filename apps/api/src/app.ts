@@ -21,7 +21,8 @@ export function buildApp(): FastifyInstance {
   app.register(cors, {
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
     credentials: true,
-    methods: ['GET', 'HEAD', 'POST', 'DELETE'],
+    // PUT: /api/tiredness-today (spec 011).
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
   })
 
   app.register(healthRoutes)

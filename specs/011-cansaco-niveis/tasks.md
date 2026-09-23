@@ -63,13 +63,13 @@
 
 ## Phase 8: Correções da verificação manual (2026-09-22)
 
-- [ ] T030 [P] RED: teste de CORS em `apps/api/src/__tests__/cors.test.ts` usando `buildApp()` — preflight `OPTIONS /api/tiredness-today` com `origin: http://localhost:3000` e `access-control-request-method: PUT` deve devolver `access-control-allow-methods` contendo `PUT` (FR-016)
-- [ ] T031 GREEN: incluir `'PUT'` em `methods` do `@fastify/cors` em `apps/api/src/app.ts`
-- [ ] T032 [P] RED: em `apps/web/src/__tests__/components/workout/TirednessDialog.test.tsx`, o backdrop do diálogo é filho direto de `document.body` (portal) e tem `z-index` maior que o do menu inferior (`z-50`) (FR-017)
-- [ ] T033 GREEN: renderizar `TirednessDialog` via `createPortal` em `document.body` com `TIREDNESS_DIALOG_Z_INDEX = 60` e padding inferior com safe area em `apps/web/src/components/workout/TirednessDialog.tsx`
-- [ ] T034 [P] RED: em `apps/web/src/__tests__/hooks/useWorkoutPlan.test.ts`, cache do mesmo dia de plano de mesociclo sem `today.tiredness` é descartado e o plano é buscado de novo; plano legado (`mesocycleId: null`) continua vindo do cache (FR-018)
-- [ ] T035 GREEN: ajustar `loadFromStorage` em `apps/web/src/hooks/useWorkoutPlan.ts`
-- [ ] T036 Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test`, `pnpm typecheck` — tudo verde
+- [X] T030 [P] RED: teste de CORS em `apps/api/src/__tests__/cors.test.ts` usando `buildApp()` — preflight `OPTIONS /api/tiredness-today` com `origin: http://localhost:3000` e `access-control-request-method: PUT` deve devolver `access-control-allow-methods` contendo `PUT` (FR-016)
+- [X] T031 GREEN: incluir `'PUT'` em `methods` do `@fastify/cors` em `apps/api/src/app.ts`
+- [X] T032 [P] RED: em `apps/web/src/__tests__/components/workout/TirednessDialog.test.tsx`, o backdrop do diálogo é filho direto de `document.body` (portal) e tem `z-index` maior que o do menu inferior (`z-50`) (FR-017)
+- [X] T033 GREEN: renderizar `TirednessDialog` via `createPortal` em `document.body` com `TIREDNESS_DIALOG_Z_INDEX = 60` e padding inferior com safe area em `apps/web/src/components/workout/TirednessDialog.tsx`
+- [X] T034 [P] RED: em `apps/web/src/__tests__/hooks/useWorkoutPlan.test.ts`, cache do mesmo dia de plano de mesociclo sem `today.tiredness` é descartado e o plano é buscado de novo; plano legado (`mesocycleId: null`) continua vindo do cache (FR-018)
+- [X] T035 GREEN: ajustar `loadFromStorage` em `apps/web/src/hooks/useWorkoutPlan.ts`
+- [X] T036 Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test`, `pnpm typecheck` — tudo verde
 
 ## Dependencies
 

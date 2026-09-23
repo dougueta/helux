@@ -17,6 +17,8 @@ function loadFromStorage(): AdjustedWorkoutPlanView | null {
     // Spec 011: o ajuste por cansaço vale só para o dia — cache de outro dia é descartado.
     const tirednessDate = plan.today?.tiredness?.date
     if (tirednessDate && tirednessDate !== new Date().toISOString().slice(0, 10)) return null
+    // Formato anterior à 011 (plano de mesociclo sem avaliação de cansaço): busca de novo.
+    if (plan.mesocycleId && plan.today && !plan.today.tiredness) return null
     return plan
   } catch {
     return null

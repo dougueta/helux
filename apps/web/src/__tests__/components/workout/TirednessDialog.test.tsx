@@ -31,6 +31,19 @@ describe('TirednessDialog', () => {
   it('não renderiza quando fechado', () => {
     const { container } = render(<TirednessDialog {...props({ open: false })} />)
     expect(container).toBeEmptyDOMElement()
+    expect(screen.queryByTestId('tiredness-dialog-backdrop')).not.toBeInTheDocument()
+  })
+
+  it('FR-017: fica acima do menu inferior (portal em document.body e z-index > 50 do NavBar)', () => {
+    const { container } = render(
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <TirednessDialog {...props({})} />
+      </div>,
+    )
+    const backdrop = screen.getByTestId('tiredness-dialog-backdrop')
+    expect(backdrop.parentElement).toBe(document.body)
+    expect(container.contains(backdrop)).toBe(false)
+    expect(Number(backdrop.style.zIndex)).toBeGreaterThan(50)
   })
 
   describe('US1: etapa de mudanças', () => {

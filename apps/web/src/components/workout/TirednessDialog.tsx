@@ -1,11 +1,15 @@
 'use client'
 
 import type { CSSProperties, ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import type { ExerciseAdjustmentChange, TirednessLevel } from '@helux/types'
 import { TIREDNESS_LABELS } from '@helux/workouts'
 import { TirednessLevelPicker } from '@/components/workout/TirednessLevelPicker'
 import { AdjustmentChangesList } from '@/components/workout/AdjustmentChangesList'
 import type { ChangesBase, TirednessFlowMode, TirednessFlowStep } from '@/hooks/useTirednessFlow'
+
+/** Acima do NavBar (`z-50`). */
+export const TIREDNESS_DIALOG_Z_INDEX = 60
 
 export interface TirednessDialogProps {
   open: boolean
@@ -123,14 +127,16 @@ export function TirednessDialog(props: TirednessDialogProps) {
     )
   }
 
-  return (
+  // Portal em document.body + camada própria acima do NavBar (fixed, z-50), para
+  // que o menu inferior nunca cubra os botões do diálogo (FR-017).
+  return createPortal(
     <div
       data-testid="tiredness-dialog-backdrop"
       onClick={saving ? undefined : dismiss}
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 50,
+        zIndex: TIREDNESS_DIALOG_Z_INDEX,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
@@ -146,7 +152,7 @@ export function TirednessDialog(props: TirednessDialogProps) {
           display: 'flex',
           flexDirection: 'column',
           gap: 16,
-          padding: '24px 20px 28px',
+          padding: '24px 20px calc(28px + env(safe-area-inset-bottom, 0px))',
           background: 'var(--bg)',
           border: '1px solid var(--hairline-2)',
           borderBottom: 'none',
@@ -158,6 +164,7 @@ export function TirednessDialog(props: TirednessDialogProps) {
         {body}
         {error && <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--danger, #e5484d)' }}>{error}</p>}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
