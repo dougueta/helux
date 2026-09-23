@@ -19,7 +19,7 @@ import { getWeekLabel, computeWeekDelta } from '@/lib/weekly-volume'
 // ---------------------------------------------------------------------------
 
 function Skeleton({ h = 96 }: { h?: number }) {
-  return <SkeletonBlock height={h} style={{ border: '1px solid var(--hairline)' }} />
+  return <SkeletonBlock h={h} style={{ border: '1px solid var(--hairline)' }} />
 }
 
 function SectionHead({ title }: { title: string }) {

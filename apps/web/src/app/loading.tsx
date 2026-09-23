@@ -9,9 +9,9 @@ export default function Loading() {
       aria-busy="true"
       style={{ ...pageContainer, paddingTop: 24, paddingBottom: 96, display: 'flex', flexDirection: 'column', gap: 16 }}
     >
-      <Skeleton width={192} height={24} radius="var(--r-sm)" />
-      <Skeleton height={192} style={cardBlock} />
-      <Skeleton height={48} style={cardBlock} />
+      <Skeleton w={192} h={24} r="var(--r-sm)" />
+      <Skeleton h={192} style={cardBlock} />
+      <Skeleton h={48} style={cardBlock} />
     </div>
   )
 }

@@ -130,6 +130,8 @@ button{font:inherit;color:inherit}
 .hx-set-no{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text-dim)}
 .hx-set-prev{font-size:13px;color:var(--text-faint);font-family:var(--mono)}
 .hx-set-val{font-family:var(--mono);font-size:17px;font-weight:600;letter-spacing:-.02em}
+button.hx-set-val{border:0;background:none;padding:0;cursor:pointer;color:var(--text);text-align:right}
+.hx-set-val:focus-visible{outline:none;box-shadow:var(--focus);border-radius:var(--r-xs)}
 .hx-set-val span{color:var(--text-dim);font-weight:500;font-size:13px}
 .hx-set.is-done .hx-set-no{color:var(--accent)}
 .hx-set.is-upcoming .hx-set-val{color:var(--text-dim)}

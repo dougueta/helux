@@ -34,7 +34,7 @@ export default function SessionDetailPage() {
       <Shell>
         <div aria-busy="true" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} height={64} radius="var(--r-sm)" style={{ border: '1px solid var(--hairline)' }} />
+            <Skeleton key={i} h={64} r="var(--r-sm)" style={{ border: '1px solid var(--hairline)' }} />
           ))}
         </div>
       </Shell>

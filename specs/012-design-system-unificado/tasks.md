@@ -50,19 +50,19 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 
   Atualizar os casos existentes, inclusive o texto real do Agachamento: espera-se o primeiro item com `gene {COL1A1, C,C}` e sem "ATENÇÃO".
 - [X] T035 RED: reescrever `src/__tests__/design-system-guard.test.ts` para o guarda v2 (research V3), com classes validadas contra os seletores de `app/helux-v2.css`, `var()` checado contra os dois `:root`, cores literais (hex, `rgb`, `rgba`) e `--accent-glow`. Confirmar que ele falha e listar o trabalho restante. O guarda só fica verde na T061.
-- [ ] T036 [P] RED→GREEN: `ui/icons.tsx` com os paths do objeto `IC` de `v2-core.jsx` e `HelixMark` v2, mantendo os nomes de ícone usados hoje. Testes em `src/__tests__/components/ui/icons.test.tsx`.
-- [ ] T037 [P] RED→GREEN: `ui/Button.tsx` (`Button` e `IconButton`), conforme o contrato.
-- [ ] T038 [P] RED→GREEN: `ui/Tag.tsx` (`Tag` e `GeneTag`), conforme o contrato.
-- [ ] T039 [P] RED→GREEN: `ui/Helix.tsx` e `ui/Fit.tsx`, conforme o contrato e research V6. O modo `sequential` desliga em movimento reduzido, via `matchMedia`.
-- [ ] T040 [P] RED→GREEN: `ui/Segmented.tsx`, com os modos grupo e abas, conforme o contrato.
-- [ ] T041 [P] RED→GREEN: `ui/Stepper.tsx` e `ui/Field.tsx`, conforme o contrato.
-- [ ] T042 [P] RED→GREEN: `ui/Check.tsx`, `ui/SetRow.tsx` e `ui/CurrentSet.tsx`, conforme o contrato.
-- [ ] T043 [P] RED→GREEN: `ui/WorkoutProgress.tsx`, `ui/CycleProgress.tsx` e `ui/Ring.tsx` (v2), conforme o contrato.
-- [ ] T044 [P] RED→GREEN: `ui/Tips.tsx`, que substitui `workout/ExecutionTips`, e `ui/Steps.tsx`, conforme o contrato.
-- [ ] T045 [P] RED→GREEN: `ui/ScreenHeader.tsx` e `ui/SectionHeader.tsx`.
-- [ ] T046 [P] RED→GREEN: `ui/Sheet.tsx`, `ui/Dialog.tsx` e `ui/Toast.tsx`, com portal, foco, Esc e scrim, conforme o contrato.
-- [ ] T047 [P] RED→GREEN: `ui/Banner.tsx`, `ui/Bars.tsx`, `ui/HistoryRow.tsx`, `ui/PRRow.tsx` e `ui/Skeleton.tsx` (v2, `hx-sk`), conforme o contrato.
-- [ ] T048 RED→GREEN: `components/layout/NavBar.tsx` v2 (`.hx-nav`, `aria-current`, rotas ocultas, research V8), com testes em `src/__tests__/components/layout/NavBar.test.tsx`.
+- [X] T036 [P] RED→GREEN: `ui/icons.tsx` com os paths do objeto `IC` de `v2-core.jsx` e `HelixMark` v2, mantendo os nomes de ícone usados hoje. Testes em `src/__tests__/components/ui/icons.test.tsx`.
+- [X] T037 [P] RED→GREEN: `ui/Button.tsx` (`Button` e `IconButton`), conforme o contrato.
+- [X] T038 [P] RED→GREEN: `ui/Tag.tsx` (`Tag` e `GeneTag`), conforme o contrato.
+- [X] T039 [P] RED→GREEN: `ui/Helix.tsx` e `ui/Fit.tsx`, conforme o contrato e research V6. O modo `sequential` desliga em movimento reduzido, via `matchMedia`.
+- [X] T040 [P] RED→GREEN: `ui/Segmented.tsx`, com os modos grupo e abas, conforme o contrato.
+- [X] T041 [P] RED→GREEN: `ui/Stepper.tsx` e `ui/Field.tsx`, conforme o contrato.
+- [X] T042 [P] RED→GREEN: `ui/Check.tsx`, `ui/SetRow.tsx` e `ui/CurrentSet.tsx`, conforme o contrato.
+- [X] T043 [P] RED→GREEN: `ui/WorkoutProgress.tsx`, `ui/CycleProgress.tsx` e `ui/Ring.tsx` (v2), conforme o contrato.
+- [X] T044 [P] RED→GREEN: `ui/Tips.tsx`, que substitui `workout/ExecutionTips`, e `ui/Steps.tsx`, conforme o contrato.
+- [X] T045 [P] RED→GREEN: `ui/ScreenHeader.tsx` e `ui/SectionHeader.tsx`.
+- [X] T046 [P] RED→GREEN: `ui/Sheet.tsx`, `ui/Dialog.tsx` e `ui/Toast.tsx`, com portal, foco, Esc e scrim, conforme o contrato.
+- [X] T047 [P] RED→GREEN: `ui/Banner.tsx`, `ui/Bars.tsx`, `ui/HistoryRow.tsx`, `ui/PRRow.tsx` e `ui/Skeleton.tsx` (v2, `hx-sk`), conforme o contrato.
+- [X] T048 RED→GREEN: `components/layout/NavBar.tsx` v2 (`.hx-nav`, `aria-current`, rotas ocultas, research V8), com testes em `src/__tests__/components/layout/NavBar.test.tsx`.
 
 **Checkpoint**: folha v2, helpers e todos os componentes de `ui/` prontos e testados. O guarda está RED, listando o que falta migrar.
 

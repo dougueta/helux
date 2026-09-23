@@ -249,7 +249,7 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
           <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
             {recovery ? (
               <>
-                <Ring value={score} size={56} sw={5}>
+                <Ring value={(score) / 100} size={56} stroke={5}>
                   <span style={{ fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--accent)' }}>
                     {score}
                   </span>

@@ -41,7 +41,7 @@ export function DnaClient({ profile }: DnaClientProps) {
           </div>
           {score !== null && (
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-              <Ring value={score} size={108} sw={9}>
+              <Ring value={(score) / 100} size={108} stroke={9}>
                 <div style={{ fontSize: 32, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--accent)' }}>{score}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>índice</div>
               </Ring>

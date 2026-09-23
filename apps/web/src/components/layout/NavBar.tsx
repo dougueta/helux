@@ -2,66 +2,34 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Icon, type IconName } from '@/components/ui/icons'
 
-const ICONS: Record<string, string> = {
-  home:     'M4 11.5 12 4l8 7.5M6 10v9h12v-9',
-  dumbbell: 'M6.5 9v6M9.5 7.5v9M14.5 7.5v9M17.5 9v6M9.5 12h5M4.5 11v2M19.5 11v2',
-  ruler:    'M21 6H3M21 12H3M21 18H3M7 6v12M12 6v4M17 6v8',
-  chart:    'M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-8',
-  play:     'M7 4.5v15l13-7.5z',
-  flame:    'M12 3c1 4 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 1-2-1-4-1-8z',
-  chevron:  'M9 6l6 6-6 6',
-  dna:      'M8 3c0 5 8 7 8 12s-8 6-8 9M16 3c0 5-8 7-8 12s8 6 8 9M8.5 7h7M7.5 12h9M8.5 17h7',
-}
-
-function Icon({ name, size = 22, stroke = 'currentColor', sw = 1.9 }: { name: keyof typeof ICONS; size?: number; stroke?: string; sw?: number }) {
-  const solid = name === 'play'
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24"
-      fill={solid ? stroke : 'none'} stroke={solid ? 'none' : stroke}
-      strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d={ICONS[name]} />
-    </svg>
-  )
-}
-
-const tabs = [
-  { href: '/', label: 'Hoje', icon: 'home' as const },
-  { href: '/treinos', label: 'Treinos', icon: 'dumbbell' as const },
-  { href: '/checkin', label: 'Check-in', icon: 'ruler' as const },
-  { href: '/recovery', label: 'Progresso', icon: 'chart' as const },
+const TABS: { href: string; label: string; icon: IconName; match: string[] }[] = [
+  { href: '/', label: 'Hoje', icon: 'home', match: [] },
+  { href: '/treinos', label: 'Treinos', icon: 'dumbbell', match: ['/treinos'] },
+  { href: '/checkin', label: 'Check-in', icon: 'checkin', match: ['/checkin'] },
+  // Histórico faz parte de Progresso na v2 (research V9).
+  { href: '/recovery', label: 'Progresso', icon: 'chart', match: ['/recovery', '/history'] },
 ]
 
+function isActive(tab: (typeof TABS)[number], pathname: string) {
+  if (tab.href === '/') return pathname === '/'
+  return tab.match.some(m => pathname === m || pathname.startsWith(`${m}/`))
+}
+
+/** Menu inferior da v2 (`.hx-nav`, research V8). Oculto no login, auth e treino ativo/conclusão. */
 export function NavBar() {
   const pathname = usePathname()
   if (pathname === '/login' || pathname.startsWith('/auth') || pathname === '/workout') return null
 
   return (
-    <nav style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0,
-      // zIndex 50: o diálogo de cansaço (spec 011) usa 60 e depende de ficar acima do menu
-      zIndex: 50,
-      background: 'rgba(22,25,22,0.92)', backdropFilter: 'blur(12px)', borderTop: '1px solid var(--hairline)',
-    }}>
-      <div style={{ display: 'flex', maxWidth: 512, margin: '0 auto', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-        {tabs.map(tab => {
-          const isActive = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href)
-          return (
-            <Link key={tab.href} href={tab.href}
-              style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                gap: 4, padding: '12px 0', minHeight: 56,
-                transition: 'color 150ms cubic-bezier(0.4, 0, 0.2, 1)',
-                color: isActive ? 'var(--accent)' : 'var(--text-faint)',
-              }}>
-              <Icon name={tab.icon} size={22} stroke="currentColor" />
-              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', fontFamily: 'var(--font-space-grotesk)' }}>
-                {tab.label}
-              </span>
-            </Link>
-          )
-        })}
-      </div>
+    <nav className="hx-nav" aria-label="principal">
+      {TABS.map(tab => (
+        <Link key={tab.href} href={tab.href} aria-current={isActive(tab, pathname) ? 'page' : undefined}>
+          <Icon name={tab.icon} size={22} />
+          {tab.label}
+        </Link>
+      ))}
     </nav>
   )
 }

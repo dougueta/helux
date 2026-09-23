@@ -71,6 +71,34 @@ function stringLiterals(code: string): string[] {
   return out
 }
 
+/** Valor de cada `className=` da linha: `"..."` ou a expressão `{...}` balanceada. */
+function classNameValues(line: string): string[] {
+  const out: string[] = []
+  let from = 0
+  for (;;) {
+    const at = line.indexOf('className=', from)
+    if (at < 0) break
+    let i = at + 'className='.length
+    if (line[i] === '"' || line[i] === "'") {
+      const end = line.indexOf(line[i], i + 1)
+      out.push(line.slice(i, end < 0 ? undefined : end + 1))
+      from = end < 0 ? line.length : end + 1
+    } else if (line[i] === '{') {
+      let depth = 0
+      const start = i
+      for (; i < line.length; i++) {
+        if (line[i] === '{') depth++
+        else if (line[i] === '}' && --depth === 0) break
+      }
+      out.push(line.slice(start, i + 1))
+      from = i + 1
+    } else {
+      from = i
+    }
+  }
+  return out
+}
+
 const rel = (file: string) => path.relative(SRC, file).split(path.sep).join('/')
 
 function scan() {
@@ -88,9 +116,8 @@ function scan() {
       const where = `${name}:${i + 1}`
 
       // 1a. classes em className (string, template ou expressão na mesma linha)
-      const cn = line.indexOf('className=')
-      if (cn >= 0) {
-        for (const lit of stringLiterals(line.slice(cn))) {
+      for (const expr of classNameValues(line)) {
+        for (const lit of stringLiterals(expr)) {
           for (const token of lit.split(/\s+/).filter(Boolean)) {
             if (!classes.has(token)) unknownClasses.push(`${where} ${token}`)
           }

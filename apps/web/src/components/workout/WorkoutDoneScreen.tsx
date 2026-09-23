@@ -94,7 +94,7 @@ export function WorkoutDoneScreen({
           pointerEvents: 'none',
         }}
       />
-      <Ring value={status === 'saved' ? 100 : status === 'saving' ? 60 : 0} size={120} sw={8}>
+      <Ring value={(status === 'saved' ? 100 : status === 'saving' ? 60 : 0) / 100} size={120} stroke={8}>
         {status === 'saved' && <Icon name="check" size={48} stroke="var(--accent)" sw={2.4} />}
         {status === 'error' && <Icon name="close" size={44} stroke="var(--warn)" sw={2.4} />}
       </Ring>
