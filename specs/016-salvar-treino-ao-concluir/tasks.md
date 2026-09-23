@@ -65,7 +65,7 @@ Nenhuma tarefa: sem dependências novas nem estrutura nova (diretório `apps/web
 
 - [x] T011 Rodar `pnpm --filter @helux/web test` e `pnpm typecheck` na raiz; tudo verde (incluindo `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts` e `FinishWorkoutConfirmDialog.test.tsx` inalterados)
 - [x] T012 Registrar a resolução do TD-007 em `specs/016-salvar-treino-ao-concluir/research.md` (nota de fechamento) — sem tocar arquivos de memória do usuário
-- [ ] T013 Verificação manual seguindo `specs/016-salvar-treino-ao-concluir/quickstart.md` (feita pelo agente principal com o app rodando)
+- [X] T013 Verificação manual seguindo `specs/016-salvar-treino-ao-concluir/quickstart.md` (feita pelo agente principal com o app rodando) — feita em 2026-09-22 (branch de teste 011+016, Supabase real): passos 1, 2, 5 e 6 ok (salvou ao finalizar, um único POST 201, sessão no histórico sem tocar "Voltar ao início", erro com "Tentar novamente"/"Voltar ao treino" e retry com a API fora do ar, variante da 010 registrada); passo 3 só no caminho de confirmar; passo 4 coberto pelo teste da página
 
 ---
 
