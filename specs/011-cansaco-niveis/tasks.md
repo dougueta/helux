@@ -71,6 +71,14 @@
 - [X] T035 GREEN: ajustar `loadFromStorage` em `apps/web/src/hooks/useWorkoutPlan.ts`
 - [X] T036 Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test`, `pnpm typecheck` — tudo verde
 
+## Phase 9: Correções do code-review do PR #7 (2026-09-22)
+
+- [ ] T037 [P] RED: `apps/api/src/__tests__/dockerfile.test.ts` — para toda dependência `@helux/*` (`workspace:*`) da API, inclusive transitivas, `apps/api/Dockerfile` tem `COPY packages/<nome>/package.json` e `COPY packages/<nome>/` (FR-020)
+- [ ] T038 GREEN: adicionar as linhas `COPY` de `packages/workouts` em `apps/api/Dockerfile`; verificação extra com `docker build -f apps/api/Dockerfile .`
+- [ ] T039 [P] RED: `TirednessDialog.test.tsx` — botões "Manter o relógio"/"Sim, ajustar" desabilitados durante `saving`; `useTirednessFlow.test.ts` — dois `confirmConflict` seguidos no modo início (sem mudanças a mostrar) resultam em um único PUT e um único `onStart` (FR-019)
+- [ ] T040 GREEN: desabilitar botões da etapa `conflict` durante `saving` em `apps/web/src/components/workout/TirednessDialog.tsx` e trava de reentrada (`useRef`) na gravação em `apps/web/src/hooks/useTirednessFlow.ts`
+- [ ] T041 Rodar `pnpm --filter @helux/web test`, `pnpm --filter @helux/api test`, `pnpm typecheck` — tudo verde
+
 ## Dependencies
 
 - Setup → Foundational → US1 → US2 → US3/US4. US3 e US4 dependem do hook/diálogo de US1/US2 (mesmos arquivos), então são sequenciais entre si.

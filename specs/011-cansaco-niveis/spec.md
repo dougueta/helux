@@ -91,6 +91,7 @@ Quando o treino do dia está ajustado (pelo relógio ou pelo nível manual), o u
 - **Sinal legado da spec 008** ("muito cansado" registrado antes desta feature): é tratado como "exausto".
 - **Gravar o nível a partir do navegador** (achado na verificação manual, 2026-09-22): o app web chama a API a partir de outra origem; a gravação do nível precisa ser aceita pelo navegador tanto na Home quanto no fluxo "Iniciar treino" — se a gravação for bloqueada, o usuário não consegue nem iniciar o treino (FR-016).
 - **Diálogo sobre o menu inferior** (achado na verificação manual): a pergunta, a confirmação de discordância e o resumo de mudanças aparecem na parte de baixo da tela, onde fica o menu de navegação da Home; os botões de ação do diálogo NÃO podem ficar cobertos pelo menu (FR-017).
+- **Toque duplo durante a gravação** (achado no code-review do PR #7): enquanto o nível está sendo salvo, nenhum botão do diálogo (pergunta, discordância ou resumo) pode disparar uma segunda gravação nem iniciar o treino duas vezes (FR-019).
 - **Plano guardado pela versão anterior no mesmo dia** (achado na verificação manual): um plano salvo localmente antes desta feature não traz a avaliação de cansaço nem o treino planejado; ele deve ser descartado e buscado de novo, sem esperar a virada do dia (FR-018).
 
 ## Requirements *(mandatory)*
@@ -115,6 +116,8 @@ Quando o treino do dia está ajustado (pelo relógio ou pelo nível manual), o u
 - **FR-016**: A gravação do nível de cansaço DEVE funcionar a partir do app web no navegador (inclusive a verificação prévia de permissão que o navegador faz para chamadas entre origens).
 - **FR-017**: O diálogo de cansaço (pergunta, discordância, resumo) DEVE ficar acima de qualquer elemento fixo da tela, em especial o menu inferior, com todos os botões visíveis e clicáveis.
 - **FR-018**: Um plano guardado localmente que não traga a avaliação de cansaço do dia DEVE ser descartado e buscado de novo.
+- **FR-019**: Cada confirmação do usuário DEVE resultar em no máximo uma gravação do nível e, no fluxo de início, em no máximo um início de treino; as ações do diálogo DEVEM ficar indisponíveis enquanto a gravação está em andamento.
+- **FR-020**: A API publicada DEVE incluir todos os pacotes compartilhados de que passa a depender (nesta feature, o pacote com as regras de cansaço), para que o deploy não quebre.
 
 ### Key Entities
 
