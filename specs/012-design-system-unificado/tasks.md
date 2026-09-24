@@ -173,7 +173,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
   - `src/components/layout/Shell.tsx`.
 
   Corrigir o espaço superior duplicado (48 + 48) anotado nos achados da Parte 1, usando o ritmo de espaçamento da v2.
-- [ ] T061 Remover os componentes antigos sem uso (`ui/Card`, `ui/Chip`, `ui/Label`, `ui/MatchBadge`, `ui/MiniStep`, `ui/layout.ts`, `workout/ExecutionTips` e os que o `tsc` apontar sem import) e os tokens legados de `globals.css` (`--r-card`, `--accent-glow`, `--demo-bg-*`), junto com os testes dos componentes removidos. O guarda v2 (T035) precisa ficar **verde**.
+- [X] T061 Remover os componentes antigos sem uso (`ui/Card`, `ui/Chip`, `ui/Label`, `ui/MatchBadge`, `ui/MiniStep`, `ui/layout.ts`, `workout/ExecutionTips` e os que o `tsc` apontar sem import) e os tokens legados de `globals.css` (`--r-card`, `--accent-glow`, `--demo-bg-*`), junto com os testes dos componentes removidos. O guarda v2 (T035) precisa ficar **verde**.
 
 ---
 

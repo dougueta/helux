@@ -96,17 +96,7 @@ img, video { max-width: 100%; height: auto; }
 
 [hidden]:where(:not([hidden='until-found'])) { display: none; }
 
-:root {
-  /* Tokens do sistema: ver app/helux-v2.css (research V1/V2). */
-  /* legado: remover na T061 */
-  --accent-glow: rgba(200,250,75,0.30);
-  /* legado: remover na T061 */
-  --demo-bg-1: #14180f;
-  --demo-bg-2: #0a0d09;
-  --demo-bg-3: #070906;
-  /* legado: remover na T061 */
-  --r-card: 20px;
-}
+/* Tokens do sistema: só no :root de app/helux-v2.css (research V1/V2). */
 
 body {
   background-color: var(--bg);
