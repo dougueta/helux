@@ -33,14 +33,14 @@ describe('MuscleMap', () => {
     expect(screen.getByText('Peitoral')).toBeInTheDocument()
     expect(screen.getByText('Deltoide')).toBeInTheDocument()
     expect(screen.getByText('Tríceps')).toBeInTheDocument()
-    expect(screen.getAllByText('primário')).toHaveLength(1)
-    expect(screen.getAllByText('secundário')).toHaveLength(2)
+    expect(screen.getAllByText('Primário')).toHaveLength(1)
+    expect(screen.getAllByText('Secundário')).toHaveLength(2)
     expect(screen.queryByText('Quadríceps')).not.toBeInTheDocument()
   })
 
   it('renders with no primary/secondary given (all regions neutral, empty legend)', () => {
     const { container } = render(<MuscleMap />)
     expect(container.querySelectorAll('[data-muscle]').length).toBeGreaterThan(0)
-    expect(screen.queryByText('primário')).not.toBeInTheDocument()
+    expect(screen.queryByText('Primário')).not.toBeInTheDocument()
   })
 })

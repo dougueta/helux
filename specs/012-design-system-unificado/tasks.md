@@ -72,7 +72,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 
 **Independent Test**: `quickstart.md` passo 1.
 
-- [ ] T049 [US2] Reescrever a apresentação de `src/app/workout/page.tsx` com os componentes v2 (FR-011, FR-012, FR-013 e research V5):
+- [X] T049 [US2] Reescrever a apresentação de `src/app/workout/page.tsx` com os componentes v2 (FR-011, FR-012, FR-013 e research V5):
   - `ScreenHeader` com encerrar, nome, "N/total séries" e timer;
   - `WorkoutProgress`, cujo `onPick` chama `setExercise`;
   - `Tag` e `Fit`;
@@ -85,7 +85,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
   - rodapé `.hx-dock` / `.hx-cta-dock` com o bloco de descanso (`Ring`, tempo, "+15s", "Pular", `role="timer"`) e o botão "Próximo exercício"/"Finalizar treino", principal ou secundário conforme o descanso.
 
   Manter `useActiveWorkout`, `useFinishWorkout` e o `FinishWorkoutConfirmDialog` (spec 009, migrado para `ui/Dialog` na T052). Rodar `src/__tests__/app/workout-page.test.tsx`: ajustar só os seletores que o desenho mudou de propósito e registrar no commit.
-- [ ] T050 [US2] Reescrever `src/components/workout/ExerciseSheet.tsx` como conteúdo de `ui/Sheet` (FR-015, research V5):
+- [X] T050 [US2] Reescrever `src/components/workout/ExerciseSheet.tsx` como conteúdo de `ui/Sheet` (FR-015, research V5):
   - palco `.hx-stage` com `ExerciseDemo`, cadência "2·0·1" quando houver `tempo`, pausar/reproduzir e "Repetir";
   - `.t-heading` e `Fit`;
   - etiquetas;
@@ -96,8 +96,8 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
   - rodapé "Fechar".
 
   Preservar a regra da spec 010. Atualizar `src/__tests__/components/workout/ExerciseSheet.test.tsx` onde o desenho mudou o texto ou o papel.
-- [ ] T051 [P] [US2] `src/components/workout/ExerciseDemo.tsx`: ao desenhar, usar os tokens `--stage` e `--stage-grid` (sem `--demo-bg-*`), a cor `--accent` só no implemento, e parar no meio do movimento em movimento reduzido (FR-008). Manter as animações por padrão de movimento.
-- [ ] T052 [P] [US2] Migrar `src/components/workout/FinishWorkoutConfirmDialog.tsx` para `ui/Dialog`, com ações empilhadas (destrutiva em cima, "Continuar treinando" ghost), preservando o texto e o comportamento da spec 009 e os testes existentes.
+- [X] T051 [P] [US2] `src/components/workout/ExerciseDemo.tsx`: ao desenhar, usar os tokens `--stage` e `--stage-grid` (sem `--demo-bg-*`), a cor `--accent` só no implemento, e parar no meio do movimento em movimento reduzido (FR-008). Manter as animações por padrão de movimento.
+- [X] T052 [P] [US2] Migrar `src/components/workout/FinishWorkoutConfirmDialog.tsx` para `ui/Dialog`, com ações empilhadas (destrutiva em cima, "Continuar treinando" ghost), preservando o texto e o comportamento da spec 009 e os testes existentes.
 
 **Checkpoint**: treino ativo e folha no v2; fluxos das specs 009, 010 e 016 intactos.
 

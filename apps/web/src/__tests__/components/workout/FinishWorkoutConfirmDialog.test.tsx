@@ -34,13 +34,21 @@ describe('FinishWorkoutConfirmDialog', () => {
     expect(onConfirm).toHaveBeenCalled()
   })
 
-  it('calls onCancel when the user cancels', async () => {
+  it('calls onCancel when the user chooses to keep training', async () => {
     const user = userEvent.setup()
     const onCancel = vi.fn()
     render(
       <FinishWorkoutConfirmDialog skippedNames={['Supino']} onConfirm={vi.fn()} onCancel={onCancel} />
     )
-    await user.click(screen.getByText('Cancelar'))
+    await user.click(screen.getByText('Continuar treinando'))
     expect(onCancel).toHaveBeenCalled()
+  })
+
+  it('is a modal alert dialog with the destructive action above "Continuar treinando"', () => {
+    render(<FinishWorkoutConfirmDialog skippedNames={['Supino']} onConfirm={vi.fn()} onCancel={vi.fn()} />)
+    const dialog = screen.getByRole('alertdialog')
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    const buttons = screen.getAllByRole('button').map(b => b.textContent)
+    expect(buttons).toEqual(['Finalizar mesmo assim', 'Continuar treinando'])
   })
 })

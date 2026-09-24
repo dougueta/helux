@@ -222,3 +222,17 @@ A Parte 1 (R1–R7 e achados) documenta a versão anterior da spec. Ela continua
 ## V11 — Verificação visual
 
 - **Decisão**: comparar lado a lado as 6 telas desenhadas com `design_handoff_helux_v2/Helux Design System v2.html` aberto no navegador, que funciona offline com React e Babel. Largura de 375 px no app, pelo DevTools ou por iframe (Parte 1). Os screenshots da Parte 1 (`baseline/`) passam a ser só histórico: a v2 muda intencionalmente as telas.
+
+## Achados da implementação (Parte 2)
+
+Conflitos entre o handoff e o comportamento existente, e como foram resolvidos (o comportamento das specs 009/010/011/016 vence).
+
+1. **Timer do cabeçalho do treino é decorativo.** O protótipo tem um `IconBtn` de cronômetro sem ação definida; antes ele também era só um ícone. Para não criar interação nova (FR-025), ele fica como ícone `aria-hidden` no lugar do botão.
+2. **"Voltar à recomendada" continua no card.** Com uma variante alternativa ativa (spec 010), a segunda linha do card mostra "Variante ativa: {equipamento}" e o botão ghost "Voltar à recomendada", no lugar do atalho "Variante com fit maior". Sem variante alternativa, vale o atalho do handoff.
+3. **Folha, aba Execução, mantém as dicas.** O handoff mostra só passos e músculos. Como a folha reflete a variante ativa (spec 010) e, com uma alternativa, os passos do plano somem, a justificativa da variante (ou as observações do plano) aparece em `Tips` abaixo dos passos. Sem isso, a aba ficaria só com os músculos.
+4. **"Trocar" aplica e fecha.** O fluxo antigo (selecionar para pré-visualizar e depois "Usar esta variante") dá lugar ao botão "Trocar" do handoff, que aplica a variante e fecha a folha, como o "Usar esta variante" fazia. A etiqueta "Recomendado" continua na variante recomendada (dado real); "fit maior" e o texto "por quê" saem da lista, porque a versão do botão (secundária ou ghost) já comunica o fit.
+5. **Sem botão "exercício anterior" no rodapé.** O handoff só tem o botão principal; voltar a um exercício é pelos grupos da barra de progresso, que são navegáveis (FR-025 permite).
+6. **Diálogo de finalizar com pulados:** "Cancelar" virou "Continuar treinando" (ghost), abaixo de "Finalizar mesmo assim" (danger), conforme a T052. Os testes foram ajustados.
+7. **Guarda aceita nomes de `@keyframes`.** A regra 1b (todo literal `hx-…` precisa existir na folha) acusava `animation: 'hx-up …'`. Os nomes de `@keyframes` da folha passam a valer nessa regra, não em `className`.
+8. **Movimento reduzido na demonstração.** Com `prefers-reduced-motion`, o `ExerciseDemo` não inicia o laço de animação e fica na pose do meio (fase 0,5). A linha de amplitude passou de `--accent-line` para `--hairline-3`, deixando o acento só no implemento.
+

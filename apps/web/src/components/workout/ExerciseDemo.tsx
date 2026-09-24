@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { prefersReducedMotion } from '@/lib/motion'
 
 type MotionView = 'front' | 'side'
 
@@ -117,6 +118,11 @@ export function ExerciseDemo({
 
   useEffect(() => {
     if (!playing) return
+    // FR-008: em movimento reduzido, a demonstração fica parada no meio do movimento.
+    if (prefersReducedMotion()) {
+      setPh(0.5)
+      return
+    }
     let raf: number
     const start = performance.now()
     const loop = (now: number) => {
@@ -137,7 +143,7 @@ export function ExerciseDemo({
   const jointFill = 'var(--surface-3)'
 
   const romFront = (
-    <g stroke="var(--accent-line)" strokeWidth="2" strokeDasharray="2 5" fill="none" opacity="0.7">
+    <g stroke="var(--hairline-3)" strokeWidth="2" strokeDasharray="2 5" fill="none">
       <line x1={m.start.h[0]} y1={m.start.h[1]} x2={m.end.h[0]} y2={m.end.h[1]} />
       <line x1={220 - m.start.h[0]} y1={m.start.h[1]} x2={220 - m.end.h[0]} y2={m.end.h[1]} />
     </g>
@@ -148,10 +154,9 @@ export function ExerciseDemo({
       y1={m.start.h[1]}
       x2={m.end.h[0]}
       y2={m.end.h[1]}
-      stroke="var(--accent-line)"
+      stroke="var(--hairline-3)"
       strokeWidth="2"
       strokeDasharray="2 5"
-      opacity="0.7"
     />
   )
 
@@ -179,7 +184,7 @@ export function ExerciseDemo({
         </g>
         <circle cx={e[0]} cy={e[1]} r="4.5" fill={jointFill} />
         <circle cx={Le[0]} cy={Le[1]} r="4.5" fill={jointFill} />
-        <Implement view="front" impl={implement} Rh={h} Lh={Lh} Re={e} />
+        <g data-part="implement"><Implement view="front" impl={implement} Rh={h} Lh={Lh} Re={e} /></g>
       </g>
     )
   } else {
@@ -204,7 +209,7 @@ export function ExerciseDemo({
         </g>
         <circle cx={S[0]} cy={S[1]} r="4.5" fill={jointFill} />
         <circle cx={e[0]} cy={e[1]} r="4.5" fill={jointFill} />
-        <Implement view="side" impl={implement} Rh={h} />
+        <g data-part="implement"><Implement view="side" impl={implement} Rh={h} /></g>
       </g>
     )
   }

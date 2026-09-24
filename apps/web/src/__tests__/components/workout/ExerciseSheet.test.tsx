@@ -27,95 +27,122 @@ const EXERCISE: PlannedExercise = {
   ],
 }
 
-describe('ExerciseSheet', () => {
-  it('shows the Execução tab by default with cues and the muscle map', () => {
-    render(<ExerciseSheet exercise={EXERCISE} onApply={vi.fn()} onClose={vi.fn()} />)
-    expect(screen.getByText('Escápulas retraídas e pés firmes no chão')).toBeInTheDocument()
-    expect(screen.getByText('músculos trabalhados', { exact: false })).toBeTruthy
+describe('ExerciseSheet (v2, spec 012 T050)', () => {
+  function renderSheet(props: Partial<Parameters<typeof ExerciseSheet>[0]> = {}) {
+    const onApply = vi.fn()
+    const onClose = vi.fn()
+    render(<ExerciseSheet open exercise={EXERCISE} onApply={onApply} onClose={onClose} {...props} />)
+    return { onApply, onClose }
+  }
+
+  it('is a modal sheet with the Execução tab selected by default, cues as numbered steps and the muscle map', () => {
+    renderSheet()
+    expect(screen.getByRole('dialog', { name: 'Execução do exercício' })).toHaveAttribute('aria-modal', 'true')
+    expect(screen.getByRole('tab', { name: 'Execução' })).toHaveAttribute('aria-selected', 'true')
+    const steps = document.querySelector('ol.hx-steps')!
+    expect(steps).toBeInTheDocument()
+    expect(steps).toHaveTextContent('Escápulas retraídas e pés firmes no chão')
+    expect(screen.getByRole('heading', { name: 'Músculos trabalhados' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Supino reto com barra')
   })
 
-  it('shows the recommended variant\'s match badge and equipment/level chips in the header', () => {
-    render(<ExerciseSheet exercise={EXERCISE} onApply={vi.fn()} onClose={vi.fn()} />)
-    expect(screen.getByText('96')).toBeInTheDocument()
-    expect(screen.getAllByText('Barra').length).toBeGreaterThan(0)
+  it('shows the active variant fit and the muscle/equipment/level tags', () => {
+    renderSheet()
+    expect(screen.getByRole('img', { name: 'fit genético 96 de 100, alto' })).toBeInTheDocument()
+    expect(screen.getByText('Peito')).toBeInTheDocument()
+    expect(screen.getByText('Barra')).toBeInTheDocument()
+    expect(screen.getByText('Avançado')).toBeInTheDocument()
   })
 
-  it('switches to the Variantes tab and lists every variant with its flags', async () => {
+  it('shows the cadence on the stage, with pause/play and "Repetir"', async () => {
     const user = userEvent.setup()
-    render(<ExerciseSheet exercise={EXERCISE} onApply={vi.fn()} onClose={vi.fn()} />)
+    renderSheet()
+    expect(screen.getByText('2·0·1')).toBeInTheDocument()
+    expect(screen.getByText('cadência')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'pausar demonstração' }))
+    expect(screen.getByRole('button', { name: 'reproduzir demonstração' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Repetir' })).toBeInTheDocument()
+  })
 
-    await user.click(screen.getByText('Variantes (3)'))
+  it('marks a cue starting with "Erro comum:" as the amber warning step', () => {
+    renderSheet({ exercise: { ...EXERCISE, cues: ['Pés firmes', 'Erro comum: tirar o quadril do banco'] } })
+    const warn = document.querySelector('ol.hx-steps li.is-warn')!
+    expect(warn).toHaveTextContent('Erro comum: tirar o quadril do banco')
+    expect(document.querySelectorAll('ol.hx-steps li')).toHaveLength(2)
+  })
+
+  it('lists the variants flat, with "Atual" on the active one and "Trocar" on the others', async () => {
+    const user = userEvent.setup()
+    renderSheet()
+    await user.click(screen.getByRole('tab', { name: 'Variantes (3)' }))
 
     expect(screen.getByText('Supino reto com halteres')).toBeInTheDocument()
     expect(screen.getByText('Supino na máquina')).toBeInTheDocument()
-    expect(screen.getByText('Recomendado')).toBeInTheDocument()
-    expect(screen.getByText('fit maior')).toBeInTheDocument()
+    expect(screen.getByText('Atual')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /^Trocar/ })).toHaveLength(2)
   })
 
-  it('selecting a different variant updates the preview header without applying it', async () => {
+  it('"Trocar" is secondary when the variant fits better than the current one, ghost otherwise', async () => {
     const user = userEvent.setup()
-    const onApply = vi.fn()
-    render(<ExerciseSheet exercise={EXERCISE} onApply={onApply} onClose={vi.fn()} />)
+    renderSheet({ currentVariantId: 'e1c' })
+    await user.click(screen.getByRole('tab', { name: 'Variantes (3)' }))
 
-    await user.click(screen.getByText('Variantes (3)'))
-    await user.click(screen.getByText('Supino reto com halteres'))
-
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Supino reto com halteres')
-    expect(onApply).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Trocar para Supino reto com barra' })).toHaveClass('hx-btn--secondary')
+    expect(screen.getByRole('button', { name: 'Trocar para Supino reto com halteres' })).toHaveClass('hx-btn--secondary')
   })
 
-  it('shows "Fechar" (not the apply button) when the selection has not changed', () => {
-    render(<ExerciseSheet exercise={EXERCISE} onApply={vi.fn()} onClose={vi.fn()} />)
-    expect(screen.getByText('Fechar')).toBeInTheDocument()
-    expect(screen.queryByText('Usar esta variante')).not.toBeInTheDocument()
-  })
-
-  it('shows "Usar esta variante" after selecting a different variant, and it applies + closes', async () => {
+  it('"Trocar" applies the variant and closes the sheet', async () => {
     const user = userEvent.setup()
-    const onApply = vi.fn()
-    const onClose = vi.fn()
-    render(<ExerciseSheet exercise={EXERCISE} onApply={onApply} onClose={onClose} />)
+    const { onApply, onClose } = renderSheet()
+    await user.click(screen.getByRole('tab', { name: 'Variantes (3)' }))
+    const trocar = screen.getByRole('button', { name: 'Trocar para Supino na máquina' })
+    expect(trocar).toHaveClass('hx-btn--ghost')
+    await user.click(trocar)
 
-    await user.click(screen.getByText('Variantes (3)'))
-    await user.click(screen.getByText('Supino reto com halteres'))
-    await user.click(screen.getByText('Usar esta variante'))
-
-    expect(onApply).toHaveBeenCalledWith('e1b')
+    expect(onApply).toHaveBeenCalledWith('e1c')
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('clicking the backdrop calls onClose; clicking inside the sheet does not', async () => {
+  it('"Fechar" in the footer closes the sheet', async () => {
     const user = userEvent.setup()
-    const onClose = vi.fn()
-    const { container } = render(<ExerciseSheet exercise={EXERCISE} onApply={vi.fn()} onClose={onClose} />)
+    const { onClose } = renderSheet()
+    await user.click(screen.getByRole('button', { name: 'Fechar' }))
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('clicking the scrim closes; clicking inside the sheet does not', async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderSheet()
 
     await user.click(screen.getByRole('heading', { level: 2 }))
     expect(onClose).not.toHaveBeenCalled()
 
-    const backdrop = container.querySelector('[data-testid="sheet-backdrop"]')!
-    await user.click(backdrop)
+    await user.click(document.querySelector('.hx-scrim')!)
     expect(onClose).toHaveBeenCalled()
   })
 
+  it('renders nothing when closed', () => {
+    render(<ExerciseSheet open={false} exercise={EXERCISE} onApply={vi.fn()} onClose={vi.fn()} />)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
   it('respects an already-active non-recommended currentVariantId', () => {
-    render(<ExerciseSheet exercise={EXERCISE} currentVariantId="e1b" onApply={vi.fn()} onClose={vi.fn()} />)
+    renderSheet({ currentVariantId: 'e1b' })
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Supino reto com halteres')
-    expect(screen.getByText('Fechar')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'fit genético 90 de 100, alto' })).toBeInTheDocument()
   })
 
   it('Execução tab with an alternative variant active shows its genetic reason instead of the planned cues and notes', () => {
-    render(<ExerciseSheet exercise={EXERCISE} currentVariantId="e1b" onApply={vi.fn()} onClose={vi.fn()} />)
+    renderSheet({ currentVariantId: 'e1b' })
     expect(screen.queryByText('Escápulas retraídas e pés firmes no chão')).not.toBeInTheDocument()
     expect(screen.queryByText('Cargas altas — seu forte')).not.toBeInTheDocument()
-    // spec 012 (FR-009/FR-011): a justificativa da variante aparece uma orientação por item
     expect(screen.getByText('Maior amplitude e estabilização')).toBeInTheDocument()
     expect(screen.getByText('corrige assimetrias')).toBeInTheDocument()
     expect(screen.getByText('Músculos trabalhados')).toBeInTheDocument()
   })
 
   it('Execução tab with the recommended variant active keeps the planned cues and notes', () => {
-    render(<ExerciseSheet exercise={EXERCISE} currentVariantId="e1" onApply={vi.fn()} onClose={vi.fn()} />)
+    renderSheet({ currentVariantId: 'e1' })
     expect(screen.getByText('Escápulas retraídas e pés firmes no chão')).toBeInTheDocument()
     expect(screen.getByText('Cargas altas — seu forte')).toBeInTheDocument()
   })

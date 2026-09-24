@@ -7,7 +7,8 @@
  * (fora de `__tests__`):
  *   1. usa em `className` uma classe que não está definida em `helux-v2.css`.
  *      Também vale para qualquer string com prefixo `hx-` no código (classes
- *      montadas em mapas/arrays), o que obriga nomes de classe completos;
+ *      montadas em mapas/arrays), o que obriga nomes de classe completos. Os
+ *      nomes de `@keyframes` da folha também valem ali (ex.: `animation: 'hx-up …'`);
  *   2. usa `var(--x)` sem `--x` declarado num dos `:root` (exceto `--font-*`,
  *      injetadas pelo next/font);
  *   3. usa cor literal (hex, `rgb()`, `rgba()`) fora da camada de tokens;
@@ -61,6 +62,12 @@ function systemClasses(): Set<string> {
   return classes
 }
 
+/** Nomes de animação definidos na folha do sistema (`@keyframes hx-…`). */
+function systemKeyframes(): Set<string> {
+  const css = stripComments(readFileSync(SYSTEM_CSS, 'utf-8'))
+  return new Set([...css.matchAll(/@keyframes\s+([\w-]+)/g)].map(m => m[1]))
+}
+
 /** Conteúdo dos literais de string de um trecho, sem as interpolações `${...}`. */
 function stringLiterals(code: string): string[] {
   const out: string[] = []
@@ -104,6 +111,7 @@ const rel = (file: string) => path.relative(SRC, file).split(path.sep).join('/')
 function scan() {
   const declared = new Set([...rootVars(GLOBALS_CSS), ...rootVars(SYSTEM_CSS)])
   const classes = systemClasses()
+  const keyframes = systemKeyframes()
   const unknownClasses: string[] = []
   const undeclaredVars: string[] = []
   const literalColors: string[] = []
@@ -126,7 +134,7 @@ function scan() {
       // 1b. qualquer literal com prefixo hx- precisa ser uma classe completa
       for (const lit of stringLiterals(line)) {
         for (const token of lit.split(/\s+/).filter(t => t.startsWith('hx-'))) {
-          if (!classes.has(token)) unknownClasses.push(`${where} ${token}`)
+          if (!classes.has(token) && !keyframes.has(token)) unknownClasses.push(`${where} ${token}`)
         }
       }
 
