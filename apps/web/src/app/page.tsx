@@ -14,28 +14,6 @@ async function getLatestPlan(token: string) {
   } catch { return null }
 }
 
-async function getRecovery(token: string) {
-  try {
-    const res = await fetch(`${API}/api/recovery/latest`, {
-      headers: { Authorization: `Bearer ${token}` },
-      next: { revalidate: 60 }
-    })
-    return res.ok ? res.json() : null
-  } catch { return null }
-}
-
-async function getGeneticInsight() {
-  try {
-    const res = await fetch(`${API}/genetic-profile`, { next: { revalidate: 3600 } })
-    if (!res.ok) return null
-    const p = await res.json()
-    const driver = p?.drivers?.[0]
-    const score = typeof p?.score === 'number' ? p.score : undefined
-    if (!driver && score === undefined) return null
-    return { score, title: driver?.title, text: driver?.text }
-  } catch { return null }
-}
-
 async function getLatestCheckins(token: string) {
   try {
     const res = await fetch(`${API}/api/checkins?limit=2`, {
@@ -63,10 +41,8 @@ export default async function HomePage() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) redirect('/login')
 
-  const [plan, recovery, insight, checkinsRaw, analytics] = await Promise.all([
+  const [plan, checkinsRaw, analytics] = await Promise.all([
     getLatestPlan(session.access_token),
-    getRecovery(session.access_token),
-    getGeneticInsight(),
     getLatestCheckins(session.access_token),
     getAnalytics(session.access_token),
   ])
@@ -78,8 +54,6 @@ export default async function HomePage() {
   return (
     <HomeClient
       plan={plan}
-      recovery={recovery}
-      insight={insight}
       firstName={firstName}
       checkins={checkins}
       analytics={analytics}

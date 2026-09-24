@@ -1,87 +1,47 @@
-import Link from 'next/link'
+import type { ReactNode } from 'react'
 import type { BodyCheckin } from '@helux/types'
+import { SectionHeader } from '@/components/ui/SectionHeader'
+import { formatNumber } from '@/lib/format'
 
+/** "2026-07-01" → "jul. 2026". */
 function monthLabel(month: string): string {
-  const [year, m] = month.split('-')
-  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-  return `${months[parseInt(m, 10) - 1]}/${year}`
+  const [year, m] = month.split('-').map(Number)
+  const short = new Date(Date.UTC(year, m - 1, 1)).toLocaleDateString('pt-BR', { month: 'short', timeZone: 'UTC' })
+  return `${short} ${year}`
 }
 
-function fmt(val?: number | null, decimals = 1): string {
-  return val != null ? val.toFixed(decimals) : '—'
-}
-
-function deltaStr(curr?: number | null, prev?: number | null, decimals = 1): string {
-  if (curr == null || prev == null) return ''
-  const d = curr - prev
-  if (Math.abs(d) < 0.05) return ' ='
-  const sign = d > 0 ? '+' : ''
-  return ` ${sign}${d.toFixed(decimals)}`
-}
-
-function DeltaSpan({ curr, prev, lowerIsBetter = false, decimals = 1 }: {
-  curr?: number | null; prev?: number | null; lowerIsBetter?: boolean; decimals?: number
-}) {
-  if (curr == null || prev == null) return null
-  const d = curr - prev
-  const neutral = Math.abs(d) < 0.05
-  const positive = lowerIsBetter ? d < 0 : d > 0
-  const color = neutral ? 'var(--text-faint)' : positive ? 'var(--success)' : 'var(--danger)'
-  return (
-    <span style={{ color, fontSize: 12, marginLeft: 2 }}>
-      {deltaStr(curr, prev, decimals)}
-    </span>
-  )
-}
-
-interface CheckinCardProps {
-  checkins: BodyCheckin[]
-}
-
-export function CheckinCard({ checkins }: CheckinCardProps) {
+/**
+ * "Último check-in" da Home v2 (handoff 5.1): superfície plana, grade 2×2 com
+ * números em mono pt-BR. Campos não preenchidos ficam ocultos (FR-024).
+ */
+export function CheckinCard({ checkins, children }: { checkins: BodyCheckin[]; children?: ReactNode }) {
   if (checkins.length === 0) return null
-
   const curr = checkins[0]
-  const prev = checkins[1]
+
+  const items: [string, number | null | undefined, string, number][] = [
+    ['Peso', curr.weight_kg, 'kg', 1],
+    ['Gordura', curr.body_fat_pct, '%', 1],
+    ['Agachamento', curr.squat_kg, 'kg', 0],
+    ['Supino', curr.bench_kg, 'kg', 0],
+  ]
 
   return (
-    <Link href="/checkin/history" style={{ textDecoration: 'none' }}>
-      <div style={{
-        background: 'var(--surface-1)',
-        border: '1px solid var(--hairline)',
-        borderRadius: 'var(--r-card)',
-        padding: '14px 16px',
-      }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 8 }}>
-          Check-in {monthLabel(curr.month)}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 0', fontSize: 13, color: 'var(--text)' }}>
-          {curr.weight_kg != null && (
-            <span>
-              Peso <strong>{fmt(curr.weight_kg)}kg</strong>
-              <DeltaSpan curr={curr.weight_kg} prev={prev?.weight_kg} lowerIsBetter decimals={1} />
-            </span>
-          )}
-          {curr.body_fat_pct != null && (
-            <span>
-              Gordura <strong>{fmt(curr.body_fat_pct)}%</strong>
-              <DeltaSpan curr={curr.body_fat_pct} prev={prev?.body_fat_pct} lowerIsBetter decimals={1} />
-            </span>
-          )}
-          {curr.squat_kg != null && (
-            <span>
-              Agach. <strong>{fmt(curr.squat_kg, 0)}kg</strong>
-              <DeltaSpan curr={curr.squat_kg} prev={prev?.squat_kg} decimals={0} />
-            </span>
-          )}
-          {curr.bench_kg != null && (
-            <span>
-              Supino <strong>{fmt(curr.bench_kg, 0)}kg</strong>
-              <DeltaSpan curr={curr.bench_kg} prev={prev?.bench_kg} decimals={0} />
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
+    <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
+      <SectionHeader title="Último check-in" aside={monthLabel(curr.month)} />
+      <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '14px 16px', margin: 0 }}>
+        {items
+          .filter(([, v]) => v != null)
+          .map(([label, v, unit, decimals]) => (
+            <div key={label}>
+              <dt className="t-caption">{label}</dt>
+              <dd className="n-md" style={{ margin: '2px 0 0' }}>
+                {formatNumber(v as number, { decimals })}
+                <span className="u">{unit}</span>
+              </dd>
+            </div>
+          ))}
+      </dl>
+      {children && <div style={{ display: 'flex', gap: 8, marginTop: 18, flexWrap: 'wrap' }}>{children}</div>}
+    </section>
   )
 }

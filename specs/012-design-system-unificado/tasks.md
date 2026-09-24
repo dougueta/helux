@@ -107,7 +107,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 
 **Independent Test**: `quickstart.md` passo 3.
 
-- [ ] T053 [US3] Reescrever `src/app/HomeClient.tsx` (FR-017, FR-019):
+- [X] T053 [US3] Reescrever `src/app/HomeClient.tsx` (FR-017, FR-019):
   - topo com `HelixMark`, sequência (ghost com o ícone da chama em `--warn`) e `IconButton` de perfil;
   - `.t-secondary` com a data;
   - `.t-display` "Bom treino, {nome}", sem verde;
@@ -117,8 +117,8 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
   - skeleton na forma final dentro da área de foco.
 
   Estados vazios ("Nenhum plano gerado ainda") no padrão v2, convidando à ação.
-- [ ] T054 [US3] Migrar `src/components/workout/TirednessSelector.tsx` e `TirednessLevelPicker.tsx` para `Segmented` neutro, e `TirednessDialog.tsx` para `ui/Sheet`/`ui/Dialog`, com `AdjustmentChangesList` no visual v2 (FR-018). Preservar todo o comportamento da spec 011; os testes existentes continuam verdes, ajustando só os seletores.
-- [ ] T055 [P] [US3] Migrar `src/app/loading.tsx` para skeletons na forma da Home v2.
+- [X] T054 [US3] Migrar `src/components/workout/TirednessSelector.tsx` e `TirednessLevelPicker.tsx` para `Segmented` neutro, e `TirednessDialog.tsx` para `ui/Sheet`/`ui/Dialog`, com `AdjustmentChangesList` no visual v2 (FR-018). Preservar todo o comportamento da spec 011; os testes existentes continuam verdes, ajustando só os seletores.
+- [X] T055 [P] [US3] Migrar `src/app/loading.tsx` para skeletons na forma da Home v2.
 
 **Checkpoint**: Home e fluxo da spec 011 no v2.
 

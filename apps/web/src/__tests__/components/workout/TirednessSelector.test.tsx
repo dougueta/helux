@@ -74,4 +74,10 @@ describe('TirednessSelector', () => {
     expect(screen.getByRole('button', { name: 'ótimo' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText('Escolhido por você (relógio indica "cansado")')).toBeInTheDocument()
   })
+
+  it('spec 012 FR-018: usa o seletor segmentado neutro da v2', () => {
+    render(<TirednessSelector assessment={assessment({})} changes={[]} onChoose={vi.fn()} />)
+    const group = screen.getByRole('group', { name: 'como você está hoje' })
+    expect(group).toHaveClass('hx-seg')
+  })
 })
