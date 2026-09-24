@@ -2,14 +2,17 @@
 
 import { useProfile } from '@/hooks/useProfile'
 import { ProfileForm } from '@/components/perfil/ProfileForm'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 export function PerfilClient() {
   const { profile, loading, saving, save } = useProfile()
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
-        <p style={{ color: 'var(--text-faint)', fontSize: 14 }}>Carregando…</p>
+      <div aria-busy="true" aria-label="carregando perfil">
+        {[0, 1, 2].map(i => (
+          <Skeleton key={i} h={74} style={{ marginTop: i ? 16 : 28 }} />
+        ))}
       </div>
     )
   }

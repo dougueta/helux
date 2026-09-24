@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProfileForm } from '@/components/perfil/ProfileForm'
 
@@ -26,7 +26,9 @@ describe('ProfileForm', () => {
       />,
     )
     expect(screen.getByLabelText(/objetivo/i)).toHaveValue('Hipertrofia')
-    expect(screen.getByLabelText(/nível de experiência/i)).toHaveValue('avancado')
+    // spec 012 T060: o nível usa o seletor segmentado da v2
+    const level = screen.getByRole('group', { name: /nível de experiência/i })
+    expect(within(level).getByRole('button', { name: 'Avançado' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByLabelText(/tempo treinando/i)).toHaveValue('5 anos')
     expect(screen.getByLabelText(/lesão/i)).toHaveValue('Dor no ombro')
   })
@@ -37,7 +39,7 @@ describe('ProfileForm', () => {
     render(<ProfileForm initial={null} saving={false} onSave={onSave} />)
 
     await user.type(screen.getByLabelText(/objetivo/i), 'Voltar a correr')
-    await user.selectOptions(screen.getByLabelText(/nível de experiência/i), 'intermediario')
+    await user.click(screen.getByRole('button', { name: 'Intermediário' }))
     await user.click(screen.getByRole('button', { name: /salvar/i }))
 
     expect(onSave).toHaveBeenCalledWith(

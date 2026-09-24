@@ -166,7 +166,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 
 ## Phase 8: US7 — Demais telas e fechamento do sistema (P3)
 
-- [ ] T060 [P] [US7] Migrar para os componentes v2 (FR-023):
+- [X] T060 [P] [US7] Migrar para os componentes v2 (FR-023):
   - `src/app/treinos/TreinosClient.tsx`, `src/app/checkin/page.tsx` e `src/components/checkin/CheckinForm.tsx`, com `Field` para os campos numéricos;
   - `CheckinCard.tsx`, `CheckinHistoryTable.tsx` e `src/app/checkin/history/page.tsx`;
   - `src/app/perfil/page.tsx` (e `ProfileForm` se existir), `src/app/login/page.tsx` e `src/components/ErrorBoundary.tsx` (`Banner err` + "Tentar de novo");

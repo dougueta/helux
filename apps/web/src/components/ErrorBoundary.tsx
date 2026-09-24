@@ -1,7 +1,8 @@
 'use client'
 
 import { Component, ReactNode } from 'react'
-import { Card } from '@/components/ui/Card'
+import { Banner } from '@/components/ui/Banner'
+import { Button } from '@/components/ui/Button'
 
 interface Props {
   children: ReactNode
@@ -12,6 +13,7 @@ interface State {
   message: string
 }
 
+/** Tela de erro (FR-023): `Banner err` + "Tentar de novo". */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false, message: '' }
 
@@ -22,20 +24,15 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <Card
-            padding={24}
-            style={{ maxWidth: 384, width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}
-          >
-            <p style={{ color: 'var(--text)', fontWeight: 500 }}>Algo deu errado</p>
-            <p style={{ color: 'var(--text-dim)', fontSize: 14, lineHeight: '20px' }}>{this.state.message}</p>
-            <button
-              onClick={() => this.setState({ hasError: false, message: '' })}
-              style={{ color: 'var(--accent)', fontSize: 14, lineHeight: '20px', textDecoration: 'underline' }}
-            >
-              Tentar novamente
-            </button>
-          </Card>
+        <div className="hx-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Banner kind="err" title="Algo deu errado">
+            {this.state.message}
+          </Banner>
+          <div style={{ marginTop: 16 }}>
+            <Button kind="secondary" block icon="sync" onClick={() => this.setState({ hasError: false, message: '' })}>
+              Tentar de novo
+            </Button>
+          </div>
         </div>
       )
     }

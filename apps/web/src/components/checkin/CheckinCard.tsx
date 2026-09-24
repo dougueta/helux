@@ -1,14 +1,7 @@
 import type { ReactNode } from 'react'
 import type { BodyCheckin } from '@helux/types'
 import { SectionHeader } from '@/components/ui/SectionHeader'
-import { formatNumber } from '@/lib/format'
-
-/** "2026-07-01" → "jul. 2026". */
-function monthLabel(month: string): string {
-  const [year, m] = month.split('-').map(Number)
-  const short = new Date(Date.UTC(year, m - 1, 1)).toLocaleDateString('pt-BR', { month: 'short', timeZone: 'UTC' })
-  return `${short} ${year}`
-}
+import { formatMonthYear, formatNumber } from '@/lib/format'
 
 /**
  * "Último check-in" da Home v2 (handoff 5.1): superfície plana, grade 2×2 com
@@ -27,7 +20,7 @@ export function CheckinCard({ checkins, children }: { checkins: BodyCheckin[]; c
 
   return (
     <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
-      <SectionHeader title="Último check-in" aside={monthLabel(curr.month)} />
+      <SectionHeader title="Último check-in" aside={formatMonthYear(curr.month)} />
       <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '14px 16px', margin: 0 }}>
         {items
           .filter(([, v]) => v != null)

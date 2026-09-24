@@ -42,3 +42,11 @@ describe('formatClock', () => {
     expect(formatClock(0)).toBe('0:00')
   })
 })
+
+describe('formatMonthYear (spec 012 T060)', () => {
+  it('formats a YYYY-MM(-DD) month as "jul. 2026"', async () => {
+    const { formatMonthYear } = await import('@/lib/format')
+    expect(formatMonthYear('2026-07-01')).toBe('jul. 2026')
+    expect(formatMonthYear('2026-05')).toBe('mai. 2026')
+  })
+})

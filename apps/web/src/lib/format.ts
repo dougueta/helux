@@ -35,3 +35,10 @@ export function formatClock(seconds: number): string {
   const s = Math.max(0, Math.round(seconds))
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
+
+/** Mês de check-in: "2026-07-01" ou "2026-07" → "jul. 2026". */
+export function formatMonthYear(month: string): string {
+  const [year, m] = month.split('-').map(Number)
+  const short = new Date(Date.UTC(year, m - 1, 1)).toLocaleDateString('pt-BR', { month: 'short', timeZone: 'UTC' })
+  return `${short} ${year}`
+}

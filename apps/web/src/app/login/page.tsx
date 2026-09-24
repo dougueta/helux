@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from '@/components/ui/Button'
+import { HelixMark } from '@/components/ui/icons'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 export default function LoginPage() {
@@ -15,26 +17,25 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
-      <div style={{ marginBottom: 48, textAlign: 'center' }}>
-        <h1 style={{ fontFamily: 'var(--font-jetbrains-mono), monospace', fontSize: 36, lineHeight: '40px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '-0.025em' }}>
-          HELUX
-        </h1>
-        <p style={{ marginTop: 8, color: 'var(--text-dim)', fontSize: 14, lineHeight: '20px' }}>
-          Seu treino personalizado
-        </p>
+    <main
+      className="hx-page"
+      style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 'var(--safe-b)' }}
+    >
+      <span style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: 24, letterSpacing: '-.02em' }}>
+        <HelixMark size={30} />
+        helux
+      </span>
+      <h1 className="t-display" style={{ marginTop: 24 }}>
+        Seu treino personalizado
+      </h1>
+      <p className="t-body dim" style={{ marginTop: 8 }}>
+        Entre para ver o treino de hoje.
+      </p>
+      <div style={{ marginTop: 32 }}>
+        <Button kind="primary" size="lg" block onClick={handleLogin}>
+          Entrar com Google
+        </Button>
       </div>
-
-      <button
-        onClick={handleLogin}
-        style={{
-          width: '100%', maxWidth: 320, padding: '16px 24px', borderRadius: 'var(--r-sm)',
-          background: 'var(--accent)', color: 'var(--accent-ink)',
-          fontWeight: 600, fontSize: 16, lineHeight: '24px',
-        }}
-      >
-        Entrar com Google
-      </button>
     </main>
   )
 }
