@@ -139,7 +139,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 
 ## Phase 6: US5 — Progresso com Histórico (P2)
 
-- [ ] T057 [US5] Reescrever `src/app/recovery/page.tsx` (FR-021, research V9):
+- [X] T057 [US5] Reescrever `src/app/recovery/page.tsx` (FR-021, research V9):
   - `.t-display` "Sua evolução";
   - "Recovery de hoje", com `Banner warn` quando os dados estiverem antigos e 4 cards `.hx-card` com ícone e `.n-lg` (atenuados quando antigos);
   - "Volume semanal" em `.hx-plain`, com `.n-xl` e o delta, mais `Bars`;
@@ -147,7 +147,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
   - "Histórico" com os 3 últimos em `HistoryRow` e o link "Ver todos" para `/history`.
 
   Estados vazios que convidam a uma ação.
-- [ ] T058 [P] [US5] Migrar `src/app/history/page.tsx` (lista com `HistoryRow`) e `src/app/history/[id]/page.tsx` (detalhe com `ScreenHeader`, variante executada da spec 010 com `Fit`, séries em mono). Remover `components/progress/SessionHistoryRow.tsx`, `PersonalRecordRow.tsx`, `BarChart.tsx` e `StatGrid.tsx` se ficarem sem uso.
+- [X] T058 [P] [US5] Migrar `src/app/history/page.tsx` (lista com `HistoryRow`) e `src/app/history/[id]/page.tsx` (detalhe com `ScreenHeader`, variante executada da spec 010 com `Fit`, séries em mono). Remover `components/progress/SessionHistoryRow.tsx`, `PersonalRecordRow.tsx`, `BarChart.tsx` e `StatGrid.tsx` se ficarem sem uso.
 
 ---
 

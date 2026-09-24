@@ -1,69 +1,67 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory'
-import { Card } from '@/components/ui/Card'
+import { IconButton } from '@/components/ui/Button'
+import { HistoryRow } from '@/components/ui/HistoryRow'
+import { ScreenHeader } from '@/components/ui/ScreenHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { pageContainer } from '@/components/ui/layout'
+import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 
-function formatDuration(seconds: number | null): string {
-  if (!seconds) return '—'
-  const m = Math.floor(seconds / 60)
-  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}min`
-}
-
+/** Lista completa de treinos (FR-021): linhas de histórico planas da v2. */
 export default function HistoryPage() {
+  const router = useRouter()
   const { sessions, total, loading, error } = useWorkoutHistory()
 
   return (
-    <div style={{ ...pageContainer, paddingTop: 48, paddingBottom: 96 }}>
-      <header style={{ marginBottom: 16 }}>
-        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 6 }}>
-          Histórico
-        </p>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', margin: 0 }}>
-          Treinos
-        </h1>
-        {!loading && total > 0 && (
-          <p style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 4 }}>{total} treinos registrados</p>
+    <div style={{ maxWidth: 'var(--col)', margin: '0 auto', paddingTop: 'max(12px, env(safe-area-inset-top))', paddingBottom: 120 }}>
+      <ScreenHeader
+        left={<IconButton icon="back" label="voltar" bare onClick={() => router.back()} />}
+        title="Histórico"
+        sub={!loading && total > 0 ? `${total} treinos` : undefined}
+      />
+      <div style={{ padding: '0 16px' }}>
+        {loading && (
+          <div aria-busy="true">
+            {[0, 1, 2].map(i => (
+              <Skeleton key={i} h={52} style={{ marginTop: 12 }} />
+            ))}
+          </div>
         )}
-      </header>
 
-      {loading && (
-        <div aria-busy="true" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} h={80} style={{ border: '1px solid var(--hairline)' }} />
-          ))}
-        </div>
-      )}
+        {error && (
+          <p role="alert" className="t-secondary" style={{ color: 'var(--danger)', marginTop: 12 }}>
+            {error}
+          </p>
+        )}
 
-      {error && <p style={{ color: 'var(--danger)', fontSize: 13 }}>{error}</p>}
+        {!loading && !error && sessions.length === 0 && (
+          <div style={{ marginTop: 20 }}>
+            <h1 className="t-section">Nenhum treino registrado ainda</h1>
+            <p className="t-secondary" style={{ marginTop: 6 }}>
+              Conclua um treino para vê-lo aqui.
+            </p>
+            <div style={{ marginTop: 16 }}>
+              <Link href="/" className="hx-btn hx-btn--secondary">
+                Ir para o treino de hoje
+              </Link>
+            </div>
+          </div>
+        )}
 
-      {!loading && sessions.length === 0 && (
-        <Card padding={24} style={{ textAlign: 'center' }}>
-          <p style={{ color: 'var(--text)', marginBottom: 4 }}>Nenhum treino registrado ainda.</p>
-          <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Complete um treino para ver o histórico.</p>
-        </Card>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {sessions.map(session => {
-          const exerciseNames = session.exercises.slice(0, 3).map(e => e.name).join(', ')
-          const extra = session.exercises.length > 3 ? ` +${session.exercises.length - 3}` : ''
+          const s = summarizeSession(session)
           return (
-            <Link
+            <HistoryRow
               key={session.id}
               href={`/history/${session.id}`}
-              style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: 16, display: 'block' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <p style={{ fontWeight: 500, color: 'var(--text)', fontSize: 14 }}>
-                  {new Date(session.date).toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
-                </p>
-                <p style={{ fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--text-dim)', fontSize: 12 }}>{formatDuration(session.duration_s)}</p>
-              </div>
-              <p style={{ color: 'var(--text-faint)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{exerciseNames}{extra}</p>
-            </Link>
+              name={s.name}
+              date={sessionDateLabel(session.date)}
+              sets={s.sets}
+              durationMin={s.durationMin}
+              volumeT={s.volumeT}
+            />
           )
         })}
       </div>

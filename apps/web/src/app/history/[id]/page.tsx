@@ -1,19 +1,17 @@
 'use client'
 
-import type { CSSProperties } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Shell } from '@/components/layout/Shell'
-import { Card } from '@/components/ui/Card'
-import { MatchBadge } from '@/components/ui/MatchBadge'
+import { IconButton } from '@/components/ui/Button'
+import { Fit } from '@/components/ui/Fit'
+import { ScreenHeader } from '@/components/ui/ScreenHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { apiFetch } from '@/services/api-client'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
+import { formatNumber } from '@/lib/format'
+import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 
-const mono = 'var(--font-jetbrains-mono), monospace'
-const cell: CSSProperties = { padding: '8px 16px', fontFamily: mono }
-const headCell: CSSProperties = { padding: '8px 16px' }
-
+/** Detalhe de um treino (FR-021): variante executada da spec 010 com `Fit` e séries em mono. */
 export default function SessionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -29,92 +27,89 @@ export default function SessionDetailPage() {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) {
-    return (
-      <Shell>
-        <div aria-busy="true" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} h={64} r="var(--r-sm)" style={{ border: '1px solid var(--hairline)' }} />
-          ))}
-        </div>
-      </Shell>
-    )
-  }
-
-  if (!session) {
-    return (
-      <Shell>
-        <p style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '48px 0' }}>Sessão não encontrada.</p>
-        <button
-          onClick={() => router.back()}
-          style={{ color: 'var(--accent)', fontSize: 14, lineHeight: '20px', textDecoration: 'underline', minHeight: 44 }}
-        >
-          ← Voltar
-        </button>
-      </Shell>
-    )
-  }
+  const summary = session ? summarizeSession(session) : null
+  const back = <IconButton icon="back" label="voltar" bare onClick={() => router.back()} />
 
   return (
-    <Shell>
-      <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button
-          onClick={() => router.back()}
-          style={{ color: 'var(--text-dim)', fontSize: 14, lineHeight: '20px', minHeight: 44, paddingRight: 8 }}
-        >
-          ←
-        </button>
-        <div>
-          <h1 style={{ fontWeight: 600, fontSize: 18, lineHeight: '28px', color: 'var(--text)' }}>
-            {new Date(session.date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </h1>
-          {session.duration_s && (
-            <p style={{ color: 'var(--text-dim)', fontSize: 14, lineHeight: '20px', fontFamily: mono }}>
-              {Math.floor(session.duration_s / 60)}min
-            </p>
-          )}
-        </div>
-      </div>
+    <div style={{ maxWidth: 'var(--col)', margin: '0 auto', paddingTop: 'max(12px, env(safe-area-inset-top))', paddingBottom: 120 }}>
+      <ScreenHeader
+        left={back}
+        title={session ? sessionDateLabel(session.date) : 'Treino'}
+        sub={summary?.durationMin ? `${summary.durationMin} min` : undefined}
+      />
+      <div style={{ padding: '0 16px' }}>
+        {loading ? (
+          <div aria-busy="true">
+            {[0, 1, 2].map(i => (
+              <Skeleton key={i} h={96} r="var(--r-md)" style={{ marginTop: 12 }} />
+            ))}
+          </div>
+        ) : !session || !summary ? (
+          <p className="t-secondary" style={{ textAlign: 'center', padding: '48px 0' }}>
+            Treino não encontrado.
+          </p>
+        ) : (
+          <>
+            <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '14px 16px', margin: '12px 0 0' }}>
+              <div>
+                <dt className="t-caption">Volume</dt>
+                <dd className="n-md" style={{ margin: '2px 0 0' }}>
+                  {formatNumber(summary.volumeT, { decimals: 1 })}
+                  <span className="u">t</span>
+                </dd>
+              </div>
+              <div>
+                <dt className="t-caption">Séries</dt>
+                <dd className="n-md" style={{ margin: '2px 0 0' }}>
+                  {summary.sets}
+                </dd>
+              </div>
+            </dl>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {session.exercises.map((ex, i) => (
-          <Card key={i} padding={0} style={{ overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--hairline)' }}>
-              <p style={{ fontWeight: 500, color: 'var(--text)' }}>
-                {ex.executedVariant ? ex.executedVariant.name : ex.name}
-              </p>
-              {ex.executedVariant && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, flexWrap: 'wrap' }}>
-                  <span style={{ color: 'var(--text-dim)', fontSize: 12, lineHeight: '16px' }}>
-                    variante de {ex.name}
-                  </span>
-                  <MatchBadge value={ex.executedVariant.match} size="sm" />
+            {session.exercises.map((ex, i) => (
+              <section key={i} className="hx-plain" style={{ marginTop: 24, paddingTop: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                  <h2 className="t-section">{ex.executedVariant ? ex.executedVariant.name : ex.name}</h2>
+                  {ex.executedVariant && <Fit value={ex.executedVariant.match} />}
                 </div>
-              )}
-            </div>
-            <table style={{ width: '100%', fontSize: 14, lineHeight: '20px' }}>
-              <thead>
-                <tr style={{ color: 'var(--text-dim)', fontSize: 12, lineHeight: '16px', fontFamily: mono, borderBottom: '1px solid var(--hairline)' }}>
-                  <th style={{ ...headCell, textAlign: 'left' }}>Série</th>
-                  <th style={{ ...headCell, textAlign: 'right' }}>Reps</th>
-                  <th style={{ ...headCell, textAlign: 'right' }}>Peso</th>
-                  <th style={{ ...headCell, textAlign: 'right' }}>RPE</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ex.sets.map((set, j) => (
-                  <tr key={j} style={{ borderBottom: j < ex.sets.length - 1 ? '1px solid var(--hairline)' : 0 }}>
-                    <td style={{ ...cell, color: 'var(--text-dim)' }}>{j + 1}</td>
-                    <td style={{ ...cell, color: 'var(--text)', textAlign: 'right' }}>{set.reps}</td>
-                    <td style={{ ...cell, color: 'var(--accent)', textAlign: 'right' }}>{set.weight}kg</td>
-                    <td style={{ ...cell, color: 'var(--text-dim)', textAlign: 'right' }}>{set.effort}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
-        ))}
+                {ex.executedVariant && (
+                  <p className="t-secondary" style={{ marginTop: 2 }}>
+                    variante de {ex.name}
+                  </p>
+                )}
+                {ex.sets.length === 0 ? (
+                  <p className="t-secondary" style={{ marginTop: 8 }}>
+                    Pulado
+                  </p>
+                ) : (
+                  <ol style={{ listStyle: 'none', margin: '8px 0 0', padding: 0 }}>
+                    {ex.sets.map((set, j) => (
+                      <li
+                        key={j}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '28px minmax(0,1fr) auto',
+                          alignItems: 'baseline',
+                          gap: 12,
+                          padding: '8px 0',
+                          borderTop: j ? '1px solid var(--hairline)' : 0,
+                        }}
+                      >
+                        <span className="n-sm dim">{j + 1}</span>
+                        <span className="n-md">
+                          {formatNumber(set.weight)}
+                          <span className="u">kg</span> × {set.reps}
+                        </span>
+                        <span className="t-caption">RPE {set.effort}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </section>
+            ))}
+          </>
+        )}
       </div>
-    </Shell>
+    </div>
   )
 }
