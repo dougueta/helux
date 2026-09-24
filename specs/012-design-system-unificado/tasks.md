@@ -153,7 +153,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 
 ## Phase 7: US6 — DNA (P2)
 
-- [ ] T059 [US6] Reescrever `src/app/dna/DnaClient.tsx` e `src/components/dna/TraitCard.tsx` (FR-022):
+- [X] T059 [US6] Reescrever `src/app/dna/DnaClient.tsx` e `src/components/dna/TraitCard.tsx` (FR-022):
   - `ScreenHeader` com voltar e "Perfil";
   - `.t-display` "Seu DNA" com o texto introdutório;
   - fita de marcadores (`Helix` estática com os loci dos genes do perfil acesos e os nomes em `.gene` embaixo);

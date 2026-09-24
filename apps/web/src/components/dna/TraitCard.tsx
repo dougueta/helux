@@ -1,63 +1,78 @@
-'use client'
+export type LevelWord = 'baixo' | 'médio' | 'alto'
 
-import { useState } from 'react'
-import type { CSSProperties } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Chip } from '@/components/ui/Chip'
-
-interface TraitCardProps {
-  name: string
-  summary: string
-  detail: string
-  level: 'low' | 'medium' | 'high'
+/** Nível 0–1 do perfil em palavra: < 0,34 baixo, < 0,67 médio, ≥ 0,67 alto (FR-022). */
+export function levelWord(level: number): LevelWord {
+  if (level < 0.34) return 'baixo'
+  if (level < 0.67) return 'médio'
+  return 'alto'
 }
 
-// Os tons azul/amarelo antigos não existiam no tema; agora só cores do tema (FR-005).
-const levelStyles: Record<TraitCardProps['level'], CSSProperties> = {
-  low: { color: 'var(--text-dim)', background: 'var(--surface-2)', border: '1px solid var(--hairline-2)' },
-  medium: { color: 'var(--warn)', background: 'rgba(245,183,62,0.12)', border: '1px solid rgba(245,183,62,0.3)' },
-  high: { color: 'var(--accent)', background: 'var(--accent-soft)', border: '1px solid var(--accent-line)' },
-}
+const BARS: Record<LevelWord, number> = { baixo: 1, médio: 2, alto: 3 }
 
-const levelLabels = { low: 'Baixo', medium: 'Médio', high: 'Alto' }
-
-export function TraitCard({ name, summary, detail, level }: TraitCardProps) {
-  const [open, setOpen] = useState(false)
-
+function Level({ level }: { level: number }) {
+  const word = levelWord(level)
+  const n = BARS[word]
   return (
-    <Card padding={0} style={{ overflow: 'hidden' }}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%', padding: 16, textAlign: 'left', display: 'flex', alignItems: 'flex-start',
-          justifyContent: 'space-between', gap: 12, minHeight: 56,
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ fontWeight: 500, color: 'var(--text)', fontSize: 14, lineHeight: '20px' }}>{name}</span>
-            <Chip style={{ ...levelStyles[level], fontFamily: 'var(--font-jetbrains-mono), monospace', padding: '2px 8px', fontWeight: 400 }}>
-              {levelLabels[level]}
-            </Chip>
-          </div>
-          <p style={{ color: 'var(--text-dim)', fontSize: 14, lineHeight: '20px' }}>{summary}</p>
-        </div>
-        <span
-          style={{
-            color: 'var(--text-dim)', flexShrink: 0, marginTop: 2, display: 'inline-block',
-            transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: open ? 'rotate(180deg)' : undefined,
-          }}
-        >
-          ▾
-        </span>
-      </button>
+    <span aria-label={`nível ${word}`} style={{ display: 'inline-flex', gap: 3, alignItems: 'center', flexShrink: 0 }}>
+      {[1, 2, 3].map(i => (
+        <i
+          key={i}
+          style={{ width: 3, height: 6 + i * 3, borderRadius: 1.5, background: i <= n ? 'var(--trait-on)' : 'var(--trait-off)' }}
+        />
+      ))}
+      <span className="t-caption" style={{ marginLeft: 6, color: 'var(--text)' }}>
+        {word}
+      </span>
+    </span>
+  )
+}
 
-      {open && (
-        <div style={{ padding: '12px 16px 16px', borderTop: '1px solid var(--hairline)' }}>
-          <p style={{ color: 'var(--text)', opacity: 0.8, fontSize: 14, lineHeight: 1.625 }}>{detail}</p>
-        </div>
+/** Card de marcador genético (handoff 5.4): gene, genótipo, nível, traço e impacto; âmbar só no risco. */
+export function TraitCard({
+  gene,
+  genotype,
+  label,
+  level,
+  note,
+  warn,
+}: {
+  gene: string
+  genotype?: string
+  label: string
+  level: number
+  note: string
+  warn?: boolean
+}) {
+  return (
+    <article className="hx-card" style={{ padding: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+        <span>
+          <span className="gene" style={{ fontSize: 17, color: 'var(--text)' }}>
+            {gene}
+          </span>
+          {genotype && (
+            <span className="n-sm dim" style={{ marginLeft: 8 }}>
+              {genotype}
+            </span>
+          )}
+        </span>
+        <Level level={level} />
+      </div>
+      <div className="t-secondary" style={{ marginTop: 6, color: 'var(--text)' }}>
+        {label}
+      </div>
+      {note && (
+        <p className="t-secondary" style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+          {warn && (
+            <i
+              data-warn
+              aria-hidden="true"
+              style={{ width: 6, height: 6, borderRadius: 1, background: 'var(--warn)', marginTop: 6, flexShrink: 0 }}
+            />
+          )}
+          <span>{note}</span>
+        </p>
       )}
-    </Card>
+    </article>
   )
 }
