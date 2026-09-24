@@ -1,54 +1,28 @@
 'use client'
 
-import type { CSSProperties } from 'react'
-import { Icon } from '@/components/ui/icons'
-import { Ring } from '@/components/ui/Ring'
+import { Banner } from '@/components/ui/Banner'
+import { Button } from '@/components/ui/Button'
+import { Helix } from '@/components/ui/Helix'
+import { formatNumber } from '@/lib/format'
 
 export type WorkoutDoneStatus = 'saving' | 'saved' | 'error'
 
-const primaryButton: CSSProperties = {
-  width: '100%',
-  maxWidth: 360,
-  height: 52,
-  borderRadius: 'var(--r-pill)',
-  background: 'var(--accent)',
-  border: 'none',
-  color: 'var(--accent-ink)',
-  fontSize: 15,
-  fontWeight: 600,
-  fontFamily: 'var(--font-space-grotesk)',
-  cursor: 'pointer',
-  marginTop: 8,
-  boxShadow: '0 8px 24px -8px var(--accent-glow)',
+/** Largura do traço para a fita ocupar a coluna (cerca de 340 px) com qualquer número de séries. */
+function rungWidth(n: number) {
+  return Math.max(3, Math.min(10, Math.floor(340 / Math.max(1, n)) - 3))
 }
 
-const secondaryButton: CSSProperties = {
-  ...primaryButton,
-  marginTop: 0,
-  background: 'transparent',
-  border: '1px solid var(--hairline-2)',
-  color: 'var(--text)',
-  boxShadow: 'none',
-}
-
-const COPY: Record<WorkoutDoneStatus, { title: string; text: string }> = {
-  saving: {
-    title: 'Salvando treino…',
-    text: 'Estamos registrando suas cargas.',
-  },
-  saved: {
-    title: 'Treino concluído',
-    text: 'Mandou bem! O Helux registrou suas cargas e vai recalibrar o próximo treino.',
-  },
-  error: {
-    title: 'Não foi possível salvar',
-    text: 'Seu treino continua guardado neste aparelho. Verifique a conexão e tente de novo.',
-  },
-}
-
+/**
+ * Treino concluído (FR-020, handoff 5.6, research V10). O salvamento é da
+ * spec 016 (`useFinishWorkout`); aqui só muda a apresentação dos três estados.
+ * Recordes ficam ocultos enquanto não houver dado (FR-024).
+ */
 export function WorkoutDoneScreen({
   status,
   totalDone,
+  totalSets,
+  volumeKg,
+  exerciseCount,
   elapsed,
   onGoHome,
   onRetry,
@@ -56,109 +30,92 @@ export function WorkoutDoneScreen({
 }: {
   status: WorkoutDoneStatus
   totalDone: number
+  totalSets: number
+  volumeKg: number
+  exerciseCount: number
   elapsed: number
   onGoHome: () => void
   onRetry: () => void
   onBackToWorkout: () => void
 }) {
-  const { title, text } = COPY[status]
+  const summary: [string, string, string][] = [
+    ['Volume', formatNumber(volumeKg), 'kg'],
+    ['Séries', `${totalDone}/${totalSets}`, ''],
+    ['Duração', formatNumber(elapsed), 'min'],
+  ]
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'var(--bg)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 20,
-        padding: '32px 24px',
-        zIndex: 50,
-      }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          top: '20%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 240,
-          height: 240,
-          borderRadius: '50%',
-          background: status === 'error' ? 'rgba(245,183,62,0.12)' : 'var(--accent-soft)',
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-        }}
-      />
-      <Ring value={(status === 'saved' ? 100 : status === 'saving' ? 60 : 0) / 100} size={120} stroke={8}>
-        {status === 'saved' && <Icon name="check" size={48} stroke="var(--accent)" sw={2.4} />}
-        {status === 'error' && <Icon name="close" size={44} stroke="var(--warn)" sw={2.4} />}
-      </Ring>
-      <h2
-        style={{
-          fontSize: 25,
-          fontWeight: 700,
-          color: 'var(--text)',
-          textAlign: 'center',
-          margin: 0,
-        }}
-      >
-        {title}
-      </h2>
-      <p
-        style={{
-          fontSize: 14,
-          color: 'var(--text-dim)',
-          textAlign: 'center',
-          lineHeight: 1.5,
-          margin: 0,
-        }}
-      >
-        {text}
+    <div className="hx-page" style={{ paddingTop: 'calc(56px + env(safe-area-inset-top))', paddingBottom: 220 }}>
+      <div role="img" aria-label={`${totalDone} de ${totalSets} séries`} style={{ display: 'flex', alignItems: 'center', height: 40 }}>
+        <Helix
+          value={totalSets ? (100 * totalDone) / totalSets : 0}
+          n={Math.max(1, totalSets)}
+          h={40}
+          w={rungWidth(totalSets)}
+          gap={3}
+          on="var(--accent)"
+          sequential
+        />
+      </div>
+      <h1 className="t-display" style={{ marginTop: 28 }}>
+        Treino concluído
+      </h1>
+      <p className="t-body dim" style={{ marginTop: 6 }}>
+        {exerciseCount} {exerciseCount === 1 ? 'exercício' : 'exercícios'}, {elapsed} min
       </p>
-
-      {status === 'saved' && (
-        <>
-          <div style={{ display: 'flex', gap: 24, marginTop: 8 }}>
-            {[
-              { v: totalDone, k: 'séries' },
-              { v: elapsed, k: 'minutos' },
-            ].map(({ v, k }) => (
-              <div key={k} style={{ textAlign: 'center' }}>
-                <div
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                    fontFamily: 'var(--font-jetbrains-mono)',
-                    color: 'var(--accent)',
-                  }}
-                >
-                  {v}
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--text-faint)' }}>{k}</div>
-              </div>
-            ))}
+      <dl
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2,minmax(0,1fr))',
+          gap: '20px 16px',
+          margin: '28px 0 0',
+          paddingTop: 20,
+          borderTop: '1px solid var(--hairline)',
+        }}
+      >
+        {summary.map(([label, value, unit]) => (
+          <div key={label}>
+            <dt className="t-caption">{label}</dt>
+            <dd className="n-lg" style={{ margin: '4px 0 0' }}>
+              {value}
+              {unit && <span className="u">{unit}</span>}
+            </dd>
           </div>
-          <button type="button" onClick={onGoHome} style={primaryButton}>
-            Voltar ao início
-          </button>
-        </>
-      )}
+        ))}
+      </dl>
 
-      {status === 'error' && (
-        <>
-          <button type="button" onClick={onRetry} style={primaryButton}>
-            Tentar novamente
-          </button>
-          <button type="button" onClick={onBackToWorkout} style={secondaryButton}>
-            Voltar ao treino
-          </button>
-        </>
-      )}
+      <div className="hx-dock">
+        <div className="hx-cta-dock">
+          {status === 'error' ? (
+            <>
+              <div style={{ marginBottom: 10 }}>
+                <Banner kind="err" title="Não foi possível salvar">
+                  O treino continua guardado neste aparelho e não será perdido. Verifique a conexão e tente de novo.
+                </Banner>
+              </div>
+              <Button kind="primary" size="lg" block icon="sync" onClick={onRetry}>
+                Tentar de novo
+              </Button>
+              <div style={{ marginTop: 4 }}>
+                <Button kind="ghost" block onClick={onBackToWorkout}>
+                  Voltar ao treino
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <Button kind="primary" size="lg" block loading={status === 'saving'} onClick={onGoHome}>
+                Voltar para Hoje
+              </Button>
+              <p className="t-caption" role="status" style={{ textAlign: 'center', marginTop: 10 }}>
+                {status === 'saving'
+                  ? 'Salvando treino…'
+                  : 'O Helux registrou suas cargas e vai recalibrar o próximo treino.'}
+              </p>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

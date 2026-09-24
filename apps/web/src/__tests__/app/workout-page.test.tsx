@@ -76,7 +76,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     expect(sessionPosts()).toHaveLength(1)
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
     expect(replaceMock).not.toHaveBeenCalled()
-    expect(screen.getByText('4')).toBeInTheDocument() // séries concluídas
+    expect(screen.getByText('4/4')).toBeInTheDocument() // séries concluídas
   })
 
   it('envia o mesmo payload de antes (exercícios, pulados, data, duração)', async () => {
@@ -123,14 +123,14 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
 
   // US3 -----------------------------------------------------------------
 
-  it('"Voltar ao início" após salvar só navega, sem nova gravação', async () => {
+  it('"Voltar para Hoje" após salvar só navega, sem nova gravação', async () => {
     seed()
     vi.mocked(apiFetch).mockResolvedValue({})
     const user = userEvent.setup()
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
-    await user.click(await screen.findByRole('button', { name: 'Voltar ao início' }))
+    await user.click(await screen.findByRole('button', { name: 'Voltar para Hoje' }))
 
     expect(replaceMock).toHaveBeenCalledWith('/')
     await waitFor(() => expect(sessionPosts()).toHaveLength(1))
@@ -155,7 +155,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
   })
 
-  it('em falha, mostra erro e preserva o treino; "Tentar novamente" grava', async () => {
+  it('em falha, mostra erro e preserva o treino; "Tentar de novo" grava', async () => {
     seed()
     vi.mocked(apiFetch)
       .mockRejectedValueOnce(new Error('offline'))
@@ -170,7 +170,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull()
     expect(replaceMock).not.toHaveBeenCalled()
 
-    await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    await user.click(screen.getByRole('button', { name: 'Tentar de novo' }))
     expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
     expect(sessionPosts()).toHaveLength(2)
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull()

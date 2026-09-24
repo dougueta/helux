@@ -55,7 +55,13 @@ export default function WorkoutPage() {
   const [poppedSetIndex, setPoppedSetIndex] = useState<number | null>(null)
   // Frozen when the workout is finished: the session is cleared after a successful save,
   // but the done screen must stay up (with its summary) until the user leaves.
-  const [finishSummary, setFinishSummary] = useState<{ totalDone: number; elapsed: number } | null>(null)
+  const [finishSummary, setFinishSummary] = useState<{
+    totalDone: number
+    totalSets: number
+    volumeKg: number
+    exerciseCount: number
+    elapsed: number
+  } | null>(null)
   const { status: finishStatus, submit: submitFinish, reset: resetFinish } = useFinishWorkout(finishWorkout)
 
   const restActive = restLeft > 0
@@ -96,6 +102,9 @@ export default function WorkoutPage() {
       <WorkoutDoneScreen
         status={finishStatus === 'idle' ? 'saving' : finishStatus}
         totalDone={finishSummary.totalDone}
+        totalSets={finishSummary.totalSets}
+        volumeKg={finishSummary.volumeKg}
+        exerciseCount={finishSummary.exerciseCount}
         elapsed={finishSummary.elapsed}
         onGoHome={() => router.replace('/')}
         onRetry={() => { void submitFinish() }}
@@ -122,6 +131,11 @@ export default function WorkoutPage() {
   const totalSets = session.exerciseStates.reduce((acc, sets) => acc + sets.length, 0)
   const totalDone = session.exerciseStates.reduce(
     (acc, sets) => acc + sets.filter(s => s.done).length,
+    0
+  )
+  // Volume da conclusão (research V10): Σ kg × reps das séries feitas.
+  const volumeKg = session.exerciseStates.reduce(
+    (acc, sets) => acc + sets.filter(s => s.done).reduce((a, s) => a + s.weight * s.reps, 0),
     0
   )
   const elapsed = Math.round(
@@ -161,7 +175,13 @@ export default function WorkoutPage() {
 
   // Spec 016: the workout is saved when it is finished, not when leaving the done screen.
   function startFinish() {
-    setFinishSummary({ totalDone, elapsed })
+    setFinishSummary({
+      totalDone,
+      totalSets,
+      volumeKg,
+      exerciseCount: session!.planExercises.length,
+      elapsed,
+    })
     void submitFinish()
   }
 

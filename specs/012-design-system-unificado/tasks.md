@@ -126,7 +126,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 
 ## Phase 5: US4 — Treino concluído (P2)
 
-- [ ] T056 [US4] Reescrever `src/components/workout/WorkoutDoneScreen.tsx` (FR-020, research V10):
+- [X] T056 [US4] Reescrever `src/components/workout/WorkoutDoneScreen.tsx` (FR-020, research V10):
   - `Helix` sequencial com um traço por série do treino;
   - `.t-display` "Treino concluído";
   - linha com o nome do treino e a duração;
