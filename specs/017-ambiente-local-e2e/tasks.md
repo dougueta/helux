@@ -65,7 +65,7 @@
 **Independent Test**: no PR, os jobs `checks` e `e2e` rodam e reportam.
 
 - [X] T017 [US3] Criar `.github/workflows/ci.yml` (research R7): gatilhos `pull_request` e `push` em `main`; job `checks` (checkout, pnpm 9, Node 22 com cache, `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`); job `e2e` (mesmo setup + `pnpm test:e2e`); sem secrets
-- [ ] T018 [US3] Validar no PR que os dois jobs aparecem e passam (SC-005)
+- [X] T018 [US3] Validar no PR que os dois jobs aparecem e passam (SC-005) — **verificado 2026-09-26** no PR dougueta/helux#8 (run 36204889567): `Typecheck e testes` verde em ~1 min; `E2E (Supabase local + API + IA simulada)` verde em 1 min 36 s, com o download das imagens do Supabase
 
 ---
 
