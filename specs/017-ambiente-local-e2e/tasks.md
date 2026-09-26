@@ -64,16 +64,16 @@
 
 **Independent Test**: no PR, os jobs `checks` e `e2e` rodam e reportam.
 
-- [ ] T017 [US3] Criar `.github/workflows/ci.yml` (research R7): gatilhos `pull_request` e `push` em `main`; job `checks` (checkout, pnpm 9, Node 22 com cache, `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`); job `e2e` (mesmo setup + `pnpm test:e2e`); sem secrets
+- [X] T017 [US3] Criar `.github/workflows/ci.yml` (research R7): gatilhos `pull_request` e `push` em `main`; job `checks` (checkout, pnpm 9, Node 22 com cache, `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test`); job `e2e` (mesmo setup + `pnpm test:e2e`); sem secrets
 - [ ] T018 [US3] Validar no PR que os dois jobs aparecem e passam (SC-005)
 
 ---
 
 ## Phase 6: Polish
 
-- [ ] T019 [P] Criar `docs/desenvolvimento-local.md` (pré-requisitos, `db:*`, `test:e2e`, `E2E_REAL_AI`/`E2E_KEEP_DB`, como ler uma falha) — FR-012
-- [ ] T020 [P] Atualizar `specs/006-mesociclo-treino-backend/quickstart.md` para apontar para `pnpm test:e2e` — FR-013
-- [ ] T021 Rodar `pnpm typecheck` e `pnpm test` na raiz: tudo verde; `apps/api/src/__tests__/dockerfile.test.ts` segue passando
+- [X] T019 [P] Criar `docs/desenvolvimento-local.md` (pré-requisitos, `db:*`, `test:e2e`, `E2E_REAL_AI`/`E2E_KEEP_DB`, como ler uma falha) — FR-012
+- [X] T020 [P] Atualizar `specs/006-mesociclo-treino-backend/quickstart.md` para apontar para `pnpm test:e2e` — FR-013
+- [X] T021 Rodar `pnpm typecheck` e `pnpm test` na raiz: tudo verde; `apps/api/src/__tests__/dockerfile.test.ts` segue passando
 
 ---
 
