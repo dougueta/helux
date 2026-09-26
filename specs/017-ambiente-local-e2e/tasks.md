@@ -43,18 +43,18 @@
 
 ### Tests (RED primeiro)
 
-- [ ] T008 [P] [US2] Escrever `apps/api/e2e/fake-anthropic.test.ts`: `startFakeAnthropic()` responde `POST /v1/messages` com mensagem cujo texto contém um bloco ```json parseável com 4 sessões e exercícios do `EXERCISE_BANK`; `calls` incrementa por chamada; outra rota → 404; `close()` libera a porta — **confirmar FAIL**
-- [ ] T009 [P] [US2] Escrever `apps/api/e2e/prerequisites.test.ts`: `parseStatusEnv` extrai `API_URL`/`ANON_KEY`/`SERVICE_ROLE_KEY` da saída `KEY="valor"`; `assertLocalUrl` aceita `127.0.0.1`/`localhost` e rejeita host remoto com `[e2e] SUPABASE_URL não é local`; `resolveAiMode` retorna `fake` por padrão (mesmo com chave presente), `real` com `E2E_REAL_AI=1` e falha sem chave (mensagens do contrato) — **confirmar FAIL**
-- [ ] T010 [US2] Escrever `apps/api/e2e/mesocycle-flow.e2e.ts` com os cenários do quickstart 006 em `describe` sequencial, com usuário novo via signup (FR-009): (1) bootstrap: `generating` → sessão A, `upcoming` = demais letras, 0/N, 1 linha; (2) HRV 75 sem ajuste, 50 `cansado` (sets = max(2, base−1), peso igual), 30 `exausto` (sets reduzidos, peso ≤ base), sempre 1 linha; (3) dias pulados: retroagir 5 dias → mesma sessão pendente; (4) ciclo completo: cada POST avança 1 sem chamar a IA e o último gera o ciclo #2 (2 linhas, `GET` devolve o novo em 0/N); os asserts relativos seguem research R5 — **confirmar FAIL** (`pnpm test:e2e` sem harness)
+- [X] T008 [P] [US2] Escrever `apps/api/e2e/fake-anthropic.test.ts`: `startFakeAnthropic()` responde `POST /v1/messages` com mensagem cujo texto contém um bloco ```json parseável com 4 sessões e exercícios do `EXERCISE_BANK`; `calls` incrementa por chamada; outra rota → 404; `close()` libera a porta — **confirmar FAIL**
+- [X] T009 [P] [US2] Escrever `apps/api/e2e/prerequisites.test.ts`: `parseStatusEnv` extrai `API_URL`/`ANON_KEY`/`SERVICE_ROLE_KEY` da saída `KEY="valor"`; `assertLocalUrl` aceita `127.0.0.1`/`localhost` e rejeita host remoto com `[e2e] SUPABASE_URL não é local`; `resolveAiMode` retorna `fake` por padrão (mesmo com chave presente), `real` com `E2E_REAL_AI=1` e falha sem chave (mensagens do contrato) — **confirmar FAIL**
+- [X] T010 [US2] Escrever `apps/api/e2e/mesocycle-flow.e2e.ts` com os cenários do quickstart 006 em `describe` sequencial, com usuário novo via signup (FR-009): (1) bootstrap: `generating` → sessão A, `upcoming` = demais letras, 0/N, 1 linha; (2) HRV 75 sem ajuste, 50 `cansado` (sets = max(2, base−1), peso igual), 30 `exausto` (sets reduzidos, peso ≤ base), sempre 1 linha; (3) dias pulados: retroagir 5 dias → mesma sessão pendente; (4) ciclo completo: cada POST avança 1 sem chamar a IA e o último gera o ciclo #2 (2 linhas, `GET` devolve o novo em 0/N); os asserts relativos seguem research R5 — **confirmar FAIL** (`pnpm test:e2e` sem harness)
 
 ### Implementation
 
-- [ ] T011 [P] [US2] Implementar `apps/api/e2e/fake-anthropic.ts` (contrato da IA simulada em `contracts/commands.md`) — T008 GREEN
-- [ ] T012 [P] [US2] Implementar `apps/api/e2e/prerequisites.ts` (`parseStatusEnv`, `assertLocalUrl`, `resolveAiMode`, `assertDocker`, `assertGeneticProfile`, `readLocalEnv` via `pnpm dlx supabase@2.118.0 status -o env`) — T009 GREEN
-- [ ] T013 [US2] Implementar `apps/api/e2e/global-setup.ts`: checar pré-requisitos, reaproveitar Supabase no ar ou subir com `db:start` e derrubar no teardown só se tiver subido (respeitando `E2E_KEEP_DB=1`); expor `LocalEnv` via `provide`
-- [ ] T014 [US2] Completar o harness no `beforeAll` de `mesocycle-flow.e2e.ts`: definir env, subir a IA simulada (salvo `real`), `buildApp()` em porta 0, clientes service-role e usuário; `afterAll` fecha tudo — T010 GREEN
-- [ ] T015 [US2] Validar SC-004: comentar temporariamente `markSessionCompleted` em `apps/api/src/services/plan-generation.service.ts` → o cenário de ciclo completo falha com esperado/obtido; reverter
-- [ ] T016 [US2] Validar SC-003: rodar `pnpm test:e2e` 5 vezes seguidas, todas verdes
+- [X] T011 [P] [US2] Implementar `apps/api/e2e/fake-anthropic.ts` (contrato da IA simulada em `contracts/commands.md`) — T008 GREEN
+- [X] T012 [P] [US2] Implementar `apps/api/e2e/prerequisites.ts` (`parseStatusEnv`, `assertLocalUrl`, `resolveAiMode`, `assertDocker`, `assertGeneticProfile`, `readLocalEnv` via `pnpm dlx supabase@2.118.0 status -o env`) — T009 GREEN
+- [X] T013 [US2] Implementar `apps/api/e2e/global-setup.ts`: checar pré-requisitos, reaproveitar Supabase no ar ou subir com `db:start` e derrubar no teardown só se tiver subido (respeitando `E2E_KEEP_DB=1`); expor `LocalEnv` via `provide`
+- [X] T014 [US2] Completar o harness no `beforeAll` de `mesocycle-flow.e2e.ts`: definir env, subir a IA simulada (salvo `real`), `buildApp()` em porta 0, clientes service-role e usuário; `afterAll` fecha tudo — T010 GREEN
+- [X] T015 [US2] Validar SC-004: comentar temporariamente `markSessionCompleted` em `apps/api/src/services/plan-generation.service.ts` → o cenário de ciclo completo falha com esperado/obtido; reverter
+- [X] T016 [US2] Validar SC-003: rodar `pnpm test:e2e` 5 vezes seguidas, todas verdes
 
 **Checkpoint**: US2 entregue — verificação integrada repetível.
 
