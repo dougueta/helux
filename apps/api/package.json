@@ -7,8 +7,9 @@
     "build": "tsc",
     "start": "tsx src/index.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p e2e",
+    "lint": "tsc --noEmit",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.2.0",

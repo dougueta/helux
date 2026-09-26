@@ -11,16 +11,16 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Versionar `supabase/config.toml` (gerado por `supabase init` com CLI 2.118.0, `project_id = "helux"`, auth por e-mail com `enable_confirmations = false`, só valores locais) e `supabase/.gitignore` (`.branches`, `.temp`, `.env*`)
-- [ ] T002 Adicionar à raiz, em `package.json`, os scripts `db:start` (`pnpm dlx supabase@2.118.0 start -x <serviços não usados, ver research R6>`), `db:stop`, `db:status` (`... status -o env`) e `test:e2e` (`pnpm --filter @helux/api test:e2e`)
+- [X] T001 Versionar `supabase/config.toml` (gerado por `supabase init` com CLI 2.118.0, `project_id = "helux"`, auth por e-mail com `enable_confirmations = false`, só valores locais) e `supabase/.gitignore` (`.branches`, `.temp`, `.env*`)
+- [X] T002 Adicionar à raiz, em `package.json`, os scripts `db:start` (`pnpm dlx supabase@2.118.0 start -x <serviços não usados, ver research R6>`), `db:stop`, `db:status` (`... status -o env`) e `test:e2e` (`pnpm --filter @helux/api test:e2e`)
 
 ---
 
 ## Phase 2: Foundational
 
-- [ ] T003 Em `apps/api/vitest.config.ts`, adicionar `exclude: [...configDefaults.exclude, 'e2e/**/*.e2e.ts']` para a suíte padrão continuar sem Docker
-- [ ] T004 Criar `apps/api/vitest.e2e.config.ts` (`include: ['e2e/**/*.e2e.ts']`, `globalSetup: './e2e/global-setup.ts'`, `testTimeout`/`hookTimeout` de 60s, `fileParallelism: false`) e o script `test:e2e` em `apps/api/package.json`
-- [ ] T005 Criar `apps/api/e2e/tsconfig.json` (estende a base, `noEmit`, inclui `e2e` e `src`) e fazer o `typecheck` de `apps/api/package.json` rodar também `tsc -p e2e`
+- [X] T003 Em `apps/api/vitest.config.ts`, adicionar `exclude: [...configDefaults.exclude, 'e2e/**/*.e2e.ts']` para a suíte padrão continuar sem Docker
+- [X] T004 Criar `apps/api/vitest.e2e.config.ts` (`include: ['e2e/**/*.e2e.ts']`, `globalSetup: './e2e/global-setup.ts'`, `testTimeout`/`hookTimeout` de 60s, `fileParallelism: false`) e o script `test:e2e` em `apps/api/package.json`
+- [X] T005 Criar `apps/api/e2e/tsconfig.json` (estende a base, `noEmit`, inclui `e2e` e `src`) e fazer o `typecheck` de `apps/api/package.json` rodar também `tsc -p e2e`
 
 **Checkpoint**: `pnpm test` continua verde e sem exigir Docker.
 
@@ -30,8 +30,8 @@
 
 **Independent Test**: num clone limpo, `pnpm db:start` sobe o banco com as 7 migrations aplicadas e `pnpm db:status` mostra as credenciais locais.
 
-- [ ] T006 [US1] Validar em ambiente limpo (`pnpm db:stop --no-backup` se houver): `pnpm db:start` aplica todas as migrations; `pnpm dlx supabase@2.118.0 migration list --local` sem pendências; `pnpm db:status` imprime `API_URL`, `ANON_KEY` e `SERVICE_ROLE_KEY` locais
-- [ ] T007 [US1] Validar migration nova com o ambiente no ar: criar uma migration descartável, rodar `supabase migration up`, confirmar a aplicação sem recriar o ambiente e removê-la em seguida (Acceptance Scenario 3)
+- [X] T006 [US1] Validar em ambiente limpo (`pnpm db:stop --no-backup` se houver): `pnpm db:start` aplica todas as migrations; `pnpm dlx supabase@2.118.0 migration list --local` sem pendências; `pnpm db:status` imprime `API_URL`, `ANON_KEY` e `SERVICE_ROLE_KEY` locais
+- [X] T007 [US1] Validar migration nova com o ambiente no ar: criar uma migration descartável, rodar `supabase migration up`, confirmar a aplicação sem recriar o ambiente e removê-la em seguida (Acceptance Scenario 3)
 
 **Checkpoint**: US1 entregue — ambiente local reproduzível.
 
