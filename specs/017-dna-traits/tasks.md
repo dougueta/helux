@@ -9,15 +9,15 @@ Nada a configurar: dependências instaladas, sem pacote novo.
 
 ## Phase 2: Foundational (bloqueia US1 e US2)
 
-- [ ] T001 Adicionar `GeneticTrait` e `GeneticProfileView` (data-model.md) em `packages/types/src/genetic.ts` e garantir o reexport em `packages/types/src/index.ts`
+- [X] T001 Adicionar `GeneticTrait` e `GeneticProfileView` (data-model.md) em `packages/types/src/genetic.ts` e garantir o reexport em `packages/types/src/index.ts`
 
 ## Phase 3: User Story 1 — Ver meus marcadores genéticos reais (P1) — MVP
 
 **Goal**: a API devolve `traits` e a tela DNA os mostra.
 **Independent Test**: com o genera.json atual, `GET /genetic-profile` traz 21 traits (WNT16 primeiro) e a tela lista 21 cards com âmbar nos de risco e fita com 4 genes.
 
-- [ ] T002 [P] [US1] Teste vermelho de `parseGeneraTraits` em `packages/genetics/src/__tests__/traits.test.ts`: escopo só `fit` + `painel_saude_esportiva` (ignora `nutri`, `farma` etc.); campos key/gene/genotype/label/note; nível 0,9/0,2/0,5 pela regra FR-005; `warn` por seção/categoria (`lesao` inclusive); dedupe por SNP+traço mantendo COL1A1 ombro e ligamento; ordem risco primeiro, estável; genótipo vazio omitido; seções ausentes → []; e o arquivo real `apps/api/data/genetics/genera.json` gera 21 traits com WNT16 em primeiro
-- [ ] T003 [US1] Implementar `parseGeneraTraits` em `packages/genetics/src/traits.ts` e exportar em `packages/genetics/src/index.ts` (T002 verde)
+- [X] T002 [P] [US1] Teste vermelho de `parseGeneraTraits` em `packages/genetics/src/__tests__/traits.test.ts`: escopo só `fit` + `painel_saude_esportiva` (ignora `nutri`, `farma` etc.); campos key/gene/genotype/label/note; nível 0,9/0,2/0,5 pela regra FR-005; `warn` por seção/categoria (`lesao` inclusive); dedupe por SNP+traço mantendo COL1A1 ombro e ligamento; ordem risco primeiro, estável; genótipo vazio omitido; seções ausentes → []; e o arquivo real `apps/api/data/genetics/genera.json` gera 21 traits com WNT16 em primeiro
+- [X] T003 [US1] Implementar `parseGeneraTraits` em `packages/genetics/src/traits.ts` e exportar em `packages/genetics/src/index.ts` (T002 verde)
 - [ ] T004 [P] [US1] Teste vermelho em `apps/api/src/__tests__/genetic-profile.test.ts`: o 200 inclui `traits` (array vindo de `parseGeneraTraits`, mockado) junto do resumo; 404 inalterado
 - [ ] T005 [US1] `apps/api/src/routes/genetic-profile.ts` devolve `{ ...parseGeneraJson(raw), traits: parseGeneraTraits(raw) }` tipado como `GeneticProfileView` (T004 verde)
 - [ ] T006 [P] [US1] Teste vermelho em `apps/web/src/__tests__/app/dna-client.test.tsx`: com `state = { status: 'ok', profile }` e traits, renderiza um `TraitCard` por trait (gene, genótipo, traço, nota), ponto âmbar só nos `warn`, "N de N lidos", resumo "N marcadores…"; `strandGenes` devolve no máximo 4 genes únicos na ordem
