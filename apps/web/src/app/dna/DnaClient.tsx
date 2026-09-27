@@ -1,71 +1,81 @@
 'use client'
 
+import type { GeneticTrait } from '@helux/types'
 import { MarkerStrand } from '@/components/dna/MarkerStrand'
 import { TraitCard } from '@/components/dna/TraitCard'
+import { Banner } from '@/components/ui/Banner'
 import { SectionHeader } from '@/components/ui/SectionHeader'
+import type { DnaState } from './load-profile'
 
-interface DnaClientProps {
-  profile: Record<string, unknown> | null
+const STRAND_MAX = 4
+
+/** Genes da fita: no máximo 4, sem repetir, na ordem dos marcadores (risco primeiro) — FR-009. */
+export function strandGenes(traits: GeneticTrait[]): string[] {
+  return [...new Set(traits.map(t => t.gene))].slice(0, STRAND_MAX)
 }
 
-interface Trait {
-  key: string
-  label: string
-  value?: string
-  level: number
-  gene: string
-  genotype?: string
-  note: string
-  warn?: boolean
+function Empty({ title, text }: { title: string; text: string }) {
+  return (
+    <div style={{ marginTop: 24 }}>
+      <h2 className="t-section">{title}</h2>
+      <p className="t-secondary" style={{ marginTop: 6 }}>
+        {text}
+      </p>
+    </div>
+  )
 }
 
-/** "COL1A1 C,C" → { gene: 'COL1A1', genotype: 'C,C' }; sem genótipo, só o gene. */
-function splitGene(t: Trait): { gene: string; genotype?: string } {
-  if (t.genotype) return { gene: t.gene, genotype: t.genotype }
-  const m = t.gene.match(/^(\S+)\s+([ACGT],[ACGT])$/)
-  return m ? { gene: m[1], genotype: m[2] } : { gene: t.gene }
-}
-
-/** DNA (FR-022, handoff 5.4). "Como molda seu treino" fica oculto enquanto não houver dado (FR-024). */
-export function DnaClient({ profile }: DnaClientProps) {
-  const traits = profile && Array.isArray(profile.traits) ? (profile.traits as Trait[]) : []
-  const summary = profile && typeof profile.summary === 'string' ? profile.summary : null
-  const markers = traits.map(t => ({ ...t, ...splitGene(t) }))
-
-  if (markers.length === 0) {
+/** DNA (FR-022 da 012, spec 017). "Como molda seu treino" fica oculto enquanto não houver dado (FR-024). */
+export function DnaClient({ state }: { state: DnaState }) {
+  if (state.status === 'error') {
     return (
       <div style={{ marginTop: 24 }}>
-        <h2 className="t-section">{profile ? 'Marcadores ainda não disponíveis' : 'Perfil genético não carregado'}</h2>
-        <p className="t-secondary" style={{ marginTop: 6 }}>
-          {profile
-            ? 'O perfil genético foi lido, mas ainda não traz os marcadores no formato desta tela.'
-            : 'Adicione o arquivo do teste Genera em data/genetics/genera.json na API para ver seus marcadores.'}
-        </p>
+        <Banner kind="err" title="Não foi possível carregar seu DNA">
+          O serviço do perfil genético não respondeu. Tente de novo mais tarde.
+        </Banner>
       </div>
     )
   }
+  if (state.status === 'missing') {
+    return (
+      <Empty
+        title="Perfil genético não carregado"
+        text="Seu teste genético ainda não foi adicionado ao Helux. Quando ele for carregado, seus marcadores aparecem aqui."
+      />
+    )
+  }
 
+  const traits = state.profile.traits
+  if (traits.length === 0) {
+    return (
+      <Empty
+        title="Marcadores ainda não disponíveis"
+        text="Seu teste genético foi lido, mas não traz marcadores ligados a treino."
+      />
+    )
+  }
+
+  const n = traits.length
   return (
     <>
       <p className="t-body dim" style={{ marginTop: 8 }}>
-        {summary ??
-          `${markers.length} ${markers.length === 1 ? 'marcador' : 'marcadores'} do teste Genera definem como o Helux escolhe exercícios, cargas e descanso.`}
+        {`${n} ${n === 1 ? 'marcador' : 'marcadores'} do teste Genera definem como o Helux escolhe exercícios, cargas e descanso.`}
       </p>
       <div style={{ marginTop: 24 }}>
-        <MarkerStrand genes={markers.map(m => m.gene)} />
+        <MarkerStrand genes={strandGenes(traits)} />
       </div>
       <section style={{ marginTop: 28 }}>
-        <SectionHeader title="Marcadores genéticos" aside={`${markers.length} de ${markers.length} lidos`} />
+        <SectionHeader title="Marcadores genéticos" aside={`${n} de ${n} lidos`} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {markers.map(m => (
+          {traits.map(t => (
             <TraitCard
-              key={m.key}
-              gene={m.gene}
-              genotype={m.genotype}
-              label={m.label}
-              level={m.level}
-              note={m.note}
-              warn={m.warn}
+              key={t.key}
+              gene={t.gene}
+              genotype={t.genotype}
+              label={t.label}
+              level={t.level}
+              note={t.note}
+              warn={t.warn}
             />
           ))}
         </div>

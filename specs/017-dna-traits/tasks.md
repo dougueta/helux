@@ -20,8 +20,8 @@ Nada a configurar: dependências instaladas, sem pacote novo.
 - [X] T003 [US1] Implementar `parseGeneraTraits` em `packages/genetics/src/traits.ts` e exportar em `packages/genetics/src/index.ts` (T002 verde)
 - [X] T004 [P] [US1] Teste vermelho em `apps/api/src/__tests__/genetic-profile.test.ts`: o 200 inclui `traits` (array vindo de `parseGeneraTraits`, mockado) junto do resumo; 404 inalterado
 - [X] T005 [US1] `apps/api/src/routes/genetic-profile.ts` devolve `{ ...parseGeneraJson(raw), traits: parseGeneraTraits(raw) }` tipado como `GeneticProfileView` (T004 verde)
-- [ ] T006 [P] [US1] Teste vermelho em `apps/web/src/__tests__/app/dna-client.test.tsx`: com `state = { status: 'ok', profile }` e traits, renderiza um `TraitCard` por trait (gene, genótipo, traço, nota), ponto âmbar só nos `warn`, "N de N lidos", resumo "N marcadores…"; `strandGenes` devolve no máximo 4 genes únicos na ordem
-- [ ] T007 [US1] Reescrever `apps/web/src/app/dna/DnaClient.tsx` para receber `state: DnaState`, usar `GeneticTrait` tipado (sem `splitGene`) e exportar `strandGenes`; fita recebe `strandGenes(traits)` (T006 verde)
+- [X] T006 [P] [US1] Teste vermelho em `apps/web/src/__tests__/app/dna-client.test.tsx`: com `state = { status: 'ok', profile }` e traits, renderiza um `TraitCard` por trait (gene, genótipo, traço, nota), ponto âmbar só nos `warn`, "N de N lidos", resumo "N marcadores…"; `strandGenes` devolve no máximo 4 genes únicos na ordem
+- [X] T007 [US1] Reescrever `apps/web/src/app/dna/DnaClient.tsx` para receber `state: DnaState`, usar `GeneticTrait` tipado (sem `splitGene`) e exportar `strandGenes`; fita recebe `strandGenes(traits)` (T006 verde)
 
 **Checkpoint**: US1 entregue com dados reais (a página ainda passa o estado pelo loader da US2; até lá, T007 aceita o estado construído em `page.tsx`).
 
@@ -30,9 +30,9 @@ Nada a configurar: dependências instaladas, sem pacote novo.
 **Goal**: três mensagens distintas sem marcadores.
 **Independent Test**: loader devolve `missing` para 404, `error` para 500/rede/JSON inválido; `DnaClient` mostra os três textos.
 
-- [ ] T008 [P] [US2] Teste vermelho em `apps/web/src/__tests__/app/dna-load-profile.test.ts` para `loadGeneticProfile()` (fetch mockado): 200 → `{status:'ok', profile}` (traits ausente vira `[]`); 404 → `missing`; 500 → `error`; fetch rejeitado → `error`; JSON inválido → `error`
-- [ ] T009 [US2] Implementar `apps/web/src/app/dna/load-profile.ts` (`loadGeneticProfile`, tipo `DnaState`; mesmo URL e `revalidate: 3600` de hoje) e usar em `apps/web/src/app/dna/page.tsx` (T008 verde)
-- [ ] T010 [US2] Estender `apps/web/src/__tests__/app/dna-client.test.tsx` com os três estados: `missing` → "Perfil genético não carregado"; `ok` sem traits → "Marcadores ainda não disponíveis"; `error` → "Não foi possível carregar seu DNA"; nenhum deles quando há traits. Ajustar `DnaClient.tsx` até verde
+- [X] T008 [P] [US2] Teste vermelho em `apps/web/src/__tests__/app/dna-load-profile.test.ts` para `loadGeneticProfile()` (fetch mockado): 200 → `{status:'ok', profile}` (traits ausente vira `[]`); 404 → `missing`; 500 → `error`; fetch rejeitado → `error`; JSON inválido → `error`
+- [X] T009 [US2] Implementar `apps/web/src/app/dna/load-profile.ts` (`loadGeneticProfile`, tipo `DnaState`; mesmo URL e `revalidate: 3600` de hoje) e usar em `apps/web/src/app/dna/page.tsx` (T008 verde)
+- [X] T010 [US2] Estender `apps/web/src/__tests__/app/dna-client.test.tsx` com os três estados: `missing` → "Perfil genético não carregado"; `ok` sem traits → "Marcadores ainda não disponíveis"; `error` → "Não foi possível carregar seu DNA"; nenhum deles quando há traits. Ajustar `DnaClient.tsx` até verde
 
 ## Phase 5: User Story 3 — Código sem duplicidade (P3)
 
