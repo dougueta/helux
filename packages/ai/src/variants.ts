@@ -1,5 +1,6 @@
 import type { GeneticProfile, Variant } from '@helux/types'
 import { EXERCISE_BANK, type ExerciseBankEntry } from './exercise-bank'
+import { resolveMotion } from './motions'
 
 type Equipment = ExerciseBankEntry['equipment']
 
@@ -21,7 +22,7 @@ const EQUIPMENT_IMPLEMENT: Record<Equipment, string> = {
   barra: 'barbell',
   halteres: 'dumbbell',
   'maquina-cabo': 'cable',
-  'peso-corporal': 'machine',
+  'peso-corporal': 'bodyweight',
 }
 
 // Genetic-fit scoring rules (deterministic, no LLM):
@@ -78,14 +79,6 @@ function buildWhy(equipment: Equipment, profile: GeneticProfile): string {
   return 'Alternativa de carga livre para variar o estímulo.'
 }
 
-// v1 limitation: HELUX_MOTIONS (ported in ExerciseDemo) only has upper-body
-// press/pull presets. Patterns with no natural match fall back to 'press-flat'.
-function motionFor(pattern: string): string {
-  if (pattern === 'empurrar-vertical') return 'press-overhead'
-  if (pattern === 'isolamento') return 'pushdown'
-  return 'press-flat'
-}
-
 function toVariant(entry: ExerciseBankEntry, profile: GeneticProfile, rec: boolean): Variant {
   const variant: Variant = {
     id: entry.id,
@@ -93,7 +86,7 @@ function toVariant(entry: ExerciseBankEntry, profile: GeneticProfile, rec: boole
     equip: EQUIPMENT_LABEL[entry.equipment],
     level: EQUIPMENT_LEVEL[entry.equipment],
     match: scoreEquipment(entry.equipment, profile),
-    motion: motionFor(entry.pattern),
+    motion: resolveMotion(entry),
     implement: EQUIPMENT_IMPLEMENT[entry.equipment],
     why: buildWhy(entry.equipment, profile),
   }
