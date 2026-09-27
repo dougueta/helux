@@ -387,4 +387,36 @@ describe('useActiveWorkout', () => {
       expect(supino.sets).toEqual([])
     })
   })
+
+  describe('spec 014 — fases', () => {
+    const phasedPlan = [
+      { name: 'Esteira', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento' },
+      { name: 'Agachamento', sets: 2, reps: '8-10', weight: '80kg', phase: 'principal' },
+      { name: 'Supino', sets: 2, reps: '8-10', weight: '60kg' },
+      { name: 'Alongamento', sets: 1, reps: '30s', weight: '—', phase: 'volta-calma' },
+    ]
+
+    it('getSkippedExercises considera só o principal', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(phasedPlan as any) })
+      act(() => { result.current.toggleSetDone(1, 0) })
+      expect(result.current.getSkippedExercises().map(e => e.name)).toEqual(['Supino'])
+    })
+
+    it('finishWorkout envia ao histórico só os exercícios do principal', async () => {
+      const { apiFetch } = await import('@/services/api-client')
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(phasedPlan as any) })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      act(() => { result.current.toggleSetDone(1, 0) })
+      act(() => { result.current.toggleSetDone(3, 0) })
+      await act(async () => { await result.current.finishWorkout() })
+
+      const body = JSON.parse((apiFetch as any).mock.calls[0][1].body)
+      expect(body.exercises.map((e: any) => e.name)).toEqual(['Agachamento', 'Supino'])
+      expect(body.exercises[1].skipped).toBe(true)
+    })
+  })
 })

@@ -24,6 +24,20 @@ export interface Variant {
   why: string
 }
 
+/** Fase do item na sessão (spec 014). Ausente = 'principal'. */
+export type ExercisePhase = 'aquecimento' | 'principal' | 'volta-calma'
+
+export type ProgressionAction = 'aumentar' | 'manter' | 'reduzir' | 'sem-dados'
+
+/** Decisão determinística de carga entre mesociclos (spec 014). */
+export interface LoadProgression {
+  name: string
+  action: ProgressionAction
+  previousWeightKg: number | null
+  nextWeightKg: number | null
+  reason: string
+}
+
 export interface PlannedExercise {
   name: string
   sets: number
@@ -36,4 +50,10 @@ export interface PlannedExercise {
   tempo?: string
   match?: number
   variants?: Variant[]
+  /** Spec 014: fase da sessão; ausente = principal (planos antigos). */
+  phase?: ExercisePhase
+  /** Spec 014: rótulo do biset — exatamente 2 itens consecutivos do principal. */
+  supersetGroup?: string
+  /** Spec 014: progressão de carga aplicada a partir do mesociclo anterior. */
+  progression?: Omit<LoadProgression, 'name'>
 }

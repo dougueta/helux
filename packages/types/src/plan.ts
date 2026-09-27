@@ -1,5 +1,5 @@
 import type { GeneticProfile, WorkoutConstraints } from './genetic'
-import type { WorkoutSession, PlannedExercise } from './workout'
+import type { WorkoutSession, PlannedExercise, LoadProgression } from './workout'
 import type { RecoveryData } from './recovery'
 import type { BodyCheckin } from './checkin'
 
@@ -15,6 +15,8 @@ export interface PlanInput {
   trainingTime?: string
   timeOff?: string
   currentInjury?: string
+  /** Spec 014: decisões de progressão calculadas a partir do mesociclo anterior. */
+  loadProgression?: LoadProgression[]
 }
 
 export interface NextWorkoutPlan {

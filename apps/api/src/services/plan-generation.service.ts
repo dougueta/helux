@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { generateMesocyclePlan } from '@helux/ai'
+import { normalizeSessionExercises } from '@helux/workouts'
 import { gatherPlanInput } from './plan-context.service'
 import { getActiveMesocycle, findPendingSessionIndex, markSessionCompleted, isMesocycleComplete } from './mesocycle.service'
 
@@ -25,13 +26,18 @@ export async function generateAndSaveMesocycle(
     if (!planInput) return
 
     const mesocycle = await generateMesocyclePlan(planInput)
+    // Spec 014: fases ordenadas e bisets válidos antes de gravar.
+    const sessions = mesocycle.sessions.map((session) => ({
+      ...session,
+      exercises: normalizeSessionExercises(session.exercises),
+    }))
 
     const { error } = await supabase.from('mesocycle_plans').insert({
       user_id: userId,
       generated_at: mesocycle.generatedAt,
       days_per_week: mesocycle.daysPerWeek,
       split_type: mesocycle.splitType,
-      sessions: mesocycle.sessions,
+      sessions,
       rationale: mesocycle.rationale,
     })
 

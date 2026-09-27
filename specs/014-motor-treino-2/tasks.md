@@ -13,13 +13,13 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirmar `.specify/feature.json` apontando para `specs/014-motor-treino-2` e rodar a suíte de `packages/workouts` como linha de base (`pnpm --filter @helux/workouts test`)
+- [X] T001 Confirmar `.specify/feature.json` apontando para `specs/014-motor-treino-2` e rodar a suíte de `packages/workouts` como linha de base (`pnpm --filter @helux/workouts test`)
 
 ---
 
 ## Phase 2: Foundational (bloqueia as stories)
 
-- [ ] T002 Adicionar em `packages/types/src/workout.ts` os tipos `ExercisePhase`, `ProgressionAction`, `LoadProgression` e os campos opcionais `phase?`, `supersetGroup?`, `progression?` em `PlannedExercise`; adicionar `loadProgression?: LoadProgression[]` em `PlanInput` (`packages/types/src/plan.ts`); exportar via `packages/types/src/index.ts` (data-model.md)
+- [X] T002 Adicionar em `packages/types/src/workout.ts` os tipos `ExercisePhase`, `ProgressionAction`, `LoadProgression` e os campos opcionais `phase?`, `supersetGroup?`, `progression?` em `PlannedExercise`; adicionar `loadProgression?: LoadProgression[]` em `PlanInput` (`packages/types/src/plan.ts`); exportar via `packages/types/src/index.ts` (data-model.md)
 
 ---
 
@@ -29,15 +29,15 @@
 
 **Independent Test**: mesociclo mockado com 3 fases → Treinos mostra 3 seções; treino ativo conclui aquecimento sem descanso; histórico salvo só com o principal; plano antigo continua funcionando.
 
-- [ ] T003 [P] [US1] Testes + implementação de `exercisePhase`, `isMainExercise`, `groupByPhase` e `normalizeSessionExercises` (parte de fases: desconhecido→principal, ordem estável aquecimento→principal→volta-calma) em `packages/workouts/src/plan-structure.ts` com testes em `packages/workouts/src/__tests__/plan-structure.test.ts`; exportar em `packages/workouts/src/index.ts`
-- [ ] T004 [US1] Ajuste de cansaço só no principal: testes em `packages/workouts/src/__tests__/tiredness.test.ts` e mudança em `adjustExercisesForLevel` (`packages/workouts/src/tiredness.ts`) — itens de aquecimento/volta-calma nunca mudam (FR-007)
-- [ ] T005 [P] [US1] Prompt do mesociclo pede `phase` (aquecimento 2–4 itens livres, principal do catálogo, volta à calma 2–4 itens livres respeitando limite de cardio) em `packages/ai/src/mesocycle-prompts.ts`, com testes em `packages/ai/src/__tests__/mesocycle-prompts.test.ts` (contracts/llm-response.md)
-- [ ] T006 [US1] Planner repassa `phase` e enriquece (cues/músculo/variantes) só itens do principal em `packages/ai/src/mesocycle-planner.ts`, testes em `packages/ai/src/__tests__/mesocycle-planner.test.ts`
-- [ ] T007 [US1] `generateAndSaveMesocycle` normaliza as sessões (`normalizeSessionExercises`) antes do insert em `apps/api/src/services/plan-generation.service.ts`, teste em `apps/api/src/__tests__/plan-generation.service.test.ts`
-- [ ] T008 [US1] `useActiveWorkout`: `getSkippedExercises` e payload de `finishWorkout` só com o principal (FR-006), testes em `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`, código em `apps/web/src/hooks/useActiveWorkout.ts`
-- [ ] T009 [P] [US1] Componente `PlanExerciseList` (lista agrupada por fase com `SectionHeader` por fase quando houver mais de uma; plano só principal igual ao atual) em `apps/web/src/components/workout/PlanExerciseList.tsx` com testes em `apps/web/src/__tests__/components/workout/PlanExerciseList.test.tsx`; usar em `apps/web/src/app/treinos/TreinosClient.tsx` (FR-004)
-- [ ] T010 [US1] Treino ativo: tag da fase (Aquecimento/Musculação/Volta à calma); itens fora do principal com linhas de um toque (sem kg/reps editáveis, sem descanso, sem card de variantes) em `apps/web/src/app/workout/page.tsx`, testes em `apps/web/src/__tests__/app/workout-page.test.tsx` (FR-005)
-- [ ] T011 [US1] Home: destaque e contagem usam o principal e indicam "inclui aquecimento e volta à calma" em `apps/web/src/app/HomeClient.tsx`, com teste em `apps/web/src/__tests__/app/` (FR-023)
+- [X] T003 [P] [US1] Testes + implementação de `exercisePhase`, `isMainExercise`, `groupByPhase` e `normalizeSessionExercises` (parte de fases: desconhecido→principal, ordem estável aquecimento→principal→volta-calma) em `packages/workouts/src/plan-structure.ts` com testes em `packages/workouts/src/__tests__/plan-structure.test.ts`; exportar em `packages/workouts/src/index.ts`
+- [X] T004 [US1] Ajuste de cansaço só no principal: testes em `packages/workouts/src/__tests__/tiredness.test.ts` e mudança em `adjustExercisesForLevel` (`packages/workouts/src/tiredness.ts`) — itens de aquecimento/volta-calma nunca mudam (FR-007)
+- [X] T005 [P] [US1] Prompt do mesociclo pede `phase` (aquecimento 2–4 itens livres, principal do catálogo, volta à calma 2–4 itens livres respeitando limite de cardio) em `packages/ai/src/mesocycle-prompts.ts`, com testes em `packages/ai/src/__tests__/mesocycle-prompts.test.ts` (contracts/llm-response.md)
+- [X] T006 [US1] Planner repassa `phase` e enriquece (cues/músculo/variantes) só itens do principal em `packages/ai/src/mesocycle-planner.ts`, testes em `packages/ai/src/__tests__/mesocycle-planner.test.ts`
+- [X] T007 [US1] `generateAndSaveMesocycle` normaliza as sessões (`normalizeSessionExercises`) antes do insert em `apps/api/src/services/plan-generation.service.ts`, teste em `apps/api/src/__tests__/plan-generation.service.test.ts`
+- [X] T008 [US1] `useActiveWorkout`: `getSkippedExercises` e payload de `finishWorkout` só com o principal (FR-006), testes em `apps/web/src/__tests__/hooks/useActiveWorkout.test.ts`, código em `apps/web/src/hooks/useActiveWorkout.ts`
+- [X] T009 [P] [US1] Componente `PlanExerciseList` (lista agrupada por fase com `SectionHeader` por fase quando houver mais de uma; plano só principal igual ao atual) em `apps/web/src/components/workout/PlanExerciseList.tsx` com testes em `apps/web/src/__tests__/components/workout/PlanExerciseList.test.tsx`; usar em `apps/web/src/app/treinos/TreinosClient.tsx` (FR-004)
+- [X] T010 [US1] Treino ativo: tag da fase (Aquecimento/Musculação/Volta à calma); itens fora do principal com linhas de um toque (sem kg/reps editáveis, sem descanso, sem card de variantes) em `apps/web/src/app/workout/page.tsx`, testes em `apps/web/src/__tests__/app/workout-page.test.tsx` (FR-005)
+- [X] T011 [US1] Home: destaque e contagem usam o principal e indicam "inclui aquecimento e volta à calma" em `apps/web/src/app/HomeClient.tsx`, via helper puro `apps/web/src/lib/todayHighlight.ts` testado em `apps/web/src/__tests__/lib/todayHighlight.test.ts` (FR-023)
 
 **Checkpoint**: US1 entregável (commit).
 
@@ -49,7 +49,7 @@
 
 **Independent Test**: plano com biset → concluir série de A1 leva a A2 sem descanso; série de A2 inicia descanso e volta a A1.
 
-- [ ] T012 [US2] Validação de biset em `normalizeSessionExercises` (exatamente 2 consecutivos do principal; senão remove `supersetGroup`) e `supersetPartnerIndex` em `packages/workouts/src/plan-structure.ts`, testes em `packages/workouts/src/__tests__/plan-structure.test.ts`
+- [X] T012 [US2] Validação de biset em `normalizeSessionExercises` (exatamente 2 consecutivos do principal; senão remove `supersetGroup`) e `supersetPartnerIndex` em `packages/workouts/src/plan-structure.ts`, testes em `packages/workouts/src/__tests__/plan-structure.test.ts`
 - [ ] T013 [P] [US2] `DEFAULT_REST_SECONDS`, `restSecondsAfterSet`, `nextStepAfterSet` em `packages/workouts/src/workout-flow.ts` com testes em `packages/workouts/src/__tests__/workout-flow.test.ts` (contracts/workout-flow.md; FR-011, FR-013)
 - [ ] T014 [P] [US2] Prompt permite bisets (≤ 2 por sessão, pares adequados, mesmo nº de séries, `supersetGroup`) em `packages/ai/src/mesocycle-prompts.ts`; planner repassa `supersetGroup` em `packages/ai/src/mesocycle-planner.ts`; testes nos respectivos `__tests__`
 - [ ] T015 [US2] Treino ativo usa `nextStepAfterSet` (descanso e navegação automática) e mostra "Biset · alterna com X" em `apps/web/src/app/workout/page.tsx`, testes em `apps/web/src/__tests__/app/workout-page.test.tsx`

@@ -92,6 +92,20 @@ Você DEVE gerar o **mesociclo completo de uma só vez** — todas as sessões d
 
 Cada sessão do array \`sessions\` DEVE ter os campos \`letter\` (ex.: \`"A"\`) e \`focus\` (ex.: \`"Peito + Tríceps"\`).
 
+## Estrutura da Sessão em 3 Fases — OBRIGATÓRIO
+
+Cada sessão DEVE ter três fases, indicadas no campo \`"phase"\` de cada item do array \`exercises\`, nesta ordem:
+
+1. **Aquecimento** (\`"phase": "aquecimento"\`) — 2 a 4 itens: mobilidade articular das regiões trabalhadas no foco da sessão, cardio leve e/ou séries de aproximação do primeiro exercício principal.
+2. **Treino principal** (\`"phase": "principal"\`) — os exercícios de musculação da sessão, conforme as diretrizes abaixo.
+3. **Volta à calma** (\`"phase": "volta-calma"\`) — 2 a 4 itens: alongamentos dos músculos trabalhados, mobilidade e/ou cardio leve para desaquecer.
+
+Regras das fases:
+- O catálogo vale apenas para os itens com \`"phase": "principal"\`. Itens de aquecimento e volta à calma têm nome livre e descritivo em português (ex.: "Mobilidade de ombros com bastão", "Alongamento de peitoral na parede").
+- Itens de aquecimento e volta à calma usam \`"sets": 1\`, \`"reps"\` descritivo (ex.: "5 min", "10 por lado", "30s cada lado") e \`"weight": "—"\` (ou a carga das séries de aproximação).
+- O cardio das fases de aquecimento e volta à calma não pode passar de: ${constraints.cardioIntensityLimit}.
+- Respeite os alertas genéticos e situacionais também no aquecimento e na volta à calma.
+
 ${buildExerciseCatalogSection()}
 
 ## Formato de Resposta
@@ -109,11 +123,26 @@ Você DEVE responder EXCLUSIVAMENTE com um JSON válido no seguinte formato, sem
       "focus": "Peito + Tríceps",
       "exercises": [
         {
-          "name": "Nome do exercício em português",
+          "phase": "aquecimento",
+          "name": "Mobilidade de ombros com bastão",
+          "sets": 1,
+          "reps": "10 repetições",
+          "weight": "—"
+        },
+        {
+          "phase": "principal",
+          "name": "Nome do exercício do catálogo, exatamente como aparece",
           "sets": 4,
           "reps": "8-10",
           "weight": "carga sugerida (ex: 80kg, +2.5kg, peso corporal)",
           "notes": "observações técnicas opcionais — cueing, progressão, modificações"
+        },
+        {
+          "phase": "volta-calma",
+          "name": "Alongamento de peitoral na parede",
+          "sets": 1,
+          "reps": "30s cada lado",
+          "weight": "—"
         }
       ]
     }
@@ -124,7 +153,7 @@ Você DEVE responder EXCLUSIVAMENTE com um JSON válido no seguinte formato, sem
 
 ### Diretrizes para os Exercícios
 
-- Prescreva entre 4 e 8 exercícios por sessão dependendo do volume genético
+- Prescreva entre 4 e 8 exercícios de treino principal por sessão dependendo do volume genético (sem contar aquecimento e volta à calma)
 - Para predisposição de força: 3-5 séries × 4-8 repetições, cargas elevadas (75-90% 1RM)
 - Para predisposição de endurance: 2-4 séries × 12-20 repetições, cargas moderadas (50-70% 1RM)
 - Para predisposição mista: 3-4 séries × 8-12 repetições, cargas moderadas-elevadas (65-80% 1RM)

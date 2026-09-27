@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { apiFetch } from '@/services/api-client'
 import { clearCachedPlan } from './useWorkoutPlan'
 import { recommendedVariant } from '@/lib/exerciseDisplay'
+import { isMainExercise } from '@helux/workouts'
 import type { PlannedExercise, Variant } from '@helux/types'
 
 const STORAGE_KEY = 'helux:active-workout'
@@ -163,8 +164,9 @@ export function useActiveWorkout() {
 
   const getSkippedExercises = useCallback((): PlannedExercise[] => {
     if (!session) return []
+    // Spec 014: aquecimento e volta à calma não contam como exercício pulado.
     return session.planExercises.filter(
-      (_, ei) => (session.exerciseStates[ei] ?? []).every(s => !s.done)
+      (ex, ei) => isMainExercise(ex) && (session.exerciseStates[ei] ?? []).every(s => !s.done)
     )
   }, [session])
 
@@ -174,7 +176,8 @@ export function useActiveWorkout() {
       (Date.now() - new Date(session.startedAt).getTime()) / 1000
     )
 
-    const exercises = session.planExercises.map((ex, ei) => {
+    // Spec 014: o histórico guarda só o treino principal.
+    const exercises = session.planExercises.flatMap((ex, ei) => (isMainExercise(ex) ? [{ ex, ei }] : [])).map(({ ex, ei }) => {
       const doneSets = (session.exerciseStates[ei] ?? [])
         .filter(s => s.done)
         .map(s => ({ reps: s.reps, weight: s.weight, effort: 8 }))

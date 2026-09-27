@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { TirednessSelector } from '@/components/workout/TirednessSelector'
 import { TirednessDialog } from '@/components/workout/TirednessDialog'
 import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+import { todayHighlight } from '@/lib/todayHighlight'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -93,10 +94,9 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
   }
 
   const exercises: PlannedExercise[] = today?.exercises ?? []
-  const first = exercises[0]
+  // Spec 014: o destaque é o treino principal (aquecimento/volta à calma só são indicados).
+  const { first, next, more, count, hasExtraPhases } = todayHighlight(exercises)
   const firstFit = first ? resolveExerciseDisplay(first, undefined).fit : undefined
-  const next = exercises.slice(1, 3)
-  const more = Math.max(0, exercises.length - 3)
   const streak = analytics?.currentStreakWeeks ?? 0
   const sessions = currentPlan ? cycleSessions(currentPlan) : []
 
@@ -147,7 +147,7 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
               </span>
               <span className="t-caption" style={{ whiteSpace: 'nowrap' }}>
                 <span className="n-sm" style={{ color: 'var(--text)' }}>
-                  {exercises.length}
+                  {count}
                 </span>{' '}
                 exercícios
               </span>
@@ -155,6 +155,11 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
             <h2 className="t-heading" style={{ marginTop: 14, fontSize: 24, lineHeight: '28px' }}>
               {first?.name ?? 'Treino personalizado'}
             </h2>
+            {hasExtraPhases && (
+              <p className="t-caption" style={{ marginTop: 6 }}>
+                Inclui aquecimento e volta à calma
+              </p>
+            )}
             {firstFit !== undefined && (
               <div style={{ marginTop: 10 }}>
                 <Fit value={firstFit} size="md" />

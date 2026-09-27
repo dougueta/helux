@@ -240,3 +240,91 @@ describe('WorkoutPage — treino ativo v2 (spec 012 T049)', () => {
     expect(screen.getByRole('button', { name: 'aumentar kg' })).toBeInTheDocument()
   })
 })
+
+function seedState(partial: Partial<ActiveWorkoutState> & Pick<ActiveWorkoutState, 'planExercises' | 'exerciseStates'>) {
+  const state: ActiveWorkoutState = {
+    currentExerciseIndex: 0,
+    startedAt: new Date(Date.now() - 10 * 60000).toISOString(),
+    variantByExerciseIndex: {},
+    executedVariantByExerciseIndex: {},
+    ...partial,
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+}
+
+describe('WorkoutPage — fases (spec 014, US1)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  const phased = [
+    { name: 'Esteira leve', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento' },
+    { name: 'Supino', sets: 2, reps: '8', weight: '60kg', phase: 'principal' },
+    { name: 'Alongamento de peitoral', sets: 1, reps: '30s cada lado', weight: '—', phase: 'volta-calma' },
+  ] as ActiveWorkoutState['planExercises']
+
+  function seedPhased(currentExerciseIndex: number) {
+    seedState({
+      planExercises: phased,
+      exerciseStates: [
+        [{ weight: 0, reps: 5, done: false }],
+        [{ weight: 60, reps: 8, done: false }, { weight: 60, reps: 8, done: false }],
+        [{ weight: 0, reps: 30, done: false }],
+      ],
+      currentExerciseIndex,
+    })
+  }
+
+  it('item de aquecimento mostra a fase e a prescrição, sem kg/reps editáveis', async () => {
+    seedPhased(0)
+    render(<WorkoutPage />)
+
+    expect(await screen.findByText('Aquecimento')).toBeInTheDocument()
+    expect(screen.getAllByText('5 min').length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: 'aumentar kg' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Adicionar série/ })).not.toBeInTheDocument()
+  })
+
+  it('concluir item de aquecimento não inicia descanso', async () => {
+    seedPhased(0)
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'concluir série 1' }))
+
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'série 1 concluída, desfazer' })).toBeInTheDocument()
+  })
+
+  it('exercício do principal mostra a tag Musculação; volta à calma mostra a sua fase', async () => {
+    seedPhased(1)
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    expect(await screen.findByText('Musculação')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Exercício 3, 0 de 1 séries' }))
+    expect(screen.getByText('Volta à calma')).toBeInTheDocument()
+  })
+
+  it('finalizar sem marcar aquecimento/volta à calma não pede confirmação de pulados', async () => {
+    seedState({
+      planExercises: phased,
+      exerciseStates: [
+        [{ weight: 0, reps: 5, done: false }],
+        [{ weight: 60, reps: 8, done: true }, { weight: 60, reps: 8, done: true }],
+        [{ weight: 0, reps: 30, done: false }],
+      ],
+      currentExerciseIndex: 2,
+    })
+    vi.mocked(apiFetch).mockResolvedValue({})
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+
+    expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
+    const body = JSON.parse(sessionPosts()[0][1]!.body as string)
+    expect(body.exercises.map((e: { name: string }) => e.name)).toEqual(['Supino'])
+  })
+})

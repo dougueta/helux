@@ -89,6 +89,28 @@ describe('generateAndSaveMesocycle', () => {
     }))
   })
 
+  it('spec 014 (FR-003/FR-009): normaliza fases e bisets antes de gravar', async () => {
+    generateMesocyclePlanMock.mockResolvedValue({
+      ...MOCK_MESOCYCLE,
+      sessions: [{
+        letter: 'A', focus: 'Peito', completedAt: null,
+        exercises: [
+          { name: 'Alongamento', sets: 1, reps: '30s', weight: '—', phase: 'volta-calma' },
+          { name: 'Supino Reto', sets: 4, reps: '8-10', weight: '80kg', supersetGroup: 'b1' },
+          { name: 'Esteira', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento' },
+        ],
+      }],
+    })
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+
+    const saved = insertMock.mock.calls[0][0].sessions[0].exercises
+    expect(saved.map((e: { name: string }) => e.name)).toEqual(['Esteira', 'Supino Reto', 'Alongamento'])
+    expect(saved.map((e: { phase: string }) => e.phase)).toEqual(['aquecimento', 'principal', 'volta-calma'])
+    expect(saved[1].supersetGroup).toBeUndefined()
+  })
+
   it('não faz nada quando não há perfil genético (gatherPlanInput retorna null)', async () => {
     gatherPlanInputMock.mockResolvedValue(null)
     const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')

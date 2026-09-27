@@ -66,3 +66,33 @@ describe('buildUserPrompt (fluxo legado) propaga trainingTime/timeOff sem quebra
     expect(prompt).toContain('6 meses parado')
   })
 })
+
+describe('buildMesocycleSystemPrompt — 3 fases (spec 014, US1)', () => {
+  const prompt = buildMesocycleSystemPrompt(PROFILE, CONSTRAINTS)
+
+  it('pede o campo phase com os três valores', () => {
+    expect(prompt).toContain('"phase"')
+    expect(prompt).toContain('"aquecimento"')
+    expect(prompt).toContain('"principal"')
+    expect(prompt).toContain('"volta-calma"')
+  })
+
+  it('explica aquecimento e volta à calma com 2 a 4 itens de nome livre', () => {
+    expect(prompt).toContain('Estrutura da Sessão em 3 Fases')
+    expect(prompt).toMatch(/Aquecimento.*2 a 4 itens/)
+    expect(prompt).toMatch(/Volta à calma.*2 a 4 itens/)
+    expect(prompt).toContain('catálogo vale apenas para os itens com `"phase": "principal"`')
+  })
+
+  it('amarra o cardio das fases ao limite de intensidade do atleta', () => {
+    const intense = buildMesocycleSystemPrompt(PROFILE, { ...CONSTRAINTS, cardioIntensityLimit: 'leve' })
+    expect(intense).toContain('cardio das fases de aquecimento e volta à calma não pode passar de: leve')
+  })
+
+  it('mostra o exemplo de JSON com as três fases', () => {
+    const json = prompt.slice(prompt.indexOf('## Formato de Resposta'))
+    expect(json.indexOf('"phase": "aquecimento"')).toBeGreaterThan(-1)
+    expect(json.indexOf('"phase": "aquecimento"')).toBeLessThan(json.indexOf('"phase": "principal"'))
+    expect(json.indexOf('"phase": "principal"')).toBeLessThan(json.indexOf('"phase": "volta-calma"'))
+  })
+})
