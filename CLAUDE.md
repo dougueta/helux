@@ -14,5 +14,5 @@ Se o pedido não se encaixar em nenhuma spec existente, abrir um novo ciclo de s
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/012-design-system-unificado/plan.md
+at specs/014-motor-treino-2/plan.md
 <!-- SPECKIT END -->
