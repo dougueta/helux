@@ -23,7 +23,7 @@ Na web, o `ExerciseDemo` ganha um segundo tipo de preset (**pose de corpo inteir
 **Project Type**: Monorepo pnpm/turbo (packages + apps)
 **Performance Goals**: animação a 60 fps via `requestAnimationFrame` (mesmo loop atual); `buildVariants` O(n) sobre ~120 entradas
 **Constraints**: Design System v2 (só tokens/classes `helux-v2.css`; acento só no implemento); movimento reduzido; RAM baixa (testes direcionados, suíte completa só no fim); não mexer em geração de plano/tela de treino ativo além do necessário (spec 014 em paralelo)
-**Scale/Scope**: 122 exercícios, ~27 animações
+**Scale/Scope**: 122 exercícios, 30 animações
 
 ## Constitution Check
 

@@ -5,13 +5,13 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Medir a linha de base atual e registrar no spec: rodar a contagem de exercícios por padrão e a distribuição de `motionFor()` sobre `packages/ai/src/exercise-bank.ts` (esperado 63/102 supino, 81/102 genérico/incorreto)
+- [X] T001 Medir a linha de base atual e registrar no spec: rodar a contagem de exercícios por padrão e a distribuição de `motionFor()` sobre `packages/ai/src/exercise-bank.ts` (esperado 63/102 supino, 81/102 genérico/incorreto)
 
 ## Phase 2: Foundational (bloqueia US1–US3)
 
-- [ ] T002 [P] Teste do catálogo em `packages/types/src/__tests__/motion.test.ts`: `MOTION_CATALOG` tem as 29 chaves do contrato, `GENERIC_MOTION === 'press-flat'`, toda entrada com `isolamento` declara `muscleGroups`
-- [ ] T003 Implementar `packages/types/src/motion.ts` (`MOTION_CATALOG`, `MotionKey`, `GENERIC_MOTION`) e exportar em `packages/types/src/index.ts`
-- [ ] T004 [P] Acrescentar `crossPattern?: boolean` a `Variant` em `packages/types/src/workout.ts`
+- [X] T002 [P] Teste do catálogo em `packages/types/src/__tests__/motion.test.ts`: `MOTION_CATALOG` tem as 30 chaves do contrato, `GENERIC_MOTION === 'press-flat'`, toda entrada com `isolamento` declara `muscleGroups`
+- [X] T003 Implementar `packages/types/src/motion.ts` (`MOTION_CATALOG`, `MotionKey`, `GENERIC_MOTION`) e exportar em `packages/types/src/index.ts`
+- [X] T004 [P] Acrescentar `crossPattern?: boolean` a `Variant` em `packages/types/src/workout.ts`
 
 ## Phase 3: User Story 1 — Animação certa do exercício (P1) 🎯 MVP
 
