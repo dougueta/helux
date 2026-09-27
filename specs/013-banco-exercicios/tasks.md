@@ -30,13 +30,13 @@
 **Goal**: alertas articulares geram até 2 equivalentes de outro padrão com menos carga articular, marcados e justificados.
 **Independent Test**: `variants.test.ts` (cenários joelho/ombro/lombar/sem alerta).
 
-- [ ] T011 [P] [US2] Teste em `packages/ai/src/__tests__/exercise-bank.test.ts`: toda entrada tem `stress` com joelho/ombro/lombar ∈ {0,1,2}; Leg Press tem joelho < Agachamento Livre (Barra); Elevação Pélvica joelho 0; Levantamento Terra lombar 2
-- [ ] T012 [US2] Implementar `stress` derivado (`PATTERN_STRESS` + `STRESS_OVERRIDES`) em `packages/ai/src/exercise-bank.ts`
-- [ ] T013 [P] [US2] Testes em `packages/ai/src/__tests__/variants.test.ts`: detecção de articulações (joelho/ombro/lombar/genérico); agachamento + alerta de joelho → ≥1 `crossPattern` do padrão dobrar-quadril com joelho menor e `why` citando joelho; sem alerta → nenhum `crossPattern`; Puxada Alta (Cabo) + ombro → equivalentes de puxar-horizontal; Levantamento Terra + lombar → equivalentes de agachar; Desenvolvimento Militar + ombro → empurrar-horizontal; Supino + ombro → nenhum (vertical tem mais carga); isolamento/core → nenhum; ≤ 2 equivalentes com equipamentos distintos; ajuste ±4/nível (Leg Press 96 no cenário de referência); original mantém 74; faixa 50–99; ordenação
-- [ ] T014 [US2] Implementar em `packages/ai/src/variants.ts`: `flaggedJoints(alertas)`, ajuste por articulação no `match`, `PATTERN_FAMILY`, seleção de equivalentes e `why` de equivalência
-- [ ] T015 [P] [US2] Teste em `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx`: variante com `crossPattern` mostra a etiqueta "Equivalente" e pode ser trocada
-- [ ] T016 [US2] Implementar a etiqueta `<Tag>Equivalente</Tag>` em `apps/web/src/components/workout/ExerciseSheet.tsx`
-- [ ] T017 [US2] Rodar testes direcionados da US2 e commitar
+- [X] T011 [P] [US2] Teste em `packages/ai/src/__tests__/exercise-bank.test.ts`: toda entrada tem `stress` com joelho/ombro/lombar ∈ {0,1,2}; Leg Press tem joelho < Agachamento Livre (Barra); Elevação Pélvica joelho 0; Levantamento Terra lombar 2
+- [X] T012 [US2] Implementar `stress` derivado (`PATTERN_STRESS` + `STRESS_OVERRIDES`) em `packages/ai/src/exercise-bank.ts`
+- [X] T013 [P] [US2] Testes em `packages/ai/src/__tests__/variants.test.ts`: detecção de articulações (joelho/ombro/lombar/genérico); agachamento + alerta de joelho → ≥1 `crossPattern` do padrão dobrar-quadril com joelho menor e `why` citando joelho; sem alerta → nenhum `crossPattern`; Puxada Alta (Cabo) + ombro → equivalentes de puxar-horizontal; Levantamento Terra + lombar → equivalentes de agachar; Desenvolvimento Militar + ombro → empurrar-horizontal; Supino + ombro → nenhum (vertical tem mais carga); isolamento/core → nenhum; ≤ 2 equivalentes com equipamentos distintos; ajuste ±4/nível (Leg Press 96 no cenário de referência); original mantém 74; faixa 50–99; ordenação
+- [X] T014 [US2] Implementar em `packages/ai/src/variants.ts`: `flaggedJoints(alertas)`, ajuste por articulação no `match`, `PATTERN_FAMILY`, seleção de equivalentes e `why` de equivalência
+- [X] T015 [P] [US2] Teste em `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx`: variante com `crossPattern` mostra a etiqueta "Equivalente" e pode ser trocada
+- [X] T016 [US2] Implementar a etiqueta `<Tag>Equivalente</Tag>` em `apps/web/src/components/workout/ExerciseSheet.tsx`
+- [X] T017 [US2] Rodar testes direcionados da US2 e commitar
 
 ## Phase 5: User Story 3 — Mais opções por padrão (P3)
 

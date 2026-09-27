@@ -172,6 +172,7 @@ export function ExerciseSheet({
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   <Tag>{v.equip}</Tag>
                   <Tag>{v.level}</Tag>
+                  {v.crossPattern && <Tag>Equivalente</Tag>}
                   {v.rec && !isCurrent && <Tag>Recomendado</Tag>}
                   {isCurrent && <Tag kind="outline">Atual</Tag>}
                 </div>

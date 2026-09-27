@@ -7,9 +7,15 @@ export interface ExerciseBankEntry {
   cues: string[]
   muscles: { primary: string[]; secondary: string[] }
   tempo: string
+  /** spec 013 (FR-009): carga articular estimada, 0 (baixa) a 2 (alta) */
+  stress: JointStress
 }
 
-type RawEntry = Omit<ExerciseBankEntry, 'muscles' | 'tempo'>
+export type Joint = 'joelho' | 'ombro' | 'lombar'
+export type StressLevel = 0 | 1 | 2
+export type JointStress = Record<Joint, StressLevel>
+
+type RawEntry = Omit<ExerciseBankEntry, 'muscles' | 'tempo' | 'stress'>
 
 const RAW_ENTRIES: RawEntry[] = [
   // ---- agachar ----
@@ -1418,8 +1424,85 @@ function deriveTempo(entry: RawEntry): string {
   return PATTERN_TEMPO[entry.pattern] ?? '2 · 0 · 1'
 }
 
+// ---- carga articular (spec 013, FR-009) ----
+// Estimativa biomecânica simplificada, usada para ranquear alternativas quando o
+// perfil genético sinaliza uma articulação — não é prescrição clínica.
+const s = (joelho: StressLevel, ombro: StressLevel, lombar: StressLevel): JointStress => ({ joelho, ombro, lombar })
+
+/** Carga típica de cada padrão de movimento (joelho, ombro, lombar). */
+const PATTERN_STRESS: Record<string, JointStress> = {
+  agachar: s(2, 0, 1),
+  'dobrar-quadril': s(0, 0, 2),
+  'empurrar-horizontal': s(0, 1, 0),
+  'empurrar-vertical': s(0, 2, 1),
+  'puxar-horizontal': s(0, 1, 1),
+  'puxar-vertical': s(0, 2, 0),
+  core: s(0, 0, 1),
+  isolamento: s(0, 0, 0),
+}
+
+/** Exercícios cujo movimento difere do padrão (apoio, trajetória guiada, carga axial). */
+export const STRESS_OVERRIDES: Record<string, JointStress> = {
+  // agachar
+  'agachamento-livre-barra': s(2, 0, 2),
+  'agachamento-frontal-barra': s(2, 1, 1),
+  'agachamento-overhead-barra': s(2, 2, 2),
+  'agachamento-bulgaro-halteres': s(2, 0, 0),
+  'agachamento-goblet-halteres': s(2, 0, 0),
+  'agachamento-livre-corporal': s(1, 0, 0),
+  'afundo-reverso-corporal': s(1, 0, 0),
+  'step-up-halteres': s(1, 0, 0),
+  'leg-press-45': s(1, 0, 0),
+  'agachamento-hack-maquina': s(1, 0, 0),
+  // dobrar quadril
+  'levantamento-terra-barra': s(1, 0, 2),
+  'levantamento-terra-sumo-barra': s(1, 0, 1),
+  'levantamento-terra-romeno-halteres': s(0, 0, 1),
+  'terra-halteres-unilateral': s(0, 0, 1),
+  'hiperextensao-lombar-banco': s(0, 0, 1),
+  'elevacao-pelvica-barra': s(0, 0, 0),
+  'elevacao-pelvica-corporal': s(0, 0, 0),
+  'elevacao-pelvica-unilateral': s(0, 0, 0),
+  // empurrar
+  'flexao-pike-corporal': s(0, 2, 0),
+  'handstand-pushup-assistido': s(0, 2, 1),
+  'desenvolvimento-maquina': s(0, 2, 0),
+  // puxar
+  'remada-curvada-barra': s(0, 1, 2),
+  'remada-curvada-halteres': s(0, 1, 2),
+  'remada-cavalinho-barra': s(0, 1, 2),
+  'remada-t-barra': s(0, 1, 2),
+  'remada-maquina': s(0, 1, 0),
+  'remada-invertida-corporal': s(0, 1, 0),
+  'face-pull-cabo': s(0, 1, 0),
+  'remada-alta-barra': s(0, 2, 0),
+  // core
+  'prancha-abdominal-corporal': s(0, 0, 0),
+  'prancha-lateral-corporal': s(0, 0, 0),
+  'dead-bug-corporal': s(0, 0, 0),
+  'pallof-press-cabo': s(0, 0, 0),
+  'roda-abdominal': s(0, 1, 2),
+  'prancha-toque-ombro-corporal': s(0, 1, 0),
+  // isolamento
+  'cadeira-extensora': s(2, 0, 0),
+  'mesa-flexora': s(1, 0, 0),
+  'cadeira-flexora': s(1, 0, 0),
+  'elevacao-lateral-halteres': s(0, 1, 0),
+  'elevacao-lateral-cabo': s(0, 1, 0),
+  'elevacao-frontal-halteres': s(0, 1, 0),
+  'triceps-testa-barra': s(0, 1, 0),
+  'mergulho-banco-corporal': s(0, 2, 0),
+  'paralelas-corporal': s(0, 2, 0),
+  'encolhimento-barra': s(0, 0, 1),
+}
+
+function deriveStress(entry: RawEntry): JointStress {
+  return STRESS_OVERRIDES[entry.id] ?? PATTERN_STRESS[entry.pattern] ?? s(0, 0, 0)
+}
+
 export const EXERCISE_BANK: ExerciseBankEntry[] = RAW_ENTRIES.map((entry) => ({
   ...entry,
   muscles: deriveMuscles(entry),
   tempo: deriveTempo(entry),
+  stress: deriveStress(entry),
 }))
