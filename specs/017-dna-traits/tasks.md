@@ -18,8 +18,8 @@ Nada a configurar: dependências instaladas, sem pacote novo.
 
 - [X] T002 [P] [US1] Teste vermelho de `parseGeneraTraits` em `packages/genetics/src/__tests__/traits.test.ts`: escopo só `fit` + `painel_saude_esportiva` (ignora `nutri`, `farma` etc.); campos key/gene/genotype/label/note; nível 0,9/0,2/0,5 pela regra FR-005; `warn` por seção/categoria (`lesao` inclusive); dedupe por SNP+traço mantendo COL1A1 ombro e ligamento; ordem risco primeiro, estável; genótipo vazio omitido; seções ausentes → []; e o arquivo real `apps/api/data/genetics/genera.json` gera 21 traits com WNT16 em primeiro
 - [X] T003 [US1] Implementar `parseGeneraTraits` em `packages/genetics/src/traits.ts` e exportar em `packages/genetics/src/index.ts` (T002 verde)
-- [ ] T004 [P] [US1] Teste vermelho em `apps/api/src/__tests__/genetic-profile.test.ts`: o 200 inclui `traits` (array vindo de `parseGeneraTraits`, mockado) junto do resumo; 404 inalterado
-- [ ] T005 [US1] `apps/api/src/routes/genetic-profile.ts` devolve `{ ...parseGeneraJson(raw), traits: parseGeneraTraits(raw) }` tipado como `GeneticProfileView` (T004 verde)
+- [X] T004 [P] [US1] Teste vermelho em `apps/api/src/__tests__/genetic-profile.test.ts`: o 200 inclui `traits` (array vindo de `parseGeneraTraits`, mockado) junto do resumo; 404 inalterado
+- [X] T005 [US1] `apps/api/src/routes/genetic-profile.ts` devolve `{ ...parseGeneraJson(raw), traits: parseGeneraTraits(raw) }` tipado como `GeneticProfileView` (T004 verde)
 - [ ] T006 [P] [US1] Teste vermelho em `apps/web/src/__tests__/app/dna-client.test.tsx`: com `state = { status: 'ok', profile }` e traits, renderiza um `TraitCard` por trait (gene, genótipo, traço, nota), ponto âmbar só nos `warn`, "N de N lidos", resumo "N marcadores…"; `strandGenes` devolve no máximo 4 genes únicos na ordem
 - [ ] T007 [US1] Reescrever `apps/web/src/app/dna/DnaClient.tsx` para receber `state: DnaState`, usar `GeneticTrait` tipado (sem `splitGene`) e exportar `strandGenes`; fita recebe `strandGenes(traits)` (T006 verde)
 

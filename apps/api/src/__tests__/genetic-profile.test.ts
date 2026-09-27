@@ -9,6 +9,17 @@ vi.mock('@helux/genetics', () => ({
     predisposicao: 'misto',
     alertas: ['Predisposição para menor densidade óssea'],
   }),
+  parseGeneraTraits: vi.fn().mockReturnValue([
+    {
+      key: 'rs2707466:densidade-ossea',
+      gene: 'WNT16',
+      genotype: 'C,T',
+      label: 'Densidade óssea',
+      level: 0.9,
+      note: 'Predisposição para menor densidade óssea',
+      warn: true,
+    },
+  ]),
 }))
 
 vi.mock('node:fs', async (importOriginal) => {
@@ -40,6 +51,16 @@ describe('GET /genetic-profile', () => {
     expect(body.riscoCardiovascular).toBe('medio')
     expect(body.predisposicao).toBe('misto')
     expect(body.alertas).toBeInstanceOf(Array)
+  })
+
+  it('inclui os marcadores (traits) junto do resumo (spec 017)', async () => {
+    const response = await app.inject({ method: 'GET', url: '/genetic-profile' })
+    expect(response.statusCode).toBe(200)
+    const body = JSON.parse(response.body)
+    expect(body.traits).toEqual([
+      expect.objectContaining({ key: 'rs2707466:densidade-ossea', gene: 'WNT16', genotype: 'C,T', warn: true }),
+    ])
+    expect(body.metabolismo).toBe('moderado')
   })
 
   it('retorna 404 quando genera.json não existe', async () => {
