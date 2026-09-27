@@ -13,6 +13,16 @@
 - Existem 3 animações prontas nunca usadas: elevação lateral, supino inclinado e tríceps deitado (testa).
 - As variantes sugeridas para um exercício vêm só do **mesmo padrão de movimento**, uma por tipo de equipamento. O ajuste genético atual considera só o equipamento (predisposição, recuperação, "risco articular" genérico) e não sabe qual articulação o alerta genético aponta.
 
+## Clarifications
+
+### Session 2026-09-27
+
+- Q: Planos já salvos (com a chave de animação antiga nas variantes) devem ser reprocessados para ganhar as animações novas? → A: Não. Só planos gerados a partir desta versão recebem as novas animações; planos antigos continuam válidos com a animação que já têm (sem migração, sem recálculo no cliente). (assumido pelo agente — revisar)
+- Q: Como o teste decide que um exercício está em "animação genérica ou incorreta" (SC-002)? → A: Cada animação declara quais padrões de movimento (e, para isolamentos, quais grupos musculares) representa; um exercício conta como genérico/incorreto se recebeu a animação de último recurso ou uma animação que não declara o seu padrão/grupo. Aplicada ao código atual, essa regra reproduz a linha de base de 81/102 (79,4%). (assumido pelo agente — revisar)
+- Q: Quais fatores genéticos disparam equivalência entre padrões? → A: Apenas alertas articulares (joelho, ombro, lombar ou genérico). Predisposição, recuperação e risco cardiovascular continuam influenciando só a pontuação de compatibilidade, não a inclusão de equivalentes de outro padrão. (assumido pelo agente — revisar)
+- Q: Quanto a carga articular pesa na compatibilidade? → A: 4 pontos por nível de diferença de carga (0–2) na articulação sinalizada, em relação ao exercício original (somado por articulação sinalizada), sempre dentro da faixa 50–99. (assumido pelo agente — revisar)
+- Q: Um equivalente de outro padrão pode receber o destaque "melhor encaixe" (betterFit)? → A: Sim — o destaque vai para a variante de maior compatibilidade que não seja a recomendada, seja do mesmo ou de outro padrão. (assumido pelo agente — revisar)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ver a animação certa do exercício (Priority: P1)
@@ -103,7 +113,9 @@ O usuário encontra mais variações para cada padrão (especialmente nos padrõ
 - **FR-011**: A geração de variantes DEVE identificar a(s) articulação(ões) sinalizada(s) pelos alertas genéticos do perfil (joelho, ombro, lombar; alerta genérico de tendão/ligamento/articulação = todas).
 - **FR-012**: Para exercícios compostos, quando há articulação sinalizada, o sistema DEVE sugerir até 2 equivalentes de outro padrão da mesma família funcional (membros inferiores: agachar ↔ dobrar quadril; empurrar: horizontal ↔ vertical; puxar: horizontal ↔ vertical), escolhidos por critério: carga estritamente menor na articulação sinalizada que o original e não maior em nenhuma outra articulação sinalizada.
 - **FR-013**: Entre os candidatos que atendem ao critério, o sistema DEVE escolher os de maior compatibilidade genética, sem repetir equipamento.
-- **FR-014**: A compatibilidade genética DEVE passar a considerar a articulação: variantes (do mesmo ou de outro padrão) com menos carga na articulação sinalizada que o exercício original ganham pontos proporcionais à redução; com mais carga, perdem. O exercício original não muda de pontuação por esse critério.
+- **FR-014**: A compatibilidade genética DEVE passar a considerar a articulação: variantes (do mesmo ou de outro padrão) com menos carga na articulação sinalizada que o exercício original ganham 4 pontos por nível de redução (por articulação sinalizada); com mais carga, perdem 4 por nível. O exercício original não muda de pontuação por esse critério. O destaque "melhor encaixe" pode ir para um equivalente de outro padrão.
+- **FR-018**: Apenas alertas articulares disparam equivalência entre padrões; os demais fatores genéticos (predisposição, recuperação, risco cardiovascular) afetam só a pontuação.
+- **FR-019**: Para a medição (FR-005), cada animação DEVE declarar os padrões de movimento (e, nos isolamentos, os grupos musculares) que representa; um exercício é "genérico/incorreto" se recebeu a animação de último recurso ou uma que não declara seu padrão/grupo.
 - **FR-015**: Cada equivalente de outro padrão DEVE ser marcado como tal e ter justificativa que cite a articulação do alerta genético e o padrão de origem.
 - **FR-016**: Sem articulação sinalizada, nenhuma equivalência entre padrões é sugerida e as variantes do mesmo padrão mantêm o comportamento atual.
 - **FR-017**: A folha de execução DEVE identificar visualmente um equivalente de outro padrão (etiqueta "Equivalente") e permitir aplicá-lo como qualquer variante.
