@@ -7,6 +7,16 @@
 
 **Relação com specs anteriores**: estende o mesociclo das specs 006/007/008 (geração, exibição e avanço de sessões), mantém o ajuste do dia por cansaço da spec 011 (que passa a valer só para o treino principal), usa a variante executada gravada no histórico (spec 010) e o registro de exercícios pulados (spec 009), e segue o Design System v2 (spec 012). O descanso personalizado entre séries (spec 015) fica fora do escopo, mas o tempo de descanso passa a ser decidido num ponto único para que a 015 possa substituí-lo.
 
+## Clarifications
+
+### Session 2026-09-27
+
+- Q: Em que granularidade e momento o usuário relata o esforço percebido? → A: Um relato por exercício do principal (não por série), num seletor de 4 níveis que aparece no treino ativo assim que o exercício tem ao menos uma série concluída; o nível escolhido vale para todas as séries concluídas daquele exercício e pode ser trocado até finalizar o treino. (assumido pelo agente — revisar)
+- Q: Quais fatores de "capacidade" entram no tamanho do aumento de carga? → A: Esforço relatado e nível de experiência do perfil. Percentual base: fácil 5%, moderado 2,5%; multiplicador por nível: iniciante 1,5×, intermediário 1×, avançado 0,5×; resultado arredondado ao incremento mínimo realista (nunca abaixo de 1 incremento) e limitado a 10% da carga anterior. O perfil genético não entra no cálculo nesta spec (continua influenciando a IA). (assumido pelo agente — revisar)
+- Q: Se o usuário ficou dentro da faixa de repetições (sem atingir o topo) relatando "fácil", mantém ou aumenta? → A: Aumenta um incremento mínimo (a carga estava leve demais); com moderado/difícil/no limite dentro da faixa, mantém. (assumido pelo agente — revisar)
+- Q: Qual o gatilho para reduzir a carga? → A: Reduzir cerca de 10% (arredondado ao incremento, mínimo 1 incremento) quando o usuário não completou as séries prescritas ou ficou abaixo do mínimo da faixa **e** relatou esforço difícil ou no limite; abaixo da faixa com esforço fácil/moderado/sem relato, mantém. (assumido pelo agente — revisar)
+- Q: O destaque do "treino de hoje" na Home mostra o primeiro item do aquecimento ou o primeiro exercício do principal? → A: O primeiro exercício do principal (a contagem de exercícios também considera só o principal); a Home indica quando o treino inclui aquecimento/volta à calma. (assumido pelo agente — revisar)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Treino do dia em 3 fases: aquecimento, principal e volta à calma (Priority: P1)
@@ -58,9 +68,9 @@ Ao final de um mesociclo, o próximo é gerado já com as cargas ajustadas a par
 **Acceptance Scenarios**:
 
 1. **Given** o usuário completou todas as séries no topo da faixa de repetições relatando esforço fácil ou moderado, **When** o próximo mesociclo é gerado e mantém o exercício, **Then** a carga prescrita aumenta (mais para "fácil" do que para "moderado"), arredondada a um incremento realista.
-2. **Given** o usuário completou as séries dentro da faixa, sem atingir o topo, **When** o próximo mesociclo é gerado, **Then** a carga é mantida e o motivo indica buscar mais repetições.
+2. **Given** o usuário completou as séries dentro da faixa, sem atingir o topo, com esforço moderado, difícil ou no limite, **When** o próximo mesociclo é gerado, **Then** a carga é mantida e o motivo indica buscar mais repetições; se o esforço relatado foi fácil, a carga aumenta um incremento mínimo.
 3. **Given** o usuário atingiu o topo da faixa mas relatou esforço difícil/no limite, **When** o próximo mesociclo é gerado, **Then** a carga é mantida.
-4. **Given** o usuário não completou as séries ou ficou abaixo da faixa relatando esforço no limite, **When** o próximo mesociclo é gerado, **Then** a carga é reduzida.
+4. **Given** o usuário não completou as séries ou ficou abaixo da faixa relatando esforço difícil ou no limite, **When** o próximo mesociclo é gerado, **Then** a carga é reduzida.
 5. **Given** o usuário executou o exercício com uma variante alternativa, pulou o exercício, ou o exercício é de peso corporal/sem carga numérica, **When** o próximo mesociclo é gerado, **Then** não há progressão calculada para esse exercício e a carga fica a critério da geração normal.
 6. **Given** o usuário não relatou esforço num exercício, **When** a progressão é calculada, **Then** o esforço é tratado como moderado (o padrão atual do histórico).
 7. **Given** o novo mesociclo com cargas progredidas, **When** o usuário abre a lista do treino, **Then** vê em cada exercício progredido a variação (ex.: "+2,5 kg") e pode ver o motivo.
@@ -109,10 +119,10 @@ Ao final de um mesociclo, o próximo é gerado já com as cargas ajustadas a par
 
 **Progressão de carga (US3)**
 
-- **FR-014**: No treino ativo, o usuário MUST poder relatar o esforço percebido de cada exercício do principal, em 4 níveis (fácil, moderado, difícil, no limite), gravado no histórico junto às séries. Sem relato, MUST ser gravado o valor padrão atual (equivalente a moderado).
+- **FR-014**: No treino ativo, o usuário MUST poder relatar o esforço percebido de cada exercício do principal (um relato por exercício, disponível assim que houver ao menos uma série concluída, alterável até finalizar), em 4 níveis (fácil, moderado, difícil, no limite), gravado no histórico em todas as séries concluídas do exercício. Sem relato, MUST ser gravado o valor padrão atual (tratado como moderado).
 - **FR-015**: Quando um novo mesociclo é gerado a partir de um mesociclo anterior concluído, o sistema MUST calcular, por regra determinística, uma decisão de progressão para cada exercício do principal do mesociclo anterior com dados comparáveis: aumentar, manter, reduzir ou sem dados, com carga anterior, carga nova e motivo legível.
 - **FR-016**: A regra MUST considerar: maior carga concluída, repetições atingidas nessa carga em relação à faixa prescrita, séries concluídas em relação às prescritas, esforço relatado e nível de experiência do usuário. Execuções com variante alternativa, exercícios pulados, exercícios sem carga numérica e faixas não numéricas MUST resultar em "sem dados".
-- **FR-017**: O aumento MUST ser proporcional à carga (maior com esforço fácil do que moderado, maior para iniciantes do que para avançados), arredondado ao incremento mínimo realista para a faixa de carga, com teto de 10% da carga anterior por mesociclo; a redução MUST ser de cerca de 10%, arredondada da mesma forma.
+- **FR-017**: Regras de decisão: (a) topo da faixa atingido em todas as séries prescritas com esforço fácil/moderado → aumentar carga anterior × percentual base (fácil 5%, moderado 2,5%) × multiplicador de nível (iniciante 1,5, intermediário 1, avançado 0,5), arredondado ao incremento mínimo realista, no mínimo 1 incremento e no máximo 10% da carga anterior (quando 1 incremento já passa de 10%, aplica-se 1 incremento); (b) topo atingido com esforço difícil/no limite → manter; (c) dentro da faixa → manter, exceto esforço fácil → aumentar 1 incremento; (d) séries incompletas ou abaixo da faixa com esforço difícil/no limite → reduzir 10% arredondado (mínimo 1 incremento); com outro esforço → manter.
 - **FR-018**: As decisões de progressão MUST ser informadas à IA na geração e MUST ser aplicadas deterministicamente depois da geração: todo exercício do principal do novo mesociclo que tenha decisão com carga nova MUST receber essa carga, independentemente do que a IA sugeriu.
 - **FR-019**: Cada exercício com progressão aplicada MUST guardar a decisão (carga anterior, nova, tipo e motivo) no plano, e a lista do treino MUST exibir a variação de carga e permitir ver o motivo.
 - **FR-020**: O primeiro mesociclo de um usuário e a geração manual avulsa ("Gerar novo plano") MUST NOT aplicar progressão.
@@ -121,6 +131,7 @@ Ao final de um mesociclo, o próximo é gerado já com as cargas ajustadas a par
 
 - **FR-021**: Planos já gravados (sem fases, sem biset, sem progressão), treinos ativos salvos no aparelho no formato antigo e o histórico existente MUST continuar funcionando sem migração de dados.
 - **FR-022**: As telas novas/alteradas MUST usar apenas os componentes e classes do Design System v2.
+- **FR-023**: O destaque do treino de hoje na Home MUST mostrar o primeiro exercício do principal e contar apenas exercícios do principal, indicando quando o treino inclui aquecimento/volta à calma.
 
 ### Key Entities *(include if feature involves data)*
 
