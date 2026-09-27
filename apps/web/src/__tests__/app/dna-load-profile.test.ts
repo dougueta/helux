@@ -9,7 +9,7 @@ const SUMMARY = {
   alertas: [],
 }
 
-function mockFetch(impl: () => Promise<Response>) {
+function mockFetch(impl: (input?: unknown) => Promise<Response>) {
   const fn = vi.fn(impl)
   vi.stubGlobal('fetch', fn)
   return fn

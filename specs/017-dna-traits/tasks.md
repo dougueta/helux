@@ -41,7 +41,7 @@ Nada a configurar: dependências instaladas, sem pacote novo.
 ## Phase 6: Polish
 
 - [X] T012 Registrar o achado 22 como resolvido pela 017 em `specs/012-design-system-unificado/research.md` (nota curta no item 22 e no item 28 sobre o hook)
-- [ ] T013 Suítes completas + typecheck + build uma vez (`pnpm test`, `pnpm typecheck`, `pnpm build`), incluindo a guarda do DS v2 em `apps/web/src/__tests__/design-system-guard.test.ts`
+- [X] T013 Suítes completas + typecheck + build uma vez (`pnpm test`, `pnpm typecheck`, `pnpm build`), incluindo a guarda do DS v2 em `apps/web/src/__tests__/design-system-guard.test.ts`
 - [ ] T014 Verificação manual do quickstart.md (depende de servidor; fica para o usuário se não houver RAM)
 
 ## Dependencies
