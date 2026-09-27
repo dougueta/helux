@@ -13,6 +13,16 @@ O teste Genera do usuário já contém os marcadores ligados a treino (seção d
 
 Há ainda um hook de leitura do perfil genético no app web que não é usado por nenhuma tela desde antes da 012; ele deve ser reaproveitado ou removido.
 
+## Clarifications
+
+### Session 2026-09-27
+
+- Q: Quais seções do teste Genera entram como marcadores? → A: Só aptidão física (`fit`) e painel de saúde esportiva; saúde, farma, doenças, nutrição, pele, envelhecimento e personalidade ficam de fora — são dados sensíveis e não orientam treino. (assumido pelo agente — revisar)
+- Q: Como obter o nível 0–1 se o teste não traz número? → A: Regra fixa sobre a categoria e o texto da interpretação (FR-005): ponto de atenção ou "Maior predisposição/suscetibilidade" = 0,9 (alto); "Sem/Menor predisposição" = 0,2 (baixo); demais = 0,5 (médio). (assumido pelo agente — revisar)
+- Q: O hook órfão `useGeneticProfile` deve ser reaproveitado ou removido? → A: Removido. A tela DNA lê o perfil no servidor (componente de servidor com cache de 1 h) e nenhuma outra tela precisa dele; o serviço `getGeneticProfile` fica, porque a geração manual de treino o usa. (assumido pelo agente — revisar)
+- Q: O texto exibido no card é o original do teste ou reescrito pelo Helux? → A: O original do teste (traço = característica; nota = resultado), sem reescrita; o texto "impacto no treino" do desenho exige curadoria que não existe. (assumido pelo agente — revisar)
+- Q: Teste Genera presente mas malformado conta como "não carregado" ou "falha"? → A: Falha de carregamento (mensagem de erro), para não esconder um problema de dado atrás de um estado vazio. (assumido pelo agente — revisar)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ver meus marcadores genéticos reais (Priority: P1)
@@ -75,16 +85,16 @@ Existe um único caminho de leitura do perfil genético no app web, sem código 
 ### Functional Requirements
 
 - **FR-001**: O perfil genético entregue ao app MUST incluir a lista de marcadores de treino do usuário, além do resumo que já entrega hoje (compatível com os consumidores atuais).
-- **FR-002**: Cada marcador MUST ter: identificador estável e único, gene, genótipo (quando houver), traço (nome da característica), nível de 0 a 1, interpretação do teste e indicador de risco.
+- **FR-002**: Cada marcador MUST ter: identificador estável e único, gene, genótipo (quando houver), traço (nome da característica), nível de 0 a 1, interpretação do teste (texto original, sem reescrita) e indicador de risco.
 - **FR-003**: Os marcadores MUST vir das seções de aptidão física e do painel de saúde esportiva do teste Genera. Seções de saúde, farmacogenética, doenças, nutrição, pele, envelhecimento e personalidade MUST ficar de fora.
 - **FR-004**: O indicador de risco MUST ser verdadeiro para marcadores classificados no teste como ponto de atenção, cuidado relevante ou lesão, e falso nos demais.
-- **FR-005**: O nível MUST ser derivado da interpretação do teste: "alto" (≥ 0,67) para pontos de atenção e interpretações de maior predisposição/suscetibilidade; "baixo" (< 0,34) para interpretações sem ou com menor predisposição; "médio" nos demais casos.
+- **FR-005**: O nível MUST ser derivado da interpretação do teste: 0,9 ("alto") para pontos de atenção e interpretações que começam com "Maior predisposição" ou "Maior suscetibilidade"; 0,2 ("baixo") para interpretações que começam com "Sem predisposição" ou "Menor predisposição"; 0,5 ("médio") nos demais casos.
 - **FR-006**: Marcadores repetidos (mesmo SNP e mesmo traço) MUST aparecer uma única vez; mesmo SNP com traços diferentes MUST gerar marcadores distintos.
 - **FR-007**: A ordem dos marcadores MUST pôr os de risco primeiro (pontos de atenção, depois cuidados relevantes e lesões), seguidos dos demais na ordem do teste.
 - **FR-008**: A tela DNA MUST exibir os marcadores recebidos no visual v2 já existente (fita, "Marcadores genéticos", cards com nível e ponto âmbar).
 - **FR-009**: A fita MUST destacar no máximo 4 genes (priorizando os de risco, sem repetir gene), para que os rótulos caibam em 320 px; todos os marcadores continuam listados nos cards.
 - **FR-010**: A tela DNA MUST distinguir três situações sem marcadores: teste não carregado, teste sem marcadores de treino, e falha ao carregar — cada uma com mensagem própria em linguagem de usuário.
-- **FR-011**: O hook órfão de leitura do perfil genético MUST ser removido (a tela DNA já lê o perfil no servidor), junto com seus testes, se houver.
+- **FR-011**: O hook órfão de leitura do perfil genético MUST ser removido (a tela DNA já lê o perfil no servidor), junto com seus testes, se houver; o serviço de leitura do perfil continua, pois a geração manual de treino o usa.
 - **FR-012**: A tela MUST continuar usando só as classes do Design System v2 (guarda da 012 verde).
 
 ### Key Entities
