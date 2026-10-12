@@ -31,6 +31,7 @@ export async function generateMesocyclePlan(input: PlanInput): Promise<Omit<Meso
     input.bodyCheckins,
     input.trainingTime,
     input.timeOff,
+    input.loadProgression,
   )
 
   const response = await client.messages.create({

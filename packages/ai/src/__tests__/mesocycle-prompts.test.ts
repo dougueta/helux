@@ -108,3 +108,25 @@ describe('buildMesocycleSystemPrompt — biset (spec 014, US2)', () => {
     expect(prompt).toContain('mesmo número de séries')
   })
 })
+
+describe('buildMesocycleUserPrompt — progressão de carga (spec 014, US3, FR-018)', () => {
+  const decisions = [
+    { name: 'Supino Reto', action: 'aumentar' as const, previousWeightKg: 40, nextWeightKg: 42, reason: 'Topo da faixa: +2 kg.' },
+    { name: 'Remada Curvada', action: 'reduzir' as const, previousWeightKg: 50, nextWeightKg: 46, reason: 'Abaixo da faixa no limite: −4 kg.' },
+    { name: 'Agachamento', action: 'sem-dados' as const, previousWeightKg: null, nextWeightKg: null, reason: 'Pulado.' },
+  ]
+
+  it('lista as decisões com carga (ignora sem-dados) na seção obrigatória', () => {
+    const prompt = buildMesocycleUserPrompt([], [], 'Hipertrofia', 'intermediario', 4, undefined, undefined, undefined, decisions)
+    expect(prompt).toContain('## Progressão de carga calculada — OBRIGATÓRIO')
+    expect(prompt).toContain('- Supino Reto: 40 kg → 42 kg (aumentar) — Topo da faixa: +2 kg.')
+    expect(prompt).toContain('- Remada Curvada: 50 kg → 46 kg (reduzir) — Abaixo da faixa no limite: −4 kg.')
+    expect(prompt).not.toContain('Agachamento:')
+  })
+
+  it('sem decisões com carga, a seção não aparece', () => {
+    const none = buildMesocycleUserPrompt([], [], 'Hipertrofia', 'intermediario', 4, undefined, undefined, undefined, [decisions[2]])
+    expect(none).not.toContain('Progressão de carga calculada')
+    expect(buildMesocycleUserPrompt([], [], 'Hipertrofia', 'intermediario', 4)).not.toContain('Progressão de carga calculada')
+  })
+})

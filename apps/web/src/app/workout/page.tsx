@@ -21,6 +21,7 @@ import { SetRow } from '@/components/ui/SetRow'
 import { Tag } from '@/components/ui/Tag'
 import { Tips } from '@/components/ui/Tips'
 import { WorkoutProgress } from '@/components/ui/WorkoutProgress'
+import { EffortPicker } from '@/components/workout/EffortPicker'
 import { exercisePhase, nextStepAfterSet, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
 import type { ExercisePhase } from '@helux/types'
 
@@ -64,6 +65,7 @@ export default function WorkoutPage() {
     updateSet,
     addSet,
     selectVariant,
+    setEffort,
     getSkippedExercises,
     finishWorkout,
   } = useActiveWorkout()
@@ -440,6 +442,17 @@ export default function WorkoutPage() {
             <Button kind="ghost" block icon="plus" style={{ marginTop: 6 }} onClick={() => addSet(currentIdx)}>
               Adicionar série
             </Button>
+            {currentSets.some(s => s.done) && (
+              <div style={{ marginTop: 16 }}>
+                <p className="t-secondary" style={{ marginBottom: 8 }}>
+                  Como foi o esforço?
+                </p>
+                <EffortPicker
+                  value={session.effortByExerciseIndex?.[currentIdx] ?? null}
+                  onChange={level => setEffort(currentIdx, level)}
+                />
+              </div>
+            )}
           </section>
           )}
         </div>

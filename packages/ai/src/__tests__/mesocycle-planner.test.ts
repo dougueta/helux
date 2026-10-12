@@ -156,3 +156,15 @@ describe('generateMesocyclePlan — biset (spec 014, US2)', () => {
     expect(result.sessions[0].exercises.map((e) => e.supersetGroup)).toEqual(['b1', 'b1'])
   })
 })
+
+describe('generateMesocyclePlan — progressão de carga (spec 014, US3)', () => {
+  it('envia input.loadProgression no prompt do usuário', async () => {
+    await generateMesocyclePlan({
+      ...MOCK_INPUT,
+      loadProgression: [{ name: 'Supino Reto', action: 'aumentar', previousWeightKg: 40, nextWeightKg: 42, reason: 'Topo.' }],
+    })
+    const userText = JSON.stringify(mockCreate.mock.calls.at(-1)![0].messages)
+    expect(userText).toContain('Progressão de carga calculada')
+    expect(userText).toContain('Supino Reto: 40 kg → 42 kg (aumentar)')
+  })
+})

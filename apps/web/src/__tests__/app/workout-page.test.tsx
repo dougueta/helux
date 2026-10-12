@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ActiveWorkoutState } from '@/hooks/useActiveWorkout'
 
@@ -247,6 +247,7 @@ function seedState(partial: Partial<ActiveWorkoutState> & Pick<ActiveWorkoutStat
     startedAt: new Date(Date.now() - 10 * 60000).toISOString(),
     variantByExerciseIndex: {},
     executedVariantByExerciseIndex: {},
+    effortByExerciseIndex: {},
     ...partial,
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
@@ -401,5 +402,43 @@ describe('WorkoutPage — biset (spec 014, US2)', () => {
     render(<WorkoutPage />)
     await user.click(await screen.findByRole('button', { name: 'Exercício 3, 0 de 2 séries' }))
     expect(screen.queryByText(/Biset ·/)).not.toBeInTheDocument()
+  })
+})
+
+describe('WorkoutPage — esforço percebido (spec 014, US3, FR-014)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  const plan = [
+    { name: 'Esteira leve', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento' },
+    { name: 'Supino', sets: 2, reps: '8', weight: '60kg', phase: 'principal' },
+  ] as ActiveWorkoutState['planExercises']
+  const states = [
+    [{ weight: 0, reps: 8, done: false }],
+    [{ weight: 60, reps: 8, done: false }, { weight: 60, reps: 8, done: false }],
+  ]
+
+  it('aparece no principal só depois da 1ª série concluída e registra o nível', async () => {
+    seedState({ planExercises: plan, exerciseStates: states, currentExerciseIndex: 1 })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await screen.findByRole('button', { name: 'concluir série 1' })
+    expect(screen.queryByRole('group', { name: 'Esforço percebido' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+    const picker = screen.getByRole('group', { name: 'Esforço percebido' })
+    await user.click(within(picker).getByRole('button', { name: 'Difícil' }))
+    expect(within(picker).getByRole('button', { name: 'Difícil' })).toHaveAttribute('aria-pressed', 'true')
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).effortByExerciseIndex).toEqual({ 1: 'dificil' })
+  })
+
+  it('não aparece no aquecimento', async () => {
+    seedState({ planExercises: plan, exerciseStates: [[{ weight: 0, reps: 8, done: true }], states[1]] })
+    render(<WorkoutPage />)
+    await screen.findByRole('heading', { level: 1 })
+    expect(screen.queryByRole('group', { name: 'Esforço percebido' })).not.toBeInTheDocument()
   })
 })

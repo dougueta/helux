@@ -13,6 +13,14 @@ const ROW_STYLE = {
   alignItems: 'baseline',
 } as const
 
+/** "+2 kg" / "−10 kg" / "mantida" (spec 014, FR-019). */
+function progressionDelta(p: NonNullable<PlannedExercise['progression']>): string {
+  const delta = Math.round(((p.nextWeightKg ?? 0) - (p.previousWeightKg ?? 0)) * 100) / 100
+  if (delta === 0) return 'mantida'
+  const kg = String(Math.abs(delta)).replace('.', ',')
+  return `${delta > 0 ? '+' : '−'}${kg} kg`
+}
+
 function MainRow({ exercise, partner }: { exercise: PlannedExercise; partner: PlannedExercise | null }) {
   const fit = resolveExerciseDisplay(exercise, undefined).fit
   return (
@@ -24,7 +32,18 @@ function MainRow({ exercise, partner }: { exercise: PlannedExercise; partner: Pl
       <span>{fit !== undefined && <Fit value={fit} />}</span>
       <span className="n-sm dim" style={{ textAlign: 'right' }}>
         {exercise.weight}
+        {exercise.progression && (
+          <>
+            {' '}
+            <span>{progressionDelta(exercise.progression)}</span>
+          </>
+        )}
       </span>
+      {exercise.progression && (
+        <span className="t-secondary" style={{ gridColumn: '1 / -1' }}>
+          {exercise.progression.reason}
+        </span>
+      )}
       {partner && (
         <span className="t-secondary" style={{ gridColumn: '1 / -1' }}>
           Biset · com {partner.name}

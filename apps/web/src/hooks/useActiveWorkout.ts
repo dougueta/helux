@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { apiFetch } from '@/services/api-client'
 import { clearCachedPlan } from './useWorkoutPlan'
 import { recommendedVariant } from '@/lib/exerciseDisplay'
-import { isMainExercise } from '@helux/workouts'
+import { EFFORT_VALUE, isMainExercise, type EffortLevel } from '@helux/workouts'
 import type { PlannedExercise, Variant } from '@helux/types'
 
 const STORAGE_KEY = 'helux:active-workout'
@@ -24,10 +24,16 @@ export interface ActiveWorkoutState {
   variantByExerciseIndex: Record<number, string>
   /** Variant locked at the first done set; `null` = planned exercise (survives JSON, unlike `undefined`). */
   executedVariantByExerciseIndex: Record<number, string | null>
+  /** Esforço percebido relatado por exercício (spec 014, FR-014); ausente em estados antigos. */
+  effortByExerciseIndex: Record<number, EffortLevel>
 }
 
+/** Sem relato, o histórico continua gravando 8 (tratado como moderado). */
+const DEFAULT_EFFORT = 8
+
 function parseWeight(weight: string): number {
-  return parseInt(weight) || 0
+  // parseFloat: cargas da progressão podem ter casa decimal ("102.5kg").
+  return parseFloat(weight.replace(',', '.')) || 0
 }
 
 function parseReps(reps: string): number {
@@ -55,6 +61,7 @@ export function useActiveWorkout() {
           ...parsed,
           variantByExerciseIndex: parsed.variantByExerciseIndex ?? {},
           executedVariantByExerciseIndex: parsed.executedVariantByExerciseIndex ?? {},
+          effortByExerciseIndex: parsed.effortByExerciseIndex ?? {},
         })
       } catch {
         localStorage.removeItem(STORAGE_KEY)
@@ -80,6 +87,7 @@ export function useActiveWorkout() {
       startedAt: new Date().toISOString(),
       variantByExerciseIndex: {},
       executedVariantByExerciseIndex: {},
+      effortByExerciseIndex: {},
     }
     save(state)
     setSession(state)
@@ -162,6 +170,18 @@ export function useActiveWorkout() {
     })
   }, [])
 
+  const setEffort = useCallback((exerciseIndex: number, level: EffortLevel) => {
+    setSession(prev => {
+      if (!prev) return prev
+      const next: ActiveWorkoutState = {
+        ...prev,
+        effortByExerciseIndex: { ...prev.effortByExerciseIndex, [exerciseIndex]: level },
+      }
+      save(next)
+      return next
+    })
+  }, [])
+
   const getSkippedExercises = useCallback((): PlannedExercise[] => {
     if (!session) return []
     // Spec 014: aquecimento e volta à calma não contam como exercício pulado.
@@ -178,9 +198,11 @@ export function useActiveWorkout() {
 
     // Spec 014: o histórico guarda só o treino principal.
     const exercises = session.planExercises.flatMap((ex, ei) => (isMainExercise(ex) ? [{ ex, ei }] : [])).map(({ ex, ei }) => {
+      const level = session.effortByExerciseIndex[ei]
+      const effort = level ? EFFORT_VALUE[level] : DEFAULT_EFFORT
       const doneSets = (session.exerciseStates[ei] ?? [])
         .filter(s => s.done)
-        .map(s => ({ reps: s.reps, weight: s.weight, effort: 8 }))
+        .map(s => ({ reps: s.reps, weight: s.weight, effort }))
 
       if (doneSets.length === 0) {
         return { name: ex.name, sets: doneSets, skipped: true }
@@ -221,6 +243,7 @@ export function useActiveWorkout() {
     updateSet,
     addSet,
     selectVariant,
+    setEffort,
     getSkippedExercises,
     finishWorkout,
   }

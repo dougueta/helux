@@ -70,3 +70,33 @@ describe('PlanExerciseList — biset (spec 014, US2, FR-012)', () => {
     expect(screen.queryByText(/Biset/)).not.toBeInTheDocument()
   })
 })
+
+describe('PlanExerciseList — progressão de carga (spec 014, US3, FR-019)', () => {
+  const plan: PlannedExercise[] = [
+    {
+      name: 'Supino Reto', sets: 3, reps: '8-10', weight: '42kg', phase: 'principal',
+      progression: { action: 'aumentar', previousWeightKg: 40, nextWeightKg: 42, reason: 'Topo da faixa (10 reps) em todas as séries com esforço moderado: +2 kg.' },
+    },
+    {
+      name: 'Remada Curvada', sets: 3, reps: '8-10', weight: '82.5kg', phase: 'principal',
+      progression: { action: 'reduzir', previousWeightKg: 92.5, nextWeightKg: 82.5, reason: 'Abaixo da faixa (6 reps) com esforço difícil: −10 kg.' },
+    },
+    {
+      name: 'Rosca Direta', sets: 3, reps: '12', weight: '20kg', phase: 'principal',
+      progression: { action: 'manter', previousWeightKg: 20, nextWeightKg: 20, reason: 'Dentro da faixa: mantém 20 kg até chegar ao topo.' },
+    },
+    { name: 'Crucifixo', sets: 3, reps: '12', weight: '14kg', phase: 'principal' },
+  ]
+
+  it('mostra a variação de carga e o motivo', () => {
+    render(<PlanExerciseList exercises={plan} />)
+    const [supino, remada, rosca, crucifixo] = screen.getAllByRole('listitem')
+    expect(within(supino).getByText('+2 kg')).toBeInTheDocument()
+    expect(within(supino).getByText(/Topo da faixa/)).toBeInTheDocument()
+    expect(within(remada).getByText('−10 kg')).toBeInTheDocument()
+    expect(within(rosca).getByText('mantida')).toBeInTheDocument()
+    expect(within(rosca).getByText(/Dentro da faixa/)).toBeInTheDocument()
+    expect(within(crucifixo).queryByText(/^[+−]\d/)).not.toBeInTheDocument()
+    expect(within(crucifixo).queryByText('mantida')).not.toBeInTheDocument()
+  })
+})

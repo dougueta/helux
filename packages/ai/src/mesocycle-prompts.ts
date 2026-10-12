@@ -1,4 +1,4 @@
-import type { GeneticProfile, WorkoutConstraints, WorkoutSession, RecoveryData, BodyCheckin } from '@helux/types'
+import type { GeneticProfile, WorkoutConstraints, WorkoutSession, RecoveryData, BodyCheckin, LoadProgression } from '@helux/types'
 import { buildExerciseCatalogSection, buildContextBody } from './prompts'
 
 export function buildMesocycleSystemPrompt(
@@ -187,8 +187,28 @@ export function buildMesocycleUserPrompt(
   checkins?: BodyCheckin[],
   trainingTime?: string,
   timeOff?: string,
+  loadProgression?: LoadProgression[],
 ): string {
   return `${buildContextBody(history, recovery, goals, level, daysPerWeek, checkins, trainingTime, timeOff)}
-
+${buildProgressionSection(loadProgression)}
 Com base neste contexto e no perfil genético fornecido, prescreva o mesociclo completo (todas as sessões do ciclo de divisão muscular, na ordem em que devem ser executadas). Lembre-se de respeitar todas as restrições genéticas.`
+}
+
+const fmtKg = (kg: number | null) => `${String(kg).replace('.', ',')} kg`
+
+/**
+ * Decisões determinísticas de carga (spec 014, FR-018). A API sobrescreve as
+ * cargas depois da geração de qualquer forma; aqui a IA fica sabendo para
+ * manter os exercícios e não brigar com a progressão.
+ */
+function buildProgressionSection(decisions?: LoadProgression[]): string {
+  const withLoad = (decisions ?? []).filter((d) => d.action !== 'sem-dados' && d.nextWeightKg !== null)
+  if (withLoad.length === 0) return ''
+  const lines = withLoad.map((d) => `- ${d.name}: ${fmtKg(d.previousWeightKg)} → ${fmtKg(d.nextWeightKg)} (${d.action}) — ${d.reason}`)
+  return `
+## Progressão de carga calculada — OBRIGATÓRIO
+
+Cargas definidas pela regra de progressão a partir do mesociclo anterior. Mantenha preferencialmente estes exercícios no treino principal e use exatamente estas cargas:
+${lines.join('\n')}
+`
 }
