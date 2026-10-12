@@ -13,6 +13,13 @@
 - Existem 3 animações prontas nunca usadas: elevação lateral, supino inclinado e tríceps deitado (testa).
 - As variantes sugeridas para um exercício vêm só do **mesmo padrão de movimento**, uma por tipo de equipamento. O ajuste genético atual considera só o equipamento (predisposição, recuperação, "risco articular" genérico) e não sabe qual articulação o alerta genético aponta.
 
+### Resultado (depois, medido em 2026-10-12 com `measureMotionCoverage` + `resolveMotion`)
+
+- **122 exercícios** (era 102): agachar 15, dobrar quadril 15, empurrar horizontal 11, empurrar vertical 9, puxar horizontal 11, puxar vertical 10, core 16, isolamento 35; todo padrão com ≥ 8 exercícios e ≥ 3 equipamentos (SC-006).
+- **Animação genérica/incorreta: 0 de 122 (0%)** (era 79,4%; meta ≤ 10%, SC-002).
+- **Supino reto: 5 de 122 (4,1%)** (era 61,8%; meta ≤ 12%). Animação mais usada: `hinge` com 11 (9,0%; meta ≤ 20%). 30 animações distintas em uso.
+- Cenário de referência (agachamento + alerta de joelho): o melhor encaixe passa a ser o equivalente **Pull-through no Cabo** (99), seguido da Leg Press 45° (96), como permite a FR-014.
+
 ## Clarifications
 
 ### Session 2026-09-27

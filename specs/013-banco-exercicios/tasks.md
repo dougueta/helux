@@ -49,8 +49,8 @@
 
 ## Phase 6: Polish
 
-- [ ] T021 Atualizar o spec com os números finais (depois) e marcar tarefas; rodar uma vez a suíte completa (`pnpm test`), `pnpm typecheck` e `pnpm build`; conferir o guard do DS v2
-- [ ] T022 Commit final
+- [X] T021 Atualizar o spec com os números finais (depois) e marcar tarefas; rodar uma vez a suíte completa (`pnpm test`), `pnpm typecheck` e `pnpm build`; conferir o guard do DS v2
+- [X] T022 Commit final
 
 ## Dependencies
 

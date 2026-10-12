@@ -188,8 +188,7 @@ function lerpPose(a: Pose, b: Pose, t: number): Pose {
   const out = {} as Pose
   for (const k of Object.keys(a) as (keyof Pose)[]) {
     const pa = a[k]
-    const pb = b[k] ?? pa
-    if (pa) out[k] = lerpP(pa, pb, t)
+    if (pa) out[k] = lerpP(pa, b[k] ?? pa, t)
   }
   return out
 }
