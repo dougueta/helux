@@ -1,6 +1,6 @@
 # Feature Specification: Marcadores Genéticos na Tela DNA
 
-**Feature Branch**: `017-dna-traits`
+**Feature Branch**: `020-dna-traits`
 **Created**: 2026-09-27
 **Status**: Draft
 **Input**: User description: "Tela DNA do app web deve mostrar os marcadores genéticos reais do usuário (gene, genótipo, interpretação), a partir do achado #22 da spec 012: GET /genetic-profile devolve o GeneticProfile sem `traits`, então a tela DNA mostra estado vazio em produção mesmo havendo dados genéticos. Corrigir o contrato da API expondo os marcadores (derivados do arquivo Genera em data/genetics/genera.json), ligar na tela DNA v2 com estado vazio correto só quando realmente não houver dados, e resolver o hook órfão useGeneticProfile."

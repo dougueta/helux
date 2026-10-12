@@ -1,7 +1,7 @@
 # Implementation Plan: Marcadores Genéticos na Tela DNA
 
-**Branch**: `017-dna-traits` | **Date**: 2026-09-27 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `specs/017-dna-traits/spec.md`
+**Branch**: `020-dna-traits` | **Date**: 2026-09-27 | **Spec**: [spec.md](./spec.md)
+**Input**: Feature specification from `specs/020-dna-traits/spec.md`
 
 ## Summary
 
@@ -36,7 +36,7 @@ Sem violações. Reavaliado após o desenho: sem mudanças.
 ### Documentation (this feature)
 
 ```text
-specs/017-dna-traits/
+specs/020-dna-traits/
 ├── plan.md
 ├── research.md
 ├── data-model.md

@@ -28,7 +28,7 @@ const profile = (traits: GeneticTrait[]): GeneticProfileView => ({
   traits,
 })
 
-describe('DnaClient com marcadores (spec 017, US1)', () => {
+describe('DnaClient com marcadores (spec 020, US1)', () => {
   it('mostra um card por marcador com gene, genótipo, traço e interpretação', () => {
     render(<DnaClient state={{ status: 'ok', profile: profile(TRAITS) }} />)
     expect(screen.getAllByRole('article')).toHaveLength(3)
@@ -68,7 +68,7 @@ describe('strandGenes (FR-009)', () => {
   })
 })
 
-describe('DnaClient sem marcadores (spec 017, US2)', () => {
+describe('DnaClient sem marcadores (spec 020, US2)', () => {
   it('teste não carregado → "Perfil genético não carregado"', () => {
     render(<DnaClient state={{ status: 'missing' }} />)
     expect(screen.getByText('Perfil genético não carregado')).toBeInTheDocument()

@@ -35,7 +35,7 @@ function arr(v: unknown): RawEntry[] {
 }
 
 /**
- * Marcadores de treino do teste Genera (spec 017): só `fit` e
+ * Marcadores de treino do teste Genera (spec 020): só `fit` e
  * `painel_saude_esportiva`, com os textos originais. Risco primeiro
  * (pontos de atenção, depois cuidados relevantes e lesões), o resto na
  * ordem do teste; repetições de SNP + traço aparecem uma vez.

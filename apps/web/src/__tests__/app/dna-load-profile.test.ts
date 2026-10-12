@@ -18,7 +18,7 @@ function mockFetch(impl: (input?: unknown) => Promise<Response>) {
 const json = (body: unknown, status = 200) =>
   Promise.resolve(new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }))
 
-describe('loadGeneticProfile (spec 017, US2)', () => {
+describe('loadGeneticProfile (spec 020, US2)', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
   })

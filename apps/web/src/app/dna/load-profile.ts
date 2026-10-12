@@ -1,6 +1,6 @@
 import type { GeneticProfileView } from '@helux/types'
 
-/** Resultado da leitura do perfil genético (spec 017, FR-010). */
+/** Resultado da leitura do perfil genético (spec 020, FR-010). */
 export type DnaState =
   | { status: 'ok'; profile: GeneticProfileView }
   | { status: 'missing' }

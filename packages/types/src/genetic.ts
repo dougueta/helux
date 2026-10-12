@@ -6,7 +6,7 @@ export interface GeneticProfile {
   alertas: string[]
 }
 
-/** Marcador genético ligado a treino, extraído do teste Genera (spec 017). */
+/** Marcador genético ligado a treino, extraído do teste Genera (spec 020). */
 export interface GeneticTrait {
   /** `${snp}:${slug do traço}` — único na lista. */
   key: string

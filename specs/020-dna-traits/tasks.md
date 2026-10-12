@@ -1,6 +1,6 @@
 # Tasks: Marcadores Genéticos na Tela DNA
 
-**Input**: `specs/017-dna-traits/` (plan.md, spec.md, research.md, data-model.md, contracts/genetic-profile.md, quickstart.md)
+**Input**: `specs/020-dna-traits/` (plan.md, spec.md, research.md, data-model.md, contracts/genetic-profile.md, quickstart.md)
 **Tests**: obrigatórios (Constituição II — TDD). Cada teste é escrito e visto falhar antes da implementação.
 
 ## Phase 1: Setup
@@ -40,7 +40,7 @@ Nada a configurar: dependências instaladas, sem pacote novo.
 
 ## Phase 6: Polish
 
-- [X] T012 Registrar o achado 22 como resolvido pela 017 em `specs/012-design-system-unificado/research.md` (nota curta no item 22 e no item 28 sobre o hook)
+- [X] T012 Registrar o achado 22 como resolvido pela 020 em `specs/012-design-system-unificado/research.md` (nota curta no item 22 e no item 28 sobre o hook)
 - [X] T013 Suítes completas + typecheck + build uma vez (`pnpm test`, `pnpm typecheck`, `pnpm build`), incluindo a guarda do DS v2 em `apps/web/src/__tests__/design-system-guard.test.ts`
 - [ ] T014 Verificação manual do quickstart.md (depende de servidor; fica para o usuário se não houver RAM)
 

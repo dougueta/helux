@@ -25,7 +25,7 @@ function Empty({ title, text }: { title: string; text: string }) {
   )
 }
 
-/** DNA (FR-022 da 012, spec 017). "Como molda seu treino" fica oculto enquanto não houver dado (FR-024). */
+/** DNA (FR-022 da 012, spec 020). "Como molda seu treino" fica oculto enquanto não houver dado (FR-024). */
 export function DnaClient({ state }: { state: DnaState }) {
   if (state.status === 'error') {
     return (

@@ -14,7 +14,7 @@ export async function geneticProfileRoutes(app: FastifyInstance): Promise<void> 
       })
     }
     const raw: unknown = JSON.parse(readFileSync(GENERA_PATH, 'utf-8'))
-    // Spec 017: o resumo segue igual; os marcadores de treino vão junto para a tela DNA.
+    // Spec 020: o resumo segue igual; os marcadores de treino vão junto para a tela DNA.
     const profile: GeneticProfileView = { ...parseGeneraJson(raw), traits: parseGeneraTraits(raw) }
     return profile
   })
