@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { EXERCISE_BANK, MUSCLE_GROUP_LABEL } from '../exercise-bank'
+import { EXERCISE_BANK, MUSCLE_GROUP_LABEL, STRESS_OVERRIDES } from '../exercise-bank'
 
 describe('EXERCISE_BANK', () => {
   it('tem pelo menos 100 exercícios', () => {
@@ -82,4 +82,52 @@ describe('MUSCLE_GROUP_LABEL', () => {
     for (const g of groups) expect(MUSCLE_GROUP_LABEL[g]).toBeTruthy()
     expect(MUSCLE_GROUP_LABEL.quadriceps).toBe('Quadríceps')
   })
+})
+
+// spec 013 (FR-009): carga articular estimada por exercício
+describe('EXERCISE_BANK — carga articular (stress)', () => {
+  const byName = (name: string) => EXERCISE_BANK.find((e) => e.name === name)!
+
+  it('todo ajuste de carga por exercício aponta para um id existente', () => {
+    const ids = new Set(EXERCISE_BANK.map((e) => e.id))
+    for (const id of Object.keys(STRESS_OVERRIDES)) expect(ids, id).toContain(id)
+  })
+
+  it('toda entrada tem joelho/ombro/lombar em {0,1,2}', () => {
+    for (const entry of EXERCISE_BANK) {
+      for (const joint of ['joelho', 'ombro', 'lombar'] as const) {
+        expect([0, 1, 2], `${entry.name}.${joint}`).toContain(entry.stress[joint])
+      }
+    }
+  })
+
+  it('Leg Press tem menos carga no joelho e na lombar que o Agachamento Livre (Barra)', () => {
+    expect(byName('Leg Press 45°').stress.joelho).toBeLessThan(byName('Agachamento Livre (Barra)').stress.joelho)
+    expect(byName('Leg Press 45°').stress.lombar).toBeLessThan(byName('Agachamento Livre (Barra)').stress.lombar)
+  })
+
+  it('Elevação Pélvica não carrega o joelho; Levantamento Terra carrega a lombar ao máximo', () => {
+    expect(byName('Elevação Pélvica (Barra)').stress.joelho).toBe(0)
+    expect(byName('Levantamento Terra (Barra)').stress.lombar).toBe(2)
+  })
+
+  it('puxada vertical carrega mais o ombro que a remada em máquina', () => {
+    expect(byName('Puxada Alta (Cabo)').stress.ombro).toBeGreaterThan(byName('Remada Máquina').stress.ombro)
+  })
+})
+
+// spec 013 (FR-008, SC-006): mais opções por padrão de movimento
+describe('EXERCISE_BANK — variedade por padrão (spec 013)', () => {
+  it('tem pelo menos 115 exercícios', () => {
+    expect(EXERCISE_BANK.length).toBeGreaterThanOrEqual(115)
+  })
+
+  it.each(['agachar', 'dobrar-quadril', 'empurrar-horizontal', 'empurrar-vertical', 'puxar-horizontal', 'puxar-vertical', 'core', 'isolamento'])(
+    'o padrão %s tem ≥ 8 exercícios e ≥ 3 tipos de equipamento',
+    (pattern) => {
+      const entries = EXERCISE_BANK.filter((e) => e.pattern === pattern)
+      expect(entries.length).toBeGreaterThanOrEqual(8)
+      expect(new Set(entries.map((e) => e.equipment)).size).toBeGreaterThanOrEqual(3)
+    },
+  )
 })
