@@ -80,9 +80,9 @@
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T025 Rodar guard do design system (`apps/web/src/__tests__/design-system-guard.test.ts`) e corrigir qualquer classe/cor fora do v2
-- [ ] T026 Verificação final única: `pnpm test`, `pnpm typecheck`, `pnpm build`; registrar números no relatório
-- [ ] T027 Atualizar `specs/014-motor-treino-2/quickstart.md` com observações finais e notas para a spec 015 (ponto de extensão `restSecondsAfterSet`)
+- [X] T025 Rodar guard do design system (`apps/web/src/__tests__/design-system-guard.test.ts`) e corrigir qualquer classe/cor fora do v2
+- [X] T026 Verificação final única: `pnpm test`, `pnpm typecheck`, `pnpm build`; registrar números no relatório
+- [X] T027 Atualizar `specs/014-motor-treino-2/quickstart.md` com observações finais e notas para a spec 015 (ponto de extensão `restSecondsAfterSet`)
 
 ---
 

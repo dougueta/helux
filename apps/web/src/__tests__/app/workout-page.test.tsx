@@ -39,6 +39,7 @@ function seed({ skipFirst = false }: { skipFirst?: boolean } = {}) {
     startedAt: new Date(Date.now() - 30 * 60000).toISOString(),
     variantByExerciseIndex: {},
     executedVariantByExerciseIndex: skipFirst ? { 1: null } : { 0: null, 1: null },
+    effortByExerciseIndex: {},
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
 }
