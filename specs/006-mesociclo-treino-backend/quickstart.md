@@ -8,11 +8,17 @@ pnpm install
 pnpm --filter @helux/ai test        # testes da geração + ajuste determinístico
 pnpm --filter @helux/api test       # testes das rotas/serviços afetados
 
-# aplicar a migração nova localmente (requer Supabase CLI configurado, mesmo fluxo de 004-web-mvp)
-supabase migration up
+# Supabase local com todas as migrations (spec 017)
+pnpm db:start
 ```
 
+## Verificação automatizada de ponta a ponta
+
+O fluxo manual abaixo está automatizado (spec 017): `pnpm test:e2e` na raiz sobe o Supabase local, roda a API real com IA simulada e percorre os quatro cenários. Detalhes em [`docs/desenvolvimento-local.md`](../../docs/desenvolvimento-local.md).
+
 ## Fluxo manual de verificação (após implementar)
+
+> O ajuste do dia hoje segue a spec 011 (níveis de cansaço derivados do HRV): ≥ 60 ms sem ajuste, 40–59 "cansado", < 40 "exausto".
 
 1. Com um usuário sem mesociclo ativo, registrar uma sessão de treino (`POST /api/workouts/sessions`) e confirmar (via log/DB) que um `mesocycle_plans` foi criado com todas as sessões do ciclo esperado para os dias/semana do perfil.
 2. Chamar `GET /workout/latest-plan` duas vezes no mesmo dia com dados de recovery diferentes simulados (HRV bom vs. HRV baixo) e confirmar que `today.adjusted` e `today.exercises[].sets` mudam entre as chamadas, sem novo insert em `mesocycle_plans`.
