@@ -139,3 +139,20 @@ describe('generateMesocyclePlan — fases (spec 014, US1)', () => {
     expect(cooldown.variants).toBeUndefined()
   })
 })
+
+describe('generateMesocyclePlan — biset (spec 014, US2)', () => {
+  it('preserva supersetGroup devolvido pela IA', async () => {
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: JSON.stringify({
+        ...MOCK_MESOCYCLE,
+        sessions: [{ letter: 'A', focus: 'Peito + Costas', exercises: [
+          { phase: 'principal', name: 'Supino Reto', sets: 3, reps: '10', weight: '60kg', supersetGroup: 'b1' },
+          { phase: 'principal', name: 'Remada Curvada', sets: 3, reps: '10', weight: '50kg', supersetGroup: 'b1' },
+        ] }],
+      }) }],
+      usage: { input_tokens: 1, output_tokens: 1 },
+    })
+    const result = await generateMesocyclePlan(MOCK_INPUT)
+    expect(result.sessions[0].exercises.map((e) => e.supersetGroup)).toEqual(['b1', 'b1'])
+  })
+})

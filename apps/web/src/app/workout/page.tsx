@@ -21,10 +21,10 @@ import { SetRow } from '@/components/ui/SetRow'
 import { Tag } from '@/components/ui/Tag'
 import { Tips } from '@/components/ui/Tips'
 import { WorkoutProgress } from '@/components/ui/WorkoutProgress'
-import { exercisePhase } from '@helux/workouts'
+import { DEFAULT_REST_SECONDS, exercisePhase, nextStepAfterSet, supersetPartnerIndex } from '@helux/workouts'
 import type { ExercisePhase } from '@helux/types'
 
-const REST_SECS = 90
+const REST_SECS = DEFAULT_REST_SECONDS
 
 /** Tag da fase no treino ativo (spec 014, FR-005). */
 const PHASE_TAG: Record<ExercisePhase, string> = {
@@ -153,6 +153,8 @@ export default function WorkoutPage() {
   const display = currentEx ? resolveExerciseDisplay(currentEx, currentVariantId) : null
   const phase: ExercisePhase = currentEx ? exercisePhase(currentEx) : 'principal'
   const isMain = phase === 'principal'
+  const partnerIdx = currentEx ? supersetPartnerIndex(session.planExercises, currentIdx) : null
+  const partner = partnerIdx !== null ? session.planExercises[partnerIdx] : null
 
   const totalSets = session.exerciseStates.reduce((acc, sets) => acc + sets.length, 0)
   const totalDone = session.exerciseStates.reduce(
@@ -171,21 +173,23 @@ export default function WorkoutPage() {
   function handleToggleSet(ei: number, si: number) {
     const wasUndone = !session!.exerciseStates[ei][si].done
     toggleSetDone(ei, si)
-    if (wasUndone && exercisePhase(session!.planExercises[ei]) !== 'principal') {
-      // Spec 014: aquecimento e volta à calma não têm descanso.
-      setPoppedSetIndex(si)
-      setEditingSetIndex(null)
-      setRestLeft(0)
-    } else if (wasUndone) {
-      // FR-013: o ✓ anima, a linha fica compacta, o traço acende, o contador sobe e o descanso começa.
-      setPoppedSetIndex(si)
-      setEditingSetIndex(null)
-      setRestLeft(REST_SECS)
-      setRestTotal(REST_SECS)
-    } else {
+    if (!wasUndone) {
       setPoppedSetIndex(null)
       setRestLeft(0)
+      return
     }
+    // FR-013: o ✓ anima, a linha fica compacta, o traço acende, o contador sobe.
+    // Spec 014: descanso e navegação (biset, aquecimento) vêm do workout-flow —
+    // ponto único que a spec 015 vai personalizar.
+    const hasPendingSets = session!.exerciseStates.map((sets, i) =>
+      sets.some((s, j) => !s.done && !(i === ei && j === si)),
+    )
+    const step = nextStepAfterSet({ exercises: session!.planExercises, exerciseIndex: ei, hasPendingSets })
+    setPoppedSetIndex(si)
+    setEditingSetIndex(null)
+    if (step.goToExerciseIndex !== null) setExercise(step.goToExerciseIndex)
+    setRestLeft(step.restSeconds)
+    setRestTotal(step.restSeconds)
   }
 
   function handlePickExercise(i: number) {
@@ -269,6 +273,11 @@ export default function WorkoutPage() {
           {display.plannedName && (
             <p className="t-secondary" style={{ marginTop: 4 }}>
               variante de {display.plannedName}
+            </p>
+          )}
+          {partner && (
+            <p className="t-secondary" style={{ marginTop: 4, color: 'var(--text)' }}>
+              Biset · alterna com {partner.name}
             </p>
           )}
           {!isMain && (

@@ -96,3 +96,15 @@ describe('buildMesocycleSystemPrompt — 3 fases (spec 014, US1)', () => {
     expect(json.indexOf('"phase": "principal"')).toBeLessThan(json.indexOf('"phase": "volta-calma"'))
   })
 })
+
+describe('buildMesocycleSystemPrompt — biset (spec 014, US2)', () => {
+  const prompt = buildMesocycleSystemPrompt(PROFILE, CONSTRAINTS)
+
+  it('explica o campo supersetGroup e os limites do biset', () => {
+    expect(prompt).toContain('## Biset (opcional)')
+    expect(prompt).toContain('"supersetGroup"')
+    expect(prompt).toContain('no máximo 2 bisets por sessão')
+    expect(prompt).toMatch(/exatamente 2 exercícios consecutivos do treino principal/)
+    expect(prompt).toContain('mesmo número de séries')
+  })
+})

@@ -328,3 +328,54 @@ describe('WorkoutPage — fases (spec 014, US1)', () => {
     expect(body.exercises.map((e: { name: string }) => e.name)).toEqual(['Supino'])
   })
 })
+
+describe('WorkoutPage — biset (spec 014, US2)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  function seedBiset() {
+    seedState({
+      planExercises: [
+        { name: 'Supino Reto', sets: 2, reps: '10', weight: '60kg', phase: 'principal', supersetGroup: 'b1' },
+        { name: 'Remada Curvada', sets: 2, reps: '10', weight: '50kg', phase: 'principal', supersetGroup: 'b1' },
+        { name: 'Rosca Direta', sets: 2, reps: '10', weight: '20kg', phase: 'principal' },
+      ] as ActiveWorkoutState['planExercises'],
+      exerciseStates: [
+        [{ weight: 60, reps: 10, done: false }, { weight: 60, reps: 10, done: false }],
+        [{ weight: 50, reps: 10, done: false }, { weight: 50, reps: 10, done: false }],
+        [{ weight: 20, reps: 10, done: false }, { weight: 20, reps: 10, done: false }],
+      ],
+    })
+  }
+
+  it('mostra que o exercício é um biset e com quem alterna', async () => {
+    seedBiset()
+    render(<WorkoutPage />)
+    expect(await screen.findByText('Biset · alterna com Remada Curvada')).toBeInTheDocument()
+  })
+
+  it('série do 1º leva ao 2º sem descanso; série do 2º descansa e volta ao 1º', async () => {
+    seedBiset()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'concluir série 1' }))
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Remada Curvada')
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Supino Reto')
+    expect(screen.getByRole('timer', { name: 'descanso' })).toHaveTextContent('1:30')
+    expect(screen.getByText('Série 2')).toBeInTheDocument()
+  })
+
+  it('exercício comum fora do biset não mostra o marcador', async () => {
+    seedBiset()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+    await user.click(await screen.findByRole('button', { name: 'Exercício 3, 0 de 2 séries' }))
+    expect(screen.queryByText(/Biset ·/)).not.toBeInTheDocument()
+  })
+})

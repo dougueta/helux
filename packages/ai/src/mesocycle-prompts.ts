@@ -106,6 +106,15 @@ Regras das fases:
 - O cardio das fases de aquecimento e volta à calma não pode passar de: ${constraints.cardioIntensityLimit}.
 - Respeite os alertas genéticos e situacionais também no aquecimento e na volta à calma.
 
+## Biset (opcional)
+
+Você pode agrupar exercícios do treino principal em biset (executados alternadamente, sem descanso entre eles, descansando só depois do par) quando isso fizer sentido para o objetivo e o volume do atleta:
+- Marque os dois exercícios com o mesmo valor no campo \`"supersetGroup"\` (ex.: \`"b1"\`, \`"b2"\`).
+- Um biset tem exatamente 2 exercícios consecutivos do treino principal, com o mesmo número de séries.
+- Use no máximo 2 bisets por sessão.
+- Prefira pares antagonistas (ex.: peito + costas, bíceps + tríceps) ou exercícios que não disputem o mesmo equipamento; evite biset nos exercícios compostos mais pesados da sessão e com recuperação muscular baixa.
+- Exercícios fora de biset não levam o campo \`"supersetGroup"\`.
+
 ${buildExerciseCatalogSection()}
 
 ## Formato de Resposta
