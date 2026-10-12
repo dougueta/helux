@@ -1,5 +1,5 @@
 import type { PlannedExercise } from '@helux/types'
-import { PHASE_LABELS, groupByPhase, isMainExercise } from '@helux/workouts'
+import { PHASE_LABELS, groupByPhase, isMainExercise, supersetPartnerIndex } from '@helux/workouts'
 import { Fit } from '@/components/ui/Fit'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
@@ -13,7 +13,7 @@ const ROW_STYLE = {
   alignItems: 'baseline',
 } as const
 
-function MainRow({ exercise }: { exercise: PlannedExercise }) {
+function MainRow({ exercise, partner }: { exercise: PlannedExercise; partner: PlannedExercise | null }) {
   const fit = resolveExerciseDisplay(exercise, undefined).fit
   return (
     <li style={ROW_STYLE}>
@@ -25,6 +25,11 @@ function MainRow({ exercise }: { exercise: PlannedExercise }) {
       <span className="n-sm dim" style={{ textAlign: 'right' }}>
         {exercise.weight}
       </span>
+      {partner && (
+        <span className="t-secondary" style={{ gridColumn: '1 / -1' }}>
+          Biset · com {partner.name}
+        </span>
+      )}
     </li>
   )
 }
@@ -39,6 +44,12 @@ function SimpleRow({ exercise }: { exercise: PlannedExercise }) {
       </span>
     </li>
   )
+}
+
+/** Parceiro de biset válido (FR-012), ou null. */
+function partnerOf(exercises: PlannedExercise[], index: number): PlannedExercise | null {
+  const partner = supersetPartnerIndex(exercises, index)
+  return partner !== null ? exercises[partner] ?? null : null
 }
 
 /**
@@ -60,7 +71,7 @@ export function PlanExerciseList({ exercises }: { exercises: PlannedExercise[] }
           >
             {group.items.map(({ exercise, index }) =>
               isMainExercise(exercise) ? (
-                <MainRow key={index} exercise={exercise} />
+                <MainRow key={index} exercise={exercise} partner={partnerOf(exercises, index)} />
               ) : (
                 <SimpleRow key={index} exercise={exercise} />
               ),

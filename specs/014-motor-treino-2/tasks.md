@@ -50,10 +50,10 @@
 **Independent Test**: plano com biset → concluir série de A1 leva a A2 sem descanso; série de A2 inicia descanso e volta a A1.
 
 - [X] T012 [US2] Validação de biset em `normalizeSessionExercises` (exatamente 2 consecutivos do principal; senão remove `supersetGroup`) e `supersetPartnerIndex` em `packages/workouts/src/plan-structure.ts`, testes em `packages/workouts/src/__tests__/plan-structure.test.ts`
-- [ ] T013 [P] [US2] `DEFAULT_REST_SECONDS`, `restSecondsAfterSet`, `nextStepAfterSet` em `packages/workouts/src/workout-flow.ts` com testes em `packages/workouts/src/__tests__/workout-flow.test.ts` (contracts/workout-flow.md; FR-011, FR-013)
-- [ ] T014 [P] [US2] Prompt permite bisets (≤ 2 por sessão, pares adequados, mesmo nº de séries, `supersetGroup`) em `packages/ai/src/mesocycle-prompts.ts`; planner repassa `supersetGroup` em `packages/ai/src/mesocycle-planner.ts`; testes nos respectivos `__tests__`
-- [ ] T015 [US2] Treino ativo usa `nextStepAfterSet` (descanso e navegação automática) e mostra "Biset · alterna com X" em `apps/web/src/app/workout/page.tsx`, testes em `apps/web/src/__tests__/app/workout-page.test.tsx`
-- [ ] T016 [US2] `PlanExerciseList` marca os pares de biset em `apps/web/src/components/workout/PlanExerciseList.tsx`, testes em `apps/web/src/__tests__/components/workout/PlanExerciseList.test.tsx` (FR-012)
+- [X] T013 [P] [US2] `DEFAULT_REST_SECONDS`, `restSecondsAfterSet`, `nextStepAfterSet` em `packages/workouts/src/workout-flow.ts` com testes em `packages/workouts/src/__tests__/workout-flow.test.ts` (contracts/workout-flow.md; FR-011, FR-013)
+- [X] T014 [P] [US2] Prompt permite bisets (≤ 2 por sessão, pares adequados, mesmo nº de séries, `supersetGroup`) em `packages/ai/src/mesocycle-prompts.ts`; planner repassa `supersetGroup` em `packages/ai/src/mesocycle-planner.ts`; testes nos respectivos `__tests__`
+- [X] T015 [US2] Treino ativo usa `nextStepAfterSet` (descanso e navegação automática) e mostra "Biset · alterna com X" em `apps/web/src/app/workout/page.tsx`, testes em `apps/web/src/__tests__/app/workout-page.test.tsx`
+- [X] T016 [US2] `PlanExerciseList` marca os pares de biset em `apps/web/src/components/workout/PlanExerciseList.tsx`, testes em `apps/web/src/__tests__/components/workout/PlanExerciseList.test.tsx` (FR-012)
 
 **Checkpoint**: US2 entregável (commit).
 

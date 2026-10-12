@@ -42,3 +42,31 @@ describe('PlanExerciseList — fases (spec 014, US1)', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(2)
   })
 })
+
+describe('PlanExerciseList — biset (spec 014, US2, FR-012)', () => {
+  const withBiset: PlannedExercise[] = [
+    { name: 'Supino Reto', sets: 3, reps: '10', weight: '60kg', phase: 'principal', supersetGroup: 'b1' },
+    { name: 'Remada Curvada', sets: 3, reps: '10', weight: '50kg', phase: 'principal', supersetGroup: 'b1' },
+    { name: 'Rosca Direta', sets: 3, reps: '12', weight: '20kg', phase: 'principal' },
+  ]
+
+  it('marca os dois exercícios do biset com o parceiro', () => {
+    render(<PlanExerciseList exercises={withBiset} />)
+    const [supino, remada, rosca] = screen.getAllByRole('listitem')
+    expect(within(supino).getByText('Biset · com Remada Curvada')).toBeInTheDocument()
+    expect(within(remada).getByText('Biset · com Supino Reto')).toBeInTheDocument()
+    expect(within(rosca).queryByText(/Biset/)).not.toBeInTheDocument()
+  })
+
+  it('supersetGroup inválido (sem par consecutivo) não é marcado', () => {
+    render(
+      <PlanExerciseList
+        exercises={[
+          { name: 'Supino Reto', sets: 3, reps: '10', weight: '60kg', phase: 'principal', supersetGroup: 'b1' },
+          { name: 'Rosca Direta', sets: 3, reps: '12', weight: '20kg', phase: 'principal' },
+        ]}
+      />,
+    )
+    expect(screen.queryByText(/Biset/)).not.toBeInTheDocument()
+  })
+})

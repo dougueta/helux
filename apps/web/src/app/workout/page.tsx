@@ -21,10 +21,8 @@ import { SetRow } from '@/components/ui/SetRow'
 import { Tag } from '@/components/ui/Tag'
 import { Tips } from '@/components/ui/Tips'
 import { WorkoutProgress } from '@/components/ui/WorkoutProgress'
-import { DEFAULT_REST_SECONDS, exercisePhase, nextStepAfterSet, supersetPartnerIndex } from '@helux/workouts'
+import { exercisePhase, nextStepAfterSet, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
 import type { ExercisePhase } from '@helux/types'
-
-const REST_SECS = DEFAULT_REST_SECONDS
 
 /** Tag da fase no treino ativo (spec 014, FR-005). */
 const PHASE_TAG: Record<ExercisePhase, string> = {
@@ -155,6 +153,12 @@ export default function WorkoutPage() {
   const isMain = phase === 'principal'
   const partnerIdx = currentEx ? supersetPartnerIndex(session.planExercises, currentIdx) : null
   const partner = partnerIdx !== null ? session.planExercises[partnerIdx] : null
+  // Rótulo "descanso Ns" vem do mesmo ponto que o timer (contracts/workout-flow.md).
+  const restLabelSecs = restSecondsAfterSet({
+    exercises: session.planExercises,
+    exerciseIndex: currentIdx,
+    hasPendingSets: session.exerciseStates.map(sets => sets.some(s => !s.done)),
+  })
 
   const totalSets = session.exerciseStates.reduce((acc, sets) => acc + sets.length, 0)
   const totalDone = session.exerciseStates.reduce(
@@ -290,10 +294,16 @@ export default function WorkoutPage() {
             <span className="n-sm" style={{ fontSize: 15, color: 'var(--text)' }}>
               {currentEx.sets} × {String(currentEx.reps).replace('-', '–')}
             </span>{' '}
-            reps, descanso{' '}
-            <span className="n-sm" style={{ fontSize: 15, color: 'var(--text)' }}>
-              {REST_SECS}s
-            </span>
+            {restLabelSecs > 0 ? (
+              <>
+                reps, descanso{' '}
+                <span className="n-sm" style={{ fontSize: 15, color: 'var(--text)' }}>
+                  {restLabelSecs}s
+                </span>
+              </>
+            ) : (
+              'reps, sem descanso antes do par'
+            )}
           </p>
           )}
 

@@ -371,6 +371,30 @@ describe('WorkoutPage — biset (spec 014, US2)', () => {
     expect(screen.getByText('Série 2')).toBeInTheDocument()
   })
 
+  it('rótulo de descanso vem do workout-flow: 1º do biset sem descanso, 2º com 90 s', async () => {
+    seedBiset()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    expect(await screen.findByText(/sem descanso/)).toBeInTheDocument()
+    expect(screen.queryByText('90s')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+    expect(screen.getByText('90s')).toBeInTheDocument()
+    expect(screen.queryByText(/sem descanso/)).not.toBeInTheDocument()
+  })
+
+  it('ao navegar pelo biset, a série do outro exercício não reanima', async () => {
+    seedBiset()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'concluir série 1' }))
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+    // de volta ao Supino: a série 1 dele está concluída, mas não foi a que acabou de ser marcada
+    expect(screen.getByRole('button', { name: 'série 1 concluída, desfazer' })).not.toHaveClass('is-pop')
+  })
+
   it('exercício comum fora do biset não mostra o marcador', async () => {
     seedBiset()
     const user = userEvent.setup()
