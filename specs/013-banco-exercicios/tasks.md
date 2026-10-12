@@ -43,9 +43,9 @@
 **Goal**: banco ≥ 115 exercícios; todo padrão ≥ 8 exercícios e ≥ 3 equipamentos.
 **Independent Test**: `exercise-bank.test.ts` + `motions.test.ts` (novos exercícios continuam dentro da meta).
 
-- [ ] T018 [P] [US3] Teste em `packages/ai/src/__tests__/exercise-bank.test.ts`: ≥ 115 entradas; cada um dos 8 padrões com ≥ 8 exercícios e ≥ 3 equipamentos
-- [ ] T019 [US3] Acrescentar 20 exercícios em `packages/ai/src/exercise-bank.ts` (empurrar vertical +3, puxar vertical +4 incl. halteres e barra, empurrar horizontal +2, puxar horizontal +1, agachar +2, dobrar quadril +2 incl. máquina/cabo, core +4 incl. halteres e barra, isolamento +2), com 3–5 orientações e overrides de `stress` quando o movimento difere do padrão
-- [ ] T020 [US3] Rodar `motions.test.ts`, `exercise-bank.test.ts`, `variants.test.ts`, `prompts`/`planner` tests de `packages/ai` e commitar
+- [X] T018 [P] [US3] Teste em `packages/ai/src/__tests__/exercise-bank.test.ts`: ≥ 115 entradas; cada um dos 8 padrões com ≥ 8 exercícios e ≥ 3 equipamentos
+- [X] T019 [US3] Acrescentar 20 exercícios em `packages/ai/src/exercise-bank.ts` (empurrar vertical +3, puxar vertical +4 incl. halteres e barra, empurrar horizontal +2, puxar horizontal +1, agachar +2, dobrar quadril +2 incl. máquina/cabo, core +4 incl. halteres e barra, isolamento +2), com 3–5 orientações e overrides de `stress` quando o movimento difere do padrão
+- [X] T020 [US3] Rodar `motions.test.ts`, `exercise-bank.test.ts`, `variants.test.ts`, `prompts`/`planner` tests de `packages/ai` e commitar
 
 ## Phase 6: Polish
 

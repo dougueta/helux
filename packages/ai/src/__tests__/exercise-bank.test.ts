@@ -115,3 +115,19 @@ describe('EXERCISE_BANK — carga articular (stress)', () => {
     expect(byName('Puxada Alta (Cabo)').stress.ombro).toBeGreaterThan(byName('Remada Máquina').stress.ombro)
   })
 })
+
+// spec 013 (FR-008, SC-006): mais opções por padrão de movimento
+describe('EXERCISE_BANK — variedade por padrão (spec 013)', () => {
+  it('tem pelo menos 115 exercícios', () => {
+    expect(EXERCISE_BANK.length).toBeGreaterThanOrEqual(115)
+  })
+
+  it.each(['agachar', 'dobrar-quadril', 'empurrar-horizontal', 'empurrar-vertical', 'puxar-horizontal', 'puxar-vertical', 'core', 'isolamento'])(
+    'o padrão %s tem ≥ 8 exercícios e ≥ 3 tipos de equipamento',
+    (pattern) => {
+      const entries = EXERCISE_BANK.filter((e) => e.pattern === pattern)
+      expect(entries.length).toBeGreaterThanOrEqual(8)
+      expect(new Set(entries.map((e) => e.equipment)).size).toBeGreaterThanOrEqual(3)
+    },
+  )
+})

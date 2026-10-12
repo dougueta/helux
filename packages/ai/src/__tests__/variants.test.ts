@@ -35,7 +35,19 @@ describe('buildVariants', () => {
     expect(recs[0].match).toBe(74)
   })
 
-  it('marca a Leg Press 45° como betterFit quando alertas de joelho favorecem máquina', () => {
+  it('Leg Press 45° é a melhor do mesmo padrão quando alertas de joelho favorecem máquina', () => {
+    const profile: GeneticProfile = {
+      metabolismo: 'rapido', recuperacaoMuscular: 'baixa', riscoCardiovascular: 'medio',
+      predisposicao: 'forca', alertas: ['tendinite no joelho'],
+    }
+    const variants = buildVariants('Agachamento Livre (Barra)', profile)
+    const samePattern = variants.filter((v) => !v.rec && !v.crossPattern)
+    expect(samePattern[0].name).toBe('Leg Press 45°')
+    // 92 pela regra de equipamento + 4 (spec 013: 1 nível a menos de carga no joelho sinalizado)
+    expect(samePattern[0].match).toBe(96)
+  })
+
+  it('o destaque betterFit pode ir para um equivalente de outro padrão (spec 013, FR-014)', () => {
     const profile: GeneticProfile = {
       metabolismo: 'rapido', recuperacaoMuscular: 'baixa', riscoCardiovascular: 'medio',
       predisposicao: 'forca', alertas: ['tendinite no joelho'],
@@ -43,9 +55,8 @@ describe('buildVariants', () => {
     const variants = buildVariants('Agachamento Livre (Barra)', profile)
     const betterFit = variants.filter((v) => v.betterFit)
     expect(betterFit).toHaveLength(1)
-    expect(betterFit[0].name).toBe('Leg Press 45°')
-    // 92 pela regra de equipamento + 4 (spec 013: 1 nível a menos de carga no joelho sinalizado)
-    expect(betterFit[0].match).toBe(96)
+    // máquina/cabo (92) + 2 níveis a menos no joelho (+8), limitado a 99
+    expect(betterFit[0]).toMatchObject({ name: 'Pull-through no Cabo', match: 99, crossPattern: true })
   })
 
   it('ordena a lista por match decrescente', () => {
@@ -56,7 +67,7 @@ describe('buildVariants', () => {
     const variants = buildVariants('Agachamento Livre (Barra)', profile)
     const matches = variants.map((v) => v.match)
     expect(matches).toEqual([...matches].sort((a, b) => b - a))
-    expect(variants[0].name).toBe('Leg Press 45°')
+    expect(variants[0].name).toBe('Pull-through no Cabo')
   })
 
   it('não marca nenhuma variante como betterFit quando a recomendada já é a de maior fit', () => {
@@ -202,9 +213,9 @@ describe('buildVariants — equivalência genética entre padrões (spec 013)', 
     }
     const variants = buildVariants('Agachamento Livre (Barra)', profile)
     expect(variants.map((v) => [v.name, v.match, !!v.crossPattern])).toEqual([
+      ['Pull-through no Cabo', 99, true],
       ['Leg Press 45°', 96, false],
       ['Levantamento Terra Romeno (Halteres)', 90, true],
-      ['Elevação Pélvica (Peso Corporal)', 88, true],
       ['Agachamento Livre (Peso Corporal)', 84, false],
       ['Agachamento Búlgaro (Halteres)', 82, false],
       ['Agachamento Livre (Barra)', 74, false],
