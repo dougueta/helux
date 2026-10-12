@@ -180,7 +180,7 @@ Já estão no branch, da versão anterior (ver `git log` e research Parte 1): T0
 ## Phase 9: Polish
 
 - [X] T062 Rodar `pnpm --filter @helux/web test`, `pnpm typecheck` e `pnpm --filter @helux/web build`: todos verdes.
-- [ ] T063 Verificação manual de `quickstart.md` (passos 1–8), lado a lado com `design_handoff_helux_v2/Helux Design System v2.html`.
+- [X] T063 Verificação manual de `quickstart.md` (passos 1–8), lado a lado com `design_handoff_helux_v2/Helux Design System v2.html`.
 
 ---
 
