@@ -2,10 +2,16 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Shell } from '@/components/layout/Shell'
+import { IconButton } from '@/components/ui/Button'
+import { Fit } from '@/components/ui/Fit'
+import { ScreenHeader } from '@/components/ui/ScreenHeader'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { apiFetch } from '@/services/api-client'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
+import { formatNumber } from '@/lib/format'
+import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 
+/** Detalhe de um treino (FR-021): variante executada da spec 010 com `Fit` e séries em mono. */
 export default function SessionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -21,81 +27,89 @@ export default function SessionDetailPage() {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) {
-    return (
-      <Shell>
-        <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-helux-surface rounded-xl border border-helux-border h-16 animate-pulse" />
-          ))}
-        </div>
-      </Shell>
-    )
-  }
-
-  if (!session) {
-    return (
-      <Shell>
-        <p className="text-helux-muted text-center py-12">Sessão não encontrada.</p>
-        <button onClick={() => router.back()} className="text-helux-accent text-sm underline min-h-[44px]">
-          ← Voltar
-        </button>
-      </Shell>
-    )
-  }
+  const summary = session ? summarizeSession(session) : null
+  const back = <IconButton icon="back" label="voltar" bare onClick={() => router.back()} />
 
   return (
-    <Shell>
-      <div className="mb-6 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-helux-muted text-sm min-h-[44px] pr-2">←</button>
-        <div>
-          <h1 className="font-sans font-semibold text-lg text-white">
-            {new Date(session.date).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </h1>
-          {session.duration_s && (
-            <p className="text-helux-muted text-sm font-mono">
-              {Math.floor(session.duration_s / 60)}min
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        {session.exercises.map((ex, i) => (
-          <div key={i} className="bg-helux-surface border border-helux-border rounded-2xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-helux-border">
-              <p className="font-sans font-medium text-white">
-                {ex.executedVariant ? ex.executedVariant.name : ex.name}
-              </p>
-              {ex.executedVariant && (
-                <p className="text-helux-muted text-xs mt-0.5">
-                  variante de {ex.name} · {ex.executedVariant.match} fit
-                </p>
-              )}
-            </div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-helux-muted text-xs font-mono border-b border-helux-border">
-                  <th className="px-4 py-2 text-left">Série</th>
-                  <th className="px-4 py-2 text-right">Reps</th>
-                  <th className="px-4 py-2 text-right">Peso</th>
-                  <th className="px-4 py-2 text-right">RPE</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ex.sets.map((set, j) => (
-                  <tr key={j} className="border-b border-helux-border/50 last:border-0">
-                    <td className="px-4 py-2 font-mono text-helux-muted">{j + 1}</td>
-                    <td className="px-4 py-2 font-mono text-white text-right">{set.reps}</td>
-                    <td className="px-4 py-2 font-mono text-helux-accent text-right">{set.weight}kg</td>
-                    <td className="px-4 py-2 font-mono text-helux-muted text-right">{set.effort}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <div style={{ maxWidth: 'var(--col)', margin: '0 auto', paddingTop: 'max(12px, env(safe-area-inset-top))', paddingBottom: 120 }}>
+      <ScreenHeader
+        left={back}
+        title={session ? sessionDateLabel(session.date) : 'Treino'}
+        sub={summary?.durationMin ? `${summary.durationMin} min` : undefined}
+      />
+      <div style={{ padding: '0 16px' }}>
+        {loading ? (
+          <div aria-busy="true">
+            {[0, 1, 2].map(i => (
+              <Skeleton key={i} h={96} r="var(--r-md)" style={{ marginTop: 12 }} />
+            ))}
           </div>
-        ))}
+        ) : !session || !summary ? (
+          <p className="t-secondary" style={{ textAlign: 'center', padding: '48px 0' }}>
+            Treino não encontrado.
+          </p>
+        ) : (
+          <>
+            <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '14px 16px', margin: '12px 0 0' }}>
+              <div>
+                <dt className="t-caption">Volume</dt>
+                <dd className="n-md" style={{ margin: '2px 0 0' }}>
+                  {formatNumber(summary.volumeT, { decimals: 1 })}
+                  <span className="u">t</span>
+                </dd>
+              </div>
+              <div>
+                <dt className="t-caption">Séries</dt>
+                <dd className="n-md" style={{ margin: '2px 0 0' }}>
+                  {summary.sets}
+                </dd>
+              </div>
+            </dl>
+
+            {session.exercises.map((ex, i) => (
+              <section key={i} className="hx-plain" style={{ marginTop: 24, paddingTop: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                  <h2 className="t-section">{ex.executedVariant ? ex.executedVariant.name : ex.name}</h2>
+                  {ex.executedVariant && <Fit value={ex.executedVariant.match} />}
+                </div>
+                {ex.executedVariant && (
+                  <p className="t-secondary" style={{ marginTop: 2 }}>
+                    variante de {ex.name}
+                  </p>
+                )}
+                {ex.sets.length === 0 ? (
+                  <p className="t-secondary" style={{ marginTop: 8 }}>
+                    Pulado
+                  </p>
+                ) : (
+                  <ol style={{ listStyle: 'none', margin: '8px 0 0', padding: 0 }}>
+                    {ex.sets.map((set, j) => (
+                      <li
+                        key={j}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '28px minmax(0,1fr) auto',
+                          alignItems: 'baseline',
+                          gap: 12,
+                          padding: '8px 0',
+                          borderTop: j ? '1px solid var(--hairline)' : 0,
+                        }}
+                      >
+                        <span className="n-sm dim">{j + 1}</span>
+                        <span className="n-md">
+                          {formatNumber(set.weight)}
+                          <span className="u">kg</span> × {set.reps}
+                        </span>
+                        <span className="t-caption">RPE {set.effort}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </section>
+            ))}
+          </>
+        )}
       </div>
-    </Shell>
+    </div>
   )
 }

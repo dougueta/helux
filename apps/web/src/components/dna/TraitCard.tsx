@@ -1,50 +1,78 @@
-'use client'
+export type LevelWord = 'baixo' | 'médio' | 'alto'
 
-import { useState } from 'react'
-
-interface TraitCardProps {
-  name: string
-  summary: string
-  detail: string
-  level: 'low' | 'medium' | 'high'
+/** Nível 0–1 do perfil em palavra: < 0,34 baixo, < 0,67 médio, ≥ 0,67 alto (FR-022). */
+export function levelWord(level: number): LevelWord {
+  if (level < 0.34) return 'baixo'
+  if (level < 0.67) return 'médio'
+  return 'alto'
 }
 
-const levelColors = {
-  low: 'text-blue-400 bg-blue-900/20 border-blue-800/40',
-  medium: 'text-yellow-400 bg-yellow-900/20 border-yellow-800/40',
-  high: 'text-helux-accent bg-helux-accent/10 border-helux-accent/30',
-}
+const BARS: Record<LevelWord, number> = { baixo: 1, médio: 2, alto: 3 }
 
-const levelLabels = { low: 'Baixo', medium: 'Médio', high: 'Alto' }
-
-export function TraitCard({ name, summary, detail, level }: TraitCardProps) {
-  const [open, setOpen] = useState(false)
-
+function Level({ level }: { level: number }) {
+  const word = levelWord(level)
+  const n = BARS[word]
   return (
-    <div className="bg-helux-surface border border-helux-border rounded-2xl overflow-hidden">
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="w-full p-4 text-left flex items-start justify-between gap-3 min-h-[56px]"
-      >
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-sans font-medium text-white text-sm">{name}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full border font-mono ${levelColors[level]}`}>
-              {levelLabels[level]}
-            </span>
-          </div>
-          <p className="text-helux-muted text-sm">{summary}</p>
-        </div>
-        <span className={`text-helux-muted transition-transform ${open ? 'rotate-180' : ''} shrink-0 mt-0.5`}>
-          ▾
-        </span>
-      </button>
+    <span aria-label={`nível ${word}`} style={{ display: 'inline-flex', gap: 3, alignItems: 'center', flexShrink: 0 }}>
+      {[1, 2, 3].map(i => (
+        <i
+          key={i}
+          style={{ width: 3, height: 6 + i * 3, borderRadius: 1.5, background: i <= n ? 'var(--trait-on)' : 'var(--trait-off)' }}
+        />
+      ))}
+      <span className="t-caption" style={{ marginLeft: 6, color: 'var(--text)' }}>
+        {word}
+      </span>
+    </span>
+  )
+}
 
-      {open && (
-        <div className="px-4 pb-4 border-t border-helux-border pt-3">
-          <p className="text-white/80 text-sm leading-relaxed">{detail}</p>
-        </div>
+/** Card de marcador genético (handoff 5.4): gene, genótipo, nível, traço e impacto; âmbar só no risco. */
+export function TraitCard({
+  gene,
+  genotype,
+  label,
+  level,
+  note,
+  warn,
+}: {
+  gene: string
+  genotype?: string
+  label: string
+  level: number
+  note: string
+  warn?: boolean
+}) {
+  return (
+    <article className="hx-card" style={{ padding: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+        <span>
+          <span className="gene" style={{ fontSize: 17, color: 'var(--text)' }}>
+            {gene}
+          </span>
+          {genotype && (
+            <span className="n-sm dim" style={{ marginLeft: 8 }}>
+              {genotype}
+            </span>
+          )}
+        </span>
+        <Level level={level} />
+      </div>
+      <div className="t-secondary" style={{ marginTop: 6, color: 'var(--text)' }}>
+        {label}
+      </div>
+      {note && (
+        <p className="t-secondary" style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+          {warn && (
+            <i
+              data-warn
+              aria-hidden="true"
+              style={{ width: 6, height: 6, borderRadius: 1, background: 'var(--warn)', marginTop: 6, flexShrink: 0 }}
+            />
+          )}
+          <span>{note}</span>
+        </p>
       )}
-    </div>
+    </article>
   )
 }

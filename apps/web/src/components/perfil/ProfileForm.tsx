@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import type { UserTrainingProfile, UserTrainingProfileInput } from '@helux/types'
+import { Button } from '@/components/ui/Button'
+import { Segmented } from '@/components/ui/Segmented'
 
 interface ProfileFormProps {
   initial: UserTrainingProfile | null
@@ -9,29 +11,61 @@ interface ProfileFormProps {
   onSave: (input: UserTrainingProfileInput) => Promise<void>
 }
 
-type Level = '' | 'iniciante' | 'intermediario' | 'avancado'
+type Level = 'iniciante' | 'intermediario' | 'avancado'
 
-const fieldStyle: React.CSSProperties = {
-  width: '100%',
-  background: 'var(--surface-2)',
-  border: '1px solid var(--hairline)',
-  borderRadius: 8,
-  padding: '10px 12px',
-  fontSize: 15,
+const LEVELS: { value: Level; label: string }[] = [
+  { value: 'iniciante', label: 'Iniciante' },
+  { value: 'intermediario', label: 'Intermediário' },
+  { value: 'avancado', label: 'Avançado' },
+]
+
+// Campo de texto no invólucro `.hx-input` da v2, com a fonte de texto (o padrão da folha é mono, para números).
+const textInput: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  background: 'transparent',
+  border: 0,
+  outline: 'none',
   color: 'var(--text)',
-  minHeight: 44,
+  font: 'inherit',
+  fontSize: 15,
+  fontWeight: 400,
+  letterSpacing: 0,
 }
 
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: 12,
-  color: 'var(--text-faint)',
-  marginBottom: 4,
+function TextField({
+  id,
+  label,
+  value,
+  onChange,
+  multiline,
+  placeholder,
+}: {
+  id: string
+  label: string
+  value: string
+  onChange: (v: string) => void
+  multiline?: boolean
+  placeholder?: string
+}) {
+  return (
+    <div className="hx-field">
+      <label htmlFor={id}>{label}</label>
+      <div className="hx-input" style={multiline ? { height: 'auto', padding: '10px 14px' } : undefined}>
+        {multiline ? (
+          <textarea id={id} value={value} rows={2} onChange={e => onChange(e.target.value)} style={{ ...textInput, resize: 'vertical' }} />
+        ) : (
+          <input id={id} type="text" value={value} placeholder={placeholder} onChange={e => onChange(e.target.value)} style={textInput} />
+        )}
+      </div>
+    </div>
+  )
 }
 
+/** Perfil de treino (spec 008) no visual v2 (FR-023). */
 export function ProfileForm({ initial, saving, onSave }: ProfileFormProps) {
   const [goal, setGoal] = useState(initial?.goal ?? '')
-  const [level, setLevel] = useState<Level>(initial?.level ?? '')
+  const [level, setLevel] = useState<Level | null>(initial?.level ?? null)
   const [trainingTime, setTrainingTime] = useState(initial?.trainingTime ?? '')
   const [timeOff, setTimeOff] = useState(initial?.timeOff ?? '')
   const [currentInjury, setCurrentInjury] = useState(initial?.currentInjury ?? '')
@@ -49,85 +83,30 @@ export function ProfileForm({ initial, saving, onSave }: ProfileFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate style={{ padding: '0 16px 16px' }}>
-      <div style={{ marginBottom: 16 }}>
-        <label htmlFor="goal" style={labelStyle}>OBJETIVO DE TREINO ATUAL</label>
-        <textarea
-          id="goal"
-          value={goal}
-          onChange={(e) => setGoal(e.target.value)}
-          rows={2}
-          style={{ ...fieldStyle, resize: 'vertical' }}
-        />
+    <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 28 }}>
+      <TextField id="goal" label="Objetivo de treino atual" value={goal} onChange={setGoal} multiline />
+
+      <div className="hx-field">
+        <span className="t-secondary">Nível de experiência</span>
+        <Segmented label="nível de experiência" options={LEVELS} value={level} onChange={setLevel} />
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <label htmlFor="level" style={labelStyle}>NÍVEL DE EXPERIÊNCIA</label>
-        <select
-          id="level"
-          value={level}
-          onChange={(e) => setLevel(e.target.value as Level)}
-          style={fieldStyle}
-        >
-          <option value="">Selecione</option>
-          <option value="iniciante">Iniciante</option>
-          <option value="intermediario">Intermediário</option>
-          <option value="avancado">Avançado</option>
-        </select>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 }}>
+        <TextField id="trainingTime" label="Tempo treinando" value={trainingTime} onChange={setTrainingTime} placeholder="ex.: 3 anos" />
+        <TextField id="timeOff" label="Tempo parado (opcional)" value={timeOff} onChange={setTimeOff} placeholder="ex.: 6 meses" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
-        <div>
-          <label htmlFor="trainingTime" style={labelStyle}>TEMPO TREINANDO</label>
-          <input
-            id="trainingTime"
-            type="text"
-            value={trainingTime}
-            onChange={(e) => setTrainingTime(e.target.value)}
-            placeholder="ex.: 3 anos"
-            style={fieldStyle}
-          />
-        </div>
-        <div>
-          <label htmlFor="timeOff" style={labelStyle}>TEMPO PARADO (opcional)</label>
-          <input
-            id="timeOff"
-            type="text"
-            value={timeOff}
-            onChange={(e) => setTimeOff(e.target.value)}
-            placeholder="ex.: 6 meses"
-            style={fieldStyle}
-          />
-        </div>
-      </div>
+      <TextField
+        id="currentInjury"
+        label="Lesão ou problema físico atual (opcional)"
+        value={currentInjury}
+        onChange={setCurrentInjury}
+        multiline
+      />
 
-      <div style={{ marginBottom: 16 }}>
-        <label htmlFor="currentInjury" style={labelStyle}>LESÃO OU PROBLEMA FÍSICO ATUAL (opcional)</label>
-        <textarea
-          id="currentInjury"
-          value={currentInjury}
-          onChange={(e) => setCurrentInjury(e.target.value)}
-          rows={2}
-          style={{ ...fieldStyle, resize: 'vertical' }}
-        />
-      </div>
-
-      <button type="submit" disabled={saving} style={{
-        width: '100%',
-        background: 'var(--accent)',
-        color: 'var(--accent-ink)',
-        border: 'none',
-        borderRadius: 'var(--r-pill)',
-        padding: '14px 20px',
-        fontSize: 15,
-        fontWeight: 600,
-        fontFamily: 'var(--font-space-grotesk)',
-        cursor: saving ? 'not-allowed' : 'pointer',
-        opacity: saving ? 0.7 : 1,
-        minHeight: 44,
-      }}>
+      <Button type="submit" kind="primary" size="lg" block loading={saving} disabled={saving}>
         {saving ? 'Salvando…' : 'Salvar perfil'}
-      </button>
+      </Button>
     </form>
   )
 }

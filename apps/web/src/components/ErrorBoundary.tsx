@@ -1,6 +1,8 @@
 'use client'
 
 import { Component, ReactNode } from 'react'
+import { Banner } from '@/components/ui/Banner'
+import { Button } from '@/components/ui/Button'
 
 interface Props {
   children: ReactNode
@@ -11,6 +13,7 @@ interface State {
   message: string
 }
 
+/** Tela de erro (FR-023): `Banner err` + "Tentar de novo". */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false, message: '' }
 
@@ -21,16 +24,14 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-helux-dark flex items-center justify-center p-6">
-          <div className="bg-helux-surface border border-helux-border rounded-2xl p-6 max-w-sm w-full text-center space-y-4">
-            <p className="text-white font-sans font-medium">Algo deu errado</p>
-            <p className="text-helux-muted text-sm">{this.state.message}</p>
-            <button
-              onClick={() => this.setState({ hasError: false, message: '' })}
-              className="text-helux-accent text-sm underline"
-            >
-              Tentar novamente
-            </button>
+        <div className="hx-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Banner kind="err" title="Algo deu errado">
+            {this.state.message}
+          </Banner>
+          <div style={{ marginTop: 16 }}>
+            <Button kind="secondary" block icon="sync" onClick={() => this.setState({ hasError: false, message: '' })}>
+              Tentar de novo
+            </Button>
           </div>
         </div>
       )

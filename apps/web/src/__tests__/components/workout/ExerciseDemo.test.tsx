@@ -46,4 +46,32 @@ describe('ExerciseDemo', () => {
     render(<ExerciseDemo motion="press-flat" playing={false} />)
     expect(requestAnimationFrame).not.toHaveBeenCalled()
   })
+
+  // spec 012 T051 (FR-008): em movimento reduzido a demonstração fica parada no meio do movimento
+  it('stays still at mid-movement under prefers-reduced-motion, without starting the loop', () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: q.includes('reduce'),
+      media: q,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }))
+    const { container } = render(<ExerciseDemo motion="press-flat" playing={true} />)
+    expect(requestAnimationFrame).not.toHaveBeenCalled()
+    // press-flat: h vai de [104,106] a [104,78]; o meio é [104,92]
+    expect(container.querySelector('line[x2="104"][y2="92"]')).toBeInTheDocument()
+    vi.unstubAllGlobals()
+  })
+
+  // spec 012 T051: o acento fica só no implemento (a amplitude usa tom neutro)
+  it('uses the accent only on the implement', () => {
+    const { container } = render(<ExerciseDemo motion="press-overhead" implement="barbell" playing={false} />)
+    const accentish = [...container.querySelectorAll('*')].filter(el =>
+      [el.getAttribute('stroke'), el.getAttribute('fill')].some(v => v?.startsWith('var(--accent')),
+    )
+    expect(accentish.length).toBeGreaterThan(0)
+    accentish.forEach(el => {
+      expect(el.getAttribute('stroke') ?? el.getAttribute('fill')).toBe('var(--accent)')
+      expect(el.closest('[data-part="implement"]')).not.toBeNull()
+    })
+  })
 })

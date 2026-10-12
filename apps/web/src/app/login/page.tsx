@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from '@/components/ui/Button'
+import { HelixMark } from '@/components/ui/icons'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 
 export default function LoginPage() {
@@ -15,22 +17,25 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-helux-dark flex flex-col items-center justify-center px-6">
-      <div className="mb-12 text-center">
-        <h1 className="font-mono text-4xl font-bold text-helux-accent tracking-tight">
-          HELUX
-        </h1>
-        <p className="mt-2 text-helux-muted text-sm">
-          Seu treino personalizado
-        </p>
+    <main
+      className="hx-page"
+      style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 'var(--safe-b)' }}
+    >
+      <span style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: 24, letterSpacing: '-.02em' }}>
+        <HelixMark size={30} />
+        helux
+      </span>
+      <h1 className="t-display" style={{ marginTop: 24 }}>
+        Seu treino personalizado
+      </h1>
+      <p className="t-body dim" style={{ marginTop: 8 }}>
+        Entre para ver o treino de hoje.
+      </p>
+      <div style={{ marginTop: 32 }}>
+        <Button kind="primary" size="lg" block onClick={handleLogin}>
+          Entrar com Google
+        </Button>
       </div>
-
-      <button
-        onClick={handleLogin}
-        className="w-full max-w-xs bg-helux-accent text-helux-dark font-sans font-semibold py-4 px-6 rounded-xl text-base active:scale-95 transition-transform"
-      >
-        Entrar com Google
-      </button>
     </main>
   )
 }

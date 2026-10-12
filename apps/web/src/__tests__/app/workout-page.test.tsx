@@ -76,7 +76,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     expect(sessionPosts()).toHaveLength(1)
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
     expect(replaceMock).not.toHaveBeenCalled()
-    expect(screen.getByText('4')).toBeInTheDocument() // séries concluídas
+    expect(screen.getByText('4/4')).toBeInTheDocument() // séries concluídas
   })
 
   it('envia o mesmo payload de antes (exercícios, pulados, data, duração)', async () => {
@@ -111,7 +111,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
-    await user.click(await screen.findByRole('button', { name: 'Cancelar' }))
+    await user.click(await screen.findByRole('button', { name: 'Continuar treinando' }))
     expect(sessionPosts()).toHaveLength(0)
     expect(screen.queryByText('Treino concluído')).not.toBeInTheDocument()
 
@@ -123,14 +123,14 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
 
   // US3 -----------------------------------------------------------------
 
-  it('"Voltar ao início" após salvar só navega, sem nova gravação', async () => {
+  it('"Voltar para Hoje" após salvar só navega, sem nova gravação', async () => {
     seed()
     vi.mocked(apiFetch).mockResolvedValue({})
     const user = userEvent.setup()
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
-    await user.click(await screen.findByRole('button', { name: 'Voltar ao início' }))
+    await user.click(await screen.findByRole('button', { name: 'Voltar para Hoje' }))
 
     expect(replaceMock).toHaveBeenCalledWith('/')
     await waitFor(() => expect(sessionPosts()).toHaveLength(1))
@@ -155,7 +155,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
   })
 
-  it('em falha, mostra erro e preserva o treino; "Tentar novamente" grava', async () => {
+  it('em falha, mostra erro e preserva o treino; "Tentar de novo" grava', async () => {
     seed()
     vi.mocked(apiFetch)
       .mockRejectedValueOnce(new Error('offline'))
@@ -170,7 +170,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull()
     expect(replaceMock).not.toHaveBeenCalled()
 
-    await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    await user.click(screen.getByRole('button', { name: 'Tentar de novo' }))
     expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
     expect(sessionPosts()).toHaveLength(2)
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
@@ -190,5 +190,53 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!) as ActiveWorkoutState
     expect(stored.exerciseStates.flat().every(s => s.done)).toBe(true)
     expect(replaceMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('WorkoutPage — treino ativo v2 (spec 012 T049)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  it('mostra a primeira série pendente em foco e as demais compactas', async () => {
+    seed({ skipFirst: true })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'Exercício 1, 0 de 2 séries' }))
+
+    expect(screen.getByText('Série 1')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Editar série 2: 80 kg × 8' })).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'séries concluídas' })).toHaveAttribute('aria-valuenow', '2')
+  })
+
+  it('ao concluir a série, começa o descanso e o botão principal vira secundário', async () => {
+    seed({ skipFirst: true })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'Exercício 1, 0 de 2 séries' }))
+    expect(screen.getByRole('button', { name: /Próximo exercício/ })).toHaveClass('hx-btn--primary')
+
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+
+    expect(screen.getByRole('timer', { name: 'descanso' })).toHaveTextContent('1:30')
+    expect(screen.getByRole('button', { name: /Próximo exercício/ })).toHaveClass('hx-btn--secondary')
+    expect(screen.getByText('Série 2')).toBeInTheDocument()
+    expect(screen.getByText('3/4 séries')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Pular' }))
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+  })
+
+  it('tocar numa série compacta a torna a atual', async () => {
+    seed()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'Editar série 2: 60 kg × 8' }))
+    expect(screen.getByText('Série 2')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'aumentar kg' })).toBeInTheDocument()
   })
 })

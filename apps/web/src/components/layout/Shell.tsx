@@ -1,13 +1,18 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 interface ShellProps {
   children: ReactNode
-  className?: string
+  style?: CSSProperties
 }
 
-export function Shell({ children, className = '' }: ShellProps) {
+/**
+ * Página com menu inferior: coluna de 512 px (`.hx-page`), área segura no topo
+ * e espaço para o menu embaixo. As páginas não somam mais um recuo próprio no
+ * topo (achado 9 da Parte 1: 48 + 48).
+ */
+export function Shell({ children, style }: ShellProps) {
   return (
-    <div className={`max-w-lg mx-auto px-4 pt-12 pb-24 ${className}`}>
+    <div className="hx-page" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 120, ...style }}>
       {children}
     </div>
   )

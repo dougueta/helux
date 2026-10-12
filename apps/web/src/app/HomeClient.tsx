@@ -2,61 +2,84 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import type { AdjustedWorkoutPlanView, BodyCheckin, PlannedExercise } from '@helux/types'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
 import { useTirednessFlow } from '@/hooks/useTirednessFlow'
 import { CheckinCard } from '@/components/checkin/CheckinCard'
-import type { BodyCheckin } from '@helux/types'
+import { Banner } from '@/components/ui/Banner'
+import { Button } from '@/components/ui/Button'
+import { CycleProgress, type CycleState } from '@/components/ui/CycleProgress'
+import { Fit } from '@/components/ui/Fit'
 import { Icon, HelixMark } from '@/components/ui/icons'
-import { Ring } from '@/components/ui/Ring'
-import { MatchBadge } from '@/components/ui/MatchBadge'
-import { RecoveryAdjustedBadge } from '@/components/workout/RecoveryAdjustedBadge'
-import { UpcomingSessionsList } from '@/components/workout/UpcomingSessionsList'
+import { SectionHeader } from '@/components/ui/SectionHeader'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { TirednessSelector } from '@/components/workout/TirednessSelector'
 import { TirednessDialog } from '@/components/workout/TirednessDialog'
-import { MesocycleProgress } from '@/components/workout/MesocycleProgress'
+import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 interface HomeClientProps {
-  plan: any
-  recovery: { hrv?: number; restingHR?: number; activeCalories?: number; sleepHours?: number; date?: string } | null
-  insight: { title?: string; text?: string; score?: number } | null
+  plan: AdjustedWorkoutPlanView | null
   firstName: string
   checkins: BodyCheckin[]
   analytics: { thisWeekSessions: number; currentStreakWeeks: number } | null
 }
 
 function todayLabel() {
-  return new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' })
+  return new Date()
+    .toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'short' })
     .replace(/^\w/, c => c.toUpperCase())
 }
 
-function recoveryScore(hrv?: number): number {
-  if (!hrv) return 0
-  return Math.min(100, Math.round((hrv / 80) * 100))
+/**
+ * Sessões do ciclo para o `CycleProgress`: as anteriores à de hoje (concluídas),
+ * a de hoje e as próximas. A API manda a letra de hoje e das próximas; as
+ * anteriores seguem a sequência de letras do mesociclo (A, B, C…).
+ */
+function cycleSessions(plan: AdjustedWorkoutPlanView): { label: string; state: CycleState }[] {
+  const { today, upcoming, progress } = plan
+  if (!today || !progress) return []
+  const before = Math.max(0, progress.total - 1 - upcoming.length)
+  const base = today.letter.charCodeAt(0) - before
+  return [
+    ...Array.from({ length: before }, (_, i) => ({ label: String.fromCharCode(base + i), state: 'done' as const })),
+    { label: today.letter, state: 'current' as const },
+    ...upcoming.map(s => ({ label: s.letter, state: 'todo' as const })),
+  ]
 }
 
-function recoveryLabel(score: number): string {
-  if (score >= 75) return 'Pronto p/ treinar'
-  if (score >= 50) return 'Moderado'
-  return 'Descanse hoje'
+function HomeSkeleton() {
+  return (
+    <div aria-busy="true" aria-label="carregando treino">
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Skeleton w={150} h={14} />
+        <Skeleton w={80} h={12} />
+      </div>
+      <Skeleton w="85%" h={24} style={{ marginTop: 16 }} />
+      <Skeleton w={90} h={14} style={{ marginTop: 12 }} />
+      <Skeleton w="60%" h={12} style={{ marginTop: 18 }} />
+      <Skeleton w="70%" h={12} style={{ marginTop: 8 }} />
+      <Skeleton h={52} r={999} style={{ marginTop: 36 }} />
+      <Skeleton h={56} r={999} style={{ marginTop: 16 }} />
+    </div>
+  )
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function HomeClient({ plan: initialPlan, recovery, insight, firstName, checkins, analytics }: HomeClientProps) {
+export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }: HomeClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
-  const { plan, generating, generationError, generatePlan, refetch } = useWorkoutPlan()
-  const currentPlan = plan ?? initialPlan
+  const { plan, loading, generating, generationError, generatePlan, refetch } = useWorkoutPlan()
+  const currentPlan: AdjustedWorkoutPlanView | null = plan ?? initialPlan
   const today = currentPlan?.today
-  const WEEKLY_TARGET = 4
 
   // Spec 011: nível de cansaço com resumo das mudanças antes de aplicar; o
   // fluxo chama refetch() depois de salvar (TD-006) e só então inicia o treino.
   const tiredness = useTirednessFlow({
-    today,
+    today: today ?? undefined,
     refetch,
     onStart: (exercises) => {
       startWorkout(exercises)
@@ -69,250 +92,178 @@ export function HomeClient({ plan: initialPlan, recovery, insight, firstName, ch
     tiredness.openStart()
   }
 
-  const score = recoveryScore(recovery?.hrv)
+  const exercises: PlannedExercise[] = today?.exercises ?? []
+  const first = exercises[0]
+  const firstFit = first ? resolveExerciseDisplay(first, undefined).fit : undefined
+  const next = exercises.slice(1, 3)
+  const more = Math.max(0, exercises.length - 3)
+  const streak = analytics?.currentStreakWeeks ?? 0
+  const sessions = currentPlan ? cycleSessions(currentPlan) : []
 
   return (
-    <div className="max-w-lg mx-auto pb-24">
-      {/* Topbar */}
-      <div className="flex items-center justify-between px-4 pt-12 pb-2">
-        <div className="flex items-center gap-2">
-          <HelixMark size={24} />
-          <span style={{ fontFamily: 'var(--font-space-grotesk)', fontWeight: 600, fontSize: 16, color: 'var(--text)' }}>
-            helux
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {analytics && analytics.currentStreakWeeks > 0 && (
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 5,
-              padding: '6px 11px',
-              borderRadius: 'var(--r-pill)',
-              background: 'var(--surface-2)',
-              border: '1px solid var(--hairline)',
-            }}>
-              <Icon name="flame" size={14} stroke="var(--accent)" />
-              <span style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
-                {analytics.currentStreakWeeks}
+    <div className="hx-page" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 120 }}>
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 18, letterSpacing: '-.02em' }}>
+          <HelixMark />
+          helux
+        </span>
+        <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {streak > 0 && (
+            <span
+              role="img"
+              aria-label={`sequência de ${streak} ${streak === 1 ? 'semana' : 'semanas'}`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, padding: '0 12px' }}
+            >
+              <span style={{ color: 'var(--warn)', display: 'grid' }}>
+                <Icon name="flame" size={18} />
               </span>
-              <span style={{ color: 'var(--text-faint)', fontSize: 11 }}>sem</span>
-            </div>
+              <span className="n-sm" style={{ fontWeight: 600 }}>
+                {streak}
+              </span>
+              <span className="t-caption">sem</span>
+            </span>
           )}
-          <Link
-            href="/perfil"
-            aria-label="Perfil de treino"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 32,
-              height: 32,
-              borderRadius: 'var(--r-pill)',
-              background: 'var(--surface-2)',
-              border: '1px solid var(--hairline)',
-            }}
-          >
-            <Icon name="user" size={15} stroke="var(--text-dim)" />
+          <Link href="/perfil" className="hx-icbtn" aria-label="Perfil de treino">
+            <Icon name="user" size={22} />
           </Link>
-        </div>
-      </div>
-
-      {/* Greeting */}
-      <header className="px-4 pt-3 pb-4">
-        <p style={{ fontSize: 13, color: 'var(--text-faint)', marginBottom: 4 }}>{todayLabel()}</p>
-        <h1 style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.15, letterSpacing: '-0.02em', color: 'var(--text)', margin: 0 }}>
-          Bom treino,<br />
-          <span style={{ color: 'var(--accent)' }}>{firstName}</span>
-        </h1>
+        </span>
       </header>
 
-      <div className="px-4 space-y-3">
-        {/* Hero — Treino de hoje */}
-        {today ? (
-          <div style={{
-            background: 'linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%)',
-            border: '1px solid var(--hairline-2)',
-            borderRadius: 'var(--r-card)',
-            padding: '18px 18px 14px',
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-            {/* glow */}
-            <div style={{ position: 'absolute', top: -40, right: -20, width: 140, height: 140,
-              borderRadius: '50%', background: 'var(--accent-soft)', pointerEvents: 'none' }} />
-            <div className="flex items-center justify-between mb-2" style={{ position: 'relative' }}>
-              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
-                Treino de hoje
+      <p className="t-secondary" style={{ marginTop: 8 }}>
+        {todayLabel()}
+      </p>
+      <h1 className="t-display" style={{ marginTop: 4 }}>
+        Bom treino, {firstName}
+      </h1>
+
+      <section className="hx-focus" style={{ marginTop: 20, padding: 20 }} aria-label="treino de hoje">
+        {!currentPlan && loading ? (
+          <HomeSkeleton />
+        ) : today ? (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+              <span className="t-secondary" style={{ color: 'var(--text)' }}>
+                {today.focus ? `Treino ${today.letter} — ${today.focus}` : `Treino ${today.letter}`}
               </span>
-              <div className="flex items-center gap-2">
-                {today.adjusted && <RecoveryAdjustedBadge reason={today.adjustmentReason} />}
-                {insight?.score != null && <MatchBadge value={insight.score} />}
+              <span className="t-caption" style={{ whiteSpace: 'nowrap' }}>
+                <span className="n-sm" style={{ color: 'var(--text)' }}>
+                  {exercises.length}
+                </span>{' '}
+                exercícios
+              </span>
+            </div>
+            <h2 className="t-heading" style={{ marginTop: 14, fontSize: 24, lineHeight: '28px' }}>
+              {first?.name ?? 'Treino personalizado'}
+            </h2>
+            {firstFit !== undefined && (
+              <div style={{ marginTop: 10 }}>
+                <Fit value={firstFit} size="md" />
               </div>
+            )}
+            {next.length > 0 && (
+              <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr)', gap: '6px 12px' }}>
+                <span className="t-caption" style={{ paddingTop: 2 }}>
+                  Depois
+                </span>
+                <div className="t-secondary" style={{ color: 'var(--text)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {next.map((e, i) => (
+                    <span key={i}>{e.name}</span>
+                  ))}
+                  {more > 0 && <span className="dim">e mais {more}</span>}
+                </div>
+              </div>
+            )}
+            <div style={{ height: 1, background: 'var(--hairline)', margin: '18px -20px' }} />
+            <TirednessSelector
+              assessment={tiredness.assessment}
+              changes={today.changes ?? []}
+              reason={today.adjustmentReason}
+              onChoose={(level) => {
+                void tiredness.chooseFromHome(level)
+              }}
+              disabled={tiredness.saving}
+              error={tiredness.open ? null : tiredness.error}
+            />
+            <div style={{ marginTop: 16 }}>
+              <Button kind="primary" size="lg" block iconRight="play" onClick={handleStart}>
+                Iniciar treino
+              </Button>
             </div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text)', marginBottom: 4, position: 'relative' }}>
-              {today.exercises?.[0]?.name ?? 'Treino Personalizado'}
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 12, position: 'relative' }}>
-              {today.exercises?.slice(1,3).map((e: any) => e.name).join(' · ')}
-            </div>
-            <div className="flex items-center gap-4" style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 14, position: 'relative' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <Icon name="dumbbell" size={15} stroke="var(--text-dim)" />
-                {today.exercises?.length ?? 0} exercícios
-              </span>
-            </div>
-            <div style={{ marginBottom: 14 }}>
-              <TirednessSelector
-                assessment={tiredness.assessment}
-                changes={today.changes ?? []}
-                reason={today.adjustmentReason}
-                onChoose={(level) => { void tiredness.chooseFromHome(level) }}
-                disabled={tiredness.saving}
-                error={tiredness.open ? null : tiredness.error}
-              />
-            </div>
-            <button onClick={handleStart} style={{
-              width: '100%',
-              background: 'var(--accent)',
-              color: 'var(--accent-ink)',
-              border: 'none',
-              borderRadius: 'var(--r-pill)',
-              padding: '14px 20px',
-              fontSize: 15,
-              fontWeight: 600,
-              fontFamily: 'var(--font-space-grotesk)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              boxShadow: '0 8px 24px -8px var(--accent-glow)',
-              position: 'relative',
-            }}>
-              <span>Iniciar treino</span>
-              <span style={{ background: 'var(--accent-ink)', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon name="play" size={14} stroke="var(--accent)" sw={0} />
-              </span>
-            </button>
+          </>
+        ) : currentPlan?.status === 'generating' ? (
+          <div role="status">
+            <h2 className="t-heading">Preparando seu próximo ciclo</h2>
+            <p className="t-secondary" style={{ marginTop: 6 }}>
+              Isso leva só alguns instantes. Volte a checar em breve.
+            </p>
           </div>
         ) : (
-          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: 20, textAlign: 'center' }}>
-            {currentPlan?.status === 'generating' ? (
-              <>
-                <p style={{ color: 'var(--text)', marginBottom: 4 }}>Preparando seu próximo ciclo…</p>
-                <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Isso leva só alguns instantes. Volte a checar em breve.</p>
-              </>
-            ) : (
-              <>
-                <p style={{ color: 'var(--text)', marginBottom: 4 }}>Nenhum plano gerado ainda.</p>
-                <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>Use o botão abaixo para gerar seu primeiro plano.</p>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Próximos treinos do mesociclo */}
-        {currentPlan?.upcoming && currentPlan.upcoming.length > 0 && (
-          <UpcomingSessionsList sessions={currentPlan.upcoming} />
-        )}
-
-        {/* Progresso do mesociclo */}
-        {currentPlan?.progress && (
-          <MesocycleProgress completed={currentPlan.progress.completed} total={currentPlan.progress.total} />
-        )}
-
-        {/* Generate button */}
-        {generationError && <p style={{ color: 'var(--danger)', fontSize: 13, textAlign: 'center' }}>{generationError}</p>}
-        <button onClick={generatePlan} disabled={generating} style={{
-          width: '100%',
-          background: 'transparent',
-          border: '1px solid var(--hairline-2)',
-          borderRadius: 'var(--r-pill)',
-          padding: '12px 20px',
-          fontSize: 14,
-          fontWeight: 500,
-          fontFamily: 'var(--font-space-grotesk)',
-          color: generating ? 'var(--text-faint)' : 'var(--text-dim)',
-          cursor: generating ? 'not-allowed' : 'pointer',
-          minHeight: 44,
-          opacity: generating ? 0.6 : 1,
-        }}>
-          {generating ? 'Gerando plano…' : 'Gerar Novo Plano'}
-        </button>
-
-        {/* Check-in card */}
-        <CheckinCard checkins={checkins} />
-
-        {/* Recovery ring + week */}
-        <div className="grid grid-cols-2 gap-3">
-          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-            {recovery ? (
-              <>
-                <Ring value={score} size={56} sw={5}>
-                  <span style={{ fontSize: 15, fontWeight: 600, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--accent)' }}>
-                    {score}
-                  </span>
-                </Ring>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Recuperação</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{recoveryLabel(score)}</div>
-                </div>
-              </>
-            ) : (
-              <div style={{ fontSize: 12, color: 'var(--text-faint)' }}>Sync o Shortcut</div>
-            )}
-          </div>
-          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: '14px 14px' }}>
-            <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>Semana</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 12 }}>
-              <span style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--text)' }}>
-                {analytics?.thisWeekSessions ?? 0}
-              </span>
-              <span style={{ fontSize: 15, color: 'var(--text-faint)', fontWeight: 500 }}>/ {WEEKLY_TARGET}</span>
+          <>
+            <h2 className="t-heading">Nenhum plano gerado ainda</h2>
+            <p className="t-secondary" style={{ marginTop: 6 }}>
+              Gere seu primeiro plano a partir do seu DNA e do seu último check-in.
+            </p>
+            <div style={{ marginTop: 16 }}>
+              <Button kind="primary" size="lg" block loading={generating} onClick={generatePlan}>
+                Gerar meu plano
+              </Button>
             </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {Array.from({ length: WEEKLY_TARGET }).map((_, i) => (
-                <span
-                  key={i}
-                  style={{
-                    flex: 1,
-                    height: 6,
-                    borderRadius: 3,
-                    background: i < (analytics?.thisWeekSessions ?? 0) ? 'var(--accent)' : 'var(--surface-3)',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
+          </>
+        )}
+      </section>
+
+      {generationError && (
+        <div style={{ marginTop: 12 }}>
+          <Banner kind="err" title="Não foi possível gerar o plano">
+            {generationError}
+          </Banner>
         </div>
+      )}
 
-        {/* DNA insight */}
-        {insight && (
-          <button onClick={() => router.push('/dna')} style={{
-            width: '100%',
-            background: 'var(--surface-1)',
-            border: '1px solid var(--hairline)',
-            borderRadius: 'var(--r-card)',
-            padding: '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            cursor: 'pointer',
-            textAlign: 'left',
-          }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-soft)', border: '1px solid var(--accent-line)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Icon name="dna" size={18} stroke="var(--accent)" />
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 2 }}>Insight do seu DNA</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{insight.title}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>{insight.text}</div>
-            </div>
-            <Icon name="chevron" size={16} stroke="var(--text-faint)" />
-          </button>
-        )}
-      </div>
+      {sessions.length > 0 && currentPlan?.progress && (
+        <section style={{ marginTop: 28 }}>
+          <SectionHeader
+            title="Ciclo atual"
+            action={
+              <span className="t-secondary" style={{ whiteSpace: 'nowrap' }}>
+                <span className="n-sm" style={{ color: 'var(--text)' }}>
+                  {currentPlan.progress.completed}
+                </span>{' '}
+                de {currentPlan.progress.total} treinos concluídos
+              </span>
+            }
+          />
+          <CycleProgress sessions={sessions} />
+        </section>
+      )}
+
+      {checkins.length > 0 ? (
+        <CheckinCard checkins={checkins}>
+          <Button kind="secondary" onClick={() => router.push('/checkin')}>
+            Novo check-in
+          </Button>
+          {today && (
+            <Button kind="ghost" loading={generating} onClick={generatePlan}>
+              Gerar novo plano
+            </Button>
+          )}
+        </CheckinCard>
+      ) : (
+        <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
+          <SectionHeader title="Check-in" />
+          <p className="t-secondary">Registre peso e cargas do mês para o Helux ajustar seu plano.</p>
+          <div style={{ display: 'flex', gap: 8, marginTop: 18, flexWrap: 'wrap' }}>
+            <Button kind="secondary" onClick={() => router.push('/checkin')}>
+              Fazer check-in
+            </Button>
+            {today && (
+              <Button kind="ghost" loading={generating} onClick={generatePlan}>
+                Gerar novo plano
+              </Button>
+            )}
+          </div>
+        </section>
+      )}
 
       <TirednessDialog
         open={tiredness.open}

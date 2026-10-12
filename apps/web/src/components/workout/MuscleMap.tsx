@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react'
+
 const MM_LABEL: Record<string, string> = {
   peito: 'Peitoral',
   ombro: 'Deltoide',
@@ -22,6 +24,21 @@ const MM_REGIONS: { key: string; shapes: Shape[] }[] = [
   { key: 'quadriceps', shapes: [['e', 49, 154, 10, 26], ['e', 71, 154, 10, 26]] },
 ]
 
+/** Item da legenda v2: quadrado de 10 px, nome em `.t-body-m` e o papel em `.t-caption` abaixo. */
+function LegendItem({ label, role, swatch }: { label: string; role: string; swatch: CSSProperties }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <i style={{ width: 10, height: 10, borderRadius: 2, flexShrink: 0, ...swatch }} />
+        <span className="t-body-m">{label}</span>
+      </div>
+      <div className="t-caption" style={{ marginLeft: 18 }}>
+        {role}
+      </div>
+    </div>
+  )
+}
+
 export function MuscleMap({
   primary = [],
   secondary = [],
@@ -33,7 +50,7 @@ export function MuscleMap({
   const strokeFor = (k: string) => (primary.includes(k) ? 'transparent' : secondary.includes(k) ? 'var(--accent-line)' : 'var(--hairline)')
 
   return (
-    <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
       <svg viewBox="0 0 120 210" width="96" height="168" aria-label="músculos trabalhados">
         <g fill="var(--surface-2)" stroke="var(--hairline)" strokeWidth="1.5">
           <circle cx="60" cy="24" r="13" />
@@ -54,20 +71,17 @@ export function MuscleMap({
           </g>
         ))}
       </svg>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {primary.map((k) => (
-          <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
-            <span style={{ width: 13, height: 13, borderRadius: 4, background: 'var(--accent)' }} />
-            {MM_LABEL[k] || k}
-            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-faint)' }}>primário</span>
-          </div>
+          <LegendItem key={k} label={MM_LABEL[k] || k} role="Primário" swatch={{ background: 'var(--accent)' }} />
         ))}
         {secondary.filter((k) => !primary.includes(k)).map((k) => (
-          <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
-            <span style={{ width: 13, height: 13, borderRadius: 4, background: 'var(--accent-soft)', border: '1px solid var(--accent-line)' }} />
-            {MM_LABEL[k] || k}
-            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-faint)' }}>secundário</span>
-          </div>
+          <LegendItem
+            key={k}
+            label={MM_LABEL[k] || k}
+            role="Secundário"
+            swatch={{ background: 'var(--accent-soft)', boxShadow: 'inset 0 0 0 1px var(--accent-line)' }}
+          />
         ))}
       </div>
     </div>
