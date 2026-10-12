@@ -147,3 +147,28 @@ describe('ExerciseSheet (v2, spec 012 T050)', () => {
     expect(screen.getByText('Cargas altas — seu forte')).toBeInTheDocument()
   })
 })
+
+// spec 013 (FR-017): equivalente de outro padrão sugerido por alerta genético
+describe('ExerciseSheet — equivalente de outro padrão (spec 013)', () => {
+  const SQUAT: PlannedExercise = {
+    name: 'Agachamento Livre (Barra)',
+    sets: 4,
+    reps: '8-10',
+    weight: '60kg',
+    variants: [
+      { id: 'sq', rec: true, name: 'Agachamento Livre (Barra)', equip: 'Barra', level: 'Avançado', match: 74, motion: 'squat', implement: 'barbell', why: 'x' },
+      { id: 'rdl', crossPattern: true, name: 'Levantamento Terra Romeno (Halteres)', equip: 'Halteres', level: 'Intermediário', match: 90, motion: 'hinge', implement: 'dumbbell', why: 'Equivalente a agachar com menos carga no joelho, articulação sinalizada no seu perfil genético.' },
+      { id: 'lp', name: 'Leg Press 45°', equip: 'Máquina', level: 'Iniciante', match: 96, motion: 'leg-press', implement: 'cable', why: 'y' },
+    ],
+  }
+
+  it('marca o equivalente com a etiqueta "Equivalente" e permite trocar para ele', async () => {
+    const user = userEvent.setup()
+    const onApply = vi.fn()
+    render(<ExerciseSheet open exercise={SQUAT} onApply={onApply} onClose={vi.fn()} />)
+    await user.click(screen.getByRole('tab', { name: /Variantes/ }))
+    expect(screen.getAllByText('Equivalente')).toHaveLength(1)
+    await user.click(screen.getByRole('button', { name: 'Trocar para Levantamento Terra Romeno (Halteres)' }))
+    expect(onApply).toHaveBeenCalledWith('rdl')
+  })
+})

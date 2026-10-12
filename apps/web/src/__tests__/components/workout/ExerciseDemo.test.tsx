@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
+import { MOTION_CATALOG } from '@helux/types'
 import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
 
 beforeEach(() => {
@@ -73,5 +74,65 @@ describe('ExerciseDemo', () => {
       expect(el.getAttribute('stroke') ?? el.getAttribute('fill')).toBe('var(--accent)')
       expect(el.closest('[data-part="implement"]')).not.toBeNull()
     })
+  })
+
+  // ---- spec 013: animações por padrão de movimento ----
+  it.each(Object.keys(MOTION_CATALOG))('tem preset próprio para "%s" (sem cair no genérico)', (key) => {
+    const { container } = render(<ExerciseDemo motion={key} implement="barbell" playing={false} />)
+    expect(container.querySelector('svg')?.getAttribute('data-motion')).toBe(key)
+  })
+
+  it('chave desconhecida cai no preset genérico (press-flat)', () => {
+    const { container } = render(<ExerciseDemo motion="chave-antiga" playing={false} />)
+    expect(container.querySelector('svg')?.getAttribute('data-motion')).toBe('press-flat')
+  })
+
+  it('preset de corpo inteiro desenha as pernas (quadril, joelho e tornozelo)', () => {
+    const { container } = render(<ExerciseDemo motion="squat" implement="barbell" playing={false} />)
+    expect(container.querySelector('[data-part="legs"]')).not.toBeNull()
+    expect(container.querySelectorAll('[data-part="legs"] line').length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('preset de corpo inteiro fica parado no meio do movimento em movimento reduzido', () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: q.includes('reduce'),
+      media: q,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }))
+    const start = render(<ExerciseDemo motion="squat" implement="barbell" playing={false} />)
+    const startKnee = start.container.querySelector('[data-joint="kn"]')?.getAttribute('cx')
+    start.unmount()
+    const { container } = render(<ExerciseDemo motion="squat" implement="barbell" playing={true} />)
+    expect(requestAnimationFrame).not.toHaveBeenCalled()
+    const midKnee = container.querySelector('[data-joint="kn"]')?.getAttribute('cx')
+    expect(midKnee).toBeDefined()
+    expect(midKnee).not.toBe(startKnee)
+    vi.unstubAllGlobals()
+  })
+
+  it.each(['squat', 'hinge', 'row', 'hip-thrust', 'leg-press', 'shrug'])(
+    'em "%s" o acento fica só no implemento',
+    (motion) => {
+      const { container } = render(<ExerciseDemo motion={motion} implement="barbell" playing={false} />)
+      const accentish = [...container.querySelectorAll('*')].filter(el =>
+        [el.getAttribute('stroke'), el.getAttribute('fill')].some(v => v?.startsWith('var(--accent')),
+      )
+      expect(accentish.length).toBeGreaterThan(0)
+      accentish.forEach(el => expect(el.closest('[data-part="implement"]')).not.toBeNull())
+    },
+  )
+
+  it('peso corporal não desenha implemento', () => {
+    for (const motion of ['push-up', 'plank', 'pull-vertical']) {
+      const { container, unmount } = render(<ExerciseDemo motion={motion} implement="bodyweight" playing={false} />)
+      expect(container.querySelector('[data-part="implement"] *')).toBeNull()
+      unmount()
+    }
+  })
+
+  it('polia desenha o cabo tracejado até o implemento', () => {
+    const { container } = render(<ExerciseDemo motion="row" implement="cable" playing={false} />)
+    expect(container.querySelector('[data-part="implement"] line[stroke-dasharray]')).not.toBeNull()
   })
 })

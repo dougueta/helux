@@ -19,6 +19,8 @@ export interface Variant {
   match: number
   rec?: boolean
   betterFit?: boolean
+  /** spec 013: equivalente de outro padrão de movimento sugerido por alerta genético articular */
+  crossPattern?: boolean
   motion: string
   implement: string
   why: string
