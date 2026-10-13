@@ -5,6 +5,8 @@ export interface BodyCheckin {
   body_fat_pct?: number | null
   waist_cm?: number | null
   hip_cm?: number | null
+  /** Spec 018: % de gordura pela Marinha. */
+  neck_cm?: number | null
   arm_cm?: number | null
   leg_cm?: number | null
   squat_kg?: number | null
@@ -20,6 +22,7 @@ export interface CheckinInput {
   body_fat_pct?: number
   waist_cm?: number
   hip_cm?: number
+  neck_cm?: number
   arm_cm?: number
   leg_cm?: number
   squat_kg?: number
