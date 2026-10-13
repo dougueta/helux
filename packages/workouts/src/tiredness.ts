@@ -5,6 +5,7 @@ import type {
   TirednessAssessment,
   TirednessLevel,
 } from '@helux/types'
+import { isMainExercise } from './plan-structure'
 
 // Spec 011 — cansaço percebido com níveis. Módulo puro compartilhado por API
 // (monta o treino do dia) e web (prévia do que muda antes de salvar).
@@ -85,6 +86,8 @@ export function adjustExercisesForLevel(exercises: PlannedExercise[], level: Tir
   const tier = tirednessTier(level)
   if (tier === 'none') return exercises
   return exercises.map((exercise) => {
+    // Spec 014: aquecimento e volta à calma nunca são ajustados pelo cansaço.
+    if (!isMainExercise(exercise)) return exercise
     const sets = Math.max(MIN_SETS, exercise.sets - 1)
     const weight = tier === 'high' ? reduceWeight(exercise.weight) : exercise.weight
     if (sets === exercise.sets && weight === exercise.weight) return exercise

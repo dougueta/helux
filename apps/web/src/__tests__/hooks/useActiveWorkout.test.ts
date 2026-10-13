@@ -387,4 +387,94 @@ describe('useActiveWorkout', () => {
       expect(supino.sets).toEqual([])
     })
   })
+
+  describe('spec 014 — fases', () => {
+    const phasedPlan = [
+      { name: 'Esteira', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento' },
+      { name: 'Agachamento', sets: 2, reps: '8-10', weight: '80kg', phase: 'principal' },
+      { name: 'Supino', sets: 2, reps: '8-10', weight: '60kg' },
+      { name: 'Alongamento', sets: 1, reps: '30s', weight: '—', phase: 'volta-calma' },
+    ]
+
+    it('getSkippedExercises considera só o principal', async () => {
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(phasedPlan as any) })
+      act(() => { result.current.toggleSetDone(1, 0) })
+      expect(result.current.getSkippedExercises().map(e => e.name)).toEqual(['Supino'])
+    })
+
+    it('finishWorkout envia ao histórico só os exercícios do principal', async () => {
+      const { apiFetch } = await import('@/services/api-client')
+      const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+      const { result } = renderHook(() => useActiveWorkout())
+      act(() => { result.current.startWorkout(phasedPlan as any) })
+      act(() => { result.current.toggleSetDone(0, 0) })
+      act(() => { result.current.toggleSetDone(1, 0) })
+      act(() => { result.current.toggleSetDone(3, 0) })
+      await act(async () => { await result.current.finishWorkout() })
+
+      const body = JSON.parse((apiFetch as any).mock.calls[0][1].body)
+      expect(body.exercises.map((e: any) => e.name)).toEqual(['Agachamento', 'Supino'])
+      expect(body.exercises[1].skipped).toBe(true)
+    })
+  })
+})
+
+describe('useActiveWorkout — esforço percebido (spec 014, US3, FR-014)', () => {
+  beforeEach(() => { localStorageMock.clear(); vi.clearAllMocks() })
+
+  async function mount() {
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const hook = renderHook(() => useActiveWorkout())
+    await vi.waitFor(() => expect(hook.result.current.loaded).toBe(true))
+    return hook
+  }
+  const payloadOf = (apiFetch: any) => JSON.parse(apiFetch.mock.calls[0][1].body)
+
+  it('grava o valor do nível relatado em todas as séries concluídas; sem relato grava 8', async () => {
+    const { apiFetch } = await import('@/services/api-client')
+    const { result } = await mount()
+    act(() => { result.current.startWorkout(mockPlan as any) })
+    act(() => { result.current.toggleSetDone(0, 0) })
+    act(() => { result.current.toggleSetDone(0, 1) })
+    act(() => { result.current.toggleSetDone(1, 0) })
+    act(() => { result.current.setEffort(0, 'dificil') })
+    expect(result.current.session?.effortByExerciseIndex).toEqual({ 0: 'dificil' })
+    await act(async () => { await result.current.finishWorkout() })
+
+    const body = payloadOf(apiFetch)
+    expect(body.exercises[0].sets.map((s: any) => s.effort)).toEqual([9, 9])
+    expect(body.exercises[1].sets.map((s: any) => s.effort)).toEqual([8])
+  })
+
+  it('o relato pode ser alterado até finalizar', async () => {
+    const { apiFetch } = await import('@/services/api-client')
+    const { result } = await mount()
+    act(() => { result.current.startWorkout(mockPlan as any) })
+    act(() => { result.current.toggleSetDone(0, 0) })
+    act(() => { result.current.setEffort(0, 'limite') })
+    act(() => { result.current.setEffort(0, 'facil') })
+    await act(async () => { await result.current.finishWorkout() })
+    expect(payloadOf(apiFetch).exercises[0].sets[0].effort).toBe(6)
+  })
+
+  it('estado salvo antes da spec 014 (sem effortByExerciseIndex) carrega como {}', async () => {
+    localStorageMock.setItem('helux:active-workout', JSON.stringify({
+      planExercises: mockPlan,
+      exerciseStates: [[{ weight: 80, reps: 8, done: false }], [{ weight: 70, reps: 6, done: false }]],
+      currentExerciseIndex: 0,
+      startedAt: new Date().toISOString(),
+      variantByExerciseIndex: {},
+      executedVariantByExerciseIndex: {},
+    }))
+    const { result } = await mount()
+    expect(result.current.session?.effortByExerciseIndex).toEqual({})
+  })
+
+  it('carga decimal do plano (progressão em 2,5 kg) entra sem arredondar', async () => {
+    const { result } = await mount()
+    act(() => { result.current.startWorkout([{ name: 'Supino', sets: 1, reps: '8-10', weight: '102.5kg' }] as any) })
+    expect(result.current.session?.exerciseStates[0][0].weight).toBe(102.5)
+  })
 })

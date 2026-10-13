@@ -7,13 +7,13 @@ import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
-import { Fit } from '@/components/ui/Fit'
 import { HistoryRow } from '@/components/ui/HistoryRow'
 import { SectionHeader } from '@/components/ui/SectionHeader'
-import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+import { PlanExerciseList } from '@/components/workout/PlanExerciseList'
 import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
 import type { AdjustedWorkoutPlanView } from '@helux/types'
+import { isMainExercise } from '@helux/workouts'
 
 interface TreinosClientProps {
   plan: AdjustedWorkoutPlanView | null
@@ -47,35 +47,9 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
         <section style={{ marginTop: 24 }}>
           <SectionHeader
             title={today.focus ? `Treino ${today.letter} — ${today.focus}` : `Treino ${today.letter}`}
-            aside={`${today.exercises.length} exercícios`}
+            aside={`${today.exercises.filter(isMainExercise).length} exercícios`}
           />
-          <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {today.exercises.map((ex, i) => {
-              const fit = resolveExerciseDisplay(ex, undefined).fit
-              return (
-                <li
-                  key={i}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(0,1fr) auto',
-                    gap: '4px 12px',
-                    padding: '12px 0',
-                    borderTop: '1px solid var(--hairline)',
-                    alignItems: 'baseline',
-                  }}
-                >
-                  <span className="t-body-m">{ex.name}</span>
-                  <span className="n-sm" style={{ color: 'var(--text)', textAlign: 'right' }}>
-                    {ex.sets} × {String(ex.reps).replace('-', '–')}
-                  </span>
-                  <span>{fit !== undefined && <Fit value={fit} />}</span>
-                  <span className="n-sm dim" style={{ textAlign: 'right' }}>
-                    {ex.weight}
-                  </span>
-                </li>
-              )
-            })}
-          </ol>
+          <PlanExerciseList exercises={today.exercises} />
           <div style={{ marginTop: 16 }}>
             <Button kind="primary" size="lg" block iconRight="play" onClick={handleStart}>
               Iniciar treino

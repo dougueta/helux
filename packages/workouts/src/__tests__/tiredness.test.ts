@@ -91,6 +91,19 @@ describe('assessTiredness', () => {
 })
 
 describe('adjustExercisesForLevel', () => {
+  it('spec 014: só ajusta o principal — aquecimento e volta à calma ficam como planejados', () => {
+    const withPhases: PlannedExercise[] = [
+      { name: 'Esteira', sets: 3, reps: '5 min', weight: '5kg', phase: 'aquecimento' },
+      { name: 'Supino', sets: 4, reps: '8', weight: '80kg', phase: 'principal' },
+      { name: 'Alongamento', sets: 3, reps: '30s', weight: '—', phase: 'volta-calma' },
+    ]
+    const r = adjustExercisesForLevel(withPhases, 'exausto')
+    expect(r[0]).toBe(withPhases[0])
+    expect(r[2]).toBe(withPhases[2])
+    expect(r[1]).toMatchObject({ sets: 3, weight: '72kg' })
+    expect(diffExercises(withPhases, r).map((c) => c.name)).toEqual(['Supino'])
+  })
+
   it('ótimo/normal/null não alteram', () => {
     expect(adjustExercisesForLevel(planned, 'otimo')).toEqual(planned)
     expect(adjustExercisesForLevel(planned, 'normal')).toEqual(planned)

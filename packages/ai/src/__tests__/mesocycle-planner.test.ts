@@ -100,3 +100,71 @@ describe('buildMesocycleSystemPrompt', () => {
     expect(prompt).toContain('"sessions"')
   })
 })
+
+describe('generateMesocyclePlan — fases (spec 014, US1)', () => {
+  const WITH_PHASES = {
+    ...MOCK_MESOCYCLE,
+    sessions: [
+      {
+        letter: 'A',
+        focus: 'Pernas',
+        exercises: [
+          { phase: 'aquecimento', name: 'Agachamento Livre (Barra)', sets: 1, reps: '10', weight: '20kg' },
+          { phase: 'principal', name: 'Agachamento Livre (Barra)', sets: 4, reps: '6-8', weight: '100kg' },
+          { phase: 'volta-calma', name: 'Alongamento de quadríceps', sets: 1, reps: '30s cada lado', weight: '—' },
+        ],
+      },
+    ],
+  }
+
+  beforeEach(() => {
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: JSON.stringify(WITH_PHASES) }],
+      usage: { input_tokens: 1, output_tokens: 1 },
+    })
+  })
+
+  it('preserva o campo phase de cada item', async () => {
+    const result = await generateMesocyclePlan(MOCK_INPUT)
+    expect(result.sessions[0].exercises.map((e) => e.phase)).toEqual(['aquecimento', 'principal', 'volta-calma'])
+  })
+
+  it('enriquece (cues, músculos, variantes) só os itens do principal', async () => {
+    const [warmup, main, cooldown] = (await generateMesocyclePlan(MOCK_INPUT)).sessions[0].exercises
+    expect(main.cues?.length).toBeGreaterThan(0)
+    expect(main.variants?.length).toBeGreaterThan(0)
+    expect(warmup.cues).toBeUndefined()
+    expect(warmup.variants).toBeUndefined()
+    expect(warmup.muscle).toBeUndefined()
+    expect(cooldown.variants).toBeUndefined()
+  })
+})
+
+describe('generateMesocyclePlan — biset (spec 014, US2)', () => {
+  it('preserva supersetGroup devolvido pela IA', async () => {
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: JSON.stringify({
+        ...MOCK_MESOCYCLE,
+        sessions: [{ letter: 'A', focus: 'Peito + Costas', exercises: [
+          { phase: 'principal', name: 'Supino Reto', sets: 3, reps: '10', weight: '60kg', supersetGroup: 'b1' },
+          { phase: 'principal', name: 'Remada Curvada', sets: 3, reps: '10', weight: '50kg', supersetGroup: 'b1' },
+        ] }],
+      }) }],
+      usage: { input_tokens: 1, output_tokens: 1 },
+    })
+    const result = await generateMesocyclePlan(MOCK_INPUT)
+    expect(result.sessions[0].exercises.map((e) => e.supersetGroup)).toEqual(['b1', 'b1'])
+  })
+})
+
+describe('generateMesocyclePlan — progressão de carga (spec 014, US3)', () => {
+  it('envia input.loadProgression no prompt do usuário', async () => {
+    await generateMesocyclePlan({
+      ...MOCK_INPUT,
+      loadProgression: [{ name: 'Supino Reto', action: 'aumentar', previousWeightKg: 40, nextWeightKg: 42, reason: 'Topo.' }],
+    })
+    const userText = JSON.stringify(mockCreate.mock.calls.at(-1)![0].messages)
+    expect(userText).toContain('Progressão de carga calculada')
+    expect(userText).toContain('Supino Reto: 40 kg → 42 kg (aumentar)')
+  })
+})

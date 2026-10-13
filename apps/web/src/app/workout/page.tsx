@@ -10,6 +10,7 @@ import { WorkoutDoneScreen } from '@/components/workout/WorkoutDoneScreen'
 import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { Button, IconButton } from '@/components/ui/Button'
+import { Check } from '@/components/ui/Check'
 import { CurrentSet } from '@/components/ui/CurrentSet'
 import { Fit } from '@/components/ui/Fit'
 import { Icon } from '@/components/ui/icons'
@@ -20,8 +21,30 @@ import { SetRow } from '@/components/ui/SetRow'
 import { Tag } from '@/components/ui/Tag'
 import { Tips } from '@/components/ui/Tips'
 import { WorkoutProgress } from '@/components/ui/WorkoutProgress'
+import { EffortPicker } from '@/components/workout/EffortPicker'
+import { exercisePhase, nextStepAfterSet, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
+import type { ExercisePhase } from '@helux/types'
 
-const REST_SECS = 90
+/** Tag da fase no treino ativo (spec 014, FR-005). */
+const PHASE_TAG: Record<ExercisePhase, string> = {
+  aquecimento: 'Aquecimento',
+  principal: 'Musculação',
+  'volta-calma': 'Volta à calma',
+}
+
+/** Item de aquecimento/volta à calma: concluído com um toque, sem kg/reps. */
+function SimpleSetRow({ no, label, done, onToggle }: { no: number; label: string; done: boolean; onToggle: () => void }) {
+  return (
+    <div className={done ? 'hx-set is-done' : 'hx-set is-upcoming'} onClick={onToggle}>
+      <span className="hx-set-no">{no}</span>
+      <span className="t-body">{label}</span>
+      <span />
+      <span onClick={e => e.stopPropagation()}>
+        <Check on={done} onClick={onToggle} label={done ? `série ${no} concluída, desfazer` : `concluir série ${no}`} />
+      </span>
+    </div>
+  )
+}
 
 function mmss(s: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
@@ -42,6 +65,7 @@ export default function WorkoutPage() {
     updateSet,
     addSet,
     selectVariant,
+    setEffort,
     getSkippedExercises,
     finishWorkout,
   } = useActiveWorkout()
@@ -127,6 +151,16 @@ export default function WorkoutPage() {
   const currentVariantId = session.variantByExerciseIndex?.[currentIdx]
   const selectedVariant = variants.find(v => v.id === currentVariantId) ?? recVariant
   const display = currentEx ? resolveExerciseDisplay(currentEx, currentVariantId) : null
+  const phase: ExercisePhase = currentEx ? exercisePhase(currentEx) : 'principal'
+  const isMain = phase === 'principal'
+  const partnerIdx = currentEx ? supersetPartnerIndex(session.planExercises, currentIdx) : null
+  const partner = partnerIdx !== null ? session.planExercises[partnerIdx] : null
+  // Rótulo "descanso Ns" vem do mesmo ponto que o timer (contracts/workout-flow.md).
+  const restLabelSecs = restSecondsAfterSet({
+    exercises: session.planExercises,
+    exerciseIndex: currentIdx,
+    hasPendingSets: session.exerciseStates.map(sets => sets.some(s => !s.done)),
+  })
 
   const totalSets = session.exerciseStates.reduce((acc, sets) => acc + sets.length, 0)
   const totalDone = session.exerciseStates.reduce(
@@ -145,16 +179,23 @@ export default function WorkoutPage() {
   function handleToggleSet(ei: number, si: number) {
     const wasUndone = !session!.exerciseStates[ei][si].done
     toggleSetDone(ei, si)
-    if (wasUndone) {
-      // FR-013: o ✓ anima, a linha fica compacta, o traço acende, o contador sobe e o descanso começa.
-      setPoppedSetIndex(si)
-      setEditingSetIndex(null)
-      setRestLeft(REST_SECS)
-      setRestTotal(REST_SECS)
-    } else {
+    if (!wasUndone) {
       setPoppedSetIndex(null)
       setRestLeft(0)
+      return
     }
+    // FR-013: o ✓ anima, a linha fica compacta, o traço acende, o contador sobe.
+    // Spec 014: descanso e navegação (biset, aquecimento) vêm do workout-flow —
+    // ponto único que a spec 015 vai personalizar.
+    const hasPendingSets = session!.exerciseStates.map((sets, i) =>
+      sets.some((s, j) => !s.done && !(i === ei && j === si)),
+    )
+    const step = nextStepAfterSet({ exercises: session!.planExercises, exerciseIndex: ei, hasPendingSets })
+    setPoppedSetIndex(si)
+    setEditingSetIndex(null)
+    if (step.goToExerciseIndex !== null) setExercise(step.goToExerciseIndex)
+    setRestLeft(step.restSeconds)
+    setRestTotal(step.restSeconds)
   }
 
   function handlePickExercise(i: number) {
@@ -229,8 +270,8 @@ export default function WorkoutPage() {
       {currentEx && display && (
         <div style={{ padding: '0 16px', marginTop: 20 }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Tag>Musculação</Tag>
-            {display.fit !== undefined && <Fit value={display.fit} />}
+            <Tag>{PHASE_TAG[phase]}</Tag>
+            {isMain && display.fit !== undefined && <Fit value={display.fit} />}
           </div>
           <h1 className="t-title" style={{ marginTop: 12 }}>
             {display.title}
@@ -240,15 +281,33 @@ export default function WorkoutPage() {
               variante de {display.plannedName}
             </p>
           )}
+          {partner && (
+            <p className="t-secondary" style={{ marginTop: 4, color: 'var(--text)' }}>
+              Biset · alterna com {partner.name}
+            </p>
+          )}
+          {!isMain && (
+            <p className="t-body dim" style={{ marginTop: 6 }}>
+              {currentEx.reps}
+            </p>
+          )}
+          {isMain && (
           <p className="t-body dim" style={{ marginTop: 6 }}>
             <span className="n-sm" style={{ fontSize: 15, color: 'var(--text)' }}>
               {currentEx.sets} × {String(currentEx.reps).replace('-', '–')}
             </span>{' '}
-            reps, descanso{' '}
-            <span className="n-sm" style={{ fontSize: 15, color: 'var(--text)' }}>
-              {REST_SECS}s
-            </span>
+            {restLabelSecs > 0 ? (
+              <>
+                reps, descanso{' '}
+                <span className="n-sm" style={{ fontSize: 15, color: 'var(--text)' }}>
+                  {restLabelSecs}s
+                </span>
+              </>
+            ) : (
+              'reps, sem descanso antes do par'
+            )}
           </p>
+          )}
 
           {display.tip && (
             <section style={{ marginTop: 22 }} aria-label="dicas de execução">
@@ -256,7 +315,7 @@ export default function WorkoutPage() {
             </section>
           )}
 
-          {variants.length > 0 && selectedVariant && (
+          {isMain && variants.length > 0 && selectedVariant && (
             <div className="hx-card" style={{ marginTop: 20, overflow: 'hidden' }}>
               <button type="button" className="hx-row-btn" style={{ background: 'none' }} onClick={() => setSheetOpen(true)}>
                 <span className="hx-stage" style={{ width: 52, height: 52, borderRadius: 12, flexShrink: 0, display: 'block' }}>
@@ -329,6 +388,24 @@ export default function WorkoutPage() {
             </div>
           )}
 
+          {!isMain && (
+            <section style={{ marginTop: 28 }}>
+              <SectionHeader title="Séries" />
+              <div className="hx-sets">
+                {currentSets.map((s, si) => (
+                  <SimpleSetRow
+                    key={si}
+                    no={si + 1}
+                    label={currentEx.reps}
+                    done={s.done}
+                    onToggle={() => handleToggleSet(currentIdx, si)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {isMain && (
           <section style={{ marginTop: 28 }}>
             <SectionHeader title="Séries" aside="kg × reps" />
             <div className="hx-sets">
@@ -365,7 +442,19 @@ export default function WorkoutPage() {
             <Button kind="ghost" block icon="plus" style={{ marginTop: 6 }} onClick={() => addSet(currentIdx)}>
               Adicionar série
             </Button>
+            {currentSets.some(s => s.done) && (
+              <div style={{ marginTop: 16 }}>
+                <p className="t-secondary" style={{ marginBottom: 8 }}>
+                  Como foi o esforço?
+                </p>
+                <EffortPicker
+                  value={session.effortByExerciseIndex?.[currentIdx] ?? null}
+                  onChange={level => setEffort(currentIdx, level)}
+                />
+              </div>
+            )}
           </section>
+          )}
         </div>
       )}
 
