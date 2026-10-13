@@ -20,7 +20,34 @@ Esta funcionalidade introduz o **Módulo de Nutrição Esportiva Genética**, co
 
 ---
 
+## Clarifications
+
+### Session 2026-10-13
+
+- Q: Quem monta as refeições do dia — regra determinística, IA ou híbrido? → A: Regra determinística. Metas por fórmula e refeições montadas a partir de um catálogo próprio de alimentos (macros + tags genéticas); a IA fica só no chat (explicar e sugerir trocas).
+- Q: Como o sistema sabe o horário do treino para o timing peri-treino? → A: Pela hora real em que o treino ativo começa (o usuário pode treinar em qualquer horário, sem horário fixo). Antes de começar, o pré-treino é mostrado como orientação relativa ("60–90 min antes de treinar"); a partir do início, as janelas pós-treino passam a ter hora no relógio.
+- Q: Faz sentido gerar um plano por dia? → A: Não como unidade principal. O plano alimentar é uma **fase de dieta** (objetivo + duração própria, independente do mesociclo) com metas-base de calorias/macros, **recalibrada por regra a cada check-in corporal** pela evolução real vs. esperada; o treino segue sendo calibrado pelo histórico e os dois se encontram no check-in. O **dia** é derivado da fase (treino/descanso, timing pelo início real do treino, ajuste de cansaço, refeições do catálogo). % de gordura pelo **método da Marinha dos EUA** com fita métrica (cintura + pescoço + altura; quadril para mulheres); proteína por kg de peso; calorias por fórmula com peso, altura, idade e sexo.
+- Q: Como fica a conversa com o agente ao longo dos dias? → A: Uma conversa por fase de dieta: dura a fase inteira; a IA recebe as últimas N mensagens da fase, mais o contexto do dia (treino, cansaço, plano do dia), da fase e da genética. Nova fase = nova conversa; as conversas de fases anteriores ficam salvas para leitura.
+- Q: O que entra nesta spec? → A: Tudo — US0 a US4 na 018. A US4 (perfil nutrigenômico) reaproveita os componentes visuais da tela DNA da 020 (cards de marcador) dentro do módulo de Nutrição, sem duplicar a lógica de leitura do perfil.
+
+---
+
 ## 2. User Scenarios & Testing *(mandatory)*
+
+### User Story 0 - Fase de Dieta Recalibrada a Cada Check-in (Priority: P1)
+
+O usuário inicia uma fase de dieta escolhendo o objetivo (ex.: perder gordura, ganhar massa, recomposição, manutenção) e a duração. O sistema define as metas-base de calorias e macros a partir do último check-in (peso, cintura, pescoço → % de gordura pelo método da Marinha), dos dados fixos do perfil (altura, idade, sexo), do objetivo e da genética. A cada novo check-in, a fase é recalibrada por regra: a evolução real de peso, cintura e % de gordura é comparada à esperada para o objetivo, e as metas sobem, descem ou se mantêm, com o motivo visível.
+
+**Why this priority**: É a base de tudo — o dia só é coerente se derivar de uma estratégia com objetivo. Treino e dieta passam a ser avaliados juntos no mesmo check-in.
+
+**Independent Test**: Criar uma fase "perder gordura" com check-in de 80 kg; registrar um novo check-in com perda abaixo da esperada; verificar que as metas calóricas descem um degrau e o motivo cita a evolução medida.
+
+**Acceptance Scenarios**:
+1. **Given** um check-in com peso, cintura e pescoço e o perfil com altura, idade e sexo, **When** o usuário inicia uma fase de dieta, **Then** o sistema calcula % de gordura (Marinha), calorias e macros-base (proteína por kg) e mostra as metas da fase.
+2. **Given** uma fase em andamento, **When** um novo check-in é registrado, **Then** a fase é recalibrada por regra determinística (aumentar, manter ou reduzir calorias/macros) e a recalibração fica registrada com o motivo.
+3. **Given** um check-in sem pescoço (ou sem cintura), **When** a fase é calculada, **Then** o % de gordura fica ausente e as metas usam só o peso (sem bloquear o usuário).
+
+---
 
 ### User Story 1 - Diretrizes Nutricionais Diárias Alinhadas ao Treino e Genética (Priority: P1)
 
@@ -48,7 +75,8 @@ Na tela de Nutrição, o usuário tem acesso a uma interface de chat com o **Age
 **Acceptance Scenarios**:
 1. **Given** o chat do Agente Nutricionista aberto, **When** o usuário solicita uma substituição de alimento para o pós-treino, **Then** o agente propõe alternativas equivalentes em macronutrientes e valida explicitamente que as sugestões não possuem lactose nem interferem negativamente no perfil metabólico.
 2. **Given** uma dúvida do usuário sobre dosagem de cafeína, **When** o usuário pergunta se deve suplementar cafeína antes do treino de explosão, **Then** o agente avalia o genótipo ADORA2A (baixa propensão a ansiedade induzida por cafeína) e o perfil ACTN3 C,C (fibras rápidas), recomendando o timing e a faixa segura de dosagem.
-3. **Given** uma conversa em andamento, **When** o usuário envia múltiplas mensagens sequenciais, **Then** o agente preserva o histórico da conversa e o contexto do dia.
+3. **Given** uma conversa em andamento, **When** o usuário envia múltiplas mensagens sequenciais (inclusive em dias diferentes da mesma fase), **Then** o agente preserva o histórico da conversa da fase e usa o contexto do dia atual.
+4. **Given** uma nova fase de dieta iniciada, **When** o usuário abre o chat, **Then** começa uma conversa nova, e a conversa da fase anterior continua disponível para leitura.
 
 ---
 
@@ -72,6 +100,8 @@ O usuário pode alternar para a aba/seção "Meu Perfil Genético Nutricional", 
 
 **Why this priority**: Confere transparência e empoderamento ao usuário, permitindo que ele compreenda os fundamentos de longo prazo da sua estratégia nutricional e compartilhe com profissionais de saúde.
 
+**Reuso**: a seção usa os mesmos componentes de card de marcador da tela DNA (spec 020) e a mesma leitura do perfil genético (`GET /genetic-profile`), acrescentando a classificação nutricional (Ponto de Atenção / Neutro / Favorável) e a conduta prática.
+
 **Independent Test**: Acessar a seção "Perfil Genético" dentro do módulo de nutrição e validar que todos os marcadores de `data/genetics/genera.json` pertencentes aos grupos nutrição e performance estão mapeados com status visual (Ponto de Atenção, Neutro, Favorável).
 
 **Acceptance Scenarios**:
@@ -86,7 +116,8 @@ O usuário pode alternar para a aba/seção "Meu Perfil Genético Nutricional", 
 ## 3. Edge Cases
 
 - **Ausência de dados genéticos**: Caso o usuário ainda não possua o arquivo/registro genético carregado, o sistema deve exibir um estado de fallback (onboarding para carregar o arquivo ou utilizar diretrizes esportivas padrão baseadas em biometria básica, indicando que a personalização genômica está inativa).
-- **Treino alterado no meio do dia**: Se o usuário trocar ou adiar o treino para outro horário, os horários e conteúdos das janelas peri-treino (pré e pós) devem se recalcular em relação ao novo horário programado.
+- **Treino em qualquer horário**: Não há horário programado. Enquanto o treino do dia não começa, o plano não fixa hora para pré/pós-treino (só orientação relativa). Se o usuário começar a treinar sem ter feito a refeição pré-treino, o plano não "atrasa" nada: o pós-treino é recalculado a partir do início/conclusão real.
+- **Dia com treino planejado que não acontece**: Até o treino começar, o dia é tratado como dia de treino (metas de dia de treino). Se o dia terminar sem treino iniciado, o histórico registra o plano como "treino não realizado" (sem recálculo retroativo).
 - **Treino concluído antecipadamente**: Ao marcar o treino como concluído, a refeição pós-treino deve ser destacada como "Ação recomendada imediata" com temporizador de janela de recuperação.
 - **Falha de conectividade ou indisponibilidade do Agente LLM**: O painel e as diretrizes calculadas deterministicamente (macros, refeições base salvas) continuam disponíveis offline/localmente; o chat do agente exibe feedback amigável de reconexão.
 - **Alimentos proibidos por intolerância (Lactose)**: Nenhuma refeição sugerida, receita ou substituição automática pode conter derivados lácteos com lactose sem a indicação explícita "zero lactose" ou alternativa vegetal equivalente.
@@ -98,9 +129,13 @@ O usuário pode alternar para a aba/seção "Meu Perfil Genético Nutricional", 
 ### Functional Requirements
 
 - **FR-001**: O sistema DEVE carregar e interpretar os marcadores genéticos de nutrição e performance a partir de `data/genetics/genera.json` (ou endpoint de perfil genético existente na API).
-- **FR-002**: O sistema DEVE calcular as metas de macronutrientes (Proteínas, Carboidratos, Gorduras) e Calorias Totais diárias integradas ao treino do dia (Volume, RPE planejado, grupamentos musculares) e à fase do mesociclo vigente.
+- **FR-002**: O sistema DEVE calcular as metas do dia (calorias, proteínas, carboidratos, gorduras) **derivando-as das metas-base da fase de dieta ativa**, distribuídas conforme o treino do dia (volume, grupamentos musculares, dia de descanso).
+- **FR-014**: O usuário DEVE poder iniciar uma fase de dieta com objetivo e duração próprios (independentes do mesociclo). As metas-base DEVEM ser calculadas por fórmula a partir de peso, altura, idade, sexo, nível de atividade (vindo do treino), objetivo e marcadores genéticos; proteína por kg de peso.
+- **FR-015**: A cada novo check-in corporal durante uma fase ativa, o sistema DEVE recalibrar as metas-base por regra determinística, comparando a evolução real (peso, cintura e % de gordura quando houver) com a esperada para o objetivo, e registrar a recalibração (antes, depois, motivo).
+- **FR-016**: O % de gordura DEVE ser estimado pelo método da Marinha dos EUA com fita métrica (cintura, pescoço e altura; quadril para mulheres). O check-in DEVE ganhar o campo pescoço; o perfil DEVE ganhar altura, data de nascimento e sexo. Sem as medidas necessárias, o % de gordura fica ausente e nada é bloqueado.
 - **FR-003**: O sistema DEVE discriminar dias de treino vs. dias de descanso, adaptando a partição de carboidratos conforme a predisposição genética do usuário (FTO T,T favorável a menor carboidrato em repouso).
-- **FR-004**: O sistema DEVE estruturar o timing das refeições em torno do treino: refeição pré-treino (com tempo de digestão sugerido) e pós-treino imediato/refeição sólida seguinte.
+- **FR-002a**: As refeições do dia DEVEM ser montadas por regra determinística a partir de um catálogo próprio de alimentos (cada item com porção de referência, macros e tags genéticas como "sem lactose", "rico em B6", "cálcio não lácteo"). A IA NÃO gera o plano do dia; o mesmo dia, treino, cansaço e perfil produzem sempre o mesmo plano.
+- **FR-004**: O sistema DEVE estruturar o timing das refeições em torno do treino: refeição pré-treino (com tempo de digestão sugerido) e pós-treino imediato/refeição sólida seguinte. Não existe horário de treino agendado: antes do início, o pré-treino é exibido como orientação relativa ("60–90 min antes de treinar") e as demais refeições sem âncora no treino; quando o treino ativo começa, o horário real de início ancora as janelas e o pós-treino passa a mostrar hora no relógio (calculada a partir da conclusão, quando houver).
 - **FR-005**: O sistema DEVE filtrar e excluir estritamente fontes de lactose das sugestões padrão em conformidade com o marcador MCM6 G,G.
 - **FR-006**: O sistema DEVE destacar recomendações preventivas para os micronutrientes identificados com risco de insuficiência no laudo genético: Vitamina D (GC A,C) e Vitamina B6 (ALPL A,G), além de aporte de cálcio não lácteo para proteção óssea (WNT16 C,T).
 - **FR-007**: O sistema DEVE disponibilizar uma interface de chat conversacional alimentada por um agente especializado em nutrição esportiva e nutrigenômica.
@@ -110,17 +145,20 @@ O usuário pode alternar para a aba/seção "Meu Perfil Genético Nutricional", 
   3. O nível de cansaço/recuperação do dia (sinal da Spec 011);
   4. O plano alimentar gerado para o dia.
 - **FR-009**: O Agente Nutricionista DEVE justificar suas respostas e recomendações correlacionando os dados genéticos com as demandas do treinamento atlético sempre que pertinente.
-- **FR-010**: O usuário DEVE poder solicitar substituições de alimentos em uma refeição pelo chat ou por botão de troca rápida, mantendo a equivalência de macronutrientes e a conformidade genética.
+- **FR-010**: O usuário DEVE poder solicitar substituições de alimentos em uma refeição pelo chat ou por botão de troca rápida, mantendo a equivalência de macronutrientes e a conformidade genética. A troca rápida escolhe alternativas do catálogo (mesmo grupo, macros equivalentes, mesmas restrições); o chat pode sugerir livremente, mas só alimentos do catálogo podem ser aplicados ao plano.
 - **FR-011**: O sistema DEVE integrar com o status de cansaço do dia (Spec 011). Caso o cansaço esteja marcado como "cansado" ou "exausto", o plano do dia deve exibir alerta e sugestões de hidratação e micronutrientes para restauração.
-- **FR-012**: As diretrizes calculadas e as mensagens do chat DEVEM ser persistidas para que o usuário possa consultar o histórico de dias anteriores.
+- **FR-012**: As diretrizes calculadas DEVEM ser persistidas por dia, e as mensagens do chat DEVEM ser persistidas **por fase de dieta** (uma conversa por fase), para consulta do histórico.
+- **FR-017**: A cada mensagem, o agente DEVE receber apenas as últimas N mensagens da conversa da fase ativa (janela limitada, para manter custo e latência), mais o contexto atual: fase de dieta, plano e treino do dia, cansaço e perfil genético.
 - **FR-013**: A interface DEVE seguir o design system unificado do Helux (Spec 012), mantendo suporte completo a tema escuro, tipografia e componentes visuais do app.
 
 ### Key Entities
 
+- **FoodItem** (catálogo): alimento com nome, grupo (proteína, carboidrato, gordura, fruta/vegetal, bebida), porção de referência, macros por porção e tags genéticas/restrições (contém lactose, rico em B6, fonte de cálcio não láctea, fonte de vitamina D, cafeína etc.).
 - **GeneticNutritionProfile**: Perfil nutrigenômico processado do usuário (marcadores de sensibilidade alimentar, absorção de vitaminas, eficiência de dietas, tolerância à cafeína e densidade óssea).
-- **DailyNutritionPlan**: Plano diário associado a uma data e a um `workout_id` (se houver), contendo metas de calorias, macros (proteína, carbo, gordura), nível de hidratação alvo e lista de refeições sugeridas.
+- **DietPhase**: fase de dieta do usuário — objetivo, início, duração, metas-base (calorias, macros), estado (ativa/encerrada) e histórico de recalibrações (check-in de origem, metas antes/depois, motivo).
+- **DailyNutritionPlan**: visão do dia **derivada da fase ativa** — data, treino do dia (se houver), metas do dia, hidratação alvo e refeições sugeridas; persistida para consulta do histórico.
 - **NutritionMeal**: Refeição planejada (tipo: café da manhã, pré-treino, pós-treino, almoço, jantar, ceia, lanche), horário sugerido, relação de alimentos com porções, macros calculados e tags genéticas (ex.: "Sem Lactose", "Rico em B6").
-- **NutritionChatMessage**: Mensagem trocada entre o usuário e o Agente Nutricionista Esportivo, com timestamp, remetente (`user` | `agent`), contexto do treino no momento do envio e metadados de recomendação.
+- **NutritionChatMessage**: Mensagem trocada entre o usuário e o Agente Nutricionista Esportivo, **pertencente à conversa de uma fase de dieta**, com timestamp, remetente (`user` | `agent`), data do dia (para exibir o histórico agrupado por dia), contexto do treino no momento do envio e metadados de recomendação.
 - **RecoveryNutritionAdjustment**: Modificadores nutricionais aplicados quando o sinal de cansaço da Spec 011 for ativado (eletrólitos, antioxidantes, hidratação adicional).
 
 ---
