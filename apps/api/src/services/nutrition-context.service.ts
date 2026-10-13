@@ -29,6 +29,7 @@ export interface NutritionContext {
   /** Mais recentes primeiro (no máximo 2). */
   checkins: BodyCheckin[]
   phase: DietPhase | null
+  /** Última calibração efetiva (ignora `intervalo-curto`): base da próxima recalibração. */
   lastCalibration: { checkinId: string | null; createdAt: string } | null
   tiredness: TirednessLevel | null
   daysPerWeek: number | null
@@ -85,11 +86,12 @@ export async function loadNutritionContext(userId: string, supabase: SupabaseCli
   if (phaseRow) {
     const { data } = await supabase
       .from('diet_phase_calibrations')
-      .select('checkin_id, created_at')
+      .select('checkin_id, created_at, action')
       .eq('phase_id', phaseRow.id)
       .order('created_at', { ascending: false })
-      .limit(1)
-    const last = (data ?? [])[0] as { checkin_id: string | null; created_at: string } | undefined
+      .limit(20)
+    // Base da próxima comparação: a última calibração efetiva (intervalo curto não conta).
+    const last = ((data ?? []) as { checkin_id: string | null; created_at: string; action: string }[]).find(c => c.action !== 'intervalo-curto')
     if (last) lastCalibration = { checkinId: last.checkin_id, createdAt: last.created_at }
   }
 

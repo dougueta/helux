@@ -73,6 +73,14 @@ describe('loadNutritionContext (spec 018)', () => {
     expect(ctx.today).toBe('2026-10-13')
   })
 
+  it('a última calibração ignora as de intervalo curto (base de comparação da próxima)', async () => {
+    const t = tables()
+    t.diet_phase_calibrations.push({ id: 'k2', phase_id: 'phase-1', user_id: 'u1', checkin_id: 'c2', action: 'intervalo-curto', created_at: '2026-09-10T10:00:00Z' } as never)
+    const { client } = fakeSupabase(t)
+    const { loadNutritionContext } = await import('../services/nutrition-context.service')
+    expect((await loadNutritionContext('u1', client as never, NOW)).lastCalibration).toEqual({ checkinId: 'c1', createdAt: '2026-09-01T10:00:00Z' })
+  })
+
   it('lista o que falta para calcular a fase', async () => {
     const t = tables()
     t.user_training_profile = [{ user_id: 'u1', height_cm: null, birth_date: null, sex: null }] as never

@@ -1,6 +1,9 @@
 import type { FastifyInstance, FastifyReply } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
+import type { BodyCheckin, DietCalibration } from '@helux/types'
+import { loadNutritionContext } from '../services/nutrition-context.service'
+import { recalibrateOnCheckin } from '../services/diet-phase.service'
 
 const CheckinBodySchema = z.object({
   month: z.string().regex(/^\d{4}-\d{2}-01$/, 'month must be YYYY-MM-01'),
@@ -8,6 +11,7 @@ const CheckinBodySchema = z.object({
   body_fat_pct: z.number().min(1).max(70).optional(),
   waist_cm: z.number().min(30).max(300).optional(),
   hip_cm: z.number().min(30).max(300).optional(),
+  neck_cm: z.number().min(20).max(70).optional(),
   arm_cm: z.number().min(10).max(100).optional(),
   leg_cm: z.number().min(10).max(150).optional(),
   squat_kg: z.number().min(0).max(1000).optional(),
@@ -64,7 +68,17 @@ export async function checkinsRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
 
-    return reply.send(data)
+    // Spec 018 (FR-015): com fase de dieta ativa, recalibra com o check-in salvo.
+    // Uma falha aqui não desfaz o check-in.
+    let calibration: DietCalibration | null = null
+    try {
+      const ctx = await loadNutritionContext(auth.user.id, supabase)
+      if (ctx.phase) calibration = await recalibrateOnCheckin(auth.user.id, supabase, data as BodyCheckin, ctx)
+    } catch (err) {
+      app.log.error(err, 'checkins: diet phase recalibration failed')
+    }
+
+    return reply.send({ ...(data as BodyCheckin), calibration })
   })
 
   app.get('/api/checkins', async (request, reply) => {
