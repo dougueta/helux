@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { Shell } from '@/components/layout/Shell'
@@ -10,17 +11,18 @@ export default async function CheckinPage() {
 
   return (
     <Shell>
-      <div style={{ maxWidth: 512, margin: '0 auto', paddingBottom: 96 }}>
-        <header style={{ padding: '48px 16px 16px' }}>
-          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 4 }}>
-            Mensal
-          </p>
-          <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+      <header style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, marginTop: 20 }}>
+        <div>
+          <p className="t-secondary">Mensal</p>
+          <h1 className="t-display" style={{ marginTop: 4 }}>
             Check-in
           </h1>
-        </header>
-        <CheckinForm />
-      </div>
+        </div>
+        <Link href="/checkin/history" className="hx-btn hx-btn--ghost">
+          Histórico
+        </Link>
+      </header>
+      <CheckinForm />
     </Shell>
   )
 }

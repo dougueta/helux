@@ -9,9 +9,46 @@ import { FinishWorkoutConfirmDialog } from '@/components/workout/FinishWorkoutCo
 import { WorkoutDoneScreen } from '@/components/workout/WorkoutDoneScreen'
 import { useFinishWorkout } from '@/hooks/useFinishWorkout'
 import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+import { Button, IconButton } from '@/components/ui/Button'
+import { Check } from '@/components/ui/Check'
+import { CurrentSet } from '@/components/ui/CurrentSet'
+import { Fit } from '@/components/ui/Fit'
 import { Icon } from '@/components/ui/icons'
-import { MiniStep } from '@/components/ui/MiniStep'
-import { ExecutionTips } from '@/components/workout/ExecutionTips'
+import { Ring } from '@/components/ui/Ring'
+import { ScreenHeader } from '@/components/ui/ScreenHeader'
+import { SectionHeader } from '@/components/ui/SectionHeader'
+import { SetRow } from '@/components/ui/SetRow'
+import { Tag } from '@/components/ui/Tag'
+import { Tips } from '@/components/ui/Tips'
+import { WorkoutProgress } from '@/components/ui/WorkoutProgress'
+import { EffortPicker } from '@/components/workout/EffortPicker'
+import { exercisePhase, nextStepAfterSet, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
+import type { ExercisePhase } from '@helux/types'
+
+/** Tag da fase no treino ativo (spec 014, FR-005). */
+const PHASE_TAG: Record<ExercisePhase, string> = {
+  aquecimento: 'Aquecimento',
+  principal: 'Musculação',
+  'volta-calma': 'Volta à calma',
+}
+
+/** Item de aquecimento/volta à calma: concluído com um toque, sem kg/reps. */
+function SimpleSetRow({ no, label, done, onToggle }: { no: number; label: string; done: boolean; onToggle: () => void }) {
+  return (
+    <div className={done ? 'hx-set is-done' : 'hx-set is-upcoming'} onClick={onToggle}>
+      <span className="hx-set-no">{no}</span>
+      <span className="t-body">{label}</span>
+      <span />
+      <span onClick={e => e.stopPropagation()}>
+        <Check on={done} onClick={onToggle} label={done ? `série ${no} concluída, desfazer` : `concluir série ${no}`} />
+      </span>
+    </div>
+  )
+}
+
+function mmss(s: number) {
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
 
 // ---------------------------------------------------------------------------
 // Page
@@ -28,6 +65,7 @@ export default function WorkoutPage() {
     updateSet,
     addSet,
     selectVariant,
+    setEffort,
     getSkippedExercises,
     finishWorkout,
   } = useActiveWorkout()
@@ -36,17 +74,33 @@ export default function WorkoutPage() {
   const [restTotal, setRestTotal] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [finishConfirmOpen, setFinishConfirmOpen] = useState(false)
+  // Estado de UI local da v2 (research V5): série em edição e a do ✓ animado.
+  const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null)
+  const [poppedSetIndex, setPoppedSetIndex] = useState<number | null>(null)
   // Frozen when the workout is finished: the session is cleared after a successful save,
   // but the done screen must stay up (with its summary) until the user leaves.
-  const [finishSummary, setFinishSummary] = useState<{ totalDone: number; elapsed: number } | null>(null)
+  const [finishSummary, setFinishSummary] = useState<{
+    totalDone: number
+    totalSets: number
+    volumeKg: number
+    exerciseCount: number
+    elapsed: number
+  } | null>(null)
   const { status: finishStatus, submit: submitFinish, reset: resetFinish } = useFinishWorkout(finishWorkout)
 
   const restActive = restLeft > 0
+  const currentExerciseIndex = session?.currentExerciseIndex
 
   // Redirect away if no active session (but never away from the done screen)
   useEffect(() => {
     if (loaded && !isActive && !finishSummary) router.replace('/')
   }, [loaded, isActive, finishSummary, router])
+
+  // Ao trocar de exercício, a série atual volta a ser a primeira não concluída.
+  useEffect(() => {
+    setEditingSetIndex(null)
+    setPoppedSetIndex(null)
+  }, [currentExerciseIndex])
 
   // Rest timer countdown
   useEffect(() => {
@@ -72,6 +126,9 @@ export default function WorkoutPage() {
       <WorkoutDoneScreen
         status={finishStatus === 'idle' ? 'saving' : finishStatus}
         totalDone={finishSummary.totalDone}
+        totalSets={finishSummary.totalSets}
+        volumeKg={finishSummary.volumeKg}
+        exerciseCount={finishSummary.exerciseCount}
         elapsed={finishSummary.elapsed}
         onGoHome={() => router.replace('/')}
         onRetry={() => { void submitFinish() }}
@@ -93,12 +150,26 @@ export default function WorkoutPage() {
   const recVariant = currentEx ? recommendedVariant(currentEx) : undefined
   const currentVariantId = session.variantByExerciseIndex?.[currentIdx]
   const selectedVariant = variants.find(v => v.id === currentVariantId) ?? recVariant
-  const betterFitAvailable = variants.some(v => v.betterFit)
   const display = currentEx ? resolveExerciseDisplay(currentEx, currentVariantId) : null
+  const phase: ExercisePhase = currentEx ? exercisePhase(currentEx) : 'principal'
+  const isMain = phase === 'principal'
+  const partnerIdx = currentEx ? supersetPartnerIndex(session.planExercises, currentIdx) : null
+  const partner = partnerIdx !== null ? session.planExercises[partnerIdx] : null
+  // Rótulo "descanso Ns" vem do mesmo ponto que o timer (contracts/workout-flow.md).
+  const restLabelSecs = restSecondsAfterSet({
+    exercises: session.planExercises,
+    exerciseIndex: currentIdx,
+    hasPendingSets: session.exerciseStates.map(sets => sets.some(s => !s.done)),
+  })
 
   const totalSets = session.exerciseStates.reduce((acc, sets) => acc + sets.length, 0)
   const totalDone = session.exerciseStates.reduce(
     (acc, sets) => acc + sets.filter(s => s.done).length,
+    0
+  )
+  // Volume da conclusão (research V10): Σ kg × reps das séries feitas.
+  const volumeKg = session.exerciseStates.reduce(
+    (acc, sets) => acc + sets.filter(s => s.done).reduce((a, s) => a + s.weight * s.reps, 0),
     0
   )
   const elapsed = Math.round(
@@ -108,13 +179,28 @@ export default function WorkoutPage() {
   function handleToggleSet(ei: number, si: number) {
     const wasUndone = !session!.exerciseStates[ei][si].done
     toggleSetDone(ei, si)
-    if (wasUndone) {
-      const restSecs = 90
-      setRestLeft(restSecs)
-      setRestTotal(restSecs)
-    } else {
+    if (!wasUndone) {
+      setPoppedSetIndex(null)
       setRestLeft(0)
+      return
     }
+    // FR-013: o ✓ anima, a linha fica compacta, o traço acende, o contador sobe.
+    // Spec 014: descanso e navegação (biset, aquecimento) vêm do workout-flow —
+    // ponto único que a spec 015 vai personalizar.
+    const hasPendingSets = session!.exerciseStates.map((sets, i) =>
+      sets.some((s, j) => !s.done && !(i === ei && j === si)),
+    )
+    const step = nextStepAfterSet({ exercises: session!.planExercises, exerciseIndex: ei, hasPendingSets })
+    setPoppedSetIndex(si)
+    setEditingSetIndex(null)
+    if (step.goToExerciseIndex !== null) setExercise(step.goToExerciseIndex)
+    setRestLeft(step.restSeconds)
+    setRestTotal(step.restSeconds)
+  }
+
+  function handlePickExercise(i: number) {
+    setExercise(i)
+    setRestLeft(0)
   }
 
   function handleNext() {
@@ -130,7 +216,13 @@ export default function WorkoutPage() {
 
   // Spec 016: the workout is saved when it is finished, not when leaving the done screen.
   function startFinish() {
-    setFinishSummary({ totalDone, elapsed })
+    setFinishSummary({
+      totalDone,
+      totalSets,
+      volumeKg,
+      exerciseCount: session!.planExercises.length,
+      elapsed,
+    })
     void submitFinish()
   }
 
@@ -144,590 +236,290 @@ export default function WorkoutPage() {
   }
 
   // -------------------------------------------------------------------------
-  // Active workout screen
+  // Active workout screen (FR-011, handoff 5.2)
   // -------------------------------------------------------------------------
+  const firstPending = currentSets.findIndex(s => !s.done)
+  const curSet = editingSetIndex ?? (firstPending >= 0 ? firstPending : null)
+  const isLast = currentIdx === session.planExercises.length - 1
+  const shortTitle = display?.title.split(' ').slice(0, 2).join(' ') ?? 'Treino'
+  const betterFit = variants
+    .filter(v => v.betterFit)
+    .reduce<number | undefined>((best, v) => (best === undefined || v.match > best ? v.match : best), undefined)
+
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--bg)',
-        display: 'flex',
-        flexDirection: 'column',
-        maxWidth: 430,
-        margin: '0 auto',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '48px 16px 12px',
-          gap: 8,
-          background: 'var(--bg)',
-          borderBottom: '1px solid var(--hairline)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-        }}
-      >
-        <button
-          onClick={handleClose}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            background: 'var(--surface-2)',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
-        >
-          <Icon name="close" size={18} stroke="var(--text-dim)" />
-        </button>
-        <div style={{ flex: 1, textAlign: 'center' }}>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>
-            {display?.title.split(' ').slice(0, 2).join(' ') ?? 'Treino'}
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: 'var(--text-faint)',
-              fontFamily: 'var(--font-jetbrains-mono)',
-            }}
-          >
-            {totalDone}/{totalSets} séries
-          </div>
-        </div>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            background: 'var(--surface-2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <Icon name="timer" size={18} stroke="var(--text-dim)" />
-        </div>
+    <div style={{ maxWidth: 'var(--col)', margin: '0 auto', paddingTop: 'max(12px, env(safe-area-inset-top))' }}>
+      <ScreenHeader
+        left={<IconButton icon="close" label="encerrar treino" onClick={handleClose} />}
+        title={shortTitle}
+        sub={`${totalDone}/${totalSets} séries`}
+        right={
+          <span className="hx-icbtn hx-icbtn--bare" aria-hidden="true">
+            <Icon name="timer" size={22} />
+          </span>
+        }
+      />
+      <div style={{ padding: '4px 16px 0' }}>
+        <WorkoutProgress
+          groups={session.exerciseStates.map(sets => sets.length)}
+          done={session.exerciseStates.map(sets => sets.filter(s => s.done).length)}
+          current={currentIdx}
+          onPick={handlePickExercise}
+        />
       </div>
 
-      {/* Progress segments */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 4,
-          padding: '8px 16px',
-          background: 'var(--bg)',
-        }}
-      >
-        {session.planExercises.map((_, i) => {
-          const sets = session.exerciseStates[i] ?? []
-          const done = sets.filter(s => s.done).length
-          const total = sets.length
-          const isCur = i === currentIdx
-          const pct = total ? done / total : 0
-          return (
-            <button
-              key={i}
-              onClick={() => setExercise(i)}
-              style={{
-                flex: 1,
-                height: 4,
-                borderRadius: 2,
-                background: 'var(--surface-3)',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                overflow: 'hidden',
-                outline: isCur ? '1px solid var(--accent)' : 'none',
-                outlineOffset: 2,
-              }}
-            >
-              <div
-                style={{
-                  height: '100%',
-                  width: `${pct * 100}%`,
-                  background: 'var(--accent)',
-                  borderRadius: 2,
-                  transition: 'width 0.3s',
-                }}
-              />
-            </button>
-          )
-        })}
-      </div>
+      {currentEx && display && (
+        <div style={{ padding: '0 16px', marginTop: 20 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <Tag>{PHASE_TAG[phase]}</Tag>
+            {isMain && display.fit !== undefined && <Fit value={display.fit} />}
+          </div>
+          <h1 className="t-title" style={{ marginTop: 12 }}>
+            {display.title}
+          </h1>
+          {display.plannedName && (
+            <p className="t-secondary" style={{ marginTop: 4 }}>
+              variante de {display.plannedName}
+            </p>
+          )}
+          {partner && (
+            <p className="t-secondary" style={{ marginTop: 4, color: 'var(--text)' }}>
+              Biset · alterna com {partner.name}
+            </p>
+          )}
+          {!isMain && (
+            <p className="t-body dim" style={{ marginTop: 6 }}>
+              {currentEx.reps}
+            </p>
+          )}
+          {isMain && (
+          <p className="t-body dim" style={{ marginTop: 6 }}>
+            <span className="n-sm" style={{ fontSize: 15, color: 'var(--text)' }}>
+              {currentEx.sets} × {String(currentEx.reps).replace('-', '–')}
+            </span>{' '}
+            {restLabelSecs > 0 ? (
+              <>
+                reps, descanso{' '}
+                <span className="n-sm" style={{ fontSize: 15, color: 'var(--text)' }}>
+                  {restLabelSecs}s
+                </span>
+              </>
+            ) : (
+              'reps, sem descanso antes do par'
+            )}
+          </p>
+          )}
 
-      {/* Scrollable body */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        {currentEx && (
-          <>
-            {/* Exercise header */}
-            <div style={{ padding: '20px 16px 12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <span
+          {display.tip && (
+            <section style={{ marginTop: 22 }} aria-label="dicas de execução">
+              <Tips text={display.tip} />
+            </section>
+          )}
+
+          {isMain && variants.length > 0 && selectedVariant && (
+            <div className="hx-card" style={{ marginTop: 20, overflow: 'hidden' }}>
+              <button type="button" className="hx-row-btn" style={{ background: 'none' }} onClick={() => setSheetOpen(true)}>
+                <span className="hx-stage" style={{ width: 52, height: 52, borderRadius: 12, flexShrink: 0, display: 'block' }}>
+                  <ExerciseDemo
+                    motion={selectedVariant.motion}
+                    implement={selectedVariant.implement}
+                    playing={false}
+                    nonce={`${currentIdx}:${selectedVariant.id}`}
+                  />
+                </span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="t-body-m" style={{ display: 'block' }}>
+                    Ver execução
+                  </span>
+                  <span className="t-secondary">Técnica, músculos e {variants.length} variantes</span>
+                </span>
+                <span className="dim">
+                  <Icon name="chev" size={20} />
+                </span>
+              </button>
+
+              {display.plannedName ? (
+                <div
                   style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: 'var(--text-dim)',
-                    background: 'var(--surface-2)',
-                    borderRadius: 'var(--r-pill)',
-                    padding: '3px 10px',
-                    letterSpacing: '0.04em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    minHeight: 52,
+                    padding: '6px 12px',
+                    borderTop: '1px solid var(--hairline)',
                   }}
                 >
-                  Musculação
-                </span>
-                {display?.fit !== undefined && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: 'var(--accent)',
-                      background: 'var(--accent-soft)',
-                      borderRadius: 'var(--r-pill)',
-                      padding: '3px 10px',
-                      letterSpacing: '0.04em',
-                    }}
-                  >
-                    {display.fit} fit
+                  <span style={{ width: 52, display: 'grid', placeItems: 'center', color: 'var(--text-dim)' }}>
+                    <Icon name="swap" size={20} />
                   </span>
-                )}
-              </div>
-              <h2
-                style={{
-                  fontSize: 22,
-                  fontWeight: 700,
-                  color: 'var(--text)',
-                  margin: '0 0 6px',
-                  fontFamily: 'var(--font-space-grotesk)',
-                }}
-              >
-                {display?.title}
-              </h2>
-              {display?.plannedName && (
-                <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: '0 0 4px' }}>
-                  variante de {display.plannedName}
-                </p>
-              )}
-              <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: '0 0 10px' }}>
-                {currentEx.sets} × {currentEx.reps} reps · descanso 90s
-              </p>
-              <ExecutionTips text={display?.tip} variant="inline" />
-
-              {variants.length > 0 && selectedVariant && (
-                <>
+                  <span className="t-secondary" style={{ flex: 1, minWidth: 0, color: 'var(--text)' }}>
+                    Variante ativa: {selectedVariant.equip}
+                  </span>
+                  {recVariant && (
+                    <Button
+                      kind="ghost"
+                      style={{ minHeight: 40, padding: '0 12px', fontSize: 14 }}
+                      onClick={() => selectVariant(currentIdx, recVariant.id)}
+                    >
+                      Voltar à recomendada
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                betterFit !== undefined && (
                   <button
+                    type="button"
+                    className="hx-row-btn"
+                    style={{ background: 'none', borderTop: '1px solid var(--hairline)', minHeight: 52 }}
                     onClick={() => setSheetOpen(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 13,
-                      width: '100%',
-                      textAlign: 'left',
-                      marginTop: 16,
-                      padding: '10px 14px 10px 10px',
-                      background: 'var(--surface-1)',
-                      border: '1px solid var(--hairline)',
-                      borderRadius: 16,
-                      cursor: 'pointer',
-                    }}
                   >
-                    <span
-                      style={{
-                        position: 'relative',
-                        width: 72,
-                        height: 64,
-                        flexShrink: 0,
-                        borderRadius: 11,
-                        overflow: 'hidden',
-                        background: 'radial-gradient(120% 120% at 50% 0%, var(--surface-2), var(--demo-bg-2))',
-                        border: '1px solid var(--hairline)',
-                      }}
-                    >
-                      <ExerciseDemo
-                        motion={selectedVariant.motion}
-                        implement={selectedVariant.implement}
-                        playing={true}
-                        nonce={`${currentIdx}:${selectedVariant.id}`}
-                      />
-                      <span
-                        style={{
-                          position: 'absolute',
-                          right: 5,
-                          bottom: 5,
-                          width: 20,
-                          height: 20,
-                          borderRadius: '50%',
-                          background: 'var(--accent)',
-                          display: 'grid',
-                          placeItems: 'center',
-                        }}
-                      >
-                        <Icon name="play" size={11} stroke="var(--accent-ink)" />
-                      </span>
+                    <span style={{ width: 52, display: 'grid', placeItems: 'center', color: 'var(--text-dim)' }}>
+                      <Icon name="swap" size={20} />
                     </span>
-                    <span style={{ flex: 1 }}>
-                      <span style={{ display: 'block', fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Ver execução</span>
-                      <span style={{ display: 'block', fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>
-                        técnica · músculos · {variants.length} variantes
-                      </span>
+                    <span className="t-secondary" style={{ flex: 1, minWidth: 0, color: 'var(--text)' }}>
+                      Variante com fit maior disponível
                     </span>
-                    <Icon name="chevron" size={18} stroke="var(--text-faint)" />
+                    <Fit value={betterFit} />
+                    <span className="dim">
+                      <Icon name="chev" size={20} />
+                    </span>
                   </button>
-
-                  {display?.plannedName && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        marginTop: 10,
-                        padding: '9px 13px',
-                        background: 'var(--accent-soft)',
-                        border: '1px solid var(--accent-line)',
-                        borderRadius: 12,
-                        fontSize: 12.5,
-                        color: 'var(--accent)',
-                      }}
-                    >
-                      <Icon name="swap" size={14} stroke="var(--accent)" />
-                      <span style={{ flex: 1 }}>
-                        Variante ativa <b>{selectedVariant.name} · {selectedVariant.equip}</b>
-                      </span>
-                      {recVariant && (
-                        <button
-                          onClick={() => selectVariant(currentIdx, recVariant.id)}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: 'var(--accent)',
-                            fontSize: 12.5,
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            textDecoration: 'underline',
-                          }}
-                        >
-                          Voltar à recomendada
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {!display?.plannedName && betterFitAvailable && (
-                    <button
-                      onClick={() => setSheetOpen(true)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        width: '100%',
-                        marginTop: 10,
-                        padding: '9px 13px',
-                        background: 'var(--surface-2)',
-                        border: '1px dashed var(--hairline-2)',
-                        borderRadius: 12,
-                        fontSize: 12.5,
-                        color: 'var(--text-dim)',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                      }}
-                    >
-                      <Icon name="bolt" size={14} stroke="var(--accent)" />
-                      <span style={{ flex: 1 }}>
-                        Variante com <b>fit maior</b> disponível
-                      </span>
-                      <Icon name="chevron" size={15} stroke="var(--text-faint)" />
-                    </button>
-                  )}
-                </>
+                )
               )}
             </div>
+          )}
 
-            {/* Sets table */}
-            <div>
-              {/* Header row */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '30px 1fr 1fr 1fr 38px',
-                  gap: 4,
-                  padding: '8px 16px 4px',
-                  borderBottom: '1px solid var(--hairline)',
-                }}
-              >
-                {['SÉRIE', 'ANTERIOR', 'KG', 'REPS', ''].map((h, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      fontSize: 11,
-                      color: 'var(--text-faint)',
-                      fontWeight: 600,
-                      letterSpacing: '0.08em',
-                      textAlign: i === 0 || i === 4 ? 'center' : 'right',
-                    }}
-                  >
-                    {h}
-                  </span>
+          {!isMain && (
+            <section style={{ marginTop: 28 }}>
+              <SectionHeader title="Séries" />
+              <div className="hx-sets">
+                {currentSets.map((s, si) => (
+                  <SimpleSetRow
+                    key={si}
+                    no={si + 1}
+                    label={currentEx.reps}
+                    done={s.done}
+                    onToggle={() => handleToggleSet(currentIdx, si)}
+                  />
                 ))}
               </div>
+            </section>
+          )}
 
-              {/* Set rows */}
-              {currentSets.map((s, si) => (
-                <div
-                  key={si}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '30px 1fr 1fr 1fr 38px',
-                    gap: 4,
-                    padding: '6px 16px',
-                    alignItems: 'center',
-                    borderBottom: '1px solid var(--hairline)',
-                    background: s.done ? 'var(--accent-soft)' : 'transparent',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-jetbrains-mono)',
-                      fontSize: 13,
-                      color: s.done ? 'var(--accent)' : 'var(--text-faint)',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {si + 1}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-jetbrains-mono)',
-                      fontSize: 12,
-                      color: 'var(--text-faint)',
-                      textAlign: 'right',
-                    }}
-                  >
-                    —
-                  </span>
-                  <MiniStep
-                    value={s.weight}
-                    step={2.5}
-                    onChange={v => updateSet(currentIdx, si, 'weight', v)}
+          {isMain && (
+          <section style={{ marginTop: 28 }}>
+            <SectionHeader title="Séries" aside="kg × reps" />
+            <div className="hx-sets">
+              {currentSets.map((s, si) =>
+                si === curSet ? (
+                  <CurrentSet
+                    key={si}
+                    no={si + 1}
+                    total={currentSets.length}
+                    prev={null}
+                    weight={s.weight}
+                    reps={s.reps}
                     done={s.done}
+                    pop={poppedSetIndex === si}
+                    onWeight={v => updateSet(currentIdx, si, 'weight', v)}
+                    onReps={v => updateSet(currentIdx, si, 'reps', v)}
+                    onDone={() => handleToggleSet(currentIdx, si)}
                   />
-                  <MiniStep
-                    value={s.reps}
-                    step={1}
-                    onChange={v => updateSet(currentIdx, si, 'reps', v)}
+                ) : (
+                  <SetRow
+                    key={si}
+                    no={si + 1}
+                    prev={null}
+                    weight={s.weight}
+                    reps={s.reps}
                     done={s.done}
+                    pop={poppedSetIndex === si}
+                    onToggle={() => handleToggleSet(currentIdx, si)}
+                    onEdit={() => setEditingSetIndex(si)}
                   />
-                  <button
-                    onClick={() => handleToggleSet(currentIdx, si)}
-                    style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: 8,
-                      background: s.done ? 'var(--accent)' : 'var(--surface-2)',
-                      border: `1px solid ${s.done ? 'var(--accent)' : 'var(--hairline)'}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Icon
-                      name="check"
-                      size={15}
-                      stroke={s.done ? 'var(--accent-ink)' : 'var(--text-faint)'}
-                      sw={2.4}
-                    />
-                  </button>
-                </div>
-              ))}
-
-              {/* Add set button */}
-              <button
-                onClick={() => addSet(currentIdx)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'transparent',
-                  border: 'none',
-                  borderTop: '1px solid var(--hairline)',
-                  color: 'var(--text-dim)',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  cursor: 'pointer',
-                  minHeight: 44,
-                }}
-              >
-                <Icon name="plus" size={14} stroke="var(--text-dim)" sw={2.2} />
-                Adicionar série
-              </button>
+                ),
+              )}
             </div>
-          </>
-        )}
-      </div>
-
-      {/* Rest timer banner */}
-      {restActive && (
-        <div
-          style={{
-            position: 'sticky',
-            bottom: 72,
-            left: 0,
-            right: 0,
-            background: 'var(--surface-1)',
-            borderTop: '1px solid var(--accent-line)',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ height: 3, background: 'var(--accent-soft)' }}>
-            <div
-              style={{
-                height: '100%',
-                background: 'var(--accent)',
-                width: `${((restTotal - restLeft) / restTotal) * 100}%`,
-                transition: 'width 1s linear',
-              }}
-            />
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              padding: '10px 16px',
-            }}
-          >
-            <Icon name="timer" size={18} stroke="var(--accent)" />
-            <span
-              style={{
-                fontFamily: 'var(--font-jetbrains-mono)',
-                fontSize: 16,
-                fontWeight: 600,
-                color: 'var(--accent)',
-                flex: 1,
-              }}
-            >
-              {Math.floor(restLeft / 60)}:{String(restLeft % 60).padStart(2, '0')}
-            </span>
-            <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>descanso</span>
-            <button
-              onClick={() => {
-                setRestLeft(l => l + 15)
-                setRestTotal(t => Math.max(t, restLeft + 15))
-              }}
-              style={{
-                padding: '6px 10px',
-                borderRadius: 'var(--r-sm)',
-                background: 'var(--surface-2)',
-                border: '1px solid var(--hairline)',
-                color: 'var(--text-dim)',
-                fontSize: 12,
-                cursor: 'pointer',
-              }}
-            >
-              +15s
-            </button>
-            <button
-              onClick={() => setRestLeft(0)}
-              style={{
-                padding: '6px 10px',
-                borderRadius: 'var(--r-sm)',
-                background: 'var(--surface-2)',
-                border: '1px solid var(--hairline)',
-                color: 'var(--text-dim)',
-                fontSize: 12,
-                cursor: 'pointer',
-              }}
-            >
-              Pular
-            </button>
-          </div>
+            <Button kind="ghost" block icon="plus" style={{ marginTop: 6 }} onClick={() => addSet(currentIdx)}>
+              Adicionar série
+            </Button>
+            {currentSets.some(s => s.done) && (
+              <div style={{ marginTop: 16 }}>
+                <p className="t-secondary" style={{ marginBottom: 8 }}>
+                  Como foi o esforço?
+                </p>
+                <EffortPicker
+                  value={session.effortByExerciseIndex?.[currentIdx] ?? null}
+                  onChange={level => setEffort(currentIdx, level)}
+                />
+              </div>
+            )}
+          </section>
+          )}
         </div>
       )}
 
-      {/* Footer */}
-      <div
-        style={{
-          padding: '12px 16px 32px',
-          background: 'var(--bg)',
-          borderTop: '1px solid var(--hairline)',
-          display: 'flex',
-          gap: 8,
-        }}
-      >
-        {currentIdx > 0 && (
-          <button
-            onClick={() => setExercise(currentIdx - 1)}
-            style={{
-              width: 48,
-              height: 52,
-              borderRadius: 'var(--r-pill)',
-              background: 'transparent',
-              border: '1px solid var(--hairline-2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          >
-            <Icon
-              name="chevron"
-              size={20}
-              stroke="var(--text-dim)"
-              style={{ transform: 'rotate(180deg)' }}
-            />
-          </button>
-        )}
-        <button
-          onClick={handleNext}
-          style={{
-            flex: 1,
-            height: 52,
-            borderRadius: 'var(--r-pill)',
-            background: 'var(--accent)',
-            border: 'none',
-            color: 'var(--accent-ink)',
-            fontSize: 15,
-            fontWeight: 600,
-            fontFamily: 'var(--font-space-grotesk)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            boxShadow: '0 8px 24px -8px var(--accent-glow)',
-          }}
-        >
-          {currentIdx < session.planExercises.length - 1 ? (
-            <>
-              <span>Próximo exercício</span>
-              <Icon name="chevron" size={18} stroke="var(--accent-ink)" />
-            </>
-          ) : (
-            <>
-              <span>Finalizar treino</span>
-              <Icon name="check" size={18} stroke="var(--accent-ink)" sw={2.4} />
-            </>
+      {/* espaço para o rodapé fixo */}
+      <div style={{ height: restActive ? 220 : 140 }} />
+
+      <div className="hx-dock">
+        <div className="hx-cta-dock">
+          {restActive && (
+            <div
+              className="hx-focus"
+              role="timer"
+              aria-label="descanso"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '10px 10px 10px 12px',
+                marginBottom: 10,
+                animation: 'hx-up var(--dur-3) var(--ease-out)',
+              }}
+            >
+              <Ring size={48} stroke={3} value={restTotal ? restLeft / restTotal : 0}>
+                <span style={{ color: 'var(--accent)', display: 'grid' }}>
+                  <Icon name="timer" size={20} />
+                </span>
+              </Ring>
+              <div style={{ flex: 1 }}>
+                <div className="t-caption">Descanso</div>
+                <div className="n-lg">{mmss(restLeft)}</div>
+              </div>
+              <Button
+                kind="secondary"
+                style={{ padding: '0 14px' }}
+                onClick={() => {
+                  setRestLeft(l => l + 15)
+                  setRestTotal(t => Math.max(t, restLeft + 15))
+                }}
+              >
+                +15s
+              </Button>
+              <Button kind="ghost" style={{ padding: '0 12px' }} onClick={() => setRestLeft(0)}>
+                Pular
+              </Button>
+            </div>
           )}
-        </button>
+          <Button
+            kind={restActive ? 'secondary' : 'primary'}
+            size="lg"
+            block
+            iconRight={isLast ? 'check' : 'chev'}
+            onClick={handleNext}
+          >
+            {isLast ? 'Finalizar treino' : 'Próximo exercício'}
+          </Button>
+        </div>
       </div>
 
-      {sheetOpen && currentEx && (
+      {currentEx && (
         <ExerciseSheet
+          key={currentIdx}
+          open={sheetOpen}
           exercise={currentEx}
           currentVariantId={currentVariantId}
-          onApply={(variantId) => selectVariant(currentIdx, variantId)}
+          onApply={variantId => selectVariant(currentIdx, variantId)}
           onClose={() => setSheetOpen(false)}
         />
       )}

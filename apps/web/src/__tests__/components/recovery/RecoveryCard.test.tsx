@@ -13,24 +13,34 @@ const mockData: RecoveryData = {
   source: 'healthkit',
 }
 
-describe('RecoveryCard', () => {
-  it('renders 5 metric tiles', () => {
-    render(<RecoveryCard data={mockData} isStale={false} />)
-    expect(screen.getByText('58')).toBeInTheDocument() // HRV
-    expect(screen.getByText('52')).toBeInTheDocument() // HR
-    expect(screen.getByText('420')).toBeInTheDocument() // Calories
-    expect(screen.getByText('7.5')).toBeInTheDocument() // Sleep
-    expect(screen.getByText('28')).toBeInTheDocument() // Cardio Recovery
+describe('RecoveryCard (v2, spec 012 T057)', () => {
+  it('renders one card per metric with mono numbers and units', () => {
+    render(<RecoveryCard data={{ ...mockData, activeCalories: 2340 }} isStale={false} />)
+    const value = (term: string) => screen.getByText(term).closest('div')!.querySelector('dd')!
+    expect(value('HRV')).toHaveTextContent('58ms')
+    expect(value('HRV')).toHaveClass('n-lg')
+    expect(value('FC de repouso')).toHaveTextContent('52bpm')
+    expect(value('Sono')).toHaveTextContent('7h30')
+    expect(value('Calorias')).toHaveTextContent('2.340kcal')
+    expect(value('Recuperação cardíaca')).toHaveTextContent('28bpm')
   })
 
-  it('shows staleness badge when isStale', () => {
+  it('hides a metric without reading instead of inventing it', () => {
+    render(<RecoveryCard data={{ ...mockData, cardioRecovery: undefined }} isStale={false} />)
+    expect(screen.queryByText('Recuperação cardíaca')).not.toBeInTheDocument()
+  })
+
+  it('when stale: warn banner and dimmed numbers', () => {
     render(<RecoveryCard data={mockData} isStale={true} />)
-    expect(screen.getByText(/dados antigos/i)).toBeInTheDocument()
+    expect(screen.getByText('Dados antigos — sincronize novamente')).toBeInTheDocument()
+    expect(document.querySelector('.hx-banner--warn')).toBeInTheDocument()
+    document.querySelectorAll('dd').forEach(dd => expect(dd).toHaveClass('dim'))
   })
 
-  it('does not show the staleness badge when data is fresh', () => {
+  it('does not show the stale banner when data is fresh', () => {
     render(<RecoveryCard data={mockData} isStale={false} />)
     expect(screen.queryByText(/dados antigos/i)).not.toBeInTheDocument()
+    document.querySelectorAll('dd').forEach(dd => expect(dd).not.toHaveClass('dim'))
   })
 
   it('renders empty-state guidance when no data', () => {

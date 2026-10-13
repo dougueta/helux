@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { TirednessDialog, type TirednessDialogProps } from '@/components/workout/TirednessDialog'
 
 const CHANGES = [{ name: 'Supino Reto', setsBefore: 4, setsAfter: 3, weightBefore: '80kg', weightAfter: '72kg' }]
@@ -31,19 +33,24 @@ describe('TirednessDialog', () => {
   it('não renderiza quando fechado', () => {
     const { container } = render(<TirednessDialog {...props({ open: false })} />)
     expect(container).toBeEmptyDOMElement()
-    expect(screen.queryByTestId('tiredness-dialog-backdrop')).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('FR-017: fica acima do menu inferior (portal em document.body e z-index > 50 do NavBar)', () => {
+  it('FR-017 / spec 012 FR-009: é uma folha v2 em portal, na camada acima do menu inferior', () => {
     const { container } = render(
       <div style={{ position: 'relative', zIndex: 1 }}>
         <TirednessDialog {...props({})} />
       </div>,
     )
-    const backdrop = screen.getByTestId('tiredness-dialog-backdrop')
-    expect(backdrop.parentElement).toBe(document.body)
-    expect(container.contains(backdrop)).toBe(false)
-    expect(Number(backdrop.style.zIndex)).toBeGreaterThan(50)
+    const sheet = screen.getByRole('dialog')
+    expect(sheet).toHaveClass('hx-sheet')
+    expect(sheet).toHaveAttribute('aria-modal', 'true')
+    expect(sheet.parentElement).toBe(document.body)
+    expect(container.contains(sheet)).toBe(false)
+    // a camada vem da escala de z-index da folha do sistema (research V1/V8)
+    const css = readFileSync(path.resolve(__dirname, '../../../app/helux-v2.css'), 'utf-8')
+    const z = (name: string) => Number(css.match(new RegExp(`${name}:(\\d+)`))![1])
+    expect(z('--z-sheet')).toBeGreaterThan(z('--z-nav'))
   })
 
   describe('US1: etapa de mudanças', () => {

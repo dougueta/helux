@@ -1,115 +1,85 @@
 'use client'
 
-import { Icon } from '@/components/ui/icons'
-import { Ring } from '@/components/ui/Ring'
-import { Card } from '@/components/ui/Card'
+import type { GeneticTrait } from '@helux/types'
+import { MarkerStrand } from '@/components/dna/MarkerStrand'
+import { TraitCard } from '@/components/dna/TraitCard'
+import { Banner } from '@/components/ui/Banner'
+import { SectionHeader } from '@/components/ui/SectionHeader'
+import type { DnaState } from './load-profile'
 
-interface DnaClientProps {
-  profile: Record<string, unknown> | null
+const STRAND_MAX = 4
+
+/** Genes da fita: no máximo 4, sem repetir, na ordem dos marcadores (risco primeiro) — FR-009. */
+export function strandGenes(traits: GeneticTrait[]): string[] {
+  return [...new Set(traits.map(t => t.gene))].slice(0, STRAND_MAX)
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+function Empty({ title, text }: { title: string; text: string }) {
+  return (
+    <div style={{ marginTop: 24 }}>
+      <h2 className="t-section">{title}</h2>
+      <p className="t-secondary" style={{ marginTop: 6 }}>
+        {text}
+      </p>
+    </div>
+  )
+}
 
-export function DnaClient({ profile }: DnaClientProps) {
-  if (!profile) {
+/** DNA (FR-022 da 012, spec 020). "Como molda seu treino" fica oculto enquanto não houver dado (FR-024). */
+export function DnaClient({ state }: { state: DnaState }) {
+  if (state.status === 'error') {
     return (
-      <Card padding={24} style={{ textAlign: 'center', marginTop: 8 }}>
-        <p style={{ color: 'var(--text)', marginBottom: 4 }}>Perfil genético não carregado</p>
-        <p style={{ color: 'var(--text-dim)', fontSize: 13 }}>
-          Adicione o arquivo Genera em <code style={{ color: 'var(--accent)', fontFamily: 'var(--font-jetbrains-mono)', fontSize: 12 }}>data/genetics/genera.json</code> na API.
-        </p>
-      </Card>
+      <div style={{ marginTop: 24 }}>
+        <Banner kind="err" title="Não foi possível carregar seu DNA">
+          O serviço do perfil genético não respondeu. Tente de novo mais tarde.
+        </Banner>
+      </div>
+    )
+  }
+  if (state.status === 'missing') {
+    return (
+      <Empty
+        title="Perfil genético não carregado"
+        text="Seu teste genético ainda não foi adicionado ao Helux. Quando ele for carregado, seus marcadores aparecem aqui."
+      />
     )
   }
 
-  const score = typeof profile.score === 'number' ? profile.score : null
-  const summary = typeof profile.summary === 'string' ? profile.summary : null
-  const traits = Array.isArray(profile.traits) ? profile.traits as Array<{key:string;label:string;value:string;level:number;gene:string;tag?:string;note:string;warn?:boolean}> : []
-  const drivers = Array.isArray(profile.drivers) ? profile.drivers as Array<{icon:string;title:string;text:string}> : []
+  const traits = state.profile.traits
+  if (traits.length === 0) {
+    return (
+      <Empty
+        title="Marcadores ainda não disponíveis"
+        text="Seu teste genético foi lido, mas não traz marcadores ligados a treino."
+      />
+    )
+  }
 
+  const n = traits.length
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 8 }}>
-      {/* Score hero */}
-      {(score !== null || summary) && (
-        <div style={{ background: 'linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%)', border: '1px solid var(--hairline-2)', borderRadius: 'var(--r-card)', padding: '28px 20px 20px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: 120, opacity: 0.07, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {/* helix watermark */}
-            <svg width={120} height={120} viewBox="0 0 32 32" fill="none">
-              <path d="M11 3 C 21 9, 21 23, 11 29" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round"/>
-              <path d="M21 3 C 11 9, 11 23, 21 29" stroke="var(--accent)" strokeWidth="2.2" strokeLinecap="round"/>
-            </svg>
-          </div>
-          {score !== null && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-              <Ring value={score} size={108} sw={9}>
-                <div style={{ fontSize: 32, fontWeight: 700, fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--accent)' }}>{score}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>índice</div>
-              </Ring>
-            </div>
-          )}
-          {summary && <p style={{ fontSize: 14, color: 'var(--text-dim)', lineHeight: 1.6, maxWidth: 280, margin: '0 auto' }}>{summary}</p>}
+    <>
+      <p className="t-body dim" style={{ marginTop: 8 }}>
+        {`${n} ${n === 1 ? 'marcador' : 'marcadores'} do teste Genera definem como o Helux escolhe exercícios, cargas e descanso.`}
+      </p>
+      <div style={{ marginTop: 24 }}>
+        <MarkerStrand genes={strandGenes(traits)} />
+      </div>
+      <section style={{ marginTop: 28 }}>
+        <SectionHeader title="Marcadores genéticos" aside={`${n} de ${n} lidos`} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {traits.map(t => (
+            <TraitCard
+              key={t.key}
+              gene={t.gene}
+              genotype={t.genotype}
+              label={t.label}
+              level={t.level}
+              note={t.note}
+              warn={t.warn}
+            />
+          ))}
         </div>
-      )}
-
-      {/* Genetic markers */}
-      {traits.length > 0 && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Marcadores genéticos</h3>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {traits.map(t => (
-              <Card key={t.key} padding="14px 16px">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{t.label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: t.warn ? 'var(--warn)' : 'var(--accent)', fontFamily: 'var(--font-jetbrains-mono)' }}>{t.value}</span>
-                </div>
-                <div style={{ height: 4, background: 'var(--surface-3)', borderRadius: 2, marginBottom: 8, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.round(t.level * 100)}%`, background: t.warn ? 'var(--warn)' : 'var(--accent)', borderRadius: 2, transition: 'width 0.9s cubic-bezier(.2,.8,.2,1)' }} />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Icon name="dna" size={12} stroke="var(--text-faint)" /> {t.gene}
-                  </span>
-                  {t.tag && (
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 'var(--r-pill)', background: t.warn ? 'rgba(245,183,62,0.12)' : 'var(--accent-soft)', color: t.warn ? 'var(--warn)' : 'var(--accent)', border: `1px solid ${t.warn ? 'rgba(245,183,62,0.3)' : 'var(--accent-line)'}` }}>
-                      {t.tag}
-                    </span>
-                  )}
-                </div>
-                {t.note && <p style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 8, lineHeight: 1.5 }}>{t.note}</p>}
-              </Card>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Drivers */}
-      {drivers.length > 0 && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 8 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Como molda seu treino</h3>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
-            {drivers.map((d, i) => (
-              <Card key={i} padding="14px 14px">
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                  <Icon name="dumbbell" size={16} stroke="var(--accent)" />
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{d.title}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.4 }}>{d.text}</div>
-              </Card>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Fallback for unstructured profile */}
-      {traits.length === 0 && drivers.length === 0 && score === null && (
-        <p style={{ color: 'var(--text-dim)', fontSize: 13, textAlign: 'center', padding: 16 }}>
-          Formato do perfil genético não reconhecido.
-        </p>
-      )}
-    </div>
+      </section>
+    </>
   )
 }

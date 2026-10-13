@@ -1,93 +1,75 @@
 import type { RecoveryData } from '@helux/types'
+import { Banner } from '@/components/ui/Banner'
+import { Icon, type IconName } from '@/components/ui/icons'
+import { formatNumber } from '@/lib/format'
 
 interface RecoveryCardProps {
   data: RecoveryData | null
   isStale: boolean
 }
 
-interface MetricTileProps {
-  label: string
-  value: number | undefined
-  unit: string
-  accent?: boolean
+/** 7,5 h → "7h30". */
+function formatSleep(hours: number): string {
+  const total = Math.round(hours * 60)
+  return `${Math.floor(total / 60)}h${String(total % 60).padStart(2, '0')}`
 }
 
-function MetricTile({ label, value, unit, accent = false }: MetricTileProps) {
-  return (
-    <div
-      style={{
-        background: 'var(--surface-1)',
-        border: '1px solid var(--hairline)',
-        borderRadius: 'var(--r-card)',
-        padding: 14,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 4,
-      }}
-    >
-      <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-faint)', margin: 0 }}>
-        {label}
-      </p>
-      <p
-        style={{
-          fontFamily: 'var(--font-jetbrains-mono)',
-          fontSize: 22,
-          fontWeight: 700,
-          color: accent ? 'var(--accent)' : 'var(--text)',
-          margin: 0,
-        }}
-      >
-        {value != null ? value : '—'}
-      </p>
-      <p style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, color: 'var(--text-faint)', margin: 0 }}>
-        {unit}
-      </p>
-    </div>
-  )
-}
-
+/**
+ * "Recovery de hoje" (handoff 5.5): um `.hx-card` por métrica, número em `.n-lg`,
+ * atenuado quando os dados estão antigos. Métrica sem leitura fica oculta (FR-024).
+ */
 export function RecoveryCard({ data, isStale }: RecoveryCardProps) {
   if (!data) {
     return (
-      <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: 24, textAlign: 'center' }}>
-        <p style={{ color: 'var(--text)', fontSize: 16, margin: '0 0 8px' }}>Sem dados de recovery</p>
-        <p style={{ color: 'var(--text-dim)', fontSize: 13, margin: 0 }}>
-          Execute o{' '}
-          <span style={{ color: 'var(--accent)', fontFamily: 'var(--font-jetbrains-mono)' }}>Shortcut</span> no
-          iPhone para sincronizar os dados do Apple Watch.
+      <div className="hx-card" style={{ padding: 20 }}>
+        <p className="t-body-m">Sem dados de recovery</p>
+        <p className="t-secondary" style={{ marginTop: 4 }}>
+          Execute o Shortcut no iPhone para sincronizar os dados do Apple Watch.
         </p>
       </div>
     )
   }
 
+  const metrics: [string, IconName, string | null, string][] = [
+    ['HRV', 'wave', data.hrv != null ? formatNumber(data.hrv) : null, 'ms'],
+    ['FC de repouso', 'heart', data.restingHR != null ? formatNumber(data.restingHR) : null, 'bpm'],
+    ['Sono', 'moon', data.sleepHours != null ? formatSleep(data.sleepHours) : null, ''],
+    ['Calorias', 'flame', data.activeCalories != null ? formatNumber(data.activeCalories) : null, 'kcal'],
+    ['Recuperação cardíaca', 'heart', data.cardioRecovery != null ? formatNumber(data.cardioRecovery) : null, 'bpm'],
+  ]
+  const shown = metrics.filter(([, , v]) => v != null)
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div>
       {isStale && (
-        <div
-          style={{
-            background: 'rgba(245,183,62,0.14)',
-            border: '1px solid rgba(245,183,62,0.34)',
-            borderRadius: 'var(--r-sm)',
-            padding: '8px 14px',
-          }}
-        >
-          <p style={{ color: 'var(--warn)', fontSize: 13, margin: 0 }}>Dados antigos — sincronize novamente</p>
+        <div style={{ marginBottom: 10 }}>
+          <Banner kind="warn" title="Dados antigos — sincronize novamente">
+            Última leitura em {new Date(`${data.date.slice(0, 10)}T12:00:00Z`).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}.
+            Execute o Shortcut no iPhone para atualizar.
+          </Banner>
         </div>
       )}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <MetricTile label="HRV" value={data.hrv} unit="ms" accent />
-        <MetricTile label="FC Repouso" value={data.restingHR} unit="bpm" />
-        <MetricTile label="Calorias" value={data.activeCalories} unit="kcal" />
-        <MetricTile
-          label="Sono"
-          value={data.sleepHours != null ? Math.round(data.sleepHours * 10) / 10 : undefined}
-          unit="horas"
-        />
-        <MetricTile label="Recup. Cardio" value={data.cardioRecovery} unit="bpm" />
-      </div>
-      <p style={{ color: 'var(--text-faint)', fontSize: 11, fontFamily: 'var(--font-jetbrains-mono)', textAlign: 'right', margin: 0 }}>
-        Atualizado: {new Date(data.date).toLocaleDateString('pt-BR')}
-      </p>
+      <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8, margin: 0 }}>
+        {shown.map(([label, icon, value, unit], i) => (
+          <div
+            key={label}
+            className="hx-card"
+            style={{
+              padding: '12px 14px',
+              gridColumn: i === shown.length - 1 && shown.length % 2 === 1 ? '1 / -1' : undefined,
+            }}
+          >
+            <dt className="t-caption" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <Icon name={icon} size={14} />
+              {label}
+            </dt>
+            <dd className={isStale ? 'n-lg dim' : 'n-lg'} style={{ margin: '6px 0 0', fontSize: 24 }}>
+              {value}
+              {unit && <span className="u">{unit}</span>}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }

@@ -7,9 +7,15 @@ export interface ExerciseBankEntry {
   cues: string[]
   muscles: { primary: string[]; secondary: string[] }
   tempo: string
+  /** spec 013 (FR-009): carga articular estimada, 0 (baixa) a 2 (alta) */
+  stress: JointStress
 }
 
-type RawEntry = Omit<ExerciseBankEntry, 'muscles' | 'tempo'>
+export type Joint = 'joelho' | 'ombro' | 'lombar'
+export type StressLevel = 0 | 1 | 2
+export type JointStress = Record<Joint, StressLevel>
+
+type RawEntry = Omit<ExerciseBankEntry, 'muscles' | 'tempo' | 'stress'>
 
 const RAW_ENTRIES: RawEntry[] = [
   // ---- agachar ----
@@ -1353,6 +1359,267 @@ const RAW_ENTRIES: RawEntry[] = [
       'Bom exercício acessório para estabilidade do quadril e joelho',
     ],
   },
+  // ---- spec 013: novos exercícios (sempre no fim; a linha de base da medição usa as 102 primeiras entradas) ----
+  {
+    id: 'desenvolvimento-landmine-barra',
+    name: 'Desenvolvimento Landmine (Barra)',
+    muscleGroup: 'ombro',
+    equipment: 'barra',
+    pattern: 'empurrar-vertical',
+    cues: [
+      'Ponta da barra presa no canto ou no suporte landmine, a outra ponta na altura do ombro',
+      'Empurre a barra para cima e à frente em arco, sem travar o cotovelo',
+      'Core firme e glúteos contraídos para não arquear a lombar',
+      'Erro comum: inclinar o tronco para trás para completar a repetição',
+    ],
+  },
+  {
+    id: 'desenvolvimento-unilateral-halteres',
+    name: 'Desenvolvimento Unilateral (Halteres)',
+    muscleGroup: 'ombro',
+    equipment: 'halteres',
+    pattern: 'empurrar-vertical',
+    cues: [
+      'Um halter na altura do ombro, a mão livre na cintura para equilibrar',
+      'Empurre o halter acima da cabeça mantendo o tronco reto',
+      'Desça controlando até a altura da orelha',
+      'Erro comum: compensar inclinando o tronco para o lado oposto',
+    ],
+  },
+  {
+    id: 'desenvolvimento-smith-maquina',
+    name: 'Desenvolvimento no Smith (Máquina)',
+    muscleGroup: 'ombro',
+    equipment: 'maquina-cabo',
+    pattern: 'empurrar-vertical',
+    cues: [
+      'Banco com encosto vertical sob a barra guiada, pegada um pouco mais larga que os ombros',
+      'Destrave a barra e desça até a altura do queixo',
+      'Empurre para cima mantendo as costas apoiadas no banco',
+      'Erro comum: descer a barra atrás da nuca, sobrecarregando o ombro',
+    ],
+  },
+  {
+    id: 'pullover-halteres',
+    name: 'Pullover (Halteres)',
+    muscleGroup: 'costas',
+    equipment: 'halteres',
+    pattern: 'puxar-vertical',
+    cues: [
+      'Deitado no banco, halter seguro com as duas mãos acima do peito',
+      'Leve o halter para trás da cabeça em arco, cotovelos levemente flexionados',
+      'Traga de volta puxando com as costas até acima do peito',
+      'Erro comum: dobrar demais os cotovelos, transformando o movimento em tríceps',
+    ],
+  },
+  {
+    id: 'pullover-barra',
+    name: 'Pullover com Barra',
+    muscleGroup: 'costas',
+    equipment: 'barra',
+    pattern: 'puxar-vertical',
+    cues: [
+      'Deitado no banco, barra com pegada na largura dos ombros acima do peito',
+      'Desça a barra para trás da cabeça em arco, braços quase estendidos',
+      'Puxe a barra de volta ativando o latíssimo, sem arquear a lombar',
+      'Erro comum: usar carga alta demais e perder o controle atrás da cabeça',
+    ],
+  },
+  {
+    id: 'barra-fixa-neutra-corporal',
+    name: 'Barra Fixa Pegada Neutra (Peso Corporal)',
+    muscleGroup: 'costas',
+    equipment: 'peso-corporal',
+    pattern: 'puxar-vertical',
+    cues: [
+      'Pegada com as palmas voltadas uma para a outra, corpo pendurado e ombros ativos',
+      'Puxe o peito em direção às mãos levando os cotovelos para baixo e para trás',
+      'Desça controlando até estender os braços',
+      'Erro comum: balançar o corpo para ganhar impulso',
+    ],
+  },
+  {
+    id: 'puxada-unilateral-cabo',
+    name: 'Puxada Unilateral (Cabo)',
+    muscleGroup: 'costas',
+    equipment: 'maquina-cabo',
+    pattern: 'puxar-vertical',
+    cues: [
+      'Ajoelhado ou sentado de frente para a polia alta, pegada com uma mão',
+      'Puxe o cotovelo em direção ao quadril do mesmo lado',
+      'Retorne alongando o latíssimo sem deixar o ombro subir',
+      'Erro comum: girar o tronco para puxar com o corpo em vez das costas',
+    ],
+  },
+  {
+    id: 'flexao-maos-elevadas-corporal',
+    name: 'Flexão com Mãos Elevadas (Peso Corporal)',
+    muscleGroup: 'peito',
+    equipment: 'peso-corporal',
+    pattern: 'empurrar-horizontal',
+    cues: [
+      'Mãos apoiadas num banco ou caixa, corpo em linha reta dos ombros aos calcanhares',
+      'Desça o peito até perto da borda do apoio, cotovelos a cerca de 45 graus',
+      'Empurre de volta mantendo o core firme',
+      'Boa progressão para quem ainda não faz a flexão no chão',
+    ],
+  },
+  {
+    id: 'supino-pegada-neutra-halteres',
+    name: 'Supino com Pegada Neutra (Halteres)',
+    muscleGroup: 'peito',
+    equipment: 'halteres',
+    pattern: 'empurrar-horizontal',
+    cues: [
+      'Deitado no banco, halteres com as palmas voltadas uma para a outra',
+      'Desça os halteres ao lado do peito com os cotovelos próximos ao tronco',
+      'Empurre para cima sem bater os halteres no topo',
+      'Pegada mais confortável para o ombro que a pronada',
+    ],
+  },
+  {
+    id: 'remada-pendlay-barra',
+    name: 'Remada Pendlay (Barra)',
+    muscleGroup: 'costas',
+    equipment: 'barra',
+    pattern: 'puxar-horizontal',
+    cues: [
+      'Tronco quase paralelo ao chão, barra parada no chão no início de cada repetição',
+      'Puxe a barra de forma explosiva até a parte baixa do peito',
+      'Devolva a barra ao chão com controle, sem levantar o tronco',
+      'Erro comum: arredondar a lombar para alcançar a barra',
+    ],
+  },
+  {
+    id: 'agachamento-smith-maquina',
+    name: 'Agachamento no Smith (Máquina)',
+    muscleGroup: 'quadriceps',
+    equipment: 'maquina-cabo',
+    pattern: 'agachar',
+    cues: [
+      'Barra guiada apoiada no trapézio, pés ligeiramente à frente da linha da barra',
+      'Desça até a coxa ficar paralela ao chão, tronco firme',
+      'Empurre o chão pelos calcanhares para subir',
+      'Erro comum: pés muito para trás, jogando o joelho à frente',
+    ],
+  },
+  {
+    id: 'agachamento-box-barra',
+    name: 'Agachamento Box (Barra)',
+    muscleGroup: 'quadriceps',
+    equipment: 'barra',
+    pattern: 'agachar',
+    cues: [
+      'Caixa ou banco atrás de você na altura em que a coxa fica paralela ao chão',
+      'Desça levando o quadril para trás até tocar a caixa sem relaxar',
+      'Suba empurrando o chão, mantendo o peito erguido',
+      'Erro comum: sentar e soltar o corpo sobre a caixa',
+    ],
+  },
+  {
+    id: 'pull-through-cabo',
+    name: 'Pull-through no Cabo',
+    muscleGroup: 'gluteo',
+    equipment: 'maquina-cabo',
+    pattern: 'dobrar-quadril',
+    cues: [
+      'De costas para a polia baixa, corda entre as pernas, pés afastados',
+      'Leve o quadril para trás inclinando o tronco com a coluna neutra',
+      'Volte estendendo o quadril e contraindo os glúteos no topo',
+      'Erro comum: puxar com os braços em vez de estender o quadril',
+    ],
+  },
+  {
+    id: 'elevacao-pelvica-maquina',
+    name: 'Elevação Pélvica na Máquina',
+    muscleGroup: 'gluteo',
+    equipment: 'maquina-cabo',
+    pattern: 'dobrar-quadril',
+    cues: [
+      'Costas apoiadas no encosto, almofada sobre o quadril, pés firmes na plataforma',
+      'Eleve o quadril até o tronco ficar alinhado às coxas',
+      'Segure um segundo contraindo os glúteos e desça com controle',
+      'Erro comum: hiperestender a lombar no topo',
+    ],
+  },
+  {
+    id: 'hollow-hold-corporal',
+    name: 'Hollow Hold (Peso Corporal)',
+    muscleGroup: 'core',
+    equipment: 'peso-corporal',
+    pattern: 'core',
+    cues: [
+      'Deitado de costas, lombar colada no chão',
+      'Eleve ombros e pernas estendidas alguns centímetros do chão, braços acima da cabeça',
+      'Sustente a posição respirando sem perder o contato da lombar com o chão',
+      'Erro comum: deixar a lombar descolar do chão',
+    ],
+  },
+  {
+    id: 'abdominal-bicicleta-corporal',
+    name: 'Abdominal Bicicleta (Peso Corporal)',
+    muscleGroup: 'core',
+    equipment: 'peso-corporal',
+    pattern: 'core',
+    cues: [
+      'Deitado de costas, mãos atrás da cabeça, pernas elevadas',
+      'Leve o cotovelo em direção ao joelho oposto enquanto estende a outra perna',
+      'Alterne os lados de forma controlada',
+      'Erro comum: puxar o pescoço com as mãos',
+    ],
+  },
+  {
+    id: 'russian-twist-halteres',
+    name: 'Russian Twist (Halteres)',
+    muscleGroup: 'core',
+    equipment: 'halteres',
+    pattern: 'core',
+    cues: [
+      'Sentado, tronco inclinado para trás, halter junto ao peito',
+      'Gire o tronco levando o halter de um lado para o outro',
+      'Mantenha a coluna longa e o movimento vindo do tronco',
+      'Erro comum: mexer só os braços sem girar o tronco',
+    ],
+  },
+  {
+    id: 'rollout-barra',
+    name: 'Rollout com Barra',
+    muscleGroup: 'core',
+    equipment: 'barra',
+    pattern: 'core',
+    cues: [
+      'Ajoelhado, mãos na barra com anilhas redondas à frente dos joelhos',
+      'Role a barra para frente até onde conseguir manter a lombar neutra',
+      'Volte puxando com o abdômen',
+      'Erro comum: deixar o quadril cair e arquear a lombar',
+    ],
+  },
+  {
+    id: 'rosca-concentrada-halteres',
+    name: 'Rosca Concentrada (Halteres)',
+    muscleGroup: 'biceps',
+    equipment: 'halteres',
+    pattern: 'isolamento',
+    cues: [
+      'Sentado, cotovelo apoiado na parte interna da coxa',
+      'Flexione o cotovelo levando o halter até o ombro',
+      'Desça devagar até quase estender o braço',
+      'Erro comum: tirar o cotovelo do apoio para ajudar',
+    ],
+  },
+  {
+    id: 'crucifixo-invertido-maquina',
+    name: 'Crucifixo Invertido na Máquina',
+    muscleGroup: 'ombro',
+    equipment: 'maquina-cabo',
+    pattern: 'isolamento',
+    cues: [
+      'Sentado de frente para o encosto do peck deck, pegadas na altura dos ombros',
+      'Abra os braços para trás contraindo o deltoide posterior',
+      'Retorne com controle sem deixar o peso bater',
+      'Erro comum: encolher os ombros durante o movimento',
+    ],
+  },
 ]
 
 // ---- muscle-map + tempo derivation ----
@@ -1418,8 +1685,95 @@ function deriveTempo(entry: RawEntry): string {
   return PATTERN_TEMPO[entry.pattern] ?? '2 · 0 · 1'
 }
 
+// ---- carga articular (spec 013, FR-009) ----
+// Estimativa biomecânica simplificada, usada para ranquear alternativas quando o
+// perfil genético sinaliza uma articulação — não é prescrição clínica.
+const s = (joelho: StressLevel, ombro: StressLevel, lombar: StressLevel): JointStress => ({ joelho, ombro, lombar })
+
+/** Carga típica de cada padrão de movimento (joelho, ombro, lombar). */
+const PATTERN_STRESS: Record<string, JointStress> = {
+  agachar: s(2, 0, 1),
+  'dobrar-quadril': s(0, 0, 2),
+  'empurrar-horizontal': s(0, 1, 0),
+  'empurrar-vertical': s(0, 2, 1),
+  'puxar-horizontal': s(0, 1, 1),
+  'puxar-vertical': s(0, 2, 0),
+  core: s(0, 0, 1),
+  isolamento: s(0, 0, 0),
+}
+
+/** Exercícios cujo movimento difere do padrão (apoio, trajetória guiada, carga axial). */
+export const STRESS_OVERRIDES: Record<string, JointStress> = {
+  // agachar
+  'agachamento-livre-barra': s(2, 0, 2),
+  'agachamento-frontal-barra': s(2, 1, 1),
+  'agachamento-overhead-barra': s(2, 2, 2),
+  'agachamento-bulgaro-halteres': s(2, 0, 0),
+  'agachamento-goblet-halteres': s(2, 0, 0),
+  'agachamento-livre-corporal': s(1, 0, 0),
+  'afundo-reverso-corporal': s(1, 0, 0),
+  'step-up-halteres': s(1, 0, 0),
+  'leg-press-45': s(1, 0, 0),
+  'agachamento-hack-maquina': s(1, 0, 0),
+  // dobrar quadril
+  'levantamento-terra-barra': s(1, 0, 2),
+  'levantamento-terra-sumo-barra': s(1, 0, 1),
+  'levantamento-terra-romeno-halteres': s(0, 0, 1),
+  'terra-halteres-unilateral': s(0, 0, 1),
+  'hiperextensao-lombar-banco': s(0, 0, 1),
+  'elevacao-pelvica-barra': s(0, 0, 0),
+  'elevacao-pelvica-corporal': s(0, 0, 0),
+  'elevacao-pelvica-unilateral': s(0, 0, 0),
+  // empurrar
+  'flexao-pike-corporal': s(0, 2, 0),
+  'handstand-pushup-assistido': s(0, 2, 1),
+  'desenvolvimento-maquina': s(0, 2, 0),
+  // puxar
+  'remada-curvada-barra': s(0, 1, 2),
+  'remada-curvada-halteres': s(0, 1, 2),
+  'remada-cavalinho-barra': s(0, 1, 2),
+  'remada-t-barra': s(0, 1, 2),
+  'remada-maquina': s(0, 1, 0),
+  'remada-invertida-corporal': s(0, 1, 0),
+  'face-pull-cabo': s(0, 1, 0),
+  'remada-alta-barra': s(0, 2, 0),
+  // core
+  'prancha-abdominal-corporal': s(0, 0, 0),
+  'prancha-lateral-corporal': s(0, 0, 0),
+  'dead-bug-corporal': s(0, 0, 0),
+  'pallof-press-cabo': s(0, 0, 0),
+  'roda-abdominal': s(0, 1, 2),
+  'prancha-toque-ombro-corporal': s(0, 1, 0),
+  // isolamento
+  'cadeira-extensora': s(2, 0, 0),
+  'mesa-flexora': s(1, 0, 0),
+  'cadeira-flexora': s(1, 0, 0),
+  'elevacao-lateral-halteres': s(0, 1, 0),
+  'elevacao-lateral-cabo': s(0, 1, 0),
+  'elevacao-frontal-halteres': s(0, 1, 0),
+  'triceps-testa-barra': s(0, 1, 0),
+  'mergulho-banco-corporal': s(0, 2, 0),
+  'paralelas-corporal': s(0, 2, 0),
+  'encolhimento-barra': s(0, 0, 1),
+  // novos (spec 013)
+  'desenvolvimento-landmine-barra': s(0, 1, 1),
+  'desenvolvimento-smith-maquina': s(0, 2, 0),
+  'remada-pendlay-barra': s(0, 1, 2),
+  'agachamento-smith-maquina': s(1, 0, 1),
+  'agachamento-box-barra': s(1, 0, 2),
+  'pull-through-cabo': s(0, 0, 1),
+  'elevacao-pelvica-maquina': s(0, 0, 0),
+  'hollow-hold-corporal': s(0, 0, 0),
+  'rollout-barra': s(0, 1, 2),
+}
+
+function deriveStress(entry: RawEntry): JointStress {
+  return STRESS_OVERRIDES[entry.id] ?? PATTERN_STRESS[entry.pattern] ?? s(0, 0, 0)
+}
+
 export const EXERCISE_BANK: ExerciseBankEntry[] = RAW_ENTRIES.map((entry) => ({
   ...entry,
   muscles: deriveMuscles(entry),
   tempo: deriveTempo(entry),
+  stress: deriveStress(entry),
 }))

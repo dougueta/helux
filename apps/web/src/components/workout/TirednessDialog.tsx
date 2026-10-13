@@ -1,15 +1,13 @@
 'use client'
 
-import type { CSSProperties, ReactNode } from 'react'
-import { createPortal } from 'react-dom'
+import type { ReactNode } from 'react'
 import type { ExerciseAdjustmentChange, TirednessLevel } from '@helux/types'
 import { TIREDNESS_LABELS } from '@helux/workouts'
+import { Button } from '@/components/ui/Button'
+import { Sheet } from '@/components/ui/Sheet'
 import { TirednessLevelPicker } from '@/components/workout/TirednessLevelPicker'
 import { AdjustmentChangesList } from '@/components/workout/AdjustmentChangesList'
 import type { ChangesBase, TirednessFlowMode, TirednessFlowStep } from '@/hooks/useTirednessFlow'
-
-/** Acima do NavBar (`z-50`). */
-export const TIREDNESS_DIALOG_Z_INDEX = 60
 
 export interface TirednessDialogProps {
   open: boolean
@@ -30,141 +28,69 @@ export interface TirednessDialogProps {
   onClose: () => void
 }
 
-const buttonBase: CSSProperties = {
-  flex: 1,
-  height: 48,
-  borderRadius: 'var(--r-pill)',
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: 'var(--font-space-grotesk)',
-  cursor: 'pointer',
-}
-
-function SecondaryButton({ children, onClick, disabled }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{ ...buttonBase, background: 'transparent', border: '1px solid var(--hairline-2)', color: 'var(--text-dim)' }}
-    >
-      {children}
-    </button>
-  )
-}
-
-function PrimaryButton({ children, onClick, disabled }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      style={{ ...buttonBase, background: 'var(--accent)', border: 'none', color: 'var(--accent-ink)', opacity: disabled ? 0.6 : 1 }}
-    >
-      {children}
-    </button>
-  )
-}
-
-const titleStyle: CSSProperties = {
-  fontSize: 18,
-  fontWeight: 700,
-  color: 'var(--text)',
-  margin: 0,
-  fontFamily: 'var(--font-space-grotesk)',
-}
-
+/**
+ * Fluxo de cansaço da spec 011 numa `ui/Sheet` da v2: portal, scrim, Esc e a
+ * camada acima do menu inferior vêm da escala de z-index da folha (research V8).
+ */
 export function TirednessDialog(props: TirednessDialogProps) {
   const { open, mode, step, candidate, automaticLevel, changes, changesBase, saving, error } = props
-  if (!open) return null
 
   const dismiss = step === 'question' ? props.onClose : step === 'conflict' ? props.onDeclineConflict : props.onCancelChanges
 
-  let body: ReactNode
+  let title: string
+  let text: string
+  let content: ReactNode = null
+  let primary: { label: string; onClick: () => void }
+  let secondary: { label: string; onClick: () => void }
+
   if (step === 'question') {
-    body = (
-      <>
-        <h2 style={titleStyle}>Como você está hoje?</h2>
-        <p style={{ fontSize: 13, color: 'var(--text-faint)', margin: 0 }}>
-          Seu treino de hoje se ajusta ao seu nível de cansaço.
-        </p>
-        <TirednessLevelPicker selected={candidate} onSelect={props.onSelectCandidate} disabled={saving} />
-        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-          <SecondaryButton onClick={props.onClose} disabled={saving}>Fechar</SecondaryButton>
-          <PrimaryButton onClick={props.onContinue} disabled={saving}>Continuar</PrimaryButton>
-        </div>
-      </>
-    )
+    title = 'Como você está hoje?'
+    text = 'Seu treino de hoje se ajusta ao seu nível de cansaço.'
+    content = <TirednessLevelPicker selected={candidate} onSelect={props.onSelectCandidate} disabled={saving} />
+    primary = { label: 'Continuar', onClick: props.onContinue }
+    secondary = { label: 'Fechar', onClick: props.onClose }
   } else if (step === 'conflict') {
     const auto = automaticLevel ? TIREDNESS_LABELS[automaticLevel] : ''
-    body = (
-      <>
-        <h2 style={titleStyle}>{`Seu relógio indica "${auto}", mas você marcou "${TIREDNESS_LABELS[candidate]}"`}</h2>
-        <p style={{ fontSize: 13, color: 'var(--text-faint)', margin: 0 }}>
-          Quer mesmo ajustar o treino de hoje pelo que você marcou?
-        </p>
-        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-          <SecondaryButton onClick={props.onDeclineConflict} disabled={saving}>Manter o relógio</SecondaryButton>
-          <PrimaryButton onClick={props.onConfirmConflict} disabled={saving}>Sim, ajustar</PrimaryButton>
-        </div>
-      </>
-    )
+    title = `Seu relógio indica "${auto}", mas você marcou "${TIREDNESS_LABELS[candidate]}"`
+    text = 'Quer mesmo ajustar o treino de hoje pelo que você marcou?'
+    primary = { label: 'Sim, ajustar', onClick: props.onConfirmConflict }
+    secondary = { label: 'Manter o relógio', onClick: props.onDeclineConflict }
   } else {
-    body = (
-      <>
-        <h2 style={titleStyle}>{changesBase === 'planned' ? 'Seu treino de hoje está ajustado' : 'Seu treino vai mudar'}</h2>
-        <p style={{ fontSize: 13, color: 'var(--text-faint)', margin: 0 }}>
-          {changesBase === 'planned' ? 'Em relação ao planejado:' : 'O que muda no treino de hoje:'}
-        </p>
-        <AdjustmentChangesList changes={changes} />
-        <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-          <SecondaryButton onClick={props.onCancelChanges} disabled={saving}>Cancelar</SecondaryButton>
-          <PrimaryButton onClick={props.onConfirmChanges} disabled={saving}>
-            {mode === 'start' ? 'Aplicar e iniciar' : 'Aplicar'}
-          </PrimaryButton>
-        </div>
-      </>
-    )
+    title = changesBase === 'planned' ? 'Seu treino de hoje está ajustado' : 'Seu treino vai mudar'
+    text = changesBase === 'planned' ? 'Em relação ao planejado:' : 'O que muda no treino de hoje:'
+    content = <AdjustmentChangesList changes={changes} />
+    primary = { label: mode === 'start' ? 'Aplicar e iniciar' : 'Aplicar', onClick: props.onConfirmChanges }
+    secondary = { label: 'Cancelar', onClick: props.onCancelChanges }
   }
 
-  // Portal em document.body + camada própria acima do NavBar (fixed, z-50), para
-  // que o menu inferior nunca cubra os botões do diálogo (FR-017).
-  return createPortal(
-    <div
-      data-testid="tiredness-dialog-backdrop"
-      onClick={saving ? undefined : dismiss}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: TIREDNESS_DIALOG_Z_INDEX,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        background: 'rgba(4,6,4,.62)',
-        backdropFilter: 'blur(3px)',
-      }}
+  return (
+    <Sheet
+      open={open}
+      onClose={saving ? () => {} : dismiss}
+      label={title}
+      footer={
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Button kind="primary" size="lg" block onClick={primary.onClick} disabled={saving}>
+            {primary.label}
+          </Button>
+          <Button kind="ghost" block onClick={secondary.onClick} disabled={saving}>
+            {secondary.label}
+          </Button>
+        </div>
+      }
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-          padding: '24px 20px calc(28px + env(safe-area-inset-bottom, 0px))',
-          background: 'var(--bg)',
-          border: '1px solid var(--hairline-2)',
-          borderBottom: 'none',
-          borderRadius: '26px 26px 0 0',
-          boxShadow: '0 -20px 50px -12px rgba(0,0,0,.6)',
-        }}
-      >
-        <div style={{ width: 38, height: 4, borderRadius: 2, background: 'var(--surface-3)', margin: '-14px auto 4px' }} />
-        {body}
-        {error && <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--danger)' }}>{error}</p>}
-      </div>
-    </div>,
-    document.body,
+      <h2 className="t-heading" style={{ marginTop: 8 }}>
+        {title}
+      </h2>
+      <p className="t-secondary" style={{ marginTop: 6 }}>
+        {text}
+      </p>
+      {content && <div style={{ marginTop: 16 }}>{content}</div>}
+      {error && (
+        <p role="alert" className="t-secondary" style={{ marginTop: 12, color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
+    </Sheet>
   )
 }

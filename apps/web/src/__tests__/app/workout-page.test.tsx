@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ActiveWorkoutState } from '@/hooks/useActiveWorkout'
 
@@ -39,6 +39,7 @@ function seed({ skipFirst = false }: { skipFirst?: boolean } = {}) {
     startedAt: new Date(Date.now() - 30 * 60000).toISOString(),
     variantByExerciseIndex: {},
     executedVariantByExerciseIndex: skipFirst ? { 1: null } : { 0: null, 1: null },
+    effortByExerciseIndex: {},
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
 }
@@ -76,7 +77,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     expect(sessionPosts()).toHaveLength(1)
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
     expect(replaceMock).not.toHaveBeenCalled()
-    expect(screen.getByText('4')).toBeInTheDocument() // séries concluídas
+    expect(screen.getByText('4/4')).toBeInTheDocument() // séries concluídas
   })
 
   it('envia o mesmo payload de antes (exercícios, pulados, data, duração)', async () => {
@@ -111,7 +112,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
-    await user.click(await screen.findByRole('button', { name: 'Cancelar' }))
+    await user.click(await screen.findByRole('button', { name: 'Continuar treinando' }))
     expect(sessionPosts()).toHaveLength(0)
     expect(screen.queryByText('Treino concluído')).not.toBeInTheDocument()
 
@@ -123,14 +124,14 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
 
   // US3 -----------------------------------------------------------------
 
-  it('"Voltar ao início" após salvar só navega, sem nova gravação', async () => {
+  it('"Voltar para Hoje" após salvar só navega, sem nova gravação', async () => {
     seed()
     vi.mocked(apiFetch).mockResolvedValue({})
     const user = userEvent.setup()
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
-    await user.click(await screen.findByRole('button', { name: 'Voltar ao início' }))
+    await user.click(await screen.findByRole('button', { name: 'Voltar para Hoje' }))
 
     expect(replaceMock).toHaveBeenCalledWith('/')
     await waitFor(() => expect(sessionPosts()).toHaveLength(1))
@@ -155,7 +156,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
   })
 
-  it('em falha, mostra erro e preserva o treino; "Tentar novamente" grava', async () => {
+  it('em falha, mostra erro e preserva o treino; "Tentar de novo" grava', async () => {
     seed()
     vi.mocked(apiFetch)
       .mockRejectedValueOnce(new Error('offline'))
@@ -170,7 +171,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull()
     expect(replaceMock).not.toHaveBeenCalled()
 
-    await user.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    await user.click(screen.getByRole('button', { name: 'Tentar de novo' }))
     expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
     expect(sessionPosts()).toHaveLength(2)
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
@@ -190,5 +191,255 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!) as ActiveWorkoutState
     expect(stored.exerciseStates.flat().every(s => s.done)).toBe(true)
     expect(replaceMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('WorkoutPage — treino ativo v2 (spec 012 T049)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  it('mostra a primeira série pendente em foco e as demais compactas', async () => {
+    seed({ skipFirst: true })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'Exercício 1, 0 de 2 séries' }))
+
+    expect(screen.getByText('Série 1')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Editar série 2: 80 kg × 8' })).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'séries concluídas' })).toHaveAttribute('aria-valuenow', '2')
+  })
+
+  it('ao concluir a série, começa o descanso e o botão principal vira secundário', async () => {
+    seed({ skipFirst: true })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'Exercício 1, 0 de 2 séries' }))
+    expect(screen.getByRole('button', { name: /Próximo exercício/ })).toHaveClass('hx-btn--primary')
+
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+
+    expect(screen.getByRole('timer', { name: 'descanso' })).toHaveTextContent('1:30')
+    expect(screen.getByRole('button', { name: /Próximo exercício/ })).toHaveClass('hx-btn--secondary')
+    expect(screen.getByText('Série 2')).toBeInTheDocument()
+    expect(screen.getByText('3/4 séries')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Pular' }))
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+  })
+
+  it('tocar numa série compacta a torna a atual', async () => {
+    seed()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'Editar série 2: 60 kg × 8' }))
+    expect(screen.getByText('Série 2')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'aumentar kg' })).toBeInTheDocument()
+  })
+})
+
+function seedState(partial: Partial<ActiveWorkoutState> & Pick<ActiveWorkoutState, 'planExercises' | 'exerciseStates'>) {
+  const state: ActiveWorkoutState = {
+    currentExerciseIndex: 0,
+    startedAt: new Date(Date.now() - 10 * 60000).toISOString(),
+    variantByExerciseIndex: {},
+    executedVariantByExerciseIndex: {},
+    effortByExerciseIndex: {},
+    ...partial,
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+}
+
+describe('WorkoutPage — fases (spec 014, US1)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  const phased = [
+    { name: 'Esteira leve', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento' },
+    { name: 'Supino', sets: 2, reps: '8', weight: '60kg', phase: 'principal' },
+    { name: 'Alongamento de peitoral', sets: 1, reps: '30s cada lado', weight: '—', phase: 'volta-calma' },
+  ] as ActiveWorkoutState['planExercises']
+
+  function seedPhased(currentExerciseIndex: number) {
+    seedState({
+      planExercises: phased,
+      exerciseStates: [
+        [{ weight: 0, reps: 5, done: false }],
+        [{ weight: 60, reps: 8, done: false }, { weight: 60, reps: 8, done: false }],
+        [{ weight: 0, reps: 30, done: false }],
+      ],
+      currentExerciseIndex,
+    })
+  }
+
+  it('item de aquecimento mostra a fase e a prescrição, sem kg/reps editáveis', async () => {
+    seedPhased(0)
+    render(<WorkoutPage />)
+
+    expect(await screen.findByText('Aquecimento')).toBeInTheDocument()
+    expect(screen.getAllByText('5 min').length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button', { name: 'aumentar kg' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Adicionar série/ })).not.toBeInTheDocument()
+  })
+
+  it('concluir item de aquecimento não inicia descanso', async () => {
+    seedPhased(0)
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'concluir série 1' }))
+
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'série 1 concluída, desfazer' })).toBeInTheDocument()
+  })
+
+  it('exercício do principal mostra a tag Musculação; volta à calma mostra a sua fase', async () => {
+    seedPhased(1)
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    expect(await screen.findByText('Musculação')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Exercício 3, 0 de 1 séries' }))
+    expect(screen.getByText('Volta à calma')).toBeInTheDocument()
+  })
+
+  it('finalizar sem marcar aquecimento/volta à calma não pede confirmação de pulados', async () => {
+    seedState({
+      planExercises: phased,
+      exerciseStates: [
+        [{ weight: 0, reps: 5, done: false }],
+        [{ weight: 60, reps: 8, done: true }, { weight: 60, reps: 8, done: true }],
+        [{ weight: 0, reps: 30, done: false }],
+      ],
+      currentExerciseIndex: 2,
+    })
+    vi.mocked(apiFetch).mockResolvedValue({})
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+
+    expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
+    const body = JSON.parse(sessionPosts()[0][1]!.body as string)
+    expect(body.exercises.map((e: { name: string }) => e.name)).toEqual(['Supino'])
+  })
+})
+
+describe('WorkoutPage — biset (spec 014, US2)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  function seedBiset() {
+    seedState({
+      planExercises: [
+        { name: 'Supino Reto', sets: 2, reps: '10', weight: '60kg', phase: 'principal', supersetGroup: 'b1' },
+        { name: 'Remada Curvada', sets: 2, reps: '10', weight: '50kg', phase: 'principal', supersetGroup: 'b1' },
+        { name: 'Rosca Direta', sets: 2, reps: '10', weight: '20kg', phase: 'principal' },
+      ] as ActiveWorkoutState['planExercises'],
+      exerciseStates: [
+        [{ weight: 60, reps: 10, done: false }, { weight: 60, reps: 10, done: false }],
+        [{ weight: 50, reps: 10, done: false }, { weight: 50, reps: 10, done: false }],
+        [{ weight: 20, reps: 10, done: false }, { weight: 20, reps: 10, done: false }],
+      ],
+    })
+  }
+
+  it('mostra que o exercício é um biset e com quem alterna', async () => {
+    seedBiset()
+    render(<WorkoutPage />)
+    expect(await screen.findByText('Biset · alterna com Remada Curvada')).toBeInTheDocument()
+  })
+
+  it('série do 1º leva ao 2º sem descanso; série do 2º descansa e volta ao 1º', async () => {
+    seedBiset()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'concluir série 1' }))
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Remada Curvada')
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Supino Reto')
+    expect(screen.getByRole('timer', { name: 'descanso' })).toHaveTextContent('1:30')
+    expect(screen.getByText('Série 2')).toBeInTheDocument()
+  })
+
+  it('rótulo de descanso vem do workout-flow: 1º do biset sem descanso, 2º com 90 s', async () => {
+    seedBiset()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    expect(await screen.findByText(/sem descanso/)).toBeInTheDocument()
+    expect(screen.queryByText('90s')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+    expect(screen.getByText('90s')).toBeInTheDocument()
+    expect(screen.queryByText(/sem descanso/)).not.toBeInTheDocument()
+  })
+
+  it('ao navegar pelo biset, a série do outro exercício não reanima', async () => {
+    seedBiset()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: 'concluir série 1' }))
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+    // de volta ao Supino: a série 1 dele está concluída, mas não foi a que acabou de ser marcada
+    expect(screen.getByRole('button', { name: 'série 1 concluída, desfazer' })).not.toHaveClass('is-pop')
+  })
+
+  it('exercício comum fora do biset não mostra o marcador', async () => {
+    seedBiset()
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+    await user.click(await screen.findByRole('button', { name: 'Exercício 3, 0 de 2 séries' }))
+    expect(screen.queryByText(/Biset ·/)).not.toBeInTheDocument()
+  })
+})
+
+describe('WorkoutPage — esforço percebido (spec 014, US3, FR-014)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  const plan = [
+    { name: 'Esteira leve', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento' },
+    { name: 'Supino', sets: 2, reps: '8', weight: '60kg', phase: 'principal' },
+  ] as ActiveWorkoutState['planExercises']
+  const states = [
+    [{ weight: 0, reps: 8, done: false }],
+    [{ weight: 60, reps: 8, done: false }, { weight: 60, reps: 8, done: false }],
+  ]
+
+  it('aparece no principal só depois da 1ª série concluída e registra o nível', async () => {
+    seedState({ planExercises: plan, exerciseStates: states, currentExerciseIndex: 1 })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await screen.findByRole('button', { name: 'concluir série 1' })
+    expect(screen.queryByRole('group', { name: 'Esforço percebido' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
+    const picker = screen.getByRole('group', { name: 'Esforço percebido' })
+    await user.click(within(picker).getByRole('button', { name: 'Difícil' }))
+    expect(within(picker).getByRole('button', { name: 'Difícil' })).toHaveAttribute('aria-pressed', 'true')
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).effortByExerciseIndex).toEqual({ 1: 'dificil' })
+  })
+
+  it('não aparece no aquecimento', async () => {
+    seedState({ planExercises: plan, exerciseStates: [[{ weight: 0, reps: 8, done: true }], states[1]] })
+    render(<WorkoutPage />)
+    await screen.findByRole('heading', { level: 1 })
+    expect(screen.queryByRole('group', { name: 'Esforço percebido' })).not.toBeInTheDocument()
   })
 })

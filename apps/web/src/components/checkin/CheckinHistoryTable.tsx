@@ -2,99 +2,74 @@
 
 import Link from 'next/link'
 import type { BodyCheckin } from '@helux/types'
+import { formatMonthYear, formatNumber } from '@/lib/format'
 
-function monthLabel(month: string): string {
-  const [year, m] = month.split('-')
-  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-  return `${months[parseInt(m, 10) - 1]}/${year}`
-}
+type NumKey = 'weight_kg' | 'body_fat_pct' | 'waist_cm' | 'arm_cm' | 'squat_kg' | 'bench_kg' | 'deadlift_kg'
 
-function fmt(val?: number | null, decimals = 1): string {
-  return val != null ? val.toFixed(decimals) : '—'
-}
+const FIELDS: { key: NumKey; label: string; unit: string; decimals: number }[] = [
+  { key: 'weight_kg', label: 'Peso', unit: 'kg', decimals: 1 },
+  { key: 'body_fat_pct', label: 'Gordura', unit: '%', decimals: 1 },
+  { key: 'waist_cm', label: 'Cintura', unit: 'cm', decimals: 1 },
+  { key: 'arm_cm', label: 'Braço', unit: 'cm', decimals: 1 },
+  { key: 'squat_kg', label: 'Agachamento', unit: 'kg', decimals: 0 },
+  { key: 'bench_kg', label: 'Supino', unit: 'kg', decimals: 0 },
+  { key: 'deadlift_kg', label: 'Terra', unit: 'kg', decimals: 0 },
+]
 
-function DeltaCell({ curr, prev, lowerIsBetter = false, decimals = 1 }: {
-  curr?: number | null; prev?: number | null; lowerIsBetter?: boolean; decimals?: number
-}) {
-  if (curr == null || prev == null) return <span style={{ color: 'var(--text-faint)' }}>—</span>
+/** Variação contra o mês anterior, neutra (sem cor): "+5", "−1,2", "=". */
+function delta(curr: number | null | undefined, prev: number | null | undefined, decimals: number): string | null {
+  if (curr == null || prev == null) return null
   const d = curr - prev
-  const neutral = Math.abs(d) < 0.05
-  const positive = lowerIsBetter ? d < 0 : d > 0
-  const color = neutral ? 'var(--text-faint)' : positive ? 'var(--success)' : 'var(--danger)'
-  const sign = d > 0 ? '+' : ''
-  const text = neutral ? '=' : `${sign}${d.toFixed(decimals)}`
-  return <span style={{ color, fontSize: 12 }}>{text}</span>
+  if (Math.abs(d) < 0.05) return '='
+  return `${d > 0 ? '+' : '−'}${formatNumber(Math.abs(d), { decimals })}`
 }
 
-interface CheckinHistoryTableProps {
-  checkins: BodyCheckin[]
-}
-
-export function CheckinHistoryTable({ checkins }: CheckinHistoryTableProps) {
+/** Histórico de check-ins (FR-023): um bloco plano por mês, grade 2 colunas em mono pt-BR. */
+export function CheckinHistoryTable({ checkins }: { checkins: BodyCheckin[] }) {
   if (checkins.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px 16px' }}>
-        <p style={{ color: 'var(--text-faint)', fontSize: 14 }}>Nenhum check-in registrado ainda.</p>
-        <Link href="/checkin" style={{ color: 'var(--accent)', fontSize: 14, marginTop: 8, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
-          Fazer primeiro check-in →
-        </Link>
+      <div style={{ marginTop: 24 }}>
+        <h2 className="t-section">Nenhum check-in registrado ainda</h2>
+        <p className="t-secondary" style={{ marginTop: 6 }}>
+          O check-in mensal ajusta cargas e volume do seu plano.
+        </p>
+        <div style={{ marginTop: 16 }}>
+          <Link href="/checkin" className="hx-btn hx-btn--secondary">
+            Fazer primeiro check-in
+          </Link>
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{ overflowX: 'auto', padding: '0 16px' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid var(--hairline)' }}>
-            {['Mês','Peso','Gordura','Cintura','Braço','Agach.','Supino','Terra'].map(h => (
-              <th key={h} style={{ padding: '8px 6px', textAlign: 'right', color: 'var(--text-faint)', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {checkins.map((c, i) => {
-            const next = checkins[i + 1]
-            return (
-              <tr key={c.id} style={{ borderBottom: '1px solid var(--hairline)' }}>
-                <td style={{ padding: '10px 6px', color: 'var(--text)', whiteSpace: 'nowrap', fontWeight: 600 }}>
-                  {monthLabel(c.month)}
-                </td>
-                <td style={{ padding: '10px 6px', textAlign: 'right' }}>
-                  <div>{fmt(c.weight_kg)}</div>
-                  <DeltaCell curr={c.weight_kg} prev={next?.weight_kg} lowerIsBetter decimals={1} />
-                </td>
-                <td style={{ padding: '10px 6px', textAlign: 'right' }}>
-                  <div>{fmt(c.body_fat_pct)}</div>
-                  <DeltaCell curr={c.body_fat_pct} prev={next?.body_fat_pct} lowerIsBetter decimals={1} />
-                </td>
-                <td style={{ padding: '10px 6px', textAlign: 'right' }}>
-                  <div>{fmt(c.waist_cm)}</div>
-                  <DeltaCell curr={c.waist_cm} prev={next?.waist_cm} lowerIsBetter decimals={1} />
-                </td>
-                <td style={{ padding: '10px 6px', textAlign: 'right' }}>
-                  <div>{fmt(c.arm_cm)}</div>
-                  <DeltaCell curr={c.arm_cm} prev={next?.arm_cm} decimals={1} />
-                </td>
-                <td style={{ padding: '10px 6px', textAlign: 'right' }}>
-                  <div>{fmt(c.squat_kg, 0)}</div>
-                  <DeltaCell curr={c.squat_kg} prev={next?.squat_kg} decimals={0} />
-                </td>
-                <td style={{ padding: '10px 6px', textAlign: 'right' }}>
-                  <div>{fmt(c.bench_kg, 0)}</div>
-                  <DeltaCell curr={c.bench_kg} prev={next?.bench_kg} decimals={0} />
-                </td>
-                <td style={{ padding: '10px 6px', textAlign: 'right' }}>
-                  <div>{fmt(c.deadlift_kg, 0)}</div>
-                  <DeltaCell curr={c.deadlift_kg} prev={next?.deadlift_kg} decimals={0} />
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+    <div>
+      {checkins.map((c, i) => {
+        const prev = checkins[i + 1]
+        const shown = FIELDS.filter(f => c[f.key] != null)
+        return (
+          <article key={c.id} className="hx-plain" style={{ marginTop: i ? 24 : 16, paddingTop: 16 }}>
+            <h2 className="t-section">{formatMonthYear(c.month)}</h2>
+            <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '12px 16px', margin: '12px 0 0' }}>
+              {shown.map(f => {
+                const d = delta(c[f.key], prev?.[f.key], f.decimals)
+                return (
+                  <div key={f.key}>
+                    <dt className="t-caption">{f.label}</dt>
+                    <dd style={{ margin: '2px 0 0', display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span className="n-md">
+                        {formatNumber(c[f.key] as number, { decimals: f.decimals })}
+                        <span className="u">{f.unit}</span>
+                      </span>
+                      {d && <span className="n-sm dim">{d}</span>}
+                    </dd>
+                  </div>
+                )
+              })}
+            </dl>
+          </article>
+        )
+      })}
     </div>
   )
 }

@@ -31,6 +31,7 @@ export async function generateMesocyclePlan(input: PlanInput): Promise<Omit<Meso
     input.bodyCheckins,
     input.trainingTime,
     input.timeOff,
+    input.loadProgression,
   )
 
   const response = await client.messages.create({
@@ -93,6 +94,9 @@ function attachVariants(exercise: PlannedExercise, geneticProfile: GeneticProfil
 }
 
 function enrichExercise(exercise: PlannedExercise, geneticProfile: GeneticProfile): PlannedExercise {
+  // Spec 014: aquecimento e volta à calma têm nome livre (fora do catálogo) —
+  // não recebem cues/músculos/variantes mesmo que o nome coincida com o catálogo.
+  if (exercise.phase === 'aquecimento' || exercise.phase === 'volta-calma') return exercise
   return attachVariants(attachMuscleAndTempo(attachCues(exercise)), geneticProfile)
 }
 

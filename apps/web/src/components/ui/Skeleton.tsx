@@ -1,28 +1,16 @@
 import type { CSSProperties } from 'react'
 
-/** Bloco de carregamento com a animação de pulso do tema (`helux-pulse`, em globals.css). */
+/** Skeleton (`.hx-sk`) com a forma do conteúdo final; sem brilho em movimento reduzido. */
 export function Skeleton({
-  width = '100%',
-  height,
-  radius = 'var(--r-card)',
+  w = '100%',
+  h,
+  r,
   style,
 }: {
-  width?: number | string
-  height: number | string
-  radius?: string
+  w?: number | string
+  h: number | string
+  r?: number | string
   style?: CSSProperties
 }) {
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        width,
-        height,
-        borderRadius: radius,
-        background: 'var(--surface-1)',
-        animation: 'helux-pulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        ...style,
-      }}
-    />
-  )
+  return <div className="hx-sk" aria-hidden="true" style={{ width: w, height: h, borderRadius: r, ...style }} />
 }

@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCheckin } from '@/hooks/useCheckin'
+import { Banner } from '@/components/ui/Banner'
+import { Button } from '@/components/ui/Button'
+import { Field } from '@/components/ui/Field'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 import { ApiError } from '@/services/api-client'
 import type { CheckinInput } from '@helux/types'
 
@@ -27,52 +31,23 @@ function boundsMessage(name: FieldName): string {
   return `${label}: valor deve estar entre ${min} e ${max}.`
 }
 
-function NumericField({ name, value, onChange }: {
-  name: FieldName; value: string; onChange: (n: FieldName, v: string) => void
-}) {
-  const { label, min, max } = FIELD_BOUNDS[name]
-  return (
-    <div>
-      <label htmlFor={name} style={{ display: 'block', fontSize: 12, color: 'var(--text-faint)', marginBottom: 4 }}>
-        {label}
-      </label>
-      <input
-        id={name}
-        type="number"
-        inputMode="decimal"
-        step="0.1"
-        min={min}
-        max={max}
-        value={value}
-        onChange={e => onChange(name, e.target.value)}
-        style={{
-          width: '100%',
-          background: 'var(--surface-2)',
-          border: '1px solid var(--hairline)',
-          borderRadius: 8,
-          padding: '10px 12px',
-          fontSize: 15,
-          color: 'var(--text)',
-          minHeight: 44,
-        }}
-      />
-    </div>
-  )
+// Rótulo curto + unidade fixa no campo v2 (FR-023). A mensagem de erro usa o rótulo completo.
+const FIELD_UI: Record<FieldName, { label: string; unit: string }> = {
+  weight_kg: { label: 'Peso', unit: 'kg' },
+  body_fat_pct: { label: 'Gordura', unit: '%' },
+  waist_cm: { label: 'Cintura', unit: 'cm' },
+  hip_cm: { label: 'Quadril', unit: 'cm' },
+  arm_cm: { label: 'Braço', unit: 'cm' },
+  leg_cm: { label: 'Coxa', unit: 'cm' },
+  squat_kg: { label: 'Agachamento', unit: 'kg' },
+  bench_kg: { label: 'Supino', unit: 'kg' },
+  deadlift_kg: { label: 'Terra', unit: 'kg' },
 }
 
-function SectionHeader({ label, open, onToggle }: { label: string; open: boolean; onToggle: () => void }) {
-  return (
-    <button type="button" onClick={onToggle} style={{
-      width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      background: 'none', border: 'none', padding: '12px 0 8px', cursor: 'pointer',
-      fontSize: 13, fontWeight: 600, color: 'var(--text-dim)', letterSpacing: '0.05em',
-      minHeight: 44,
-    }}>
-      {label}
-      <span style={{ fontSize: 18, color: 'var(--text-faint)' }}>{open ? '−' : '+'}</span>
-    </button>
-  )
-}
+const BODY: FieldName[] = ['weight_kg', 'body_fat_pct', 'waist_cm', 'hip_cm', 'arm_cm', 'leg_cm']
+const PERF: FieldName[] = ['squat_kg', 'bench_kg', 'deadlift_kg']
+
+const grid = { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 } as const
 
 function currentMonthLabel(): string {
   return new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
@@ -83,7 +58,7 @@ export function CheckinForm() {
   const router = useRouter()
   const { current, saving, save } = useCheckin()
 
-  const toStr = (v?: number | null) => v != null ? String(v) : ''
+  const toStr = (v?: number | null) => (v != null ? String(v).replace('.', ',') : '')
 
   const [fields, setFields] = useState<Record<FieldName, string>>({
     weight_kg: toStr(current?.weight_kg),
@@ -97,25 +72,26 @@ export function CheckinForm() {
     deadlift_kg: toStr(current?.deadlift_kg),
   })
   const [notes, setNotes] = useState(current?.notes ?? '')
-  const [showBody, setShowBody] = useState(true)
-  const [showPerf, setShowPerf] = useState(true)
+  // Erro de um campo (limites) aparece no próprio campo; os demais, num aviso.
+  const [fieldError, setFieldError] = useState<{ name: FieldName; message: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   function update(name: FieldName, value: string) {
     setFields(f => ({ ...f, [name]: value }))
   }
 
+  // Aceita vírgula decimal (teclado pt-BR): "82,5" → 82.5.
   function toNum(v: string): number | undefined {
-    const n = parseFloat(v)
+    const n = parseFloat(v.replace(',', '.'))
     return isNaN(n) ? undefined : n
   }
 
-  function validate(input: Partial<Record<FieldName, number>>): string | null {
+  function validate(input: Partial<Record<FieldName, number>>): FieldName | null {
     for (const name of Object.keys(FIELD_BOUNDS) as FieldName[]) {
       const value = input[name]
       if (value === undefined) continue
       const { min, max } = FIELD_BOUNDS[name]
-      if (value < min || value > max) return boundsMessage(name)
+      if (value < min || value > max) return name
     }
     return null
   }
@@ -123,6 +99,7 @@ export function CheckinForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setFieldError(null)
 
     const input: Omit<CheckinInput, 'month'> = {
       weight_kg: toNum(fields.weight_kg),
@@ -137,9 +114,9 @@ export function CheckinForm() {
       notes: notes.trim() || undefined,
     }
 
-    const validationError = validate(input)
-    if (validationError) {
-      setError(validationError)
+    const invalid = validate(input)
+    if (invalid) {
+      setFieldError({ name: invalid, message: boundsMessage(invalid) })
       return
     }
 
@@ -150,7 +127,7 @@ export function CheckinForm() {
       if (err instanceof ApiError && err.details?.length) {
         const fieldName = err.details[0].path[0]
         if (typeof fieldName === 'string' && fieldName in FIELD_BOUNDS) {
-          setError(boundsMessage(fieldName as FieldName))
+          setFieldError({ name: fieldName as FieldName, message: boundsMessage(fieldName as FieldName) })
           return
         }
       }
@@ -158,68 +135,65 @@ export function CheckinForm() {
     }
   }
 
+  const renderField = (name: FieldName) => (
+    <Field
+      key={name}
+      label={FIELD_UI[name].label}
+      unit={FIELD_UI[name].unit}
+      value={fields[name]}
+      onChange={v => update(name, v)}
+      error={fieldError?.name === name ? fieldError.message : null}
+    />
+  )
+
   return (
-    <form onSubmit={handleSubmit} noValidate style={{ padding: '0 16px 16px' }}>
-      <SectionHeader label="COMPOSIÇÃO CORPORAL" open={showBody} onToggle={() => setShowBody(v => !v)} />
-      {showBody && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 8 }}>
-          <NumericField name="weight_kg" value={fields.weight_kg} onChange={update} />
-          <NumericField name="body_fat_pct" value={fields.body_fat_pct} onChange={update} />
-          <NumericField name="waist_cm" value={fields.waist_cm} onChange={update} />
-          <NumericField name="hip_cm" value={fields.hip_cm} onChange={update} />
-          <NumericField name="arm_cm" value={fields.arm_cm} onChange={update} />
-          <NumericField name="leg_cm" value={fields.leg_cm} onChange={update} />
-        </div>
-      )}
+    <form onSubmit={handleSubmit} noValidate>
+      <section style={{ marginTop: 24 }}>
+        <SectionHeader title="Composição corporal" />
+        <div style={grid}>{BODY.map(renderField)}</div>
+      </section>
 
-      <SectionHeader label="PERFORMANCE" open={showPerf} onToggle={() => setShowPerf(v => !v)} />
-      {showPerf && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 8 }}>
-          <NumericField name="squat_kg" value={fields.squat_kg} onChange={update} />
-          <NumericField name="bench_kg" value={fields.bench_kg} onChange={update} />
-          <NumericField name="deadlift_kg" value={fields.deadlift_kg} onChange={update} />
-        </div>
-      )}
+      <section style={{ marginTop: 28 }}>
+        <SectionHeader title="Performance" />
+        <div style={grid}>{PERF.map(renderField)}</div>
+      </section>
 
-      <div style={{ marginBottom: 16 }}>
-        <label style={{ display: 'block', fontSize: 12, color: 'var(--text-faint)', marginBottom: 4 }}>
-          OBSERVAÇÕES (opcional)
-        </label>
-        <textarea
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          rows={3}
-          style={{
-            width: '100%',
-            background: 'var(--surface-2)',
-            border: '1px solid var(--hairline)',
-            borderRadius: 8,
-            padding: '10px 12px',
-            fontSize: 14,
-            color: 'var(--text)',
-            resize: 'vertical',
-          }}
-        />
+      <div className="hx-field" style={{ marginTop: 28 }}>
+        <label htmlFor="checkin-notes">Observações (opcional)</label>
+        <div className="hx-input" style={{ height: 'auto', padding: '10px 14px' }}>
+          <textarea
+            id="checkin-notes"
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            rows={3}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              background: 'transparent',
+              border: 0,
+              outline: 'none',
+              color: 'var(--text)',
+              font: 'inherit',
+              fontSize: 15,
+              resize: 'vertical',
+            }}
+          />
+        </div>
       </div>
 
-      {error && <p style={{ color: 'var(--danger)', fontSize: 13, marginBottom: 12 }}>{error}</p>}
+      {error && (
+        <div style={{ marginTop: 16 }}>
+          <Banner kind="err" title="Não foi possível salvar">
+            {error}
+          </Banner>
+        </div>
+      )}
 
-      <button type="submit" disabled={saving} style={{
-        width: '100%',
-        background: 'var(--accent)',
-        color: 'var(--accent-ink)',
-        border: 'none',
-        borderRadius: 'var(--r-pill)',
-        padding: '14px 20px',
-        fontSize: 15,
-        fontWeight: 600,
-        fontFamily: 'var(--font-space-grotesk)',
-        cursor: saving ? 'not-allowed' : 'pointer',
-        opacity: saving ? 0.7 : 1,
-        minHeight: 44,
-      }}>
-        {saving ? 'Salvando…' : `Salvar check-in de ${currentMonthLabel()}`}
-      </button>
+      <div style={{ marginTop: 24 }}>
+        <Button type="submit" kind="primary" size="lg" block loading={saving}>
+          {`Salvar check-in de ${currentMonthLabel()}`}
+        </Button>
+      </div>
     </form>
   )
 }

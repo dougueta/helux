@@ -1,176 +1,160 @@
 'use client'
 
+import Link from 'next/link'
 import { RecoveryCard } from '@/components/recovery/RecoveryCard'
-import { StatGrid, type StatGridItem } from '@/components/progress/StatGrid'
-import { BarChart, type BarChartPoint } from '@/components/progress/BarChart'
-import { PersonalRecordRow } from '@/components/progress/PersonalRecordRow'
-import { SessionHistoryRow } from '@/components/progress/SessionHistoryRow'
-import { Icon } from '@/components/ui/icons'
-import { Label } from '@/components/ui/Label'
-import { Skeleton as SkeletonBlock } from '@/components/ui/Skeleton'
-import { pageContainer } from '@/components/ui/layout'
+import { Bars } from '@/components/ui/Bars'
+import { HistoryRow } from '@/components/ui/HistoryRow'
+import { PRRow } from '@/components/ui/PRRow'
+import { SectionHeader } from '@/components/ui/SectionHeader'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { useRecovery } from '@/hooks/useRecovery'
 import { useWorkoutAnalytics } from '@/hooks/useWorkoutAnalytics'
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory'
-import { getWeekLabel, computeWeekDelta } from '@/lib/weekly-volume'
+import { formatNumber } from '@/lib/format'
+import { formatRelativeWhen } from '@/lib/format-relative-date'
+import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
+import { computeWeekDelta } from '@/lib/weekly-volume'
 
-// ---------------------------------------------------------------------------
-// Skeleton
-// ---------------------------------------------------------------------------
-
-function Skeleton({ h = 96 }: { h?: number }) {
-  return <SkeletonBlock height={h} style={{ border: '1px solid var(--hairline)' }} />
+/** "2026-09-16" → "16/9" (rótulo da semana nas barras). */
+function weekLabel(weekStart: string) {
+  const [, m, d] = weekStart.slice(0, 10).split('-').map(Number)
+  return `${d}/${m}`
 }
 
-function SectionHead({ title }: { title: string }) {
-  return (
-    <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.01em', margin: '20px 0 12px' }}>
-      {title}
-    </h2>
-  )
-}
+const HISTORY_PREVIEW = 3
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
+/** Progresso ("Sua evolução", FR-021, handoff 5.5), com o Histórico junto (research V9). */
 export default function RecoveryPage() {
   const { data: recovery, loading: recoveryLoading, isStale } = useRecovery()
   const { data: analytics, loading: analyticsLoading } = useWorkoutAnalytics()
-  const { sessions, loading: historyLoading, error: historyError } = useWorkoutHistory()
+  const { sessions, total: historyTotal, loading: historyLoading, error: historyError } = useWorkoutHistory(HISTORY_PREVIEW)
 
-  const stats: StatGridItem[] = analytics
-    ? [
-        { value: analytics.thisWeekSessions, label: 'esta semana', sub: 'treinos' },
-        { value: analytics.totalSessions, label: 'no total', sub: 'treinos' },
-        { value: analytics.currentStreakWeeks, label: 'sequência', sub: 'semanas ativas' },
-        { value: recovery?.hrv ?? '—', label: 'HRV', sub: isStale ? 'dados antigos' : 'recuperação' },
-      ]
-    : []
-
-  const volumePoints: BarChartPoint[] = analytics
-    ? analytics.weeklyVolume.map(w => ({ label: getWeekLabel(w.weekStart), value: w.tonnage }))
-    : []
-
-  const lastWeekTonnage =
-    analytics && analytics.weeklyVolume.length > 0
-      ? analytics.weeklyVolume[analytics.weeklyVolume.length - 1].tonnage
-      : 0
-
-  const weekDelta = analytics ? computeWeekDelta(analytics.weeklyVolume) : null
+  const weeks = analytics?.weeklyVolume ?? []
+  const lastWeekT = weeks.length > 0 ? weeks[weeks.length - 1].tonnage / 1000 : 0
+  const weekDelta = analytics ? computeWeekDelta(weeks) : null
+  const hasWorkouts = !!analytics && analytics.totalSessions > 0
 
   return (
-    <div style={{ ...pageContainer, paddingTop: 48, paddingBottom: 96 }}>
-      <header style={{ marginBottom: 20 }}>
-        <Label>Sua evolução</Label>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em', margin: 0 }}>
-          Progresso
-        </h1>
-      </header>
+    <div className="hx-page" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 120 }}>
+      <h1 className="t-display" style={{ marginTop: 20 }}>
+        Sua evolução
+      </h1>
 
-      {/*
-        Recovery / daily health metrics — kept from the pre-consolidation page.
-        The design handoff's ScreenProgress mock omits this section entirely
-        (its mock data is workout-only), but HRV/resting-HR/calories/sleep/
-        cardio-recovery are real, live functionality that must not be dropped.
-        Preserved here as its own section above the design's 4-part structure.
-      */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ marginBottom: 8 }}>
-          <Label>Saúde diária</Label>
-        </div>
+      <section style={{ marginTop: 24 }}>
+        <SectionHeader title="Recovery de hoje" aside="Apple Watch" />
         {recoveryLoading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} />
+          <div aria-busy="true" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 8 }}>
+            {[0, 1, 2, 3].map(i => (
+              <Skeleton key={i} h={82} r="var(--r-md)" />
             ))}
           </div>
         ) : (
           <RecoveryCard data={recovery} isStale={isStale} />
         )}
-      </div>
+      </section>
 
       {analyticsLoading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} h={72} />
-            ))}
-          </div>
-          <Skeleton h={160} />
-          <Skeleton h={220} />
+        <div aria-busy="true" style={{ marginTop: 28 }}>
+          <Skeleton w={140} h={18} />
+          <Skeleton w={120} h={44} style={{ marginTop: 16 }} />
+          <Skeleton h={120} style={{ marginTop: 16 }} />
         </div>
-      ) : !analytics || analytics.totalSessions === 0 ? (
-        <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: '24px 20px', textAlign: 'center' }}>
-          <p style={{ fontSize: 14, color: 'var(--text-dim)', lineHeight: 1.6, margin: 0 }}>
-            Nenhum treino registrado ainda.
-            <br />
-            Conclua seu primeiro treino para ver a evolução.
+      ) : !hasWorkouts ? (
+        <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
+          <h2 className="t-section">Nenhum treino registrado ainda</h2>
+          <p className="t-secondary" style={{ marginTop: 6 }}>
+            Conclua seu primeiro treino para ver volume, recordes e histórico aqui.
           </p>
-        </div>
+          <div style={{ marginTop: 16 }}>
+            <Link href="/" className="hx-btn hx-btn--secondary">
+              Ir para o treino de hoje
+            </Link>
+          </div>
+        </section>
       ) : (
         <>
-          <StatGrid stats={stats} />
-
-          <div style={{ background: 'var(--surface-1)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-card)', padding: 16, marginBottom: 12 }}>
-            <Label>Volume semanal</Label>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '6px 0 16px' }}>
-              <span style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.03em', fontFamily: 'var(--font-jetbrains-mono)', color: 'var(--text)' }}>
-                {lastWeekTonnage}kg
+          <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
+            <SectionHeader title="Volume semanal" aside="toneladas" />
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+              <span className="n-xl">
+                {formatNumber(lastWeekT, { decimals: 1 })}
+                <span className="u" style={{ fontSize: 16 }}>
+                  t
+                </span>
               </span>
               {weekDelta !== null && (
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 3,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: weekDelta >= 0 ? 'var(--accent)' : 'var(--danger)',
-                  }}
-                >
-                  <Icon
-                    name="arrowUp"
-                    size={13}
-                    stroke={weekDelta >= 0 ? 'var(--accent)' : 'var(--danger)'}
-                    style={weekDelta < 0 ? { transform: 'rotate(180deg)' } : undefined}
-                  />
-                  {weekDelta >= 0 ? '+' : ''}
-                  {weekDelta}%
-                </span>
+                <>
+                  <span className="n-sm" style={{ color: 'var(--text)' }}>
+                    {weekDelta > 0 ? '+' : weekDelta < 0 ? '−' : ''}
+                    {Math.abs(weekDelta)}%
+                  </span>
+                  <span className="t-caption" style={{ whiteSpace: 'nowrap' }}>
+                    vs. semana anterior
+                  </span>
+                </>
               )}
             </div>
-            <BarChart data={volumePoints} height={120} />
-          </div>
+            <Bars data={weeks.map(w => ({ label: weekLabel(w.weekStart), value: w.tonnage / 1000 }))} />
+          </section>
 
-          <SectionHead title="Recordes pessoais" />
-          {analytics.personalRecords.length === 0 ? (
-            <p style={{ fontSize: 13, color: 'var(--text-faint)' }}>Nenhum recorde ainda.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
-              {analytics.personalRecords.map(pr => (
-                <PersonalRecordRow key={pr.exerciseName} record={pr} />
-              ))}
-            </div>
-          )}
+          <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
+            <SectionHeader title="Recordes pessoais" />
+            {analytics.personalRecords.length === 0 ? (
+              <p className="t-secondary">Seus recordes aparecem aqui conforme você registra treinos.</p>
+            ) : (
+              analytics.personalRecords.map(pr => (
+                <PRRow
+                  key={pr.exerciseName}
+                  lift={pr.exerciseName}
+                  kg={pr.maxWeight}
+                  reps={pr.reps}
+                  when={formatRelativeWhen(pr.achievedAt).replace(/^./, c => c.toUpperCase())}
+                />
+              ))
+            )}
+          </section>
 
-          <SectionHead title="Histórico" />
-          {historyError && <p style={{ color: 'var(--danger)', fontSize: 13 }}>{historyError}</p>}
-          {historyLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} h={64} />
-              ))}
-            </div>
-          ) : sessions.length === 0 ? (
-            <p style={{ fontSize: 13, color: 'var(--text-faint)' }}>Nenhum treino no histórico ainda.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {sessions.map(session => (
-                <SessionHistoryRow key={session.id} session={session} />
-              ))}
-            </div>
-          )}
+          <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
+            <SectionHeader
+              title="Histórico"
+              action={
+                historyTotal > 0 ? (
+                  <Link href="/history" className="t-secondary" style={{ color: 'var(--text)' }}>
+                    Ver todos
+                  </Link>
+                ) : undefined
+              }
+            />
+            {historyError && (
+              <p role="alert" className="t-secondary" style={{ color: 'var(--danger)' }}>
+                {historyError}
+              </p>
+            )}
+            {historyLoading ? (
+              <div aria-busy="true">
+                {[0, 1, 2].map(i => (
+                  <Skeleton key={i} h={52} style={{ marginTop: 12 }} />
+                ))}
+              </div>
+            ) : sessions.length === 0 ? (
+              <p className="t-secondary">Nenhum treino no histórico ainda.</p>
+            ) : (
+              sessions.slice(0, HISTORY_PREVIEW).map(session => {
+                const s = summarizeSession(session)
+                return (
+                  <HistoryRow
+                    key={session.id}
+                    href={`/history/${session.id}`}
+                    name={s.name}
+                    date={sessionDateLabel(session.date)}
+                    sets={s.sets}
+                    durationMin={s.durationMin}
+                    volumeT={s.volumeT}
+                  />
+                )
+              })
+            )}
+          </section>
         </>
       )}
     </div>
