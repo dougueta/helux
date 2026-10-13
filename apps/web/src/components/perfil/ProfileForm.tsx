@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from 'react'
 import type { UserTrainingProfile, UserTrainingProfileInput } from '@helux/types'
 import { Button } from '@/components/ui/Button'
 import { Segmented } from '@/components/ui/Segmented'
+import { BodyDataFields, bodyDataFrom, bodyDataToInput } from './BodyDataFields'
 
 interface ProfileFormProps {
   initial: UserTrainingProfile | null
@@ -69,6 +70,7 @@ export function ProfileForm({ initial, saving, onSave }: ProfileFormProps) {
   const [trainingTime, setTrainingTime] = useState(initial?.trainingTime ?? '')
   const [timeOff, setTimeOff] = useState(initial?.timeOff ?? '')
   const [currentInjury, setCurrentInjury] = useState(initial?.currentInjury ?? '')
+  const [body, setBody] = useState(() => bodyDataFrom(initial))
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -78,6 +80,7 @@ export function ProfileForm({ initial, saving, onSave }: ProfileFormProps) {
       timeOff,
       currentInjury,
       ...(level ? { level } : {}),
+      ...bodyDataToInput(body),
     }
     await onSave(input)
   }
@@ -103,6 +106,12 @@ export function ProfileForm({ initial, saving, onSave }: ProfileFormProps) {
         onChange={setCurrentInjury}
         multiline
       />
+
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2 className="t-section">Dados corporais</h2>
+        <p className="t-secondary">Usados para calcular as metas de nutrição e o % de gordura pela fita métrica.</p>
+        <BodyDataFields value={body} onChange={setBody} />
+      </section>
 
       <Button type="submit" kind="primary" size="lg" block loading={saving} disabled={saving}>
         {saving ? 'Salvando…' : 'Salvar perfil'}

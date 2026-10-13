@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCheckin } from '@/hooks/useCheckin'
 import { Banner } from '@/components/ui/Banner'
@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/Button'
 import { Field } from '@/components/ui/Field'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { ApiError } from '@/services/api-client'
-import type { CheckinInput } from '@helux/types'
+import type { CheckinInput, UserTrainingProfile } from '@helux/types'
+import { navyBodyFat } from '@helux/nutrition'
+import { getProfile } from '@/services/profile.service'
 
 type FieldName = keyof Omit<CheckinInput, 'month' | 'notes'>
 
@@ -19,6 +21,7 @@ const FIELD_BOUNDS: Record<FieldName, { min: number; max: number; label: string 
   body_fat_pct: { min: 1, max: 70, label: 'Gordura (%)' },
   waist_cm: { min: 30, max: 300, label: 'Cintura (cm)' },
   hip_cm: { min: 30, max: 300, label: 'Quadril (cm)' },
+  neck_cm: { min: 20, max: 70, label: 'Pescoço (cm)' },
   arm_cm: { min: 10, max: 100, label: 'Braço (cm)' },
   leg_cm: { min: 10, max: 150, label: 'Coxa (cm)' },
   squat_kg: { min: 0, max: 1000, label: 'Agachamento (kg)' },
@@ -37,6 +40,7 @@ const FIELD_UI: Record<FieldName, { label: string; unit: string }> = {
   body_fat_pct: { label: 'Gordura', unit: '%' },
   waist_cm: { label: 'Cintura', unit: 'cm' },
   hip_cm: { label: 'Quadril', unit: 'cm' },
+  neck_cm: { label: 'Pescoço', unit: 'cm' },
   arm_cm: { label: 'Braço', unit: 'cm' },
   leg_cm: { label: 'Coxa', unit: 'cm' },
   squat_kg: { label: 'Agachamento', unit: 'kg' },
@@ -44,7 +48,7 @@ const FIELD_UI: Record<FieldName, { label: string; unit: string }> = {
   deadlift_kg: { label: 'Terra', unit: 'kg' },
 }
 
-const BODY: FieldName[] = ['weight_kg', 'body_fat_pct', 'waist_cm', 'hip_cm', 'arm_cm', 'leg_cm']
+const BODY: FieldName[] = ['weight_kg', 'body_fat_pct', 'waist_cm', 'neck_cm', 'hip_cm', 'arm_cm', 'leg_cm']
 const PERF: FieldName[] = ['squat_kg', 'bench_kg', 'deadlift_kg']
 
 const grid = { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 } as const
@@ -65,6 +69,7 @@ export function CheckinForm() {
     body_fat_pct: toStr(current?.body_fat_pct),
     waist_cm: toStr(current?.waist_cm),
     hip_cm: toStr(current?.hip_cm),
+    neck_cm: toStr(current?.neck_cm),
     arm_cm: toStr(current?.arm_cm),
     leg_cm: toStr(current?.leg_cm),
     squat_kg: toStr(current?.squat_kg),
@@ -75,6 +80,11 @@ export function CheckinForm() {
   // Erro de um campo (limites) aparece no próprio campo; os demais, num aviso.
   const [fieldError, setFieldError] = useState<{ name: FieldName; message: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Spec 018: altura e sexo do perfil para estimar o % de gordura pela Marinha.
+  const [profile, setProfile] = useState<UserTrainingProfile | null>(null)
+  useEffect(() => {
+    getProfile().then(setProfile, () => setProfile(null))
+  }, [])
 
   function update(name: FieldName, value: string) {
     setFields(f => ({ ...f, [name]: value }))
@@ -106,6 +116,7 @@ export function CheckinForm() {
       body_fat_pct: toNum(fields.body_fat_pct),
       waist_cm: toNum(fields.waist_cm),
       hip_cm: toNum(fields.hip_cm),
+      neck_cm: toNum(fields.neck_cm),
       arm_cm: toNum(fields.arm_cm),
       leg_cm: toNum(fields.leg_cm),
       squat_kg: toNum(fields.squat_kg),
@@ -146,11 +157,27 @@ export function CheckinForm() {
     />
   )
 
+  const waist = toNum(fields.waist_cm)
+  const neck = toNum(fields.neck_cm)
+  const navy =
+    waist !== undefined && neck !== undefined && profile?.heightCm && profile.sex
+      ? navyBodyFat({ sex: profile.sex, heightCm: profile.heightCm, waistCm: waist, neckCm: neck, hipCm: toNum(fields.hip_cm) })
+      : null
+
   return (
     <form onSubmit={handleSubmit} noValidate>
       <section style={{ marginTop: 24 }}>
         <SectionHeader title="Composição corporal" />
         <div style={grid}>{BODY.map(renderField)}</div>
+        {waist !== undefined && neck !== undefined && (
+          <p className="t-secondary" style={{ marginTop: 12 }}>
+            {navy !== null
+              ? `Gordura estimada pela fita métrica (método da Marinha): ${String(navy).replace('.', ',')}%`
+              : !profile?.heightCm || !profile.sex
+                ? 'Para estimar o % de gordura pela fita métrica, informe altura e sexo no Perfil.'
+                : 'Medidas insuficientes para estimar o % de gordura (mulheres: informe também o quadril).'}
+          </p>
+        )}
       </section>
 
       <section style={{ marginTop: 28 }}>

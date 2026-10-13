@@ -32,6 +32,8 @@ const IC = {
   wave: 'M3 12h3.5l2.5-6 4 12 2.5-6H21',
   bolt: 'M13 3L5 13.5h6L10.5 21 19 10h-6z',
   cloud: 'M7 18.5a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.6A3.8 3.8 0 0 1 17.5 18.5z',
+  // spec 018: aba Nutrição
+  leaf: 'M5 19c0-8.3 5.5-14 14-14 0 8.5-5.7 14-14 14zM5 19l8-8',
 } as const
 
 export const ICONS = {

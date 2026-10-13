@@ -13,9 +13,14 @@ vi.mock('@/services/api-client', async (importOriginal) => {
   return { ...actual, apiFetch: vi.fn() }
 })
 
+// Spec 018: altura e sexo do perfil para o % de gordura pela Marinha.
+const getProfileMock = vi.fn()
+vi.mock('@/services/profile.service', () => ({ getProfile: () => getProfileMock() }))
+
 describe('CheckinForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    getProfileMock.mockResolvedValue(null)
   })
 
   it('mostra erro amigável e não chama a API quando um campo está fora do intervalo permitido', async () => {
@@ -93,5 +98,57 @@ describe('CheckinForm', () => {
 
     expect(bodyFat).toHaveAttribute('aria-invalid', 'true')
     expect(bodyFat).toHaveAccessibleDescription(/gordura.*entre 1 e 70/i)
+  })
+})
+
+describe('CheckinForm — pescoço e % de gordura pela Marinha (spec 018)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    getProfileMock.mockResolvedValue({ heightCm: 180, sex: 'masculino', updatedAt: 'x' })
+  })
+
+  it('mostra o % de gordura estimado quando cintura e pescoço estão preenchidos', async () => {
+    const { apiFetch } = await import('@/services/api-client')
+    vi.mocked(apiFetch).mockResolvedValueOnce({ checkins: [] })
+    const user = userEvent.setup()
+    render(<CheckinForm />)
+
+    await user.type(await screen.findByLabelText('Cintura'), '90')
+    expect(screen.queryByText(/18,4%/)).not.toBeInTheDocument()
+    await user.type(screen.getByLabelText('Pescoço'), '40')
+
+    expect(await screen.findByText(/18,4%/)).toBeInTheDocument()
+    expect(screen.getByText(/fita métrica/i)).toBeInTheDocument()
+  })
+
+  it('sem altura/sexo no perfil, avisa que falta completar o perfil', async () => {
+    getProfileMock.mockResolvedValue(null)
+    const { apiFetch } = await import('@/services/api-client')
+    vi.mocked(apiFetch).mockResolvedValueOnce({ checkins: [] })
+    const user = userEvent.setup()
+    render(<CheckinForm />)
+
+    await user.type(await screen.findByLabelText('Cintura'), '90')
+    await user.type(screen.getByLabelText('Pescoço'), '40')
+
+    expect(await screen.findByText(/altura e sexo no perfil/i)).toBeInTheDocument()
+  })
+
+  it('envia neck_cm e valida o intervalo', async () => {
+    const { apiFetch } = await import('@/services/api-client')
+    vi.mocked(apiFetch).mockResolvedValueOnce({ checkins: [] })
+    vi.mocked(apiFetch).mockResolvedValueOnce({ id: 'c-1', month: '2026-10-01', neck_cm: 40 })
+    const user = userEvent.setup()
+    render(<CheckinForm />)
+
+    const neck = await screen.findByLabelText('Pescoço')
+    await user.type(neck, '15')
+    await user.click(screen.getByRole('button', { name: /salvar check-in/i }))
+    expect(await screen.findByText(/pescoço.*entre 20 e 70/i)).toBeInTheDocument()
+
+    await user.clear(neck)
+    await user.type(neck, '40')
+    await user.click(screen.getByRole('button', { name: /salvar check-in/i }))
+    expect(apiFetch).toHaveBeenCalledWith('/api/checkins', expect.objectContaining({ body: expect.stringContaining('"neck_cm":40') }))
   })
 })
