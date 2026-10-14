@@ -34,6 +34,7 @@ export function fakeSupabase(tables: Record<string, Row[]> = {}): FakeSupabase {
     let op: FakeCall['op'] | null = null
     let values: unknown = null
     let wantSingle = false
+    let onConflict: string[] = []
 
     const rows = () => {
       let out = (db[table] ?? []).filter((r) => filters.every(([c, v]) => r[c] === v) && gtes.every(([c, v]) => String(r[c]) >= String(v)))
@@ -52,6 +53,17 @@ export function fakeSupabase(tables: Record<string, Row[]> = {}): FakeSupabase {
       }
       calls.push({ table, op, values, filters: [...filters] })
       db[table] ??= []
+      if (op === 'upsert' && onConflict.length > 0) {
+        const list = (Array.isArray(values) ? values : [values]) as Row[]
+        const saved = list.map((v) => {
+          const hit = db[table].find((r) => onConflict.every((c) => r[c] === v[c]))
+          if (hit) return Object.assign(hit, v)
+          const row = { id: `${table}-${++seq}`, created_at: new Date(2026, 9, 13, 12, seq).toISOString(), ...v }
+          db[table].push(row)
+          return row
+        })
+        return { data: wantSingle ? saved[0] : saved, error: null }
+      }
       if (op === 'insert' || op === 'upsert') {
         const list = (Array.isArray(values) ? values : [values]) as Row[]
         const saved = list.map((v) => ({ id: v.id ?? `${table}-${++seq}`, created_at: v.created_at ?? new Date(2026, 9, 13, 12, seq).toISOString(), ...v }))
@@ -74,7 +86,12 @@ export function fakeSupabase(tables: Record<string, Row[]> = {}): FakeSupabase {
       order: vi.fn((col: string, opts?: { ascending?: boolean }) => ((order = { col, asc: opts?.ascending ?? true }), b)),
       limit: vi.fn((n: number) => ((limit = n), b)),
       insert: vi.fn((v: unknown) => ((op = 'insert'), (values = v), b)),
-      upsert: vi.fn((v: unknown) => ((op = 'upsert'), (values = v), b)),
+      upsert: vi.fn((v: unknown, opts?: { onConflict?: string }) => {
+        op = 'upsert'
+        values = v
+        onConflict = opts?.onConflict ? opts.onConflict.split(',').map((c) => c.trim()) : []
+        return b
+      }),
       update: vi.fn((v: unknown) => ((op = 'update'), (values = v), b)),
       delete: vi.fn(() => ((op = 'delete'), b)),
       single: vi.fn(() => ((wantSingle = true), Promise.resolve(run()))),
