@@ -16,6 +16,11 @@
 
 - Q: Relação com 018 US2 e com o agente integrador da 019? → A: A 022 absorve ambos — o Agente de Nutrição Genética substitui a US2 da 018 e a colaboração entre especialistas substitui o agente integrador da 019; 018/019 ficam com dados e telas.
 - Q: Como o usuário acessa os agentes? → A: Ambos — chat "Equipe Helux" com roteamento automático + acesso direto a cada especialista no contexto.
+- Q: Preferências alteradas no meio de um mesociclo afetam as sessões pendentes? → A: Mudanças em restrições rígidas (equipamentos, exercícios a evitar, duração máxima) geram proposta de adaptação das sessões pendentes (antes → depois, com confirmação); preferências suaves (foco, estilo, favoritos, instruções livres) só valem a partir do próximo mesociclo.
+- Q: O usuário pode editar o plano gerado diretamente, sem o agente? → A: Sim — troca de exercício por alternativa compatível e ajuste de séries/reps/carga nas sessões pendentes; o app avisa se a edição viola restrição de segurança; o agente usa as edições como sinal de preferência nos próximos planos.
+- Q: Um agente enxerga as conversas que o usuário teve com outros especialistas? → A: Não o histórico completo; agentes compartilham fatos relevantes extraídos das conversas (sintomas, preferências declaradas, decisões), registrados no Perfil Integrado como fonte "Relatos nas conversas", visível, editável e removível pelo usuário.
+- Q: Deve haver limite/controle de custo de IA? → A: Teto de gasto mensal configurável; aviso ao atingir 80%; em 100%, chats e gerações/ajustes por IA pausam até o próximo mês ou até o teto ser aumentado; treino vigente e edições manuais continuam funcionando.
+- Q: Qual o tempo de resposta esperado nas conversas? → A: Resposta começa a aparecer em até 3 s e é exibida progressivamente; resposta completa em até 30 s.
 
 ---
 
@@ -50,12 +55,14 @@ O usuário quer que o treino gerado reflita **tudo** o que o Helux sabe sobre el
 3. **Given** uma instrução livre do usuário que conflita com outra informação (ex.: "quero treinar pesado de perna" com uma restrição ativa de joelho), **When** o plano é gerado, **Then** o agente respeita a restrição de segurança, explica o conflito e propõe a alternativa mais próxima do pedido.
 4. **Given** que o usuário não tem algum dado (sem exames, sem genética, sem preferências), **When** um plano é gerado, **Then** o agente gera normalmente com os dados disponíveis e indica na justificativa quais fontes não foram usadas por ausência.
 5. **Given** um mesociclo em andamento, **When** o usuário pede um ajuste em linguagem natural (ex.: "hoje só tenho 30 minutos e estou num hotel com halteres leves"), **Then** o agente propõe a sessão do dia adaptada, mostra o que muda em relação ao planejado e só aplica após confirmação do usuário.
+6. **Given** uma sessão pendente, **When** o usuário troca um exercício por uma alternativa sugerida ou altera séries/reps/carga, **Then** a sessão é salva com a edição; se a edição violar uma restrição de segurança ativa, o app avisa o motivo antes de salvar.
+7. **Given** que o usuário trocou o mesmo exercício em várias sessões, **When** o próximo mesociclo é gerado, **Then** esse exercício deixa de ser priorizado e a justificativa menciona as edições anteriores.
 
 ---
 
 ### User Story 2 - Ver e controlar o que os agentes sabem sobre mim (Priority: P1)
 
-O usuário acessa uma tela de **Perfil Integrado** onde vê, organizado por fonte (perfil declarado, preferências de treino, histórico/cargas, cansaço/recuperação, check-ins corporais, genética, exames, nutrição, restrições ativas), o que os agentes consideram ao responder. Ele pode editar as preferências, ver a data da última atualização de cada fonte e desligar o uso de uma fonte pelos agentes (ex.: não usar exames).
+O usuário acessa uma tela de **Perfil Integrado** onde vê, organizado por fonte (perfil declarado, preferências de treino, histórico/cargas, cansaço/recuperação, check-ins corporais, genética, exames, nutrição, relatos nas conversas, restrições ativas), o que os agentes consideram ao responder. Ele pode editar as preferências, ver a data da última atualização de cada fonte e desligar o uso de uma fonte pelos agentes (ex.: não usar exames).
 
 **Why this priority**: "100% personalizável" exige que o usuário saiba e controle o que alimenta as decisões; também é a base comum que os três agentes compartilham.
 
@@ -65,7 +72,8 @@ O usuário acessa uma tela de **Perfil Integrado** onde vê, organizado por font
 
 1. **Given** dados existentes em várias fontes, **When** o usuário abre o Perfil Integrado, **Then** vê um resumo por fonte com data da última atualização e indicação de fontes vazias.
 2. **Given** o usuário desliga uma fonte, **When** qualquer agente responde ou gera um plano, **Then** essa fonte não é usada e a resposta indica que ela está desativada.
-3. **Given** o usuário edita uma preferência de treino, **When** salva, **Then** a mudança vale para o próximo plano/ajuste gerado, sem alterar retroativamente sessões já concluídas.
+3. **Given** um mesociclo em andamento, **When** o usuário altera uma restrição rígida (ex.: passa a ter só halteres), **Then** o app propõe a adaptação das sessões pendentes mostrando antes → depois e só aplica após confirmação; sessões concluídas não mudam.
+4. **Given** um mesociclo em andamento, **When** o usuário altera uma preferência suave (ex.: novo grupo prioritário), **Then** o mesociclo vigente não muda e a preferência é aplicada no próximo mesociclo gerado, o que é informado ao usuário.
 
 ---
 
@@ -113,8 +121,9 @@ O usuário quer que os agentes se comportem como uma equipe: o que um especialis
 **Acceptance Scenarios**:
 
 1. **Given** uma restrição/recomendação compartilhada ativa, **When** qualquer agente responde algo relacionado, **Then** a resposta é coerente com ela e a menciona quando relevante.
-2. **Given** uma pergunta fora da especialidade do agente consultado, **When** o usuário pergunta, **Then** o agente sinaliza qual especialista é o mais indicado e oferece continuar com ele, sem inventar orientação fora do seu escopo.
-3. **Given** duas recomendações compartilhadas conflitantes, **When** o conflito é detectado, **Then** o usuário é avisado e a recomendação de segurança (medicina esportiva) prevalece até que ele decida.
+2. **Given** que o usuário relatou ao Agente de Medicina Esportiva uma dor no ombro, **When** ele conversa depois com o Agente de Treino ou de Nutrição, **Then** esse agente conhece o relato (registrado em "Relatos nas conversas") sem ter acesso à conversa original; se o usuário remover o relato, nenhum agente o considera mais.
+3. **Given** uma pergunta fora da especialidade do agente consultado, **When** o usuário pergunta, **Then** o agente sinaliza qual especialista é o mais indicado e oferece continuar com ele, sem inventar orientação fora do seu escopo.
+4. **Given** duas recomendações compartilhadas conflitantes, **When** o conflito é detectado, **Then** o usuário é avisado e a recomendação de segurança (medicina esportiva) prevalece até que ele decida.
 
 ---
 
@@ -125,6 +134,7 @@ O usuário quer que os agentes se comportem como uma equipe: o que um especialis
 - Preferências impossíveis de cumprir juntas (ex.: 20 min por sessão + volume alto para todos os grupos): o agente informa o conflito e propõe o melhor compromisso, em vez de violar silenciosamente uma restrição.
 - Todos os exercícios de um grupo prioritário estão em "evitar" ou exigem equipamento indisponível: o agente avisa e sugere alternativas.
 - Restrição compartilhada expirada: deixa de valer automaticamente e o usuário é informado na próxima interação relevante.
+- Teto mensal de IA atingido no meio de uma conversa ou geração: a operação em andamento é concluída, as próximas ficam pausadas com mensagem indicando como aumentar o teto; nada do treino vigente é perdido.
 - Falha/indisponibilidade do serviço de IA: o app mantém o treino vigente utilizável e mostra mensagem clara; nenhuma alteração parcial é aplicada.
 - Pergunta claramente de emergência médica: resposta prioriza orientação de buscar atendimento, independentemente do agente consultado.
 - Pedido para ignorar uma restrição de segurança: o agente explica o risco e só desativa a restrição se o usuário a remover explicitamente no Perfil Integrado.
@@ -135,7 +145,7 @@ O usuário quer que os agentes se comportem como uma equipe: o que um especialis
 
 **Perfil Integrado (base compartilhada)**
 
-- **FR-001**: O sistema MUST consolidar, para uso dos agentes, um Perfil Integrado do Usuário contendo: perfil declarado, preferências de treino, histórico de sessões e cargas, mesociclo vigente, sinal de cansaço/recuperação do dia, check-ins corporais, perfil genético, biomarcadores de exames, diretrizes nutricionais e restrições/recomendações compartilhadas ativas.
+- **FR-001**: O sistema MUST consolidar, para uso dos agentes, um Perfil Integrado do Usuário contendo: perfil declarado, preferências de treino, histórico de sessões e cargas, mesociclo vigente, sinal de cansaço/recuperação do dia, check-ins corporais, perfil genético, biomarcadores de exames, diretrizes nutricionais, relatos nas conversas e restrições/recomendações compartilhadas ativas.
 - **FR-002**: O usuário MUST poder visualizar o Perfil Integrado agrupado por fonte, com data da última atualização de cada uma e indicação de fontes vazias.
 - **FR-003**: O usuário MUST poder desativar e reativar o uso de cada fonte pelos agentes; uma fonte desativada MUST NOT ser usada por nenhum agente.
 - **FR-004**: Toda resposta ou plano gerado por um agente MUST indicar quais fontes foram consideradas e quais estavam ausentes ou desativadas.
@@ -147,8 +157,10 @@ O usuário quer que os agentes se comportem como uma equipe: o que um especialis
 - **FR-007**: O Agente de Treino MUST usar todas as fontes ativas do Perfil Integrado na prescrição, incluindo biomarcadores de exames e cansaço do dia.
 - **FR-008**: Cada plano MUST vir acompanhado de justificativa que associe as decisões relevantes aos dados que as motivaram.
 - **FR-009**: O usuário MUST poder pedir ajustes ao treino em linguagem natural; o agente MUST apresentar o que muda em relação ao planejado e só aplicar após confirmação explícita (mesmo princípio da 011).
+- **FR-009a**: O usuário MUST poder editar manualmente as sessões pendentes: trocar um exercício por uma alternativa compatível (mesmo padrão de movimento/grupo e equipamentos disponíveis) e alterar séries, repetições e carga. Edições que violem uma restrição de segurança ativa MUST exibir aviso com o motivo antes de salvar; sessões concluídas MUST NOT ser editáveis por este fluxo.
+- **FR-009b**: O Agente de Treino MUST considerar as edições manuais recorrentes como sinal de preferência ao gerar os próximos planos (ex.: exercício trocado repetidamente tende a não ser prescrito) e citar isso na justificativa.
 - **FR-010**: Quando instruções do usuário conflitarem entre si ou com restrições de segurança, o agente MUST explicar o conflito, priorizar a segurança e propor a alternativa mais próxima do pedido.
-- **FR-011**: Alterações de preferências MUST valer para os próximos planos/ajustes e MUST NOT alterar sessões já concluídas.
+- **FR-011**: Alterações de preferências MUST NOT alterar sessões já concluídas. Alterações em **restrições rígidas** (equipamentos, exercícios a evitar, duração máxima) MUST gerar uma proposta de adaptação das sessões pendentes do mesociclo vigente, exibindo antes → depois e aplicada só após confirmação; se recusada, as sessões pendentes permanecem como estavam. Alterações em **preferências suaves** (grupos prioritários, estilo, favoritos, instruções livres) MUST valer apenas a partir do próximo mesociclo gerado.
 
 **Agente de Medicina Esportiva**
 
@@ -167,13 +179,17 @@ O usuário quer que os agentes se comportem como uma equipe: o que um especialis
 - **FR-018**: Qualquer agente MUST poder propor uma restrição ou recomendação compartilhada (texto, motivo, agente de origem, prazo opcional); ela só passa a valer após aceite do usuário.
 - **FR-019**: Restrições/recomendações compartilhadas aceitas MUST ser consideradas por todos os agentes, visíveis e removíveis pelo usuário no Perfil Integrado, e expirar automaticamente quando tiverem prazo.
 - **FR-020**: Quando uma pergunta pertencer a outra especialidade, o agente MUST indicar o especialista adequado em vez de responder fora do escopo.
+- **FR-020a**: Os agentes MUST registrar fatos relevantes extraídos das conversas (ex.: sintoma relatado, preferência declarada, decisão tomada) como itens da fonte "Relatos nas conversas" do Perfil Integrado, com data e agente de origem; o usuário MUST poder ver, editar e remover cada item. Agentes MUST NOT acessar o histórico completo de conversas com outros especialistas — apenas esses fatos registrados.
 - **FR-021**: Em conflito entre recomendações compartilhadas, a de segurança (medicina esportiva) MUST prevalecer até decisão do usuário, que MUST ser avisado.
 - **FR-022**: Cada agente MUST preservar o histórico da conversa com o usuário e permitir iniciar uma nova conversa.
 - **FR-023**: O usuário MUST poder acessar os agentes de duas formas: (a) um chat "Equipe Helux" que encaminha automaticamente cada pergunta ao especialista adequado, indicando qual especialista respondeu; e (b) acesso direto a cada especialista a partir do contexto correspondente (ex.: Agente de Nutrição na tela de Nutrição, Agente de Treino na tela de Treino).
+- **FR-023a**: As respostas dos agentes nas conversas MUST ser exibidas progressivamente à medida que são produzidas, com indicação de qual especialista está respondendo.
 
 **Robustez**
 
 - **FR-024**: Em falha do serviço de IA, o sistema MUST manter o treino vigente utilizável, informar o usuário com mensagem clara e MUST NOT aplicar alterações parciais.
+- **FR-025**: O usuário MUST poder definir um teto de gasto mensal com IA e ver o consumo acumulado do mês.
+- **FR-026**: Ao atingir 80% do teto, o sistema MUST avisar o usuário; ao atingir 100%, chats, geração de mesociclo e propostas de ajuste por IA MUST ficar pausados até a virada do mês ou até o teto ser aumentado, com mensagem clara. O treino vigente, o registro de treinos e as edições manuais (FR-009a) MUST continuar funcionando.
 
 ### Key Entities
 
@@ -181,7 +197,9 @@ O usuário quer que os agentes se comportem como uma equipe: o que um especialis
 - **Preferências de Treino**: dias, duração máxima, local, equipamentos, exercícios favoritos/a evitar, grupos prioritários, estilo, instruções livres; versionadas por data de alteração.
 - **Agente Especialista**: Treino, Medicina Esportiva ou Nutrição Genética; tem escopo, fontes que utiliza e regras de segurança próprias.
 - **Conversa**: sequência de mensagens entre usuário e um agente, com data e fontes consideradas em cada resposta.
+- **Relato de Conversa**: fato relevante extraído de uma conversa (texto curto, categoria — sintoma, preferência, decisão —, data, agente de origem); compartilhado entre os agentes via Perfil Integrado e editável/removível pelo usuário.
 - **Restrição/Recomendação Compartilhada**: orientação proposta por um agente e aceita pelo usuário; tem texto, tipo (restrição de segurança ou recomendação), motivo, agente de origem, data de início, prazo opcional e status (ativa, expirada, removida).
+- **Edição Manual de Sessão**: alteração feita diretamente pelo usuário em uma sessão pendente (exercício trocado, séries/reps/carga antes → depois, data); serve de sinal de preferência para o Agente de Treino.
 - **Proposta de Ajuste de Treino**: alteração sugerida pelo Agente de Treino com resumo antes/depois, pendente de confirmação.
 
 ## Success Criteria *(mandatory)*
@@ -192,9 +210,11 @@ O usuário quer que os agentes se comportem como uma equipe: o que um especialis
 - **SC-002**: Em 100% dos planos gerados, a justificativa cita pelo menos um dado de cada fonte ativa que influenciou a prescrição e lista as fontes ausentes/desativadas.
 - **SC-003**: O usuário consegue configurar todas as preferências de treino em menos de 3 minutos.
 - **SC-004**: Um ajuste de sessão pedido em linguagem natural é proposto ao usuário em menos de 30 segundos.
+- **SC-004a**: Nas conversas, a resposta começa a aparecer em até 3 segundos e está completa em até 30 segundos em 95% das mensagens.
 - **SC-005**: Em 100% dos cenários de teste com sinais de alerta médico, o Agente de Medicina Esportiva orienta buscar atendimento e não recomenda treinar.
 - **SC-006**: Em 100% das sugestões alimentares do Agente de Nutrição Genética, nenhuma viola restrições genéticas registradas (ex.: lactose).
 - **SC-007**: Uma restrição compartilhada aceita é refletida no próximo plano/resposta de todos os agentes em 100% dos casos de teste.
+- **SC-009**: O gasto mensal com IA nunca ultrapassa o teto definido pelo usuário em mais do que o custo de uma única operação em andamento.
 - **SC-008**: O usuário avalia o treino gerado como "adequado a mim" em pelo menos 4 de cada 5 planos nas primeiras 4 semanas de uso.
 
 ## Assumptions
