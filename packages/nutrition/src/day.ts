@@ -2,6 +2,7 @@ import type {
   DayPlan,
   DayType,
   DietTargets,
+  FoodGroup,
   FoodItem,
   FoodTag,
   Meal,
@@ -271,11 +272,23 @@ export function portionsFor(food: FoodItem, role: Exclude<Role, 'fixed'>, grams:
   return per > 0 ? halfRound(grams / per, maxPortions(role)) : MIN_PORTIONS
 }
 
-/** Macro que define a porção de um item (fixos usam o macro dominante do alimento). */
-export function roleMacro(role: Role, food: FoodItem): keyof DietTargets {
-  if (role !== 'fixed') return ROLE_MACRO[role]
-  const { proteinG, carbsG, fatG } = food.macros
-  return proteinG >= carbsG && proteinG * 4 >= fatG * 9 ? 'proteinG' : carbsG * 4 >= fatG * 9 ? 'carbsG' : 'fatG'
+const GROUP_MACRO: Record<FoodGroup, 'proteinG' | 'carbsG' | 'fatG'> = {
+  proteina: 'proteinG',
+  carboidrato: 'carbsG',
+  gordura: 'fatG',
+  'fruta-vegetal': 'carbsG',
+  bebida: 'carbsG',
+}
+
+/** Macro principal do grupo: é o que a troca rápida preserva (FR-010). */
+export function groupMacro(food: FoodItem): 'proteinG' | 'carbsG' | 'fatG' {
+  return GROUP_MACRO[food.group]
+}
+
+/** Porções de `to` para entregar `grams` do macro principal do grupo (troca rápida). */
+export function swapPortions(to: FoodItem, grams: number): number {
+  const per = to.macros[groupMacro(to)]
+  return per > 0 ? halfRound(grams / per, to.group === 'carboidrato' ? MAX_CARB_PORTIONS : MAX_PORTIONS) : 1
 }
 
 const roundTargets = (t: DietTargets): DietTargets => ({
@@ -458,11 +471,9 @@ export function buildDayPlan({ date, dayType, base, weightKg, flags: rawFlags, g
     const draft = drafts[mealIndex]?.find(d => d.food.id === swap.fromFoodId)
     const to = foodById(swap.toFoodId)
     if (!draft || !to || (flags.intoleranciaLactose && to.tags.includes('contem-lactose'))) continue
-    const macro = roleMacro(draft.role, draft.food)
-    const grams = scaledItem(draft.food, draft.portions).macros[macro]
-    const per = to.macros[macro]
+    const grams = scaledItem(draft.food, draft.portions).macros[groupMacro(draft.food)]
     draft.food = to
-    draft.portions = per > 0 ? halfRound(grams / per, maxPortions(draft.role)) : 1
+    draft.portions = swapPortions(to, grams)
   }
 
   balanceWithLeanerProtein(drafts, targets)
