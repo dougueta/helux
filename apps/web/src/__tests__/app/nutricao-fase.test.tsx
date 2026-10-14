@@ -9,6 +9,8 @@ vi.mock('@/services/nutrition.service', () => ({
   getPhase: () => getPhaseMock(),
   startPhase: (...a: unknown[]) => startPhaseMock(...a),
   endPhase: () => endPhaseMock(),
+  getToday: vi.fn().mockResolvedValue({ status: 'no-phase', missing: [] }),
+  getHistory: vi.fn().mockResolvedValue([]),
 }))
 
 const upsertProfileMock = vi.fn()
