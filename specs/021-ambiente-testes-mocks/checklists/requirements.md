@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain *(3 questões pendentes de confirmação do usuário)*
+- [x] No [NEEDS CLARIFICATION] markers remain *(Todas as 3 clarificações foram respondidas e integradas)*
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,5 +31,8 @@
 
 ## Notes
 
-- 3 itens de clarificação identificados e estruturados com opções para alinhamento com o usuário antes de `/speckit-plan`.
-- Branch de trabalho configurada: `021-ambiente-testes-mocks`.
+- Clarificações de 2026-10-13 aprovadas:
+  1. Full-Stack Desacoplado (Frontend e API)
+  2. Híbrido (Default `.env` + Override interativo via Dev Bar)
+  3. Persistência Local (`localStorage`) com botão de Reset
+- Especificação validada e pronta para a fase de planejamento (`/speckit-plan`).
