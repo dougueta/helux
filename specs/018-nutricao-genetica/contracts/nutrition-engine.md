@@ -52,5 +52,5 @@ Invariantes testados:
 - totais do dia dentro de ±5% kcal e ±10% por macro das metas do dia;
 - `buildDayPlan` é estável (mesma data/entradas → mesmo plano) e varia entre datas diferentes;
 - descanso tem menos carboidrato que treino com a mesma fase; com `lowCarbEficaz`, ainda menos;
-- `exausto` em dia de treino não deixa o carboidrato abaixo do da fase;
+- `exausto` não corta o carboidrato do dia de descanso (fica no da fase);
 - `navyBodyFat` devolve `null` com medida faltando ou resultado fora de 3–60%.

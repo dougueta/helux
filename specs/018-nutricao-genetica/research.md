@@ -58,7 +58,8 @@ Decisões técnicas que resolvem os pontos abertos do spec (após o clarify de 2
   - metas da fase são a **média**; proteína e gordura constantes;
   - **carboidrato**: dia de treino × 1,15; descanso × 0,80 (× 0,75 com FTO "dieta low carb mais eficaz"); calorias seguem os macros;
   - **hidratação**: 35 ml/kg + 500 ml em dia de treino;
-  - **cansaço** (Spec 011, `effectiveLevel`): `cansado` → +500 ml de água e card de recuperação; `exausto` → +750 ml, card, e em dia de treino o carboidrato não cai abaixo do valor da fase (sem déficit no peri-treino); `otimo`/`normal` → nada.
+  - **cansaço** (Spec 011, `effectiveLevel`): `cansado` → +500 ml de água e card de recuperação; `exausto` → +750 ml, card, e **sem o corte de carboidrato do descanso** (fica no valor da fase — o dia de treino já está acima dela); `otimo`/`normal` → nada. *(Ajustado na implementação: a versão anterior, "em treino não cai abaixo da fase", não tinha efeito porque o treino já é × 1,15.)*
+  - **piso**: em dia de treino, carboidrato ≥ 2 g/kg.
 - **Rationale**: periodização de carboidrato por demanda é o padrão da nutrição esportiva e usa diretamente o marcador FTO do usuário.
 - **Alternatives**: variar calorias por volume de séries do treino do dia (dado pouco confiável antes do treino acontecer).
 
@@ -67,7 +68,8 @@ Decisões técnicas que resolvem os pontos abertos do spec (após o clarify de 2
 - **Decision**:
   - catálogo estático em `packages/nutrition/src/catalog.ts` (~70 itens, valores da Tabela TACO): id, nome, grupo (`proteina`, `carboidrato`, `gordura`, `fruta-vegetal`, `bebida`), porção de referência (g/ml + medida caseira), macros por porção, tags (`contem-lactose`, `zero-lactose`, `vegetal`, `rico-b6`, `fonte-calcio-nao-lactea`, `fonte-vitamina-d`, `cafeina`, `anti-inflamatorio`, `rapida-digestao`);
   - **refeições do dia**: treino → café, almoço, pré-treino, pós-treino, jantar; descanso → café, almoço, lanche, jantar, ceia; cada refeição tem uma fração das metas;
-  - cada refeição usa um **molde** (ex.: proteína + carboidrato + vegetal + gordura); o alimento de cada posição é escolhido por rotação determinística (`hash(data + refeição + posição)`) entre os elegíveis, e a porção é escalada para bater a meta da refeição (múltiplos de ½ porção, entre ½ e 3 porções);
+  - cada refeição usa um **molde** (ex.: proteína + carboidrato + vegetal + gordura); o alimento de cada posição é escolhido por rotação determinística (`hash(data + refeição + posição)`) entre os elegíveis, e a porção é escalada para bater a meta da refeição (múltiplos de ½ porção, entre ½ e 3 porções; **carboidrato até 4** para dietas de ganho; itens de gordura e frutas de café/lanche/ceia são **opcionais** e saem com 0 porção quando a meta já está coberta; leguminosa e vegetal variam entre ½ e 1½);
+  - **ajuste fino global**: ±½ porção onde mais aproxima o total do dia das metas, avaliando os totais arredondados que o usuário vê; se não fechar, troca a proteína mais gordurosa pela mais magra da mesma posição (até 3 vezes). Validado em 4 perfis (1.200 a 3.440 kcal) × 60 dias × treino/descanso × com/sem genética, sem nenhum dia fora da tolerância;
   - **filtro genético obrigatório**: com intolerância à lactose, itens `contem-lactose` são excluídos de tudo (montagem, troca, sugestão aplicada);
   - preferência genética: refeições de vitamina D/B6/cálcio não lácteo priorizam itens com essas tags (desempate da rotação);
   - **tolerância**: total do dia dentro de ±5% das calorias e ±10% de cada macro;
