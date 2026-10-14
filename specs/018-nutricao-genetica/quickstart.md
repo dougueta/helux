@@ -2,7 +2,7 @@
 
 ## Pré-requisitos
 
-- `pnpm install` no worktree; migration `20261013000000_nutrition.sql` aplicada (local: `pnpm db:start` aplica as migrations; produção: `supabase db push` feito pelo usuário).
+- `pnpm install` no worktree; migration `20261014002645_nutrition.sql` aplicada (local: `pnpm db:start` aplica as migrations; produção: `supabase db push` feito pelo usuário).
 - `apps/api/data/genetics/genera.json` presente (sem ele o módulo funciona em modo padrão, com aviso).
 - `ANTHROPIC_API_KEY` só para o chat real; os testes usam o SDK mockado.
 

@@ -13,7 +13,7 @@ A API grava fase, recalibrações, plano do dia (upsert a cada leitura) e a conv
 
 **Language/Version**: TypeScript 5 (Node 22 na API e no CI, Next.js 14 / React 18 na web)
 **Primary Dependencies**: Fastify + Supabase JS + zod (API); `@anthropic-ai/sdk` atualizado para a versão atual em `@helux/ai` (streaming, `output_config`, `fallbacks`); Next.js App Router (web)
-**Storage**: Supabase Postgres — migration aditiva `20261013000000_nutrition.sql`: 4 tabelas novas (`diet_phases`, `diet_phase_calibrations`, `daily_nutrition_plans`, `nutrition_chat_messages`) e 4 colunas (`user_training_profile.height_cm/birth_date/sex`, `body_checkins.neck_cm`), RLS por usuário
+**Storage**: Supabase Postgres — migration aditiva `20261014002645_nutrition.sql`: 4 tabelas novas (`diet_phases`, `diet_phase_calibrations`, `daily_nutrition_plans`, `nutrition_chat_messages`) e 4 colunas (`user_training_profile.height_cm/birth_date/sex`, `body_checkins.neck_cm`), RLS por usuário
 **Testing**: Vitest em todos os workspaces; Testing Library na web; SDK da Anthropic mockado; e2e local (spec 017) segue cobrindo o mesociclo — nutrição não entra no e2e nesta spec
 **Target Platform**: Web responsiva (mobile-first) + API Node (decisão web-only do MVP)
 **Project Type**: Monorepo pnpm/turbo (apps/web, apps/api, packages/*)
@@ -96,7 +96,7 @@ apps/web/src/
 ├── app/perfil/…                    # + altura, nascimento, sexo
 └── app/checkin/…                   # + pescoço e % de gordura calculado
 
-supabase/migrations/20261013000000_nutrition.sql   # NOVO
+supabase/migrations/20261014002645_nutrition.sql   # NOVO
 ```
 
 **Structure Decision**: monorepo existente; um pacote novo para o domínio de nutrição (mesmo padrão de `@helux/workouts`), rotas Fastify por recurso (padrão de `routes/*.ts`), uma página App Router com seções.

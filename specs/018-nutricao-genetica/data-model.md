@@ -1,6 +1,6 @@
 # Data Model: Módulo de Nutrição Esportiva Genética (018)
 
-Migration única e aditiva: `supabase/migrations/20261013000000_nutrition.sql`. Todas as tabelas novas com RLS `auth.uid() = user_id` (padrão do projeto).
+Migration única e aditiva: `supabase/migrations/20261014002645_nutrition.sql`. Todas as tabelas novas com RLS `auth.uid() = user_id` (padrão do projeto).
 
 ## Alterações em tabelas existentes
 
