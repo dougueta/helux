@@ -107,8 +107,31 @@ describe('Nutrição › Fase (spec 018, US0)', () => {
   it('sem check-in com peso: leva ao check-in', async () => {
     getPhaseMock.mockResolvedValue({ phase: null, calibrations: [], bodyFatPct: null, missing: ['checkinWeight'] })
     await openFase()
-    expect(await screen.findByRole('link', { name: /fazer check-in/i })).toHaveAttribute('href', '/checkin')
+    expect(await screen.findByRole('link', { name: /fazer check-in/i })).toHaveAttribute('href', '/checkin?voltar=nutricao')
     expect(screen.queryByRole('button', { name: /iniciar fase/i })).not.toBeInTheDocument()
+  })
+
+  it('check-in com mais de 35 dias: pede um check-in atual antes de iniciar a fase (validação do usuário)', async () => {
+    getPhaseMock.mockResolvedValue({ phase: null, calibrations: [], bodyFatPct: null, missing: ['checkinStale'] })
+    await openFase()
+    expect(await screen.findByText(/check-in mais recente tem mais de um mês/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /fazer check-in/i })).toHaveAttribute('href', '/checkin?voltar=nutricao')
+    expect(screen.queryByRole('button', { name: /iniciar fase/i })).not.toBeInTheDocument()
+  })
+
+  it('perfil e check-in faltando: depois de salvar o perfil, pede o check-in', async () => {
+    getPhaseMock.mockResolvedValueOnce({ phase: null, calibrations: [], bodyFatPct: null, missing: ['heightCm', 'birthDate', 'sex', 'checkinStale'] })
+    getPhaseMock.mockResolvedValueOnce({ phase: null, calibrations: [], bodyFatPct: null, missing: ['checkinStale'] })
+    upsertProfileMock.mockResolvedValue({})
+    const user = await openFase()
+    expect(await screen.findByText(/depois, um check-in/i)).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText(/altura/i), '180')
+    await user.type(screen.getByLabelText(/data de nascimento/i), '1991-01-10')
+    await user.click(screen.getByRole('button', { name: 'Masculino' }))
+    await user.click(screen.getByRole('button', { name: /salvar dados/i }))
+
+    expect(await screen.findByRole('link', { name: /fazer check-in/i })).toBeInTheDocument()
   })
 
   it('fase que passou da duração avisa para iniciar a próxima', async () => {

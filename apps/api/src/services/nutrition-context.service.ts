@@ -9,7 +9,10 @@ import { getActiveMesocycle } from './mesocycle.service'
 
 const GENERA_PATH = path.resolve(process.cwd(), 'data', 'genetics', 'genera.json')
 
-export type MissingField = 'heightCm' | 'birthDate' | 'sex' | 'checkinWeight'
+export type MissingField = 'heightCm' | 'birthDate' | 'sex' | 'checkinWeight' | 'checkinStale'
+
+/** As metas partem do peso atual: check-in com mais de 35 dias não serve para iniciar a fase. */
+export const CHECKIN_MAX_AGE_DAYS = 35
 
 export interface DietPhaseRow {
   id: string
@@ -101,7 +104,9 @@ export async function loadNutritionContext(userId: string, supabase: SupabaseCli
   if (profile.heightCm == null) missing.push('heightCm')
   if (!profile.birthDate) missing.push('birthDate')
   if (!profile.sex) missing.push('sex')
-  if (checkins[0]?.weight_kg == null) missing.push('checkinWeight')
+  const latest = checkins[0]
+  if (latest?.weight_kg == null) missing.push('checkinWeight')
+  else if (now.getTime() - Date.parse(latest.created_at) > CHECKIN_MAX_AGE_DAYS * 24 * 60 * 60 * 1000) missing.push('checkinStale')
 
   return {
     today,

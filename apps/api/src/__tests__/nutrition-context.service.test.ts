@@ -81,6 +81,26 @@ describe('loadNutritionContext (spec 018)', () => {
     expect((await loadNutritionContext('u1', client as never, NOW)).lastCalibration).toEqual({ checkinId: 'c1', createdAt: '2026-09-01T10:00:00Z' })
   })
 
+  it('check-in com peso mais antigo que 35 dias → checkinStale (validação do usuário: check-in de julho virou base da fase)', async () => {
+    const t = tables()
+    t.body_checkins = [{ id: 'c0', user_id: 'u1', month: '2026-07-01', weight_kg: 82, created_at: '2026-07-02T23:17:51Z' }] as never
+    const { client } = fakeSupabase(t)
+    const { loadNutritionContext } = await import('../services/nutrition-context.service')
+
+    const ctx = await loadNutritionContext('u1', client as never, NOW)
+
+    expect(ctx.missing).toEqual(['checkinStale'])
+    expect(ctx.checkins[0].id).toBe('c0')
+  })
+
+  it('check-in com até 35 dias vale', async () => {
+    const t = tables()
+    t.body_checkins = [{ id: 'c0', user_id: 'u1', month: '2026-09-01', weight_kg: 82, created_at: '2026-09-09T09:00:00Z' }] as never
+    const { client } = fakeSupabase(t)
+    const { loadNutritionContext } = await import('../services/nutrition-context.service')
+    expect((await loadNutritionContext('u1', client as never, NOW)).missing).toEqual([])
+  })
+
   it('lista o que falta para calcular a fase', async () => {
     const t = tables()
     t.user_training_profile = [{ user_id: 'u1', height_cm: null, birth_date: null, sex: null }] as never

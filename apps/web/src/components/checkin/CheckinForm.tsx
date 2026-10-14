@@ -58,7 +58,8 @@ function currentMonthLabel(): string {
     .replace(/^\w/, c => c.toUpperCase())
 }
 
-export function CheckinForm() {
+/** `returnTo`: para onde voltar depois de salvar (ex.: a Nutrição, spec 018). */
+export function CheckinForm({ returnTo }: { returnTo?: string } = {}) {
   const router = useRouter()
   const { current, saving, save } = useCheckin()
 
@@ -133,7 +134,7 @@ export function CheckinForm() {
 
     try {
       await save(input)
-      router.push('/checkin/history')
+      router.push(returnTo ?? '/checkin/history')
     } catch (err) {
       if (err instanceof ApiError && err.details?.length) {
         const fieldName = err.details[0].path[0]

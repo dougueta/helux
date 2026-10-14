@@ -3,7 +3,7 @@ import type { DietCalibration, DietGoal, DietPhase } from '@helux/types'
 
 // Spec 018 — cliente das rotas de nutrição (contracts/nutrition-api.md).
 
-export type MissingField = 'heightCm' | 'birthDate' | 'sex' | 'checkinWeight'
+export type MissingField = 'heightCm' | 'birthDate' | 'sex' | 'checkinWeight' | 'checkinStale'
 
 export interface PhaseResponse {
   phase: DietPhase | null

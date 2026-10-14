@@ -115,6 +115,7 @@ O usuário pode alternar para a aba/seção "Meu Perfil Genético Nutricional", 
 
 ## 3. Edge Cases
 
+- **Check-in desatualizado** *(validação da US0, 2026-10-14)*: para iniciar uma fase, o check-in mais recente precisa ter peso e no máximo 35 dias. Mais antigo que isso, a tela pede um check-in atual (com peso, cintura e pescoço) e, depois de salvo, volta para a Nutrição. A recalibração de fases já iniciadas não depende dessa regra.
 - **Ausência de dados genéticos**: Caso o usuário ainda não possua o arquivo/registro genético carregado, o sistema deve exibir um estado de fallback (onboarding para carregar o arquivo ou utilizar diretrizes esportivas padrão baseadas em biometria básica, indicando que a personalização genômica está inativa).
 - **Treino em qualquer horário**: Não há horário programado. Enquanto o treino do dia não começa, o plano não fixa hora para pré/pós-treino (só orientação relativa). Se o usuário começar a treinar sem ter feito a refeição pré-treino, o plano não "atrasa" nada: o pós-treino é recalculado a partir do início/conclusão real.
 - **Dia com treino planejado que não acontece**: Até o treino começar, o dia é tratado como dia de treino (metas de dia de treino). Se o dia terminar sem treino iniciado, o histórico registra o plano como "treino não realizado" (sem recálculo retroativo).

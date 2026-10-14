@@ -49,6 +49,8 @@
 - [X] T018 [US0] Aba Nutrição: `apps/web/src/app/nutricao/page.tsx` + `NutricaoClient.tsx` com seções Hoje · Chat · Fase · Perfil genético (`Segmented` em modo abas); `apps/web/src/components/nutrition/ProfileGate.tsx` (pede altura/nascimento/sexo quando faltam e grava em `/api/profile`); seção Fase com `PhaseCard.tsx` (iniciar fase: objetivo + duração; metas, % de gordura, aviso "fase concluída" após a duração; encerrar) e `CalibrationList.tsx` (antes → depois, ação, motivo). NavBar ganha a aba Nutrição (`apps/web/src/components/layout/NavBar.tsx`) e `.hx-nav` passa a `repeat(5,1fr)` em `apps/web/src/app/helux-v2.css`. Testes em `apps/web/src/__tests__/app/nutricao-fase.test.tsx` e `apps/web/src/__tests__/components/layout/NavBar.test.tsx`
 - [X] T019 [US0] Rodar as suítes de `@helux/nutrition`, `@helux/genetics`, `@helux/types`, os testes de `profile`, `checkins`, `diet-phase`, `nutrition-phase`, `nutrition-context` da API e os de `ProfileForm`, `Checkin*`, `nutricao-fase`, `NavBar` e `design-system-guard` da web; commit
 
+- [X] T019a [US0] Correção da validação do usuário: check-in com mais de 35 dias não serve para iniciar a fase (`checkinStale` em `apps/api/src/services/nutrition-context.service.ts`), aviso e link `/checkin?voltar=nutricao` em `apps/web/src/components/nutrition/ProfileGate.tsx`, volta para a Nutrição após salvar (`returnTo` em `apps/web/src/components/checkin/CheckinForm.tsx` e `apps/web/src/app/checkin/page.tsx`); testes em `nutrition-context.service.test.ts`, `nutricao-fase.test.tsx` e `CheckinForm.test.tsx`
+
 **Checkpoint**: US0 entregável.
 
 ---

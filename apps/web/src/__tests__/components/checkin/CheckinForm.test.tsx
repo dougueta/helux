@@ -152,3 +152,23 @@ describe('CheckinForm — pescoço e % de gordura pela Marinha (spec 018)', () =
     expect(apiFetch).toHaveBeenCalledWith('/api/checkins', expect.objectContaining({ body: expect.stringContaining('"neck_cm":40') }))
   })
 })
+
+describe('CheckinForm — volta para a Nutrição (spec 018)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    getProfileMock.mockResolvedValue(null)
+  })
+
+  it('com returnTo, depois de salvar volta para a página de origem', async () => {
+    const { apiFetch } = await import('@/services/api-client')
+    vi.mocked(apiFetch).mockResolvedValueOnce({ checkins: [] })
+    vi.mocked(apiFetch).mockResolvedValueOnce({ id: 'c-1', month: '2026-10-01', weight_kg: 80 })
+    const user = userEvent.setup()
+    render(<CheckinForm returnTo="/nutricao" />)
+
+    await user.type(await screen.findByLabelText('Peso'), '80')
+    await user.click(screen.getByRole('button', { name: /salvar check-in/i }))
+
+    await vi.waitFor(() => expect(pushMock).toHaveBeenCalledWith('/nutricao'))
+  })
+})
