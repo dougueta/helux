@@ -4,17 +4,17 @@ import { useState } from 'react'
 import { Segmented } from '@/components/ui/Segmented'
 import { PhaseSection } from '@/components/nutrition/PhaseSection'
 import { TodaySection } from '@/components/nutrition/TodaySection'
+import { NutriProfile } from '@/components/nutrition/NutriProfile'
 
-type Section = 'hoje' | 'chat' | 'fase' | 'perfil'
+type Section = 'hoje' | 'fase' | 'perfil'
 
 const SECTIONS: { value: Section; label: string }[] = [
   { value: 'hoje', label: 'Hoje' },
-  { value: 'chat', label: 'Chat' },
   { value: 'fase', label: 'Fase' },
   { value: 'perfil', label: 'Perfil genético' },
 ]
 
-/** Aba Nutrição (spec 018): Hoje · Chat · Fase · Perfil genético. */
+/** Aba Nutrição (spec 018): Hoje · Fase · Perfil genético (o chat do nutricionista é da spec 022). */
 export function NutricaoClient() {
   const [section, setSection] = useState<Section>('hoje')
 
@@ -25,11 +25,7 @@ export function NutricaoClient() {
       </div>
       {section === 'hoje' && <TodaySection onGoToPhase={() => setSection('fase')} />}
       {section === 'fase' && <PhaseSection />}
-      {(section === 'chat' || section === 'perfil') && (
-        <p className="t-secondary" style={{ marginTop: 24 }}>
-          Esta seção chega nas próximas etapas da spec 018.
-        </p>
-      )}
+      {section === 'perfil' && <NutriProfile />}
     </>
   )
 }

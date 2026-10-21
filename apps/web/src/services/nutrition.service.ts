@@ -1,5 +1,5 @@
 import { apiFetch } from '@/services/api-client'
-import type { DayPlan, DayType, DietCalibration, DietGoal, DietPhase, DietTargets, FoodItem, MealSwap, TirednessLevel } from '@helux/types'
+import type { DayPlan, DayType, DietCalibration, DietGoal, DietPhase, DietTargets, FoodItem, MealSwap, NutriMarker, TirednessLevel } from '@helux/types'
 
 // Spec 018 — cliente das rotas de nutrição (contracts/nutrition-api.md).
 
@@ -73,4 +73,13 @@ export async function applySwap(swap: MealSwap): Promise<TodayResponse> {
 
 export async function getHistory(limit = 14): Promise<HistoryDay[]> {
   return ((await apiFetch(`/api/nutrition/history?limit=${limit}`)) as { days: HistoryDay[] }).days
+}
+
+export interface GeneticProfileResponse {
+  active: boolean
+  markers: NutriMarker[]
+}
+
+export async function getGeneticProfile(): Promise<GeneticProfileResponse> {
+  return (await apiFetch('/api/nutrition/genetic-profile')) as GeneticProfileResponse
 }

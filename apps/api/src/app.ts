@@ -14,6 +14,7 @@ import { profileRoutes } from './routes/profile'
 import { tirednessTodayRoutes } from './routes/tiredness-today'
 import { nutritionPhaseRoutes } from './routes/nutrition-phase'
 import { nutritionTodayRoutes } from './routes/nutrition-today'
+import { nutritionGeneticProfileRoutes } from './routes/nutrition-genetic-profile'
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({
@@ -41,6 +42,7 @@ export function buildApp(): FastifyInstance {
   app.register(tirednessTodayRoutes)
   app.register(nutritionPhaseRoutes)
   app.register(nutritionTodayRoutes)
+  app.register(nutritionGeneticProfileRoutes)
 
   return app
 }

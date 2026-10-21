@@ -99,9 +99,9 @@ O chat do agente nutricionista (antigas T027–T032) agora é a US4 da spec `022
 
 **Independent Test**: Nutrição › Perfil genético mostra MCM6 (atenção), ADORA2A (favorável), GC/ALPL/WNT16 (atenção), FTO e ACTN3 (favoráveis); tocar em MCM6 abre a conduta (spec US4).
 
-- [ ] T036 [US4] `GET /api/nutrition/genetic-profile` em `apps/api/src/routes/nutrition-genetic-profile.ts` (contrato: `{ active, markers }`; sem `genera.json` → `active: false`), registrada em `apps/api/src/app.ts`, testes em `apps/api/src/__tests__/nutrition-genetic-profile.test.ts`
-- [ ] T037 [US4] Seção Perfil genético em `apps/web/src/components/nutrition/NutriProfile.tsx`: 3 grupos (Metabolismo & Sensibilidades · Micronutrientes & Vitaminas · Perfil Muscular & Dieta), cards reaproveitando `apps/web/src/components/dna/TraitCard.tsx` (gene, genótipo, traço, `warn` no status `atencao`) com o status em palavra, toque → `Sheet` com a conduta (recomendar/evitar); estado "perfil genético não carregado"; testes em `apps/web/src/__tests__/components/nutrition/NutriProfile.test.tsx`
-- [ ] T038 [US4] Rodar as suítes direcionadas da US4 e commitar
+- [X] T036 [US4] `GET /api/nutrition/genetic-profile` em `apps/api/src/routes/nutrition-genetic-profile.ts` (contrato: `{ active, markers }`; sem `genera.json` → `active: false`), registrada em `apps/api/src/app.ts`, testes em `apps/api/src/__tests__/nutrition-genetic-profile.test.ts`
+- [X] T037 [US4] Seção Perfil genético em `apps/web/src/components/nutrition/NutriProfile.tsx`: 3 grupos (Metabolismo & Sensibilidades · Micronutrientes & Vitaminas · Perfil Muscular & Dieta), cards reaproveitando `apps/web/src/components/dna/TraitCard.tsx` (gene, genótipo, traço, `warn` no status `atencao`) com o status em palavra, toque → `Sheet` com a conduta (recomendar/evitar); estado "perfil genético não carregado"; testes em `apps/web/src/__tests__/components/nutrition/NutriProfile.test.tsx`
+- [X] T038 [US4] Rodar as suítes direcionadas da US4 e commitar
 
 **Checkpoint**: US4 entregável.
 
@@ -109,7 +109,7 @@ O chat do agente nutricionista (antigas T027–T032) agora é a US4 da spec `022
 
 ## Phase 8: Polish & Cross-Cutting
 
-- [ ] T039 Rodar o guard do design system (`apps/web/src/__tests__/design-system-guard.test.ts`) e corrigir qualquer classe/cor fora do v2 nas telas novas
+- [X] T039 Rodar o guard do design system (`apps/web/src/__tests__/design-system-guard.test.ts`) e corrigir qualquer classe/cor fora do v2 nas telas novas
 - [ ] T040 Verificação final única: `pnpm test`, `pnpm typecheck`, `pnpm build`; registrar os números no `quickstart.md`
 - [ ] T041 Atualizar `specs/018-nutricao-genetica/quickstart.md` com observações finais (`supabase db push` da migration antes do deploy da API; pontos de revisão R5/R9) e `packages/nutrition/README.md` com o uso das funções
 
