@@ -61,14 +61,14 @@ Nenhuma. As histórias são independentes entre si e não há infraestrutura com
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T008 [US2] Criar `apps/api/src/__tests__/deploy-config.test.ts` (no padrão do `dockerfile.test.ts`) verificando: (a) `fly.toml` não existe na raiz; (b) `render.yaml` existe e declara `healthCheckPath: /health`; (c) toda `key` de `envVars` do `render.yaml` aparece em `.env.example`; (d) toda variável obrigatória em produção do contrato (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `ANTHROPIC_API_KEY`, `CORS_ORIGIN`, `PERSONAL_API_KEY`, `PERSONAL_USER_ID`, `SUPABASE_SERVICE_ROLE_KEY`) aparece em `.env.example` e em `render.yaml`; (e) toda variável de `envVars` secreta usa `sync: false`
+- [x] T008 [US2] Criar `apps/api/src/__tests__/deploy-config.test.ts` (no padrão do `dockerfile.test.ts`) verificando: (a) `fly.toml` não existe na raiz; (b) `render.yaml` existe e declara `healthCheckPath: /health`; (c) toda `key` de `envVars` do `render.yaml` aparece em `.env.example`; (d) toda variável obrigatória em produção do contrato (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `ANTHROPIC_API_KEY`, `CORS_ORIGIN`, `PERSONAL_API_KEY`, `PERSONAL_USER_ID`, `SUPABASE_SERVICE_ROLE_KEY`) aparece em `.env.example` e em `render.yaml`; (e) toda variável de `envVars` secreta usa `sync: false`
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] Remover `fly.toml` da raiz (depende de T008)
-- [ ] T010 [US2] Atualizar `render.yaml` adicionando `SUPABASE_SERVICE_ROLE_KEY` com `sync: false` (depende de T008)
-- [ ] T011 [US2] Reescrever `.env.example` com todas as variáveis do contrato, cada uma com um comentário de uso e marcada como obrigatória ou opcional (depende de T008)
-- [ ] T012 [P] [US2] Em `docs/backlog.md`, atualizar a seção sobre `fly.toml` para registrar que o deploy usa o Render
+- [x] T009 [US2] Remover `fly.toml` da raiz (depende de T008)
+- [x] T010 [US2] Atualizar `render.yaml` adicionando `SUPABASE_SERVICE_ROLE_KEY` com `sync: false` (depende de T008)
+- [x] T011 [US2] Reescrever `.env.example` com todas as variáveis do contrato, cada uma com um comentário de uso e marcada como obrigatória ou opcional (depende de T008)
+- [x] T012 [P] [US2] Em `docs/backlog.md`, atualizar a seção sobre `fly.toml` para registrar que o deploy usa o Render
 
 **Checkpoint**: US1 e US2 entregues; já é possível fazer o deploy.
 
