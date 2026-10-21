@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { AgentRefusalError, streamAgentReply, type AgentMessageParam, type AgentToolHandler } from '@helux/ai'
+import { AgentRefusalError, matchesMedicalRedFlag, routeMessage, streamAgentReply, type AgentMessageParam, type AgentToolHandler } from '@helux/ai'
 import type { AgentConversation, AgentKey, AgentMessage, AgentStreamEvent, Channel, SourcesUsed } from '@helux/types'
 import { toFact, toGuidance, type FactRow, type GuidanceRow } from './agent-rows'
 import { assertBudget, BudgetExceededError, recordUsage } from './ai-budget.service'
@@ -76,7 +76,17 @@ function toHistory(rows: MessageRow[]): AgentMessageParam[] {
   return recent.map(r => ({ role: r.role === 'user' ? 'user' : 'assistant', content: r.content }))
 }
 
-const directAgent: AgentResolver = async ({ channel }) => ({ agent: channel === 'equipe' ? 'treino' : channel })
+/**
+ * Canais diretos respondem com o próprio especialista. No chat Equipe (R4), um
+ * sinal de alerta médico vai direto para a Medicina (sem gastar o roteador);
+ * o resto passa pelo roteador com as últimas mensagens como contexto.
+ */
+const defaultResolver: AgentResolver = async ({ channel, message, recent }) => {
+  if (channel !== 'equipe') return { agent: channel }
+  if (matchesMedicalRedFlag(message)) return { agent: 'medicina', reason: 'possível sinal de alerta médico' }
+  const routed = await routeMessage({ message, recent: recent.map(m => ({ role: m.role, content: m.content })) })
+  return { agent: routed.agent, reason: routed.reason, usages: [routed.usage] }
+}
 
 /**
  * Uma mensagem do usuário (agents-api.md): checa o teto, grava a mensagem,
@@ -89,7 +99,7 @@ export async function runChat(
   supabase: SupabaseClient,
   input: { channel: Channel; message: string },
   emit: ChatEmit,
-  resolveAgent: AgentResolver = directAgent,
+  resolveAgent: AgentResolver = defaultResolver,
 ): Promise<void> {
   const { warning } = await assertBudget(userId, supabase)
   const conversation = (await openConversation(userId, supabase, input.channel)) ?? (await createConversation(userId, supabase, input.channel))

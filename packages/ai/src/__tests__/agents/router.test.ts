@@ -34,3 +34,37 @@ describe('matchesMedicalRedFlag (022 T026, R10)', () => {
     expect(matchesMedicalRedFlag(msg)).toBe(false)
   })
 })
+
+// ---- routeMessage (T031) ----
+import { vi, beforeEach } from 'vitest'
+
+const { mockCreate } = vi.hoisted(() => ({ mockCreate: vi.fn() }))
+vi.mock('@anthropic-ai/sdk', () => ({ default: vi.fn(() => ({ beta: { messages: { create: mockCreate } } })) }))
+
+import { routeMessage } from '../../agents/router'
+
+describe('routeMessage (022 T031, R4)', () => {
+  beforeEach(() => mockCreate.mockReset())
+
+  it('structured output com agente e motivo; esforço low; fallback; sistema com cache', async () => {
+    mockCreate.mockResolvedValue({
+      model: 'claude-opus-5-5',
+      stop_reason: 'end_turn',
+      content: [{ type: 'text', text: '{"agent":"nutricao","reason":"pergunta sobre pré-treino"}' }],
+      usage: { input_tokens: 300, output_tokens: 20, cache_creation_input_tokens: 0, cache_read_input_tokens: 800 },
+    })
+    const r = await routeMessage({ message: 'o que comer antes do treino?', recent: [{ role: 'user', content: 'oi' }] })
+    expect(r).toMatchObject({ agent: 'nutricao', reason: 'pergunta sobre pré-treino' })
+    expect(r.usage).toMatchObject({ operation: 'roteamento', agent: null, cache_read_input_tokens: 800 })
+    const p = mockCreate.mock.calls[0][0]
+    expect(p).toMatchObject({ model: 'claude-opus-5-5', output_config: { effort: 'low', format: { type: 'json_schema' } }, fallbacks: 'default' })
+    expect(p.system[0].cache_control).toEqual({ type: 'ephemeral', ttl: '1h' })
+    expect(p.messages[0].content).toContain('o que comer antes do treino?')
+    expect(p.messages[0].content).toContain('oi')
+  })
+
+  it('recusa ou JSON inválido → treino como padrão', async () => {
+    mockCreate.mockResolvedValue({ model: 'claude-opus-5-5', stop_reason: 'refusal', content: [], usage: { input_tokens: 1, output_tokens: 0 } })
+    expect((await routeMessage({ message: 'x', recent: [] })).agent).toBe('treino')
+  })
+})

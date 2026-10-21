@@ -184,6 +184,23 @@ describe('chat dos agentes (022 T023)', () => {
     expect(evs[0].data).toMatchObject({ budgetWarning: { pct: 85 } })
   })
 
+  it('Equipe: alerta médico vai direto para a Medicina sem chamar o roteador (R4)', async () => {
+    const evs = events((await chat('equipe', 'senti uma dor no peito no treino')).body)
+    expect(routeMessageMock).not.toHaveBeenCalled()
+    expect(evs[1]).toMatchObject({ event: 'routed', data: { agent: 'medicina' } })
+    expect(streamAgentReplyMock.mock.calls[0][0].agent).toBe('medicina')
+    expect(fake.db.agent_messages[1]).toMatchObject({ agent: 'medicina' })
+  })
+
+  it('Equipe: roteador escolhe o especialista, emite routed antes do texto e registra o uso', async () => {
+    routeMessageMock.mockResolvedValue({ agent: 'nutricao', reason: 'alimentação', usage: { ...USAGE, operation: 'roteamento', agent: null } })
+    const evs = events((await chat('equipe', 'o que comer antes do treino?')).body)
+    expect(evs.slice(0, 3).map(e => e.event)).toEqual(['start', 'routed', 'delta'])
+    expect(evs[1].data).toEqual({ agent: 'nutricao', reason: 'alimentação' })
+    expect(streamAgentReplyMock.mock.calls[0][0].agent).toBe('nutricao')
+    expect(fake.db.ai_usage_events).toHaveLength(2)
+  })
+
   it('GET da conversa aberta e nova conversa (arquiva a atual)', async () => {
     await chat('medicina', 'oi')
     const get = (await app.inject({ method: 'GET', url: '/api/agents/conversations/medicina', headers: auth })).json()
