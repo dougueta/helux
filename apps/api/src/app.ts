@@ -21,15 +21,14 @@ import { trainingPreferencesRoutes } from './routes/training-preferences'
 import { agentsProfileRoutes } from './routes/agents-profile'
 import { agentsChatRoutes } from './routes/agents-chat'
 import { agentsGuidanceRoutes } from './routes/agents-guidance'
-import { loadEnv, type AppEnv } from './config/env'
 
-export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): FastifyInstance {
+export function buildApp(): FastifyInstance {
   const app = Fastify({
     logger: process.env.NODE_ENV !== 'test',
   })
 
   app.register(cors, {
-    origin: config.CORS_ORIGIN,
+    origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
     credentials: true,
     // PUT: /api/tiredness-today (spec 011); PATCH: edição manual e relatos (spec 022).
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
