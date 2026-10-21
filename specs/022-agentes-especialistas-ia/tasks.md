@@ -59,8 +59,8 @@
 
 **Independent Test**: abrir `/perfil/integrado`, ver as 12 fontes com data/vazia, desligar "exames" → `PUT` grava e o perfil volta com a fonte `desativada`.
 
-- [ ] T018 [US2] Rotas `GET /api/agents/profile` (perfil + `budget`), `PUT /api/agents/sources/:source`, `PUT /api/agents/budget`, `PATCH/DELETE /api/agents/facts/:id` e `DELETE /api/agents/guidance/:id` em `apps/api/src/routes/agents-profile.ts`; testes em `apps/api/src/__tests__/agents-profile.test.ts`
-- [ ] T019 [US2] Página `/perfil/integrado` em `apps/web/src/app/perfil/integrado/page.tsx` + `IntegratedProfileView`/`SourceToggleList` em `apps/web/src/components/agents/` (fontes com status, data e resumo; liga/desliga; relatos editáveis/removíveis; orientações ativas com motivo/origem/prazo e "remover"; teto editável e consumo com aviso de 80%); link no Perfil. Testes em `apps/web/src/__tests__/components/agents/IntegratedProfileView.test.tsx`
+- [X] T018 [US2] Rotas `GET /api/agents/profile` (perfil + `budget`), `PUT /api/agents/sources/:source`, `PUT /api/agents/budget`, `PATCH/DELETE /api/agents/facts/:id` e `DELETE /api/agents/guidance/:id` em `apps/api/src/routes/agents-profile.ts`; testes em `apps/api/src/__tests__/agents-profile.test.ts`
+- [X] T019 [US2] Página `/perfil/integrado` em `apps/web/src/app/perfil/integrado/page.tsx` + `IntegratedProfileView`/`SourceToggleList` em `apps/web/src/components/agents/` (fontes com status, data e resumo; liga/desliga; relatos editáveis/removíveis; orientações ativas com motivo/origem/prazo e "remover"; teto editável e consumo com aviso de 80%); link no Perfil. Testes em `apps/web/src/__tests__/components/agents/IntegratedProfileView.test.tsx`
 
 **Checkpoint**: US2 entregável (commit).
 

@@ -53,5 +53,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     throw new ApiError(parsed.error ?? `HTTP ${response.status}`, parsed.details, parsed.code, body as Record<string, unknown>)
   }
 
+  // 204 (ex.: liga/desliga de fonte, remoções da spec 022) não tem corpo.
+  if (response.status === 204) return null
   return response.json()
 }

@@ -99,3 +99,11 @@ describe('ApiError com código e corpo (spec 022)', () => {
     expect(err.body?.reasons).toEqual(['x'])
   })
 })
+
+describe('204 sem corpo (spec 022)', () => {
+  it('devolve null sem tentar ler JSON', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 204, json: async () => { throw new Error('sem corpo') } })
+    const { apiFetch } = await import('@/services/api-client')
+    await expect(apiFetch('/api/agents/sources/exames', { method: 'PUT', body: '{}' })).resolves.toBeNull()
+  })
+})

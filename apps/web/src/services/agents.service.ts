@@ -1,6 +1,10 @@
 import { apiFetch } from '@/services/api-client'
 import type {
+  BudgetStatus,
+  ConversationFact,
   Equipment,
+  IntegratedProfile,
+  SourceKey,
   ExerciseAlternative,
   MesocycleSession,
   TrainingPreferences,
@@ -61,4 +65,32 @@ export interface ExerciseEditInput {
 
 export async function editSessionExercise(sessionIndex: number, exerciseIndex: number, edit: ExerciseEditInput): Promise<MesocycleSession> {
   return ((await apiFetch(`/api/workout/sessions/${sessionIndex}/exercises/${exerciseIndex}`, { method: 'PATCH', body: JSON.stringify(edit) })) as { session: MesocycleSession }).session
+}
+
+// ---- Perfil Integrado (US2) ----
+
+export type IntegratedProfileResponse = IntegratedProfile & { budget: BudgetStatus }
+
+export async function getIntegratedProfile(): Promise<IntegratedProfileResponse> {
+  return (await apiFetch('/api/agents/profile')) as IntegratedProfileResponse
+}
+
+export async function setSourceEnabled(source: SourceKey, enabled: boolean): Promise<void> {
+  await apiFetch(`/api/agents/sources/${source}`, { method: 'PUT', body: JSON.stringify({ enabled }) })
+}
+
+export async function setBudgetCap(monthlyCapUsd: number): Promise<BudgetStatus> {
+  return (await apiFetch('/api/agents/budget', { method: 'PUT', body: JSON.stringify({ monthlyCapUsd }) })) as BudgetStatus
+}
+
+export async function updateFact(id: string, text: string): Promise<ConversationFact> {
+  return (await apiFetch(`/api/agents/facts/${id}`, { method: 'PATCH', body: JSON.stringify({ text }) })) as ConversationFact
+}
+
+export async function deleteFact(id: string): Promise<void> {
+  await apiFetch(`/api/agents/facts/${id}`, { method: 'DELETE' })
+}
+
+export async function removeGuidance(id: string): Promise<void> {
+  await apiFetch(`/api/agents/guidance/${id}`, { method: 'DELETE' })
 }
