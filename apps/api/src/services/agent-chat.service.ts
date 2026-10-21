@@ -100,6 +100,7 @@ export async function runChat(
   input: { channel: Channel; message: string },
   emit: ChatEmit,
   resolveAgent: AgentResolver = defaultResolver,
+  log?: { info: (obj: Record<string, unknown>, msg?: string) => void },
 ): Promise<void> {
   const { warning } = await assertBudget(userId, supabase)
   const conversation = (await openConversation(userId, supabase, input.channel)) ?? (await createConversation(userId, supabase, input.channel))
@@ -199,6 +200,19 @@ export async function runChat(
       .single()
     if (agentError) throw agentError
     await recordUsage(userId, reply.usages, supabase)
+    // R13: métricas por chamada de IA, sem conteúdo das mensagens (dados de saúde).
+    log?.info(
+      {
+        agent,
+        operation: 'chat',
+        model: reply.usages[0]?.model ?? null,
+        ...reply.metrics,
+        inputTokens: reply.usages.reduce((n, u) => n + u.input_tokens, 0),
+        outputTokens: reply.usages.reduce((n, u) => n + u.output_tokens, 0),
+        cacheReadTokens: reply.usages.reduce((n, u) => n + u.cache_read_input_tokens, 0),
+      },
+      'ai call',
+    )
     emit('done', { agentMessageId: (agentRow as { id: string }).id, agent, sourcesUsed: build.sourcesUsed })
   } catch (err) {
     if (err instanceof AgentRefusalError) emit('error', { message: 'A IA não pôde responder a esta mensagem.', code: 'refusal' })

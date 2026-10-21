@@ -9,6 +9,7 @@ import { getActiveMesocycle, findPendingSessionIndex, markSessionCompleted, isMe
 
 interface MinimalLogger {
   error: (obj: unknown, msg?: string) => void
+  info?: (obj: unknown, msg?: string) => void
 }
 
 /** Mesociclo anterior concluído — base da progressão de carga (spec 014, US3). */
@@ -72,6 +73,19 @@ export async function generateAndSaveMesocycle(
       throw err
     }
     await recordUsage(userId, result.usages, supabase)
+    // R13: métricas da geração, sem conteúdo.
+    logger.info?.(
+      {
+        agent: 'treino',
+        operation: 'mesociclo',
+        model: result.usages[0]?.model ?? null,
+        attempts: result.usages.filter(u => u.cacheTtl === '5m').length,
+        inputTokens: result.usages.reduce((n, u) => n + u.input_tokens, 0),
+        outputTokens: result.usages.reduce((n, u) => n + u.output_tokens, 0),
+        cacheReadTokens: result.usages.reduce((n, u) => n + u.cache_read_input_tokens, 0),
+      },
+      'ai call',
+    )
     const mesocycle = result.plan
 
     // Spec 014: fases ordenadas e bisets válidos antes de gravar; depois a carga da progressão.

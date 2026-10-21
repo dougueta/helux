@@ -134,4 +134,12 @@ describe('streamAgentReply (022 T022)', () => {
     await streamAgentReply({ agent: 'treino', profile: PROFILE, dayContext: DAY, history, userMessage: 'agora', handleTool: handler, onEvent: vi.fn() })
     expect(mockStream.mock.calls[0][0].messages).toEqual([...history, { role: 'user', content: 'agora' }])
   })
+
+  it('métricas para o log (R13): latência, primeiro texto, stop_reason e rodadas', async () => {
+    mockStream.mockReturnValueOnce(fakeStream([{ type: 'text', text: 'ok' }]))
+    const r = await streamAgentReply({ agent: 'treino', profile: PROFILE, dayContext: DAY, history: [], userMessage: 'x', handleTool: handler, onEvent: vi.fn() })
+    expect(r.metrics).toMatchObject({ stopReason: 'end_turn', iterations: 1, fallbackUsed: false })
+    expect(r.metrics.latencyMs).toBeGreaterThanOrEqual(0)
+    expect(r.metrics.firstTokenMs).toBeGreaterThanOrEqual(0)
+  })
 })

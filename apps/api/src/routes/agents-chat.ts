@@ -55,7 +55,7 @@ export async function agentsChatRoutes(app: FastifyInstance): Promise<void> {
     }
 
     try {
-      await runChat(auth.user.id, auth.supabase, body.data as never, emit)
+      await runChat(auth.user.id, auth.supabase, body.data as never, emit, undefined, request.log)
     } catch (err) {
       if (!started) {
         if (err instanceof BudgetExceededError) return reply.code(409).send({ error: 'Teto mensal de IA atingido', code: 'budget-exceeded', budget: err.status })

@@ -88,7 +88,12 @@ describe('chat dos agentes (022 T023)', () => {
       await tool(args, { name: 'propose_shared_guidance', value: { kind: 'restricao-seguranca', text: 'Evitar supino', reason: 'dor', durationDays: 10, blockedPatterns: ['empurrar-horizontal'], blockedExercises: [] } })
       await tool(args, { name: 'suggest_specialist', value: { to: 'treino', reason: 'ajustar o treino' } })
       args.onEvent({ type: 'delta', text: 'avaliação.' })
-      return { text: 'Procure avaliação.', apiContent: [{ role: 'assistant', content: [{ type: 'text', text: 'Procure avaliação.' }] }], usages: [USAGE] }
+      return {
+        text: 'Procure avaliação.',
+        apiContent: [{ role: 'assistant', content: [{ type: 'text', text: 'Procure avaliação.' }] }],
+        usages: [USAGE],
+        metrics: { latencyMs: 1200, firstTokenMs: 800, stopReason: 'end_turn', iterations: 2, fallbackUsed: false },
+      }
     })
     app = await buildApp()
   })
@@ -213,5 +218,17 @@ describe('chat dos agentes (022 T023)', () => {
     expect(fake.db.agent_conversations.filter(c => !c.archived_at)).toHaveLength(1)
     const after = (await app.inject({ method: 'GET', url: '/api/agents/conversations/medicina', headers: auth })).json()
     expect(after.messages).toEqual([])
+  })
+
+  it('log por chamada de IA sem conteúdo das mensagens (R13)', async () => {
+    const { runChat } = await import('../services/agent-chat.service')
+    const info = vi.fn()
+    await runChat('u1', fake.client as never, { channel: 'medicina', message: 'segredo de saúde' }, () => {}, undefined, { info })
+    expect(info).toHaveBeenCalledWith(
+      expect.objectContaining({ agent: 'medicina', operation: 'chat', model: 'claude-opus-5-5', latencyMs: 1200, firstTokenMs: 800, stopReason: 'end_turn', inputTokens: 100, outputTokens: 50 }),
+      'ai call',
+    )
+    expect(JSON.stringify(info.mock.calls)).not.toContain('segredo de saúde')
+    expect(JSON.stringify(info.mock.calls)).not.toContain('Procure avaliação')
   })
 })

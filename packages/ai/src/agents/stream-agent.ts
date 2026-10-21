@@ -30,6 +30,8 @@ export interface StreamAgentResult {
   /** Turnos depois da mensagem do usuário (assistente + tool_result), para replay fiel do histórico. */
   apiContent: AgentMessageParam[]
   usages: UsageRecord[]
+  /** Para o log (R13): sem conteúdo das mensagens. */
+  metrics: { latencyMs: number; firstTokenMs: number | null; stopReason: string | null; iterations: number; fallbackUsed: boolean }
 }
 
 /**
@@ -49,6 +51,11 @@ export async function streamAgentReply(args: StreamAgentArgs): Promise<StreamAge
   const turn: AgentMessageParam[] = []
   const usages: UsageRecord[] = []
   let text = ''
+  const started = Date.now()
+  let firstTokenMs: number | null = null
+  let stopReason: string | null = null
+  let iterations = 0
+  let fallbackUsed = false
 
   for (let iteration = 0; ; iteration++) {
     const stream = client.beta.messages.stream({
@@ -65,10 +72,15 @@ export async function streamAgentReply(args: StreamAgentArgs): Promise<StreamAge
       messages: [...args.history, { role: 'user', content: args.userMessage }, ...turn],
     })
     stream.on('text', delta => {
+      if (firstTokenMs === null) firstTokenMs = Date.now() - started
       text += delta
       args.onEvent({ type: 'delta', text: delta })
     })
     const message = await stream.finalMessage()
+    iterations += 1
+    stopReason = message.stop_reason
+    // Fallback server-side: um bloco `fallback` marca a troca de modelo.
+    if (message.content.some(b => (b as { type: string }).type === 'fallback')) fallbackUsed = true
     usages.push(...usagesFromMessage(message, 'chat', args.agent))
     if (message.stop_reason === 'refusal') throw new AgentRefusalError()
 
@@ -100,5 +112,5 @@ export async function streamAgentReply(args: StreamAgentArgs): Promise<StreamAge
     turn.push({ role: 'user', content: results })
   }
 
-  return { text, apiContent: turn, usages }
+  return { text, apiContent: turn, usages, metrics: { latencyMs: Date.now() - started, firstTokenMs, stopReason, iterations, fallbackUsed } }
 }
