@@ -1,3 +1,4 @@
+import type { PlanDecision, SourcesUsed } from './agents'
 import type { PlannedExercise } from './workout'
 import type { ExerciseAdjustmentChange, TirednessAssessment } from './tiredness'
 
@@ -43,4 +44,7 @@ export interface AdjustedWorkoutPlanView {
   upcoming: UpcomingSessionSummary[]
   progress: { completed: number; total: number } | null
   status?: 'generating'
+  /** Spec 022: justificativa por decisão e fontes usadas na geração. */
+  rationaleDecisions?: PlanDecision[]
+  sourcesUsed?: SourcesUsed
 }
