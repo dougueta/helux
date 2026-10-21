@@ -88,3 +88,8 @@ export function serverPersonaId(cookies: CookieReader): string {
 export function shouldBypassAuth(request: { cookies: CookieReader }): boolean {
   return serverDataSource(request.cookies) === 'mock'
 }
+
+/** A Dev Bar e o modo mock só existem fora de produção (FR-008). */
+export function showDevBar(): boolean {
+  return process.env.NODE_ENV !== 'production'
+}

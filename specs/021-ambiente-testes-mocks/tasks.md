@@ -48,8 +48,8 @@
 
 ## Phase 5: US3 — Dev Bar (P2)
 
-- [ ] T012 [US3] `apps/web/src/components/dev/DevBar.tsx`: barra fixa no rodapé acima do menu, recolhível, com estado `Mock data` / `Real data`, botão de alternância (confirmação se houver um formulário com alterações, via `window.confirm` só quando `document.querySelector('form[data-dirty="true"]')`), recarga da página após a troca e aviso quando o estado local foi descartado por estar corrompido; só classes do `helux-v2.css` + inline (R-G). Testes em `apps/web/src/__tests__/components/dev/DevBar.test.tsx`
-- [ ] T013 [US3] Montar a `DevBar` em `apps/web/src/app/layout.tsx` só quando `process.env.NODE_ENV !== 'production'` (import dinâmico, `ssr: false`)
+- [X] T012 [US3] `apps/web/src/components/dev/DevBar.tsx`: barra fixa no rodapé acima do menu, recolhível, com estado `Mock data` / `Real data`, botão de alternância (confirmação se houver um formulário com alterações, via `window.confirm` só quando `document.querySelector('form[data-dirty="true"]')`), recarga da página após a troca e aviso quando o estado local foi descartado por estar corrompido; só classes do `helux-v2.css` + inline (R-G). Testes em `apps/web/src/__tests__/components/dev/DevBar.test.tsx`
+- [X] T013 [US3] Montar a `DevBar` em `apps/web/src/app/layout.tsx` só quando `process.env.NODE_ENV !== 'production'` (import dinâmico, `ssr: false`)
 
 **Checkpoint**: commit.
 
