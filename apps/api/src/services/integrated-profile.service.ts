@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { parseGeneraJson, parseGeneraTraits } from '@helux/genetics'
-import { dayTargets, type NutritionFlags } from '@helux/nutrition'
+import { buildDayPlan, dayTargets, type NutritionFlags } from '@helux/nutrition'
 import { preferenceSignalsFromEdits, sourcesUsedOf } from '@helux/ai'
 import {
   SOURCE_KEYS,
@@ -197,6 +197,22 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     const weight = nutrition.checkins[0]?.weight_kg
     const dayType = resolveDayType(nutrition, null)
     const targets = weight != null ? dayTargets(nutrition.phase.baseTargets, { dayType, weightKg: Number(weight), flags: nutrition.genetics.flags, tiredness: nutrition.tiredness }).targets : null
+    // Refeições do dia pela regra determinística da 018 (sem as trocas do usuário).
+    const meals =
+      weight != null
+        ? buildDayPlan({
+            date: todaySlug(now),
+            dayType,
+            base: nutrition.phase.baseTargets,
+            weightKg: Number(weight),
+            flags: nutrition.genetics.flags,
+            geneticsActive: nutrition.genetics.active,
+            tiredness: nutrition.tiredness,
+            swaps: [],
+          })
+            .meals.map(m => `- ${m.title}: ${m.items.map(i => i.name).join(', ')}`)
+            .join('\n')
+        : null
     const flags = (Object.keys(FLAG_TEXT) as (keyof NutritionFlags)[]).filter(f => nutrition.genetics.flags[f]).map(f => `- ${FLAG_TEXT[f]}`)
     nutritionSource = active(
       [
@@ -204,6 +220,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
         `Metas-base: ${nutrition.phase.baseTargets.kcal} kcal, P ${nutrition.phase.baseTargets.proteinG} g, C ${nutrition.phase.baseTargets.carbsG} g, G ${nutrition.phase.baseTargets.fatG} g`,
         targets && `Hoje (${dayType}): ${targets.kcal} kcal, P ${targets.proteinG} g, C ${targets.carbsG} g, G ${targets.fatG} g`,
         flags.length > 0 && `Regras genéticas da dieta:\n${flags.join('\n')}`,
+        meals && `Refeições de hoje:\n${meals}`,
       ]
         .filter(Boolean)
         .join('\n'),

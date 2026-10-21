@@ -101,8 +101,8 @@
 
 **Independent Test**: canal `nutricao` com perfil contendo MCM6 G,G → o snapshot traz a fase, o plano do dia e "sem lactose"; a seção Chat da Nutrição usa o `AgentChat`.
 
-- [ ] T029 [US4] Resumo da fonte `nutricao` (fase, metas do dia, tipo do dia, refeições, flags genéticas da 018) em `integrated-profile.service.ts`; a persona de nutrição exige respeitar as flags (lactose) e recomendar profissional para dosagem (FR-017); testes no serviço e em `personas.test.ts`
-- [ ] T030 [US4] Seção "Chat" volta à aba Nutrição em `apps/web/src/app/nutricao/NutricaoClient.tsx` usando `AgentChat channel="nutricao"`; atualizar `apps/web/src/__tests__/app/nutricao-fase.test.tsx` (seções Hoje · Chat · Fase · Perfil genético)
+- [X] T029 [US4] Resumo da fonte `nutricao` (fase, metas do dia, tipo do dia, refeições, flags genéticas da 018) em `integrated-profile.service.ts`; a persona de nutrição exige respeitar as flags (lactose) e recomendar profissional para dosagem (FR-017); testes no serviço e em `personas.test.ts`
+- [X] T030 [US4] Seção "Chat" volta à aba Nutrição em `apps/web/src/app/nutricao/NutricaoClient.tsx` usando `AgentChat channel="nutricao"`; atualizar `apps/web/src/__tests__/app/nutricao-fase.test.tsx` (seções Hoje · Chat · Fase · Perfil genético)
 
 **Checkpoint**: US4 entregável (commit).
 

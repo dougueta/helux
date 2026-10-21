@@ -147,6 +147,8 @@ describe('buildIntegratedProfile (022 T008)', () => {
     expect(profile.sources.nutricao.status).toBe('ativa')
     expect(profile.sources.nutricao.summary).toMatch(/recomposi/)
     expect(profile.sources.nutricao.summary).toMatch(/lactose/i)
+    expect(profile.sources.nutricao.summary).toMatch(/Refeições de hoje:/)
+    expect(profile.sources.nutricao.summary).toMatch(/Almoço:/)
   })
 
   it('usuário novo: perfil quase vazio sem quebrar', async () => {
