@@ -1,9 +1,11 @@
-import type { AdjustedWorkoutPlanView, DayType } from '@helux/types'
-import { buildDayPlan, swapOptions } from '@helux/nutrition'
+import type { AdjustedWorkoutPlanView, BodyCheckin, CheckinInput, DayType, DietCalibration, DietGoal, DietPhase, MealSwap, TirednessLevel, UserTrainingProfileInput } from '@helux/types'
+import { ageOn, buildDayPlan, phaseTargets, swapOptions } from '@helux/nutrition'
 import { ApiError } from '@/services/api-client'
 import type { MockRouter } from './mock-router'
 import type { MockDataset } from './types'
 import { today } from './fixtures/clock'
+import { tirednessFixture } from './fixtures/tiredness.fixture'
+import { analyticsFixture, latestPlanFixture, MESOCYCLE_SESSIONS } from './fixtures/workouts.fixture'
 
 /** Mesma resposta da API para quem ainda não tem mesociclo. */
 const GENERATING: AdjustedWorkoutPlanView = {
@@ -123,7 +125,120 @@ function registerReads(router: MockRouter) {
   }))
 }
 
+const GOAL_LABEL: Record<DietGoal, string> = {
+  perder_gordura: 'perder gordura',
+  ganhar_massa: 'ganhar massa',
+  recomposicao: 'recomposição corporal',
+  manutencao: 'manutenção',
+}
+
+/** Índice da sessão pendente hoje no mesociclo (null = sem treino hoje). */
+function pendingIndex(d: MockDataset): number | null {
+  const letter = d.latestPlan?.today?.letter
+  const i = MESOCYCLE_SESSIONS.findIndex(s => s.letter === letter)
+  return i === -1 ? null : i
+}
+
+let seq = 0
+const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${(seq++).toString(36)}`
+
+/** Escritas (T014): gravam no `mock-store` (localStorage) e respondem como a API. */
+function registerWrites(router: MockRouter) {
+  router.register('POST', '/api/workouts/sessions', ({ store, body }) => {
+    const input = body as { date: string; duration_s: number | null; exercises: MockDataset['workoutHistory'][number]['exercises'] }
+    const row = { id: newId('mock-session'), date: input.date, duration_s: input.duration_s ?? null, exercises: input.exercises, created_at: new Date().toISOString() }
+    store.updateDataset(d => {
+      const workoutHistory = [row, ...d.workoutHistory]
+      const i = pendingIndex(d)
+      const next = i === null || i + 1 >= MESOCYCLE_SESSIONS.length ? null : i + 1
+      return {
+        workoutHistory,
+        workoutAnalytics: analyticsFixture(workoutHistory),
+        latestPlan: d.latestPlan?.mesocycleId ? latestPlanFixture(d.tirednessToday, next) : d.latestPlan,
+      }
+    })
+    return row
+  })
+
+  router.register('PUT', '/api/tiredness-today', ({ store, body }) => {
+    const { level, overrideAutomatic = false } = body as { level: TirednessLevel; overrideAutomatic?: boolean }
+    const d = store.updateDataset(cur => {
+      const tirednessToday = tirednessFixture(level, cur.tirednessToday.automaticHrv, overrideAutomatic)
+      const i = pendingIndex(cur)
+      return { tirednessToday, latestPlan: i === null ? cur.latestPlan : latestPlanFixture(tirednessToday, i) }
+    })
+    return d.tirednessToday
+  })
+
+  router.register('POST', '/api/profile', ({ store, body }) => {
+    const input = body as UserTrainingProfileInput
+    const d = store.updateDataset(cur => ({ profile: { ...cur.profile, ...input, updatedAt: new Date().toISOString() } }))
+    return { profile: d.profile }
+  })
+
+  router.register('POST', '/api/checkins', ({ store, body }) => {
+    const input = body as CheckinInput
+    let saved!: BodyCheckin
+    store.updateDataset(cur => {
+      const existing = cur.bodyCheckins.find(c => c.month === input.month)
+      saved = { ...(existing ?? { id: newId('mock-checkin'), created_at: new Date().toISOString() }), ...input }
+      return { bodyCheckins: [saved, ...cur.bodyCheckins.filter(c => c.month !== input.month)].sort((a, b) => b.month.localeCompare(a.month)) }
+    })
+    return { ...saved, calibration: null }
+  })
+
+  router.register('POST', '/workout/generate', ({ data }) => ({
+    generatedAt: new Date().toISOString(),
+    exercises: (data.latestPlan?.today ?? MESOCYCLE_SESSIONS[0]).exercises,
+    rationale: 'Plano de teste (modo mock): sessão do mesociclo da persona.',
+  }))
+
+  router.register('POST', '/api/nutrition/phase', ({ store, data, body }) => {
+    const { goal, durationWeeks } = body as { goal: DietGoal; durationWeeks: number }
+    const p = data.profile
+    const weightKg = data.bodyCheckins[0]?.weight_kg
+    if (missingFields(data).length > 0 || !p?.heightCm || !p.birthDate || !p.sex || weightKg == null) throw new ApiError('needs-profile')
+    const baseTargets = phaseTargets({ goal, weightKg, heightCm: p.heightCm, age: ageOn(p.birthDate, today()), sex: p.sex, daysPerWeek: 4 })
+    const phase: DietPhase = { id: newId('mock-phase'), goal, startedOn: today(), durationWeeks, status: 'ativa', baseTargets }
+    const calibration: DietCalibration = {
+      id: newId('mock-calibration'),
+      action: 'inicial',
+      before: null,
+      after: baseTargets,
+      reason: `Fase iniciada: ${GOAL_LABEL[goal]} por ${durationWeeks} semanas, a partir de ${String(weightKg).replace('.', ',')} kg.`,
+      metrics: { weeks: 0, weightFromKg: weightKg, weightToKg: weightKg, weeklyRatePct: 0 },
+      createdAt: new Date().toISOString(),
+    }
+    store.updateDataset(cur => ({ nutrition: { ...cur.nutrition, phase, calibrations: [calibration], dayTypeOverride: null, swaps: [] } }))
+    return { phase, calibration }
+  })
+
+  router.register('POST', '/api/nutrition/phase/end', ({ store, data }) => {
+    if (!data.nutrition.phase || data.nutrition.phase.status !== 'ativa') throw new ApiError('HTTP 404')
+    const phase: DietPhase = { ...data.nutrition.phase, status: 'encerrada' }
+    store.updateDataset(cur => ({ nutrition: { ...cur.nutrition, phase: null, calibrations: [] } }))
+    return { phase }
+  })
+
+  router.register('PUT', '/api/nutrition/today', ({ store, body }) => {
+    const { dayType } = body as { dayType: DayType }
+    const d = store.updateDataset(cur => ({ nutrition: { ...cur.nutrition, dayTypeOverride: dayType === 'descanso' ? 'descanso' : null } }))
+    return nutritionToday(d)
+  })
+
+  router.register('POST', '/api/nutrition/today/swap', ({ store, data, body }) => {
+    const swap = body as MealSwap
+    const day = nutritionToday(data)
+    if (day.status !== 'ok') throw new ApiError('HTTP 409')
+    const allowed = swapOptions(day.plan, swap.mealId, swap.fromFoodId, data.nutrition.genetics.flags).some(o => o.food.id === swap.toFoodId)
+    if (!allowed) throw new ApiError('Bad Request')
+    const d = store.updateDataset(cur => ({ nutrition: { ...cur.nutrition, swaps: [...cur.nutrition.swaps, swap] } }))
+    return nutritionToday(d)
+  })
+}
+
 /** Rotas de leitura (T010) e escrita (T014) do modo mock, no formato da API real. */
 export function registerMockRoutes(router: MockRouter): void {
   registerReads(router)
+  registerWrites(router)
 }

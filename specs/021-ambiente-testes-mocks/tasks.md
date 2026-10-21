@@ -57,8 +57,8 @@
 
 ## Phase 6: US4 — Escritas locais e reset (P2)
 
-- [ ] T014 [US4] Rotas de escrita no `mock-router`, persistindo no `mock-store`: `POST /api/workouts/sessions` (insere no histórico, marca a sessão do plano como concluída, atualiza a análise), `PUT /api/tiredness-today`, `POST /api/profile`, `POST /api/checkins` (upsert por mês), `POST /workout/generate` (devolve o plano da persona), `POST /api/nutrition/phase` e `/phase/end`, `PUT /api/nutrition/today` (tipo do dia, recalculado por `buildDayPlan`) e `POST /api/nutrition/today/swap` (aplica a troca com `swapOptions`). Testes em `apps/web/src/__tests__/mocks/mock-mutations.test.ts` (escrita → leitura reflete; persiste num novo `mock-store` sobre o mesmo `localStorage`)
-- [ ] T015 [US4] Botão "Resetar dados de teste" na `DevBar` → `reset()`, evento `helux:mock-reset` e recarga; teste no `DevBar.test.tsx`
+- [X] T014 [US4] Rotas de escrita no `mock-router`, persistindo no `mock-store`: `POST /api/workouts/sessions` (insere no histórico, marca a sessão do plano como concluída, atualiza a análise), `PUT /api/tiredness-today`, `POST /api/profile`, `POST /api/checkins` (upsert por mês), `POST /workout/generate` (devolve o plano da persona), `POST /api/nutrition/phase` e `/phase/end`, `PUT /api/nutrition/today` (tipo do dia, recalculado por `buildDayPlan`) e `POST /api/nutrition/today/swap` (aplica a troca com `swapOptions`). Testes em `apps/web/src/__tests__/mocks/mock-mutations.test.ts` (escrita → leitura reflete; persiste num novo `mock-store` sobre o mesmo `localStorage`)
+- [X] T015 [US4] Botão "Resetar dados de teste" na `DevBar` → `reset()`, evento `helux:mock-reset` e recarga; teste no `DevBar.test.tsx`
 
 **Checkpoint**: commit.
 
@@ -66,8 +66,8 @@
 
 ## Phase 7: US5 — Personas (P3)
 
-- [ ] T016 [US5] `apps/web/src/mocks/fixtures/personas.ts`: `standard-athlete`, `rest-day-athlete` (plano sem treino hoje e dia de descanso na nutrição), `exhausted-athlete` (cansaço `exausto`, HRV baixo, plano ajustado, card de recuperação na nutrição), `zero-state` (sem plano, histórico, check-ins, fase nem perfil), `network-error` (R-H: toda leitura lança `ApiError('HTTP 503')`). Testes em `apps/web/src/__tests__/mocks/personas.test.ts`
-- [ ] T017 [US5] Seletor de persona na `DevBar` → `setPersonaId` + `loadPersona` + evento `helux:persona-change` + recarga; teste no `DevBar.test.tsx`
+- [X] T016 [US5] `apps/web/src/mocks/fixtures/personas.ts`: `standard-athlete`, `rest-day-athlete` (plano sem treino hoje e dia de descanso na nutrição), `exhausted-athlete` (cansaço `exausto`, HRV baixo, plano ajustado, card de recuperação na nutrição), `zero-state` (sem plano, histórico, check-ins, fase nem perfil), `network-error` (R-H: toda leitura lança `ApiError('HTTP 503')`). Testes em `apps/web/src/__tests__/mocks/personas.test.ts`
+- [X] T017 [US5] Seletor de persona na `DevBar` → `setPersonaId` + `loadPersona` + evento `helux:persona-change` + recarga; teste no `DevBar.test.tsx`
 
 **Checkpoint**: commit.
 

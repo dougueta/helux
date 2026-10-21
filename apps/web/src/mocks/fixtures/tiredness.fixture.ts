@@ -1,18 +1,10 @@
 import type { RecoveryData, TirednessAssessment, TirednessLevel } from '@helux/types'
+import { assessTiredness } from '@helux/workouts'
 import { today } from './clock'
 
-/** Cansaço do dia (011): manual quando há nível, senão automático pelo HRV. */
-export function tirednessFixture(level: TirednessLevel | null, hrv: number | null = 62): TirednessAssessment {
-  return {
-    date: today(),
-    manualLevel: level,
-    overrideAutomatic: false,
-    automaticLevel: hrv == null ? null : hrv < 40 ? 'exausto' : hrv < 50 ? 'cansado' : 'normal',
-    automaticHrv: hrv,
-    effectiveLevel: level ?? (hrv == null ? null : hrv < 40 ? 'exausto' : hrv < 50 ? 'cansado' : 'normal'),
-    source: level ? 'manual' : hrv == null ? 'none' : 'automatic',
-    conflict: false,
-  }
+/** Cansaço do dia pelas regras reais da 011 (`assessTiredness`). */
+export function tirednessFixture(manualLevel: TirednessLevel | null, hrv: number | null = 62, overrideAutomatic = false): TirednessAssessment {
+  return assessTiredness({ date: today(), manualLevel, overrideAutomatic, hrv })
 }
 
 export function recoveryFixture(hrv: number, sleepHours: number): RecoveryData {
