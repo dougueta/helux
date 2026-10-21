@@ -20,7 +20,7 @@ export function requestCookies(): CookieReader {
  */
 export async function serverFetch(path: string, init?: RequestInit): Promise<Response> {
   const jar = requestCookies()
-  if (serverDataSource(jar) === 'mock') {
+  if (process.env.NODE_ENV !== 'production' && serverDataSource(jar) === 'mock') {
     const { getServerMock } = await import('@/mocks/runtime')
     try {
       const body = await getServerMock(serverPersonaId(jar)).router.dispatch(path, { method: init?.method, body: init?.body })

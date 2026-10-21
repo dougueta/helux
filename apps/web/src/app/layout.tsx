@@ -6,7 +6,6 @@ import './helux-v2.css'
 import { NavBar } from '@/components/layout/NavBar'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { DevBarMount } from '@/components/dev/DevBarMount'
-import { showDevBar } from '@/lib/data-source'
 
 // Pesos da v2 (research V1): Grotesk 400–700; Mono 400–600 + itálico (genes).
 const spaceGrotesk = Space_Grotesk({
@@ -49,7 +48,8 @@ export default function RootLayout({
           </ErrorBoundary>
         </main>
         <NavBar />
-        {showDevBar() && <DevBarMount initialCollapsed />}
+        {/* NODE_ENV literal: o build de produção descarta a Dev Bar (FR-008). */}
+        {process.env.NODE_ENV !== 'production' && <DevBarMount initialCollapsed />}
       </body>
     </html>
   )

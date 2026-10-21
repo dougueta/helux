@@ -17,7 +17,8 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<unknown> {
-  if (isMockActive()) {
+  // A checagem literal de NODE_ENV deixa o bundler remover o modo mock do build de produção.
+  if (process.env.NODE_ENV !== 'production' && isMockActive()) {
     // Modo mock (spec 021): resolve no navegador, sem Supabase nem rede.
     const { getBrowserMock } = await import('@/mocks/runtime')
     return getBrowserMock().router.dispatch(path, options)

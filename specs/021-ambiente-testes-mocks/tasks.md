@@ -75,5 +75,5 @@
 
 ## Phase 8: Guardas e verificação final
 
-- [ ] T018 Teste de guarda em `apps/web/src/__tests__/mocks/production-guard.test.ts`: com `NODE_ENV=production`, `resolveDataSource` → `real` mesmo com cookie/env `mock`, `shouldBypassAuth` → `false`, `getServerSession` não devolve a sessão fake, e o `layout.tsx` não monta a `DevBar`
-- [ ] T019 Rodar o guard do design system, `pnpm test`, `pnpm typecheck` e `pnpm build`; atualizar o `quickstart.md` (como ligar o mock, personas, limitação R-C, números das suítes)
+- [X] T018 Teste de guarda em `apps/web/src/__tests__/mocks/production-guard.test.ts`: com `NODE_ENV=production`, `resolveDataSource` → `real` mesmo com cookie/env `mock`, `shouldBypassAuth` → `false`, `getServerSession` não devolve a sessão fake, e o `layout.tsx` não monta a `DevBar`
+- [X] T019 Rodar o guard do design system, `pnpm test`, `pnpm typecheck` e `pnpm build`; atualizar o `quickstart.md` (como ligar o mock, personas, limitação R-C, números das suítes)
