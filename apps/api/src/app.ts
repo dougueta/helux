@@ -16,6 +16,7 @@ import { nutritionPhaseRoutes } from './routes/nutrition-phase'
 import { nutritionTodayRoutes } from './routes/nutrition-today'
 import { nutritionGeneticProfileRoutes } from './routes/nutrition-genetic-profile'
 import { workoutProposalsRoutes } from './routes/workout-proposals'
+import { workoutSessionEditRoutes } from './routes/workout-session-edit'
 import { loadEnv, type AppEnv } from './config/env'
 
 export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): FastifyInstance {
@@ -46,6 +47,7 @@ export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): Fasti
   app.register(nutritionTodayRoutes)
   app.register(nutritionGeneticProfileRoutes)
   app.register(workoutProposalsRoutes)
+  app.register(workoutSessionEditRoutes)
 
   return app
 }
