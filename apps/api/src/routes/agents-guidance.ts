@@ -12,7 +12,7 @@ export async function agentsGuidanceRoutes(app: FastifyInstance): Promise<void> 
         const fn = action === 'accept' ? acceptGuidance : rejectGuidance
         const result = await fn(auth.user.id, auth.supabase, request.params.id)
         if (result.status === 'not-found') return reply.code(404).send({ error: 'Not Found' })
-        if (result.status === 'not-pending') return reply.code(409).send({ error: 'A orientação já foi resolvida', code: 'not-pending' })
+        if (result.status !== 'ok') return reply.code(409).send({ error: 'A orientação já foi resolvida', code: 'not-pending' })
         return reply.send(result.conflict ? { ...result.guidance, conflict: result.conflict } : result.guidance)
       } catch (err) {
         app.log.error(err, `agents guidance ${action}: failed`)
