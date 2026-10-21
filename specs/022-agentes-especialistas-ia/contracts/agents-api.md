@@ -26,6 +26,9 @@ Body `TrainingPreferencesInput` (validação do data-model). Resposta `200`:
 - Mudança em rígidas com sessões pendentes que violam → `proposal` `adaptacao-restricao` `pendente` (gera IA; sujeito ao teto, R11). Sem violação → `proposal: null`.
 - Teto atingido → preferências salvas, `proposal: null`, `"budgetBlocked": true` (a adaptação pode ser pedida depois).
 
+### `GET /api/exercises` *(acrescentado na implementação)*
+`200 { exercises: Array<{ id, name, muscleGroup, equipment, pattern }> }` — catálogo do banco para os seletores de favoritos/evitar (a web não depende de `@helux/ai`).
+
 ## Conversas (SSE)
 
 ### `GET /api/agents/conversations/:channel`

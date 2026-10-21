@@ -73,6 +73,13 @@ describe('preferências de treino (022 T009)', () => {
     app = await buildApp()
   })
 
+  it('GET /api/exercises: catálogo do banco para os seletores (id, nome, grupo, equipamento, padrão)', async () => {
+    const res = await app.inject({ method: 'GET', url: '/api/exercises', headers: auth })
+    const { exercises } = res.json()
+    expect(exercises.length).toBeGreaterThan(100)
+    expect(exercises.find((e: { id: string }) => e.id === 'leg-press-45')).toEqual({ id: 'leg-press-45', name: 'Leg Press 45°', muscleGroup: expect.any(String), equipment: 'maquina-cabo', pattern: 'agachar' })
+  })
+
   it('GET sem preferências → valores vazios', async () => {
     const res = await app.inject({ method: 'GET', url: '/api/training-preferences', headers: auth })
     expect(res.json()).toMatchObject({ availableDays: [], availableEquipment: [], maxSessionMinutes: null, updatedAt: null })

@@ -5,6 +5,9 @@ const WARMUP_MIN = 5
 const EXECUTION_S_PER_SET = 40
 const DEFAULT_REST_S = 90
 
+/** Catálogo enxuto do banco para a web (spec 022): id, nome, grupo, equipamento e padrão. */
+export const EXERCISE_CATALOG = EXERCISE_BANK.map(({ id, name, muscleGroup, equipment, pattern }) => ({ id, name, muscleGroup, equipment, pattern }))
+
 const BY_NAME = new Map(EXERCISE_BANK.map(e => [e.name, e]))
 const BY_ID = new Map(EXERCISE_BANK.map(e => [e.id, e]))
 

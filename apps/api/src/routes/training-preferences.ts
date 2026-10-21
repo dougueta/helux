@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { findBankExercise, validatePlanAgainstConstraints } from '@helux/ai'
+import { EXERCISE_CATALOG, findBankExercise, validatePlanAgainstConstraints } from '@helux/ai'
 import { EQUIPMENT, HARD_PREFERENCE_FIELDS, type TrainingPreferences, type WorkoutAdjustmentProposal } from '@helux/types'
 import { toPreferences, type PreferencesRow } from '../services/agent-rows'
 import { BudgetExceededError } from '../services/ai-budget.service'
@@ -44,6 +44,13 @@ const hardChanged = (prev: TrainingPreferences, next: Input) =>
 
 /** Preferências de treino (spec 022, FR-005, FR-011, R8). */
 export async function trainingPreferencesRoutes(app: FastifyInstance): Promise<void> {
+  // Catálogo para os seletores de favoritos/evitar e da edição manual (sem dados do usuário).
+  app.get('/api/exercises', async (request, reply) => {
+    const auth = await authenticate(request, reply)
+    if (!auth) return
+    return reply.send({ exercises: EXERCISE_CATALOG })
+  })
+
   app.get('/api/training-preferences', async (request, reply) => {
     const auth = await authenticate(request, reply)
     if (!auth) return
