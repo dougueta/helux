@@ -130,7 +130,7 @@ Nenhuma. As histórias são independentes entre si e não há infraestrutura com
 ## Phase 8: Polish & Cross-Cutting
 
 - [x] T023 [P] Varrer arquivos versionados e o histórico da branch por padrões de segredo (`sk-ant-`, JWT `eyJ`, `service_role`) e registrar o comando e o resultado em `docs/deploy.md` (FR-012, SC-006)
-- [ ] T024 Rodar `pnpm typecheck` e `pnpm test` e comparar com a linha de base de T001; nenhuma regressão
+- [x] T024 Rodar `pnpm typecheck` e `pnpm test` e comparar com a linha de base de T001; nenhuma regressão **Resultado (2026-10-21):** `pnpm typecheck` 9/9; `pnpm test` todos verdes: api 262, web 595, ai 187, workouts 100, nutrition 76, genetics 34, health 27, types 17, mobile 17. As falhas da linha de base (022 em andamento) não existem mais.
 - [x] T025 Atualizar o bloco SPECKIT do `CLAUDE.md` para apontar para `specs/023-producao-render/plan.md`
 - [ ] T026 Executar o roteiro de [quickstart.md](./quickstart.md) no deploy real (ação manual do dono) e marcar SC-001 a SC-006
 
