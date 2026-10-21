@@ -43,3 +43,18 @@ pnpm --filter @helux/ai eval:medicina
 8. **Equipe (US5/FR-023)** — `/equipe`: pergunta de nutrição → indicador "Nutrição respondendo"; relato de ombro conhecido pelo Agente de Nutrição; apagar o relato → nenhum agente o cita.
 9. **Teto (FR-025/026)** — definir teto US$ 1: aviso aos 80%; aos 100% chats bloqueados com mensagem; treino de hoje e edição manual funcionam.
 10. **Latência (SC-004a)** — conferir `firstTokenMs` nos logs da API: ≤ 3 s em 95% das mensagens.
+
+## Estado da implementação (2026-10-20)
+
+- **Branch empilhada** sobre 021 → 018 (R0 resolvido: a 018 já está nesta base; a US2 da 018 foi movida para cá).
+- **Verificação final (T036)**: `pnpm test` — api 248, web 595, ai 187, workouts 100, nutrition 76, genetics 34, health 27, types 17, mobile 9, todos verdes; `pnpm typecheck` 9/9; `pnpm build` 2/2 (o `fetch failed` no log vem do prerender da `/dna` sem a API no ar, como antes). O build de produção não leva código de mock.
+- **Migration não aplicada**: `20261014002645_nutrition.sql` (018) e `20261020120000_specialist_agents.sql` (022) precisam ir para o Supabase antes do deploy da API. Nesta sessão o MCP do Supabase dava timeout de conexão com o banco (o projeto estava `ACTIVE_HEALTHY`).
+- **Não executados (custam dinheiro ou exigem login real)**: o eval `eval:medicina`, a medição de latência (SC-004a) e o roteiro manual acima.
+
+### Decisões tomadas na implementação
+
+- **Histórico em texto (R3)**: as respostas anteriores voltam ao modelo como texto, sem blocos de raciocínio nem de ferramenta. Com a janela de 20 mensagens andando, reenviar os blocos de raciocínio faria o histórico "editado" (a checagem de raciocínio preservado do Opus 5.5 rejeita isso). O `api_content` continua gravado para auditoria.
+- **`GET /api/exercises`** (contrato atualizado): catálogo do banco para os seletores da web, que não depende de `@helux/ai`.
+- **`shared_guidance.conflicts_with` e `duration_days`** (migration): guardam o conflito detectado no aceite (FR-021) e o prazo proposto, que vira `expires_at` no aceite.
+- **CORS libera `PATCH`** (edição manual e relatos); **`apiFetch` aceita 204** e o `ApiError` traz `code` e o corpo.
+- **Roteador**: recusa ou JSON inválido caem no Agente de Treino, que encaminha se precisar.

@@ -126,7 +126,7 @@
 
 - [X] T034 Modo mock (R12): rotas da 022 no `apps/web/src/mocks/routes.ts` (perfil integrado, fontes, teto, preferências, conversas, orientações, propostas, alternativas/edição) com estado no `MockDataset`, e `POST /api/agents/chat` em mock devolvendo um stream SSE simulado (`Response` com `ReadableStream`) a partir de respostas pré-gravadas por agente (incluindo uma proposta e um relato); o leitor de SSE do `agents.service.ts` funciona igual. Testes em `apps/web/src/__tests__/mocks/agents-mock.test.ts`
 - [X] T035 Logs por chamada de IA (R13: agente, operação, modelo, latência, `firstTokenMs`, tokens, cache, `stopReason`; sem conteúdo) no `agent-chat.service.ts` e na geração
-- [ ] T036 Guard do design system, `pnpm test`, `pnpm typecheck`, `pnpm build`; aplicar a migration (T001) no Supabase se a conexão estiver disponível; atualizar `quickstart.md` com os números e o que ficou para validação manual (latência SC-004a, eval)
+- [X] T036 Guard do design system, `pnpm test`, `pnpm typecheck`, `pnpm build`; aplicar a migration (T001) no Supabase se a conexão estiver disponível; atualizar `quickstart.md` com os números e o que ficou para validação manual (latência SC-004a, eval)
 
 ---
 

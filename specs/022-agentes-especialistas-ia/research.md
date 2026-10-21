@@ -34,7 +34,7 @@ Decisões técnicas que resolvem os pontos abertos da spec (após o clarify de 2
 ## R3 — Chats com streaming via SSE (generaliza a 018)
 
 - **Decision**: `POST /api/agents/chat` responde `text/event-stream` (Fastify `reply.raw`), consumido na web com `fetch` + `ReadableStream` (EventSource não envia `Authorization`). Eventos: `start`, `routed` (só no chat Equipe), `delta`, `proposal`, `fact`, `handoff`, `done`, `error` (contrato em `contracts/agents-api.md`). No servidor: `client.beta.messages.stream(...)` → repassa `text_delta` como `delta`; ao final `finalMessage()` → trata `tool_use`/`refusal`/`max_tokens`, grava a resposta e o uso.
-- **Histórico**: últimas **20 mensagens** da conversa (mesma regra da 018); conversa nova = histórico vazio (FR-022).
+- **Histórico**: últimas **20 mensagens** da conversa (mesma regra da 018); conversa nova = histórico vazio (FR-022). *Na implementação (2026-10-20): as respostas voltam como texto, sem blocos de raciocínio/ferramenta — com a janela andando, reenviá-los conta como edição do histórico e o Opus 5.5 rejeita; o `api_content` fica gravado só para auditoria.*
 - **Thinking**: `display` omitido (o usuário não vê raciocínio). O primeiro texto visível pode atrasar alguns segundos com thinking adaptativo; esforço `low` mantém isso dentro de 3 s na maioria das mensagens (SC-004a). Medir na validação.
 - **Rationale**: SSE é unidirecional por mensagem, suficiente e já desenhado na 018.
 - **Alternatives**: WebSocket (bidirecional sem necessidade); resposta inteira de uma vez (descartado no clarify).
