@@ -11,15 +11,15 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Criar `apps/web/src/mocks/{fixtures}`, `apps/web/src/components/dev` e `apps/web/src/__tests__/mocks`; acrescentar `NEXT_PUBLIC_DATA_SOURCE=real` (comentado, com explicação) em `apps/web/.env.example`
+- [X] T001 Criar `apps/web/src/mocks/{fixtures}`, `apps/web/src/components/dev` e `apps/web/src/__tests__/mocks`; acrescentar `NEXT_PUBLIC_DATA_SOURCE=real` (comentado, com explicação) em `apps/web/.env.example`
 
 ---
 
 ## Phase 2: Foundational
 
-- [ ] T002 [P] `apps/web/src/lib/data-source.ts` (isomórfico, sem React): `DataSourceMode`, `resolveDataSource({ nodeEnv, cookie, envDefault })` (precedência R-A), `getDataSource()` no cliente (lê `document.cookie`), `setDataSource(mode)` (grava o cookie `helux-data-source`, `path=/`, 1 ano, e dispara `helux:data-source-change`), `getPersonaId()`/`setPersonaId()` (cookie `helux-mock-persona`, padrão `standard-athlete`) e `isMockActive()`. Testes em `apps/web/src/__tests__/mocks/data-source.test.ts` (produção sempre `real`, cookie > env > `real`, valores inválidos ignorados)
-- [ ] T003 [P] `apps/web/src/mocks/mock-store.ts`: `MockDataset`/`MockLocalStorageState` (data-model, sem `medicalExams`, com `nutrition`), `getDataset()`, `updateDataset(updater)`, `reset()` e `loadPersona(id)` sobre `localStorage['helux_mock_state_v1']`; estado ausente, corrompido ou de outra versão → dataset inicial da persona do cookie, com `corrupted: true` para o aviso da Dev Bar; sem `window` → dataset inicial (servidor). Testes em `apps/web/src/__tests__/mocks/mock-store.test.ts`
-- [ ] T004 `apps/web/src/mocks/mock-router.ts`: `createMockRouter(store)` com `dispatch(path, options)` (método + path, query string ignorada no casamento e lida pelos handlers) devolvendo o JSON da resposta ou lançando `ApiError` (rota desconhecida → `ApiError('HTTP 404')`). Começa só com `GET /health`. Testes em `apps/web/src/__tests__/mocks/mock-router.test.ts`
+- [X] T002 [P] `apps/web/src/lib/data-source.ts` (isomórfico, sem React): `DataSourceMode`, `resolveDataSource({ nodeEnv, cookie, envDefault })` (precedência R-A), `getDataSource()` no cliente (lê `document.cookie`), `setDataSource(mode)` (grava o cookie `helux-data-source`, `path=/`, 1 ano, e dispara `helux:data-source-change`), `getPersonaId()`/`setPersonaId()` (cookie `helux-mock-persona`, padrão `standard-athlete`) e `isMockActive()`. Testes em `apps/web/src/__tests__/mocks/data-source.test.ts` (produção sempre `real`, cookie > env > `real`, valores inválidos ignorados)
+- [X] T003 [P] `apps/web/src/mocks/mock-store.ts`: `MockDataset`/`MockLocalStorageState` (data-model, sem `medicalExams`, com `nutrition`), `getDataset()`, `updateDataset(updater)`, `reset()` e `loadPersona(id)` sobre `localStorage['helux_mock_state_v1']`; estado ausente, corrompido ou de outra versão → dataset inicial da persona do cookie, com `corrupted: true` para o aviso da Dev Bar; sem `window` → dataset inicial (servidor). Testes em `apps/web/src/__tests__/mocks/mock-store.test.ts`
+- [X] T004 `apps/web/src/mocks/mock-router.ts`: `createMockRouter(store)` com `dispatch(path, options)` (método + path, query string ignorada no casamento e lida pelos handlers) devolvendo o JSON da resposta ou lançando `ApiError` (rota desconhecida → `ApiError('HTTP 404')`). Começa só com `GET /health`. Testes em `apps/web/src/__tests__/mocks/mock-router.test.ts`
 
 **Checkpoint**: fundação pronta (commit).
 
