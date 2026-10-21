@@ -110,8 +110,8 @@ O chat do agente nutricionista (antigas T027–T032) agora é a US4 da spec `022
 ## Phase 8: Polish & Cross-Cutting
 
 - [X] T039 Rodar o guard do design system (`apps/web/src/__tests__/design-system-guard.test.ts`) e corrigir qualquer classe/cor fora do v2 nas telas novas
-- [ ] T040 Verificação final única: `pnpm test`, `pnpm typecheck`, `pnpm build`; registrar os números no `quickstart.md`
-- [ ] T041 Atualizar `specs/018-nutricao-genetica/quickstart.md` com observações finais (`supabase db push` da migration antes do deploy da API; pontos de revisão R5/R9) e `packages/nutrition/README.md` com o uso das funções
+- [X] T040 Verificação final única: `pnpm test`, `pnpm typecheck`, `pnpm build`; registrar os números no `quickstart.md`
+- [X] T041 Atualizar `specs/018-nutricao-genetica/quickstart.md` com observações finais (`supabase db push` da migration antes do deploy da API; pontos de revisão R5/R9) e `packages/nutrition/README.md` com o uso das funções
 
 ---
 

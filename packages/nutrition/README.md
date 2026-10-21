@@ -6,6 +6,18 @@ Funções puras, sem I/O — mesmas entradas, mesma saída. A API persiste e orq
 
 Contrato: `specs/018-nutricao-genetica/contracts/nutrition-engine.md`.
 
+## Uso
+
+```ts
+import { classifyMarkers, nutritionFlags, phaseTargets, recalibrate, buildDayPlan, swapOptions, anchorMealTimes, recoveryNote } from '@helux/nutrition'
+
+const markers = classifyMarkers(parseGeneraNutrition(genera)) // @helux/genetics
+const flags = nutritionFlags(markers)                         // intoleranciaLactose, lowCarbEficaz, ...
+const plan = buildDayPlan({ date, dayType, base: phase.baseTargets, weightKg, flags, geneticsActive: true, tiredness, swaps })
+// plan.recovery traz água extra, orientações e, no dia `exausto`, a nota de recuperação (recoveryNote)
+const timed = anchorMealTimes(plan, { startedAt, finishedAt, now })
+```
+
 ```bash
 pnpm --filter @helux/nutrition test
 ```

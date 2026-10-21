@@ -35,3 +35,15 @@ pnpm test && pnpm typecheck && pnpm build
 10. **Recalibração:** registrar outro check-in (≥ 2 semanas depois, ou ajustar a data em ambiente local) com perda menor que a esperada → Fase mostra "reduzir" com o motivo.
 11. **Perfil genético (US4):** Nutrição › Perfil genético mostra os cards nas 3 categorias com status; abrir MCM6 → conduta prática.
 12. **Sem genética:** renomear `genera.json` → aviso "personalização genética inativa" e plano padrão.
+
+## Verificação final (T040, 2026-10-20)
+
+- `pnpm test`: web 500, api 181, ai 121, workouts 100, nutrition 76, genetics 34, health 27, types 17, mobile 9 — tudo verde.
+- `pnpm typecheck` (9/9) e `pnpm build` (2/2) verdes.
+
+## Observações finais (T041)
+
+- **Antes do deploy da API**: aplicar `supabase/migrations/20261014002645_nutrition.sql` no projeto (`supabase db push`). A tabela `nutrition_chat_messages` vem junto, mas fica sem uso (o chat foi para a 022).
+- **US2 (chat)**: saiu da 018 em 2026-10-20 e virou a US4 da spec 022. A aba Nutrição agora tem Hoje · Fase · Perfil genético.
+- **Pontos de revisão**: R5 (dia de treino por padrão + "hoje é descanso"). O R9 (latência do chat) passou para a 022.
+- **Validação manual**: os passos 1–8 e 10–12 acima não foram feitos no navegador; ficam para o usuário.
