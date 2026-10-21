@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { SOURCE_KEYS } from '@helux/types'
 import { fakeSupabase } from './helpers/fake-supabase'
 import { buildIntegratedProfile } from '../services/integrated-profile.service'
+import { acceptGuidance } from '../services/guidance.service'
 
 const NOW = new Date('2026-10-20T15:00:00Z')
 const SESSION = (letter: string, completedAt: string | null) => ({
@@ -154,5 +155,35 @@ describe('buildIntegratedProfile (022 T008)', () => {
     expect(profile.sources.perfil.status).toBe('vazia')
     expect(profile.sources.historico.status).toBe('vazia')
     expect(constraints).toEqual({ availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] })
+  })
+
+  it('SC-007: restrição proposta pela Medicina e aceita passa a valer para o treino', async () => {
+    const fake = db({
+      shared_guidance: [
+        {
+          user_id: 'u1',
+          id: 'g9',
+          kind: 'restricao-seguranca',
+          text: 'Evitar supino por 10 dias',
+          reason: 'dor no ombro',
+          origin_agent: 'medicina',
+          status: 'pendente',
+          starts_at: null,
+          expires_at: null,
+          duration_days: 10,
+          blocked_patterns: ['empurrar-horizontal'],
+          blocked_exercises: ['supino-reto-barra'],
+          created_at: '2026-10-20T10:00:00Z',
+        },
+      ],
+    })
+    const before = await buildIntegratedProfile('u1', fake.client as never, NOW)
+    expect(before.constraints.blockedPatterns).toEqual([])
+
+    await acceptGuidance('u1', fake.client as never, 'g9', NOW)
+    const after = await buildIntegratedProfile('u1', fake.client as never, NOW)
+    expect(after.constraints.blockedPatterns).toEqual(['empurrar-horizontal'])
+    expect(after.constraints.blockedExercises).toEqual(['supino-reto-barra'])
+    expect(after.profile.sources.restricoes.summary).toMatch(/Evitar supino por 10 dias/)
   })
 })

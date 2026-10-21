@@ -87,8 +87,8 @@
 
 **Independent Test**: relatar dor no ombro → resposta (mockada) com proposta de restrição; aceitar → `HardConstraints` traz o padrão bloqueado e a edição/geração respeita.
 
-- [ ] T026 [P] [US3] `matchesMedicalRedFlag(message)` (puro, lista fechada do R10 com variações sem acento/maiúsculas) em `packages/ai/src/agents/router.ts`; testes com os 11 sinais e falsos positivos em `packages/ai/src/__tests__/agents/router.test.ts`
-- [ ] T027 [US3] Canal `medicina` no chat (persona, bloco do dia com lesão declarada e cargas recentes) e acesso em `/equipe?agente=medicina` e a partir do campo de lesão no Perfil; restrição aceita entra no `HardConstraints` (`blockedPatterns`/`blockedExercises`) — teste de integração em `apps/api/src/__tests__/integrated-profile.service.test.ts` (SC-007)
+- [X] T026 [P] [US3] `matchesMedicalRedFlag(message)` (puro, lista fechada do R10 com variações sem acento/maiúsculas) em `packages/ai/src/agents/router.ts`; testes com os 11 sinais e falsos positivos em `packages/ai/src/__tests__/agents/router.test.ts`
+- [X] T027 [US3] Canal `medicina` no chat (persona, bloco do dia com lesão declarada e cargas recentes) e acesso em `/equipe?agente=medicina` e a partir do campo de lesão no Perfil; restrição aceita entra no `HardConstraints` (`blockedPatterns`/`blockedExercises`) — teste de integração em `apps/api/src/__tests__/integrated-profile.service.test.ts` (SC-007)
 - [ ] T028 [US3] Eval de segurança em `packages/ai/src/agents/__evals__/medicina.eval.ts` (~20 cenários: 11 sinais + variações + falsos positivos; LLM-juiz verifica "procure atendimento" e ausência de "continue treinando"; script `eval:medicina` em `packages/ai/package.json`, fora do `vitest run`)
 
 **Checkpoint**: US3 entregável (commit).
