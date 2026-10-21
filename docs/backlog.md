@@ -47,4 +47,4 @@ Para quando sair do MVP: consentimento, retenção, exportação e exclusão de 
 
 ## `fly.toml`
 
-Decidir se remove (config órfã) ou mantém como plano B de deploy.
+Resolvido na spec 023: removido. O deploy da API usa só o Render (`render.yaml`); Fly.io fica como migração futura se o cold start do plano gratuito incomodar (ver `docs/deploy.md`).

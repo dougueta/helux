@@ -23,3 +23,5 @@ services:
         sync: false
       - key: PERSONAL_USER_ID
         sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

@@ -38,3 +38,41 @@ describe('CORS', () => {
     for (const m of ['GET', 'POST', 'DELETE']) expect(methods).toMatch(new RegExp(`\\b${m}\\b`))
   })
 })
+
+// Spec 023 / FR-004: em produção só a origem configurada em CORS_ORIGIN é liberada.
+describe('CORS em produção', () => {
+  const allowed = 'https://helux.vercel.app'
+  const app = buildApp({ CORS_ORIGIN: allowed })
+
+  afterAll(async () => {
+    await app.close()
+  })
+
+  function request(origin: string) {
+    return app.inject({
+      method: 'GET',
+      url: '/health',
+      headers: { origin },
+    })
+  }
+
+  it('libera a origem igual a CORS_ORIGIN', async () => {
+    const res = await request(allowed)
+    expect(res.statusCode).toBe(200)
+    expect(res.headers['access-control-allow-origin']).toBe(allowed)
+  })
+
+  // Com `origin` fixo, o plugin devolve sempre CORS_ORIGIN; o navegador bloqueia
+  // qualquer origem diferente porque o cabeçalho não coincide com a dela.
+  it('nunca ecoa uma origem diferente de CORS_ORIGIN', async () => {
+    const res = await request('https://outro-site.example')
+    expect(res.headers['access-control-allow-origin']).toBe(allowed)
+    expect(res.headers['access-control-allow-origin']).not.toBe('https://outro-site.example')
+  })
+
+  it('não libera a origem de desenvolvimento em produção', async () => {
+    const res = await request('http://localhost:3000')
+    expect(res.headers['access-control-allow-origin']).toBe(allowed)
+    expect(res.headers['access-control-allow-origin']).not.toBe('http://localhost:3000')
+  })
+})
