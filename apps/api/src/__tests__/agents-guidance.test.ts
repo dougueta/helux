@@ -15,6 +15,12 @@ vi.mock('@supabase/supabase-js', () => ({
   }),
 }))
 
+const detectGuidanceConflictMock = vi.fn()
+vi.mock('@helux/ai', async () => {
+  const actual = await vi.importActual<object>('@helux/ai')
+  return { ...actual, detectGuidanceConflict: (...a: unknown[]) => detectGuidanceConflictMock(...a) }
+})
+
 const auth = { Authorization: 'Bearer valid-token' }
 const G = (over: Record<string, unknown> = {}) => ({
   id: 'g1',
@@ -70,5 +76,22 @@ describe('aceite de orientações compartilhadas (022 T025, FR-018/019)', () => 
     expect((await app.inject({ method: 'POST', url: '/api/agents/guidance/g1/reject', headers: auth })).json()).toMatchObject({ status: 'recusada' })
     expect((await app.inject({ method: 'POST', url: '/api/agents/guidance/g1/accept', headers: auth })).statusCode).toBe(409)
     expect((await app.inject({ method: 'POST', url: '/api/agents/guidance/xx/accept', headers: auth })).statusCode).toBe(404)
+  })
+
+  it('recomendação que conflita com restrição ativa: ambas ativas, conflito avisado e gravado (FR-021)', async () => {
+    fake.db.shared_guidance = [
+      G({ id: 'r1', status: 'ativa', text: 'Sem carga axial', starts_at: '2026-10-19T10:00:00Z' }),
+      G({ id: 'c1', kind: 'recomendacao', origin_agent: 'nutricao', text: 'Treinar perna pesado para usar o carboidrato', duration_days: null, blocked_patterns: [] }),
+    ]
+    detectGuidanceConflictMock.mockResolvedValue({ conflictWith: 'r1', usage: { model: 'claude-opus-5-5', input_tokens: 10, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, cacheTtl: '5m', operation: 'conflito', agent: null } })
+    const res = await app.inject({ method: 'POST', url: '/api/agents/guidance/c1/accept', headers: auth })
+    expect(res.json()).toMatchObject({ status: 'ativa', conflictsWith: 'r1', conflict: { guidanceId: 'r1', text: 'Sem carga axial' } })
+    expect(fake.db.shared_guidance[1]).toMatchObject({ status: 'ativa', conflicts_with: 'r1' })
+    expect(fake.db.ai_usage_events).toHaveLength(1)
+  })
+
+  it('restrição de segurança ou sem restrições ativas: não consulta a IA', async () => {
+    await app.inject({ method: 'POST', url: '/api/agents/guidance/g1/accept', headers: auth })
+    expect(detectGuidanceConflictMock).not.toHaveBeenCalled()
   })
 })

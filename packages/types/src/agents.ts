@@ -147,6 +147,8 @@ export interface SharedGuidance {
   durationDays: number | null
   blockedPatterns: string[]
   blockedExercises: string[]
+  /** Recomendação em conflito com esta restrição de segurança (FR-021). */
+  conflictsWith?: string | null
   createdAt: string
 }
 

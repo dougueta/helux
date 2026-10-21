@@ -73,6 +73,7 @@ export interface GuidanceRow {
   duration_days: number | null
   blocked_patterns: string[] | null
   blocked_exercises: string[] | null
+  conflicts_with?: string | null
   created_at: string
 }
 
@@ -89,6 +90,7 @@ export function toGuidance(row: GuidanceRow): SharedGuidance {
     durationDays: row.duration_days,
     blockedPatterns: row.blocked_patterns ?? [],
     blockedExercises: row.blocked_exercises ?? [],
+    conflictsWith: row.conflicts_with ?? null,
     createdAt: row.created_at,
   }
 }

@@ -188,4 +188,26 @@ describe('buildIntegratedProfile (022 T008)', () => {
     expect(after.constraints.blockedExercises).toEqual(['supino-reto-barra'])
     expect(after.profile.sources.restricoes.summary).toMatch(/Evitar supino por 10 dias/)
   })
+
+  it('recomendação em conflito com restrição ativa aparece marcada; a restrição prevalece (FR-021)', async () => {
+    const fake = db()
+    fake.db.shared_guidance.push({
+      user_id: 'u1',
+      id: 'c1',
+      kind: 'recomendacao',
+      text: 'Treinar perna pesado nos dias de carboidrato',
+      reason: 'aproveitar o glicogênio',
+      origin_agent: 'nutricao',
+      status: 'ativa',
+      starts_at: '2026-10-19T12:00:00Z',
+      expires_at: null,
+      duration_days: null,
+      blocked_patterns: [],
+      blocked_exercises: [],
+      conflicts_with: 'g1',
+      created_at: '2026-10-19T12:00:00Z',
+    })
+    const { profile } = await buildIntegratedProfile('u1', fake.client as never, NOW)
+    expect(profile.sources.restricoes.summary).toMatch(/Treinar perna pesado.*EM CONFLITO com "Evitar empurrar acima da cabeça".*restrição prevalece/)
+  })
 })

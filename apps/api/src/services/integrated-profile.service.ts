@@ -188,6 +188,12 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
   const activeGuidance = guidance.filter(g => g.status === 'ativa')
   const safety = activeGuidance.filter(g => g.kind === 'restricao-seguranca')
 
+  // FR-021: recomendação aceita em conflito com restrição ativa vai marcada; a restrição prevalece.
+  const conflictNote = (g: (typeof activeGuidance)[number]) => {
+    const other = g.conflictsWith ? safety.find(r => r.id === g.conflictsWith) : undefined
+    return other ? ` — EM CONFLITO com "${other.text}": a restrição prevalece até o usuário decidir` : ''
+  }
+
   const facts = ((factsRes.data ?? []) as FactRow[]).filter(f => !f.deleted_at).map(toFact)
   const edits = ((editsRes.data ?? []) as SessionEditRow[]).map(toSessionEdit)
   const signals = preferenceSignalsFromEdits(edits, now)
@@ -251,7 +257,8 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
               .map(
                 g =>
                   `- [${g.kind === 'restricao-seguranca' ? 'RESTRIÇÃO DE SEGURANÇA' : 'recomendação'}, de ${g.originAgent}${g.expiresAt ? `, até ${fmtDate(g.expiresAt)}` : ''}] ${g.text} — motivo: ${g.reason}` +
-                  (g.blockedPatterns.length + g.blockedExercises.length > 0 ? ` (bloqueia: ${[...g.blockedPatterns, ...g.blockedExercises].join(', ')})` : ''),
+                  (g.blockedPatterns.length + g.blockedExercises.length > 0 ? ` (bloqueia: ${[...g.blockedPatterns, ...g.blockedExercises].join(', ')})` : '') +
+                  conflictNote(g),
               )
               .join('\n'),
             activeGuidance,

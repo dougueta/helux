@@ -111,6 +111,8 @@ create table shared_guidance (
   duration_days     smallint check (duration_days between 1 and 90),
   blocked_patterns  text[] not null default '{}',
   blocked_exercises text[] not null default '{}',
+  -- Recomendação aceita que conflita com uma restrição de segurança ativa (FR-021): a restrição prevalece.
+  conflicts_with    uuid references shared_guidance(id) on delete set null,
   message_id        uuid references agent_messages(id) on delete set null,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now(),

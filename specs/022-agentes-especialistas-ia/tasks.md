@@ -115,7 +115,7 @@
 **Independent Test**: canal `equipe` → atalho de alerta médico vai para medicina sem chamar o roteador; mensagem comum chama o roteador (mockado) e emite `routed`; aceitar recomendação conflitante com restrição → resposta com `conflict`.
 
 - [X] T031 [US5] `routeMessage` (structured output `{ agent, reason }`, `effort: low`, cache do sistema) em `packages/ai/src/agents/router.ts`; canal `equipe` no `agent-chat.service.ts` (atalho → roteador → especialista, evento `routed`, mensagem do agente guarda o especialista). Testes no `packages/ai` e em `agents-chat.test.ts`
-- [ ] T032 [US5] `detectGuidanceConflict` em `packages/ai/src/agents/guidance-conflict.ts` e uso no aceite de recomendação (resposta com `conflict`; a recomendação vai ao prompt marcada `em-conflito`); avisos de expiração no bloco do dia; testes em `packages/ai` e `agents-guidance.test.ts`
+- [X] T032 [US5] `detectGuidanceConflict` em `packages/ai/src/agents/guidance-conflict.ts` e uso no aceite de recomendação (resposta com `conflict`; a recomendação vai ao prompt marcada `em-conflito`); avisos de expiração no bloco do dia; testes em `packages/ai` e `agents-guidance.test.ts`
 - [ ] T033 [US5] Página `/equipe` em `apps/web/src/app/equipe/page.tsx` (seletor Equipe/Treino/Medicina/Nutrição via `?agente=`), botão "Equipe" no `Shell` e card na Home; `HandoffCard` "continuar com X" troca de canal. Testes em `apps/web/src/__tests__/app/equipe.test.tsx`
 
 **Checkpoint**: US5 entregável (commit).
