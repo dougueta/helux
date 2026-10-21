@@ -21,7 +21,7 @@ description: "Task list for 023-producao-render"
 
 ## Phase 1: Setup
 
-- [ ] T001 Rodar `pnpm typecheck` e `pnpm test` na branch para registrar a linha de base (anotar falhas já existentes, inclusive as vindas do trabalho em andamento da 022, para não confundir com regressões)
+- [x] T001 Rodar `pnpm typecheck` e `pnpm test` na branch para registrar a linha de base (anotar falhas já existentes, inclusive as vindas do trabalho em andamento da 022, para não confundir com regressões). **Linha de base (2026-10-20):** `pnpm typecheck` falha só em `@helux/ai` (testes da 022 ainda vermelhos); `@helux/api` 187/188 testes (1 falha em `e2e/fake-anthropic.test.ts`, mesociclo da 022); `@helux/mobile` 9/9
 
 ---
 
@@ -39,15 +39,15 @@ Nenhuma. As histórias são independentes entre si e não há infraestrutura com
 
 ### Tests for User Story 1 ⚠️ (escrever primeiro e ver falhar)
 
-- [ ] T002 [P] [US1] Criar `apps/api/src/__tests__/env.test.ts` cobrindo `loadEnv`: (a) produção sem variáveis lança erro listando cada nome ausente; (b) produção completa retorna o objeto; (c) `CORS_ORIGIN='*'` é rejeitado em produção; (d) `PERSONAL_API_KEY` presente exige `PERSONAL_USER_ID` e `SUPABASE_SERVICE_ROLE_KEY`; (e) fora de produção, sem variáveis, não lança e aplica `CORS_ORIGIN` padrão `http://localhost:3000`
-- [ ] T003 [P] [US1] Estender `apps/api/src/__tests__/cors.test.ts` com casos de produção: origem igual a `CORS_ORIGIN` recebe `access-control-allow-origin`; origem diferente não recebe
+- [x] T002 [P] [US1] Criar `apps/api/src/__tests__/env.test.ts` cobrindo `loadEnv`: (a) produção sem variáveis lança erro listando cada nome ausente; (b) produção completa retorna o objeto; (c) `CORS_ORIGIN='*'` é rejeitado em produção; (d) `PERSONAL_API_KEY` presente exige `PERSONAL_USER_ID` e `SUPABASE_SERVICE_ROLE_KEY`; (e) fora de produção, sem variáveis, não lança e aplica `CORS_ORIGIN` padrão `http://localhost:3000`
+- [x] T003 [P] [US1] Estender `apps/api/src/__tests__/cors.test.ts` com casos de produção: origem igual a `CORS_ORIGIN` recebe `access-control-allow-origin`; origem diferente não recebe
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Criar `apps/api/src/config/env.ts` com `loadEnv(env = process.env)` usando `zod`, conforme [data-model.md](./data-model.md) (depende de T002)
-- [ ] T005 [US1] Atualizar `apps/api/src/index.ts` para chamar `loadEnv()` antes de `buildApp()` e encerrar com código 1 e a mensagem do erro se falhar (depende de T004)
-- [ ] T006 [US1] Atualizar `apps/api/src/app.ts` para que o CORS use a origem de `loadEnv()` em vez de ler `process.env.CORS_ORIGIN` direto; garantir que o `cors.test.ts` existente e o T003 passem (depende de T003, T004)
-- [ ] T007 [P] [US1] Criar `docs/deploy.md` com o passo a passo do deploy: criar o serviço pelo `render.yaml`, preencher os segredos, definir `NEXT_PUBLIC_API_URL` na Vercel, verificar `/health`, conferir as migrations de `supabase/migrations/` no banco de produção (FR-009)
+- [x] T004 [US1] Criar `apps/api/src/config/env.ts` com `loadEnv(env = process.env)` usando `zod`, conforme [data-model.md](./data-model.md) (depende de T002)
+- [x] T005 [US1] Atualizar `apps/api/src/index.ts` para chamar `loadEnv()` antes de `buildApp()` e encerrar com código 1 e a mensagem do erro se falhar (depende de T004)
+- [x] T006 [US1] Atualizar `apps/api/src/app.ts` para que o CORS use a origem de `loadEnv()` em vez de ler `process.env.CORS_ORIGIN` direto; garantir que o `cors.test.ts` existente e o T003 passem (depende de T003, T004)
+- [x] T007 [P] [US1] Criar `docs/deploy.md` com o passo a passo do deploy: criar o serviço pelo `render.yaml`, preencher os segredos, definir `NEXT_PUBLIC_API_URL` na Vercel, verificar `/health`, conferir as migrations de `supabase/migrations/` no banco de produção (FR-009)
 
 **Checkpoint**: US1 funcional e testável sozinha.
 

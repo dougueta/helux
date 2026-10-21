@@ -1,11 +1,19 @@
 import { buildApp } from './app'
+import { loadEnv } from './config/env'
 
-const app = buildApp()
+// Spec 023 / FR-003: valida o ambiente antes de subir; em produção, variável
+// ausente ou inválida encerra o processo com o nome de cada uma.
+let env: ReturnType<typeof loadEnv>
+try {
+  env = loadEnv()
+} catch (err) {
+  console.error((err as Error).message)
+  process.exit(1)
+}
 
-const port = Number(process.env.PORT ?? 3001)
-const host = process.env.HOST ?? '0.0.0.0'
+const app = buildApp(env)
 
-app.listen({ port, host }, (err) => {
+app.listen({ port: env.PORT, host: env.HOST }, (err) => {
   if (err) {
     app.log.error(err)
     process.exit(1)

@@ -27,7 +27,7 @@ Já existe em `apps/api/src/routes/health.ts`. Contrato mantido:
 ## 3. CORS
 
 - Em produção a origem permitida é exatamente `CORS_ORIGIN`.
-- Uma requisição vinda de outra origem NÃO recebe `access-control-allow-origin`.
+- O cabeçalho `access-control-allow-origin` é sempre exatamente `CORS_ORIGIN`; nunca ecoa a origem de quem chamou. O navegador bloqueia qualquer outra origem porque o valor não coincide com a dela.
 - Métodos liberados continuam `GET, HEAD, POST, PUT, DELETE`.
 
 ## 4. Retry do sync de saúde (mobile)
