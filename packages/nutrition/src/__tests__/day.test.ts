@@ -177,3 +177,29 @@ describe('buildDayPlan (R7)', () => {
     expect(Math.abs(swapped.macros.proteinG - item.macros.proteinG)).toBeLessThanOrEqual(15)
   })
 })
+
+// ---- recoveryNote (T033, US3 cenário 2) ----
+import { recoveryNote } from '../day'
+
+describe('recoveryNote', () => {
+  it('exausto: orienta a recuperação do sistema nervoso e muscular', () => {
+    const note = recoveryNote({ tiredness: 'exausto', dayType: 'treino' })
+    expect(note).toMatch(/sistema nervoso/i)
+    expect(note).toMatch(/sono|dormir/i)
+  })
+
+  it('exausto em dia de descanso também gera nota', () => {
+    expect(recoveryNote({ tiredness: 'exausto', dayType: 'descanso' })).not.toBeNull()
+  })
+
+  it('cansado, normal, ótimo ou sem sinal: sem nota', () => {
+    for (const tiredness of ['cansado', 'normal', 'otimo', null] as const) {
+      expect(recoveryNote({ tiredness, dayType: 'treino' })).toBeNull()
+    }
+  })
+
+  it('dayTargets com exausto leva a nota no ajuste de recuperação', () => {
+    expect(at('treino', { tiredness: 'exausto' }).recovery!.note).toMatch(/sistema nervoso/i)
+    expect(at('treino', { tiredness: 'cansado' }).recovery!.note).toBeNull()
+  })
+})

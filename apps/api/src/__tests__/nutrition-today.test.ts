@@ -77,6 +77,17 @@ describe('rotas do dia (spec 018, US1)', () => {
     expect(fake.db.daily_nutrition_plans).toHaveLength(1)
   })
 
+  it('exausto: o plano traz o ajuste de recuperação com a nota (US3); cansado sem nota', async () => {
+    loadNutritionContextMock.mockResolvedValueOnce(ctx({ tiredness: 'exausto' }))
+    const exhausted = (await app.inject({ method: 'GET', url: '/api/nutrition/today', headers: auth })).json()
+    expect(exhausted.plan.recovery).toMatchObject({ level: 'exausto', extraWaterMl: 750 })
+    expect(exhausted.plan.recovery.note).toMatch(/sistema nervoso/i)
+
+    loadNutritionContextMock.mockResolvedValueOnce(ctx({ tiredness: 'cansado' }))
+    const tired = (await app.inject({ method: 'GET', url: '/api/nutrition/today', headers: auth })).json()
+    expect(tired.plan.recovery).toMatchObject({ level: 'cansado', note: null })
+  })
+
   it('sem fase → no-phase; sem check-in com peso → needs-profile (sem plano)', async () => {
     loadNutritionContextMock.mockResolvedValue(ctx({ phase: null, missing: ['checkinStale'] }))
     expect((await app.inject({ method: 'GET', url: '/api/nutrition/today', headers: auth })).json()).toEqual({ status: 'no-phase', missing: ['checkinStale'] })

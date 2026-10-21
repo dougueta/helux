@@ -85,9 +85,9 @@ O chat do agente nutricionista (antigas T027–T032) agora é a US4 da spec `022
 
 **Independent Test**: marcar "exausto" na Home e abrir Nutrição → card "Ajuste Nutricional de Recuperação" com a orientação de recuperação (spec US3).
 
-- [ ] T033 [US3] `recoveryNote({ tiredness, dayType })` em `packages/nutrition/src/day.ts` (texto determinístico para `exausto`; `null` nos demais), testes em `packages/nutrition/src/__tests__/day.test.ts`; `GET /api/nutrition/today` devolve a nota em `plan.recovery.note` (sem gravar mensagem), em `apps/api/src/routes/nutrition-today.ts`, testes em `apps/api/src/__tests__/nutrition-today.test.ts` (nota só em `exausto`)
-- [ ] T034 [US3] `apps/web/src/components/nutrition/RecoveryCard.tsx` no topo da seção Hoje (hidratação extra, magnésio, B6, anti-inflamatórios, conforme `plan.recovery`, mais a nota de recuperação quando houver); testes em `apps/web/src/__tests__/components/nutrition/RecoveryCard.test.tsx`
-- [ ] T035 [US3] Rodar as suítes direcionadas da US3 e commitar
+- [X] T033 [US3] `recoveryNote({ tiredness, dayType })` em `packages/nutrition/src/day.ts` (texto determinístico para `exausto`; `null` nos demais), testes em `packages/nutrition/src/__tests__/day.test.ts`; `GET /api/nutrition/today` devolve a nota em `plan.recovery.note` (sem gravar mensagem), em `apps/api/src/routes/nutrition-today.ts`, testes em `apps/api/src/__tests__/nutrition-today.test.ts` (nota só em `exausto`)
+- [X] T034 [US3] `apps/web/src/components/nutrition/RecoveryCard.tsx` no topo da seção Hoje (hidratação extra, magnésio, B6, anti-inflamatórios, conforme `plan.recovery`, mais a nota de recuperação quando houver); testes em `apps/web/src/__tests__/components/nutrition/RecoveryCard.test.tsx`
+- [X] T035 [US3] Rodar as suítes direcionadas da US3 e commitar
 
 **Checkpoint**: US3 entregável.
 

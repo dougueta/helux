@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { applySwap, getHistory, getToday, setDayType, type HistoryDay, type TodayResponse } from '@/services/nutrition.service'
 import { DayTargets } from './DayTargets'
 import { MealCard } from './MealCard'
+import { RecoveryCard } from './RecoveryCard'
 import { SwapSheet } from './SwapSheet'
 
 const ACTIVE_WORKOUT_KEY = 'helux:active-workout'
@@ -111,6 +112,7 @@ export function TodaySection({ onGoToPhase }: { onGoToPhase: () => void }) {
 
   return (
     <>
+      {plan.recovery && <RecoveryCard recovery={plan.recovery} />}
       {!plan.genetics.active && (
         <div style={{ marginTop: 20 }}>
           <Banner kind="warn" title="Personalização genética inativa">

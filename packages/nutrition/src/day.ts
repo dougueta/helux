@@ -45,6 +45,14 @@ const RECOVERY: Record<'cansado' | 'exausto', { extraWaterMl: number; notes: str
   },
 }
 
+const EXHAUSTED_NOTE =
+  'Dia de exaustão: para acelerar a recuperação do sistema nervoso e muscular, faça a refeição pós-treino com carboidrato e proteína até 1 h depois de treinar, distribua a proteína em todas as refeições e priorize 8 h de sono hoje.'
+
+/** Nota determinística de recuperação (US3, cenário 2): só no dia `exausto`. */
+export function recoveryNote({ tiredness }: { tiredness: TirednessLevel | null; dayType: DayType }): string | null {
+  return tiredness === 'exausto' ? EXHAUSTED_NOTE : null
+}
+
 const roundTo10 = (n: number) => Math.round(n / 10) * 10
 
 export interface DayTargets {
@@ -73,7 +81,9 @@ export function dayTargets(
   }
 
   const level = tiredness === 'cansado' || tiredness === 'exausto' ? tiredness : null
-  const recovery: RecoveryAdjustment | null = level ? { level, ...RECOVERY[level] } : null
+  const recovery: RecoveryAdjustment | null = level
+    ? { level, ...RECOVERY[level], note: recoveryNote({ tiredness, dayType }) }
+    : null
   const waterMl =
     Math.round(WATER_ML_PER_KG * weightKg) + (dayType === 'treino' ? TRAINING_EXTRA_WATER_ML : 0) + (recovery?.extraWaterMl ?? 0)
 

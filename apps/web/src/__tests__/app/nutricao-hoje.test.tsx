@@ -48,6 +48,21 @@ describe('Nutrição › Hoje (spec 018, US1)', () => {
     expect(within(meals[2]).getByText('60–90 min antes de treinar')).toBeInTheDocument()
   })
 
+  it('exausto: card de recuperação no topo da seção Hoje (US3)', async () => {
+    const tired = buildDayPlan({ date: '2026-10-14', dayType: 'treino', base: PHASE.baseTargets, weightKg: 80, flags: FLAGS, geneticsActive: true, tiredness: 'exausto', swaps: [] })
+    getTodayMock.mockResolvedValue(ok({ plan: tired, tiredness: 'exausto' }))
+    render(<NutricaoClient />)
+    expect(await screen.findByRole('heading', { name: /ajuste nutricional de recuperação/i })).toBeInTheDocument()
+    expect(screen.getByText(/sistema nervoso/i)).toBeInTheDocument()
+  })
+
+  it('sem cansaço: nenhum card de recuperação', async () => {
+    getTodayMock.mockResolvedValue(ok())
+    render(<NutricaoClient />)
+    await screen.findByText('2320')
+    expect(screen.queryByRole('heading', { name: /ajuste nutricional de recuperação/i })).not.toBeInTheDocument()
+  })
+
   it('expandir a refeição mostra a justificativa genética', async () => {
     getTodayMock.mockResolvedValue(ok())
     const user = userEvent.setup()

@@ -100,6 +100,8 @@ export interface RecoveryAdjustment {
   level: 'cansado' | 'exausto'
   extraWaterMl: number
   notes: string[]
+  /** Orientação de recuperação do dia `exausto` (US3); `null` nos demais. */
+  note: string | null
 }
 
 export interface DayPlan {
