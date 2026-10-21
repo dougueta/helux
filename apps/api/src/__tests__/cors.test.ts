@@ -27,6 +27,11 @@ describe('CORS', () => {
     expect(res.headers['access-control-allow-origin']).toBe('http://localhost:3000')
   })
 
+  it('libera PATCH (spec 022: edição manual de sessão e relatos)', async () => {
+    const res = await preflight('PATCH')
+    expect(String(res.headers['access-control-allow-methods']).split(', ')).toContain('PATCH')
+  })
+
   it('continua liberando GET, POST e DELETE', async () => {
     const res = await preflight('GET')
     const methods = String(res.headers['access-control-allow-methods'])

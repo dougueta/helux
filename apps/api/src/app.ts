@@ -17,6 +17,7 @@ import { nutritionTodayRoutes } from './routes/nutrition-today'
 import { nutritionGeneticProfileRoutes } from './routes/nutrition-genetic-profile'
 import { workoutProposalsRoutes } from './routes/workout-proposals'
 import { workoutSessionEditRoutes } from './routes/workout-session-edit'
+import { trainingPreferencesRoutes } from './routes/training-preferences'
 import { loadEnv, type AppEnv } from './config/env'
 
 export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): FastifyInstance {
@@ -27,8 +28,8 @@ export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): Fasti
   app.register(cors, {
     origin: config.CORS_ORIGIN,
     credentials: true,
-    // PUT: /api/tiredness-today (spec 011).
-    methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
+    // PUT: /api/tiredness-today (spec 011); PATCH: edição manual e relatos (spec 022).
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
   })
 
   app.register(healthRoutes)
@@ -48,6 +49,7 @@ export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): Fasti
   app.register(nutritionGeneticProfileRoutes)
   app.register(workoutProposalsRoutes)
   app.register(workoutSessionEditRoutes)
+  app.register(trainingPreferencesRoutes)
 
   return app
 }
