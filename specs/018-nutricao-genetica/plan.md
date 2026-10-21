@@ -3,6 +3,8 @@
 **Branch**: `018-nutricao-genetica` | **Date**: 2026-10-13 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `specs/018-nutricao-genetica/spec.md` (clarify de 2026-10-13: refeições por regra, horário pelo início real do treino, fase de dieta recalibrada a cada check-in com % de gordura da Marinha, chat por fase, escopo US0–US4)
 
+> **Atualização 2026-10-20**: a US2 (chat) saiu da 018 e foi para a spec 022. As partes deste plano sobre chat (`nutrition-prompts`, `nutrition-chat`, `chat-stream.md`, SC-003) ficam como histórico; a tabela `nutrition_chat_messages` fica na migration, mas sem uso.
+
 ## Summary
 
 Um novo pacote puro, **`@helux/nutrition`**, concentra toda a regra determinística: TMB (Mifflin-St Jeor), % de gordura pelo método da Marinha, metas da **fase de dieta** por objetivo, **recalibração** a cada check-in (taxa semanal de peso + cintura), derivação do **dia** (treino/descanso, periodização de carboidrato com FTO, hidratação, ajuste por cansaço da 011), **montagem das refeições** a partir de um catálogo próprio com filtro genético obrigatório (zero lactose), **trocas rápidas** e **âncora de horários** pelo início/fim real do treino. `@helux/genetics` ganha a leitura do módulo `nutri` do `genera.json`; uma tabela de regras por SNP classifica os marcadores (US4) e gera as flags usadas pelo motor.
@@ -106,8 +108,8 @@ supabase/migrations/20261014002645_nutrition.sql   # NOVO
 1. **Setup/Fundação**: pacote `@helux/nutrition`, tipos, migration, atualização do SDK da Anthropic, `parseGeneraNutrition`, regras genéticas, catálogo.
 2. **US0 — Fase de dieta** (P1): biometria + Marinha, perfil/check-in estendidos, fase e recalibração, tela Fase. *MVP de dados.*
 3. **US1 — O dia** (P1): derivação do dia, refeições, tipo do dia, horários, troca rápida, histórico, tela Hoje.
-4. **US2 — Chat** (P1): prompt, stream, SSE, conversa por fase, tela Chat.
-5. **US3 — Cansaço** (P2): ajuste de recuperação + nota do agente.
+4. ~~**US2 — Chat**~~: movida para a 022 em 2026-10-20.
+5. **US3 — Cansaço** (P2): ajuste de recuperação + nota determinística no card.
 6. **US4 — Perfil nutrigenômico** (P2): classificação + tela reaproveitando `TraitCard`.
 7. **Polish**: guard do DS, suíte completa/typecheck/build, quickstart.
 

@@ -73,31 +73,20 @@
 
 ---
 
-## Phase 5: User Story 2 — Agente conversacional especialista (Priority: P1)
+## Phase 5: User Story 2 — *(removida em 2026-10-20, movida para a 022)*
 
-**Goal**: chat em streaming com o agente, conversa por fase, contexto do dia, genética e fase.
-
-**Independent Test**: perguntar "Qual o melhor pré-treino para mim hoje e posso tomar cafeína?" → resposta em streaming que cita o treino do dia, ADORA2A e a intolerância à lactose (com IA mockada nos testes; validação real no quickstart).
-
-- [ ] T027 [P] [US2] `buildNutritionSystemPrompt({ markers, flags, phase, day })` em `packages/ai/src/nutrition-prompts.ts` devolvendo `{ stable, day }` (contrato `chat-stream.md`): `stable` com persona, regras (zero lactose com `intoleranciaLactose`, justificar com genética, trocas pelo catálogo, sem medicamentos, disclaimer), marcadores com status e conduta e a fase; `day` com data, tipo do dia, plano, treino do dia e cansaço; `stable` sem data/hora. Testes em `packages/ai/src/__tests__/nutrition-prompts.test.ts`
-- [ ] T028 [US2] `streamNutritionChat({ system, history, message, onText })` em `packages/ai/src/nutrition-chat.ts` usando `client.beta.messages.stream` com `claude-opus-5-5`, `max_tokens: 4000`, `output_config: { effort: 'low' }`, `betas: ['server-side-fallback-2026-07-01']`, `fallbacks: 'default'`, `system` em dois blocos (o estável com `cache_control: { type: 'ephemeral' }`), últimas 20 mensagens + a nova; repassa `text_delta` em `onText`; usa `finalMessage()` e devolve `{ text, stopReason }`; exportado em `packages/ai/src/index.ts`. Testes em `packages/ai/src/__tests__/nutrition-chat.test.ts` com o SDK mockado (parâmetros enviados, janela de 20, cache só no bloco estável, deltas, refusal)
-- [ ] T029 [US2] `GET /api/nutrition/chat` e `POST /api/nutrition/chat` (SSE `start`/`delta`/`done`/`error`, grava a mensagem do usuário antes e a do agente só após `finalMessage`; `refusal` ou erro → `error` sem gravar; `409 no-phase`) em `apps/api/src/routes/nutrition-chat.ts`, registradas em `apps/api/src/app.ts`; testes em `apps/api/src/__tests__/nutrition-chat.test.ts` com `@helux/ai` mockado (sequência de eventos, persistência, janela da fase, fase sem conversa)
-- [ ] T030 [US2] Hook `apps/web/src/hooks/useNutritionChat.ts`: carrega o histórico (`GET`), envia com `fetch` + `Authorization` (mesma sessão do `apiFetch`), lê o corpo como `ReadableStream`, faz o parse de `event:`/`data:`, acumula a resposta em andamento, trata `error`; testes em `apps/web/src/__tests__/hooks/useNutritionChat.test.ts` com `fetch` mockado devolvendo um stream
-- [ ] T031 [US2] Seção Chat em `apps/web/src/components/nutrition/ChatPanel.tsx` (histórico agrupado por dia, disclaimer fixo, bolha em streaming, enviar desabilitado durante a resposta, aviso de erro, seletor de fases anteriores em modo leitura), usada no `NutricaoClient.tsx`; testes em `apps/web/src/__tests__/components/nutrition/ChatPanel.test.tsx`
-- [ ] T032 [US2] Rodar as suítes direcionadas da US2 (`@helux/ai`, `nutrition-chat` da API, `useNutritionChat`, `ChatPanel`, `design-system-guard`) e commitar
-
-**Checkpoint**: US2 entregável.
+O chat do agente nutricionista (antigas T027–T032) agora é a US4 da spec `022-agentes-especialistas-ia`. A tabela `nutrition_chat_messages` continua na migration da 018 (é aditiva), mas a 018 não a usa, e a 022 também não (research R0 da 022).
 
 ---
 
 ## Phase 6: User Story 3 — Sinergia com cansaço e recuperação (Priority: P2)
 
-**Goal**: com cansaço `cansado`/`exausto`, card de recuperação no topo; com `exausto`, carboidrato peri-treino sem déficit e nota do agente no chat.
+**Goal**: com cansaço `cansado`/`exausto`, card de recuperação no topo; com `exausto`, carboidrato peri-treino sem déficit e uma orientação de recuperação no próprio card.
 
-**Independent Test**: marcar "exausto" na Home e abrir Nutrição → card "Ajuste Nutricional de Recuperação" e uma nota de recuperação na conversa da fase (spec US3).
+**Independent Test**: marcar "exausto" na Home e abrir Nutrição → card "Ajuste Nutricional de Recuperação" com a orientação de recuperação (spec US3).
 
-- [ ] T033 [US3] `recoveryNote({ tiredness, dayType })` em `packages/nutrition/src/day.ts` (texto determinístico para `exausto`; `null` nos demais), testes em `packages/nutrition/src/__tests__/day.test.ts`; `GET /api/nutrition/today` grava uma mensagem `role: agent, kind: nota-recuperacao` na conversa da fase quando o dia está `exausto` e ainda não há nota hoje, em `apps/api/src/routes/nutrition-today.ts`, testes em `apps/api/src/__tests__/nutrition-today.test.ts` (uma nota por dia; nenhuma em `cansado`/`normal`)
-- [ ] T034 [US3] `apps/web/src/components/nutrition/RecoveryCard.tsx` no topo da seção Hoje (hidratação extra, magnésio, B6, anti-inflamatórios, conforme `plan.recovery`) e a nota de recuperação marcada no `ChatPanel.tsx`; testes em `apps/web/src/__tests__/components/nutrition/RecoveryCard.test.tsx` e no teste do `ChatPanel`
+- [ ] T033 [US3] `recoveryNote({ tiredness, dayType })` em `packages/nutrition/src/day.ts` (texto determinístico para `exausto`; `null` nos demais), testes em `packages/nutrition/src/__tests__/day.test.ts`; `GET /api/nutrition/today` devolve a nota em `plan.recovery.note` (sem gravar mensagem), em `apps/api/src/routes/nutrition-today.ts`, testes em `apps/api/src/__tests__/nutrition-today.test.ts` (nota só em `exausto`)
+- [ ] T034 [US3] `apps/web/src/components/nutrition/RecoveryCard.tsx` no topo da seção Hoje (hidratação extra, magnésio, B6, anti-inflamatórios, conforme `plan.recovery`, mais a nota de recuperação quando houver); testes em `apps/web/src/__tests__/components/nutrition/RecoveryCard.test.tsx`
 - [ ] T035 [US3] Rodar as suítes direcionadas da US3 e commitar
 
 **Checkpoint**: US3 entregável.
@@ -122,7 +111,7 @@
 
 - [ ] T039 Rodar o guard do design system (`apps/web/src/__tests__/design-system-guard.test.ts`) e corrigir qualquer classe/cor fora do v2 nas telas novas
 - [ ] T040 Verificação final única: `pnpm test`, `pnpm typecheck`, `pnpm build`; registrar os números no `quickstart.md`
-- [ ] T041 Atualizar `specs/018-nutricao-genetica/quickstart.md` com observações finais (medir SC-003 no chat real; `supabase db push` da migration antes do deploy da API; pontos de revisão R5/R9) e `packages/nutrition/README.md` com o uso das funções
+- [ ] T041 Atualizar `specs/018-nutricao-genetica/quickstart.md` com observações finais (`supabase db push` da migration antes do deploy da API; pontos de revisão R5/R9) e `packages/nutrition/README.md` com o uso das funções
 
 ---
 
@@ -130,8 +119,8 @@
 
 - **Setup (T001–T003)** antes de tudo. T002 é independente de T001/T003.
 - **Foundational (T004–T008)**: T004 e T005 em paralelo; T006 depende de T004+T005; T007 depende de T004; T008 depende de T004–T006.
-- **US0 (T009–T019)** antes de US1–US3 (o dia, o chat e o cansaço precisam da fase). US4 depende só da Fundação e pode vir antes, se preferir.
-- **US1 (T020–T026)** antes de US2 (o contexto do dia entra no prompt) e de US3 (o card fica na seção Hoje).
+- **US0 (T009–T019)** antes de US1–US3 (o dia e o cansaço precisam da fase). US4 depende só da Fundação e pode vir antes, se preferir.
+- **US1 (T020–T026)** antes de US3 (o card fica na seção Hoje).
 - Dentro de cada story: testes → módulo puro → API → web.
 
 ## Parallel Opportunities
@@ -139,8 +128,7 @@
 - Fundação: T004 ∥ T005 ∥ T007 (arquivos diferentes).
 - US0: T009 ∥ T012 ∥ T016 ∥ T017.
 - US1: T020 ∥ T022 ∥ T023 (arquivos diferentes do pacote).
-- US2: T027 em paralelo com o início de T029 (rotas com `@helux/ai` mockado).
 
 ## Implementation Strategy
 
-MVP = Setup + Fundação + US0 (fase de dieta recalibrada — a base de tudo). Depois US1 (o dia, maior valor diário), US2 (agente), US3 e US4. Cada story com commit e suítes direcionadas verdes; suíte completa + typecheck + build uma única vez no fim (T040), por restrição de RAM.
+MVP = Setup + Fundação + US0 (fase de dieta recalibrada — a base de tudo). Depois US1 (o dia, maior valor diário), US3 e US4 (a US2 foi para a 022). Cada story com commit e suítes direcionadas verdes; suíte completa + typecheck + build uma única vez no fim (T040), por restrição de RAM.
