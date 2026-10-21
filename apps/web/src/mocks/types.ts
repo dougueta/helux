@@ -47,6 +47,8 @@ export interface MockDataset {
   bodyCheckins: BodyCheckin[]
   genetics: GeneticProfileView | null
   nutrition: MockNutrition
+  /** Spec 022: preferências, Perfil Integrado, conversas e propostas (ausente em datasets antigos). */
+  agents?: import('./agents').MockAgents
   /** Persona `network-error` (R-H): toda leitura falha. */
   failReads?: boolean
 }

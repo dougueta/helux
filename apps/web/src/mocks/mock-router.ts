@@ -2,7 +2,7 @@ import { ApiError } from '@/services/api-client'
 import type { MockStore } from './mock-store'
 import type { MockDataset } from './types'
 
-type Method = 'GET' | 'POST' | 'PUT' | 'DELETE'
+type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export interface MockRequest {
   data: MockDataset
