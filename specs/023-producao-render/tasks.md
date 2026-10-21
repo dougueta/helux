@@ -101,13 +101,13 @@ Nenhuma. As histórias são independentes entre si e não há infraestrutura com
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T016 [US4] Estender `apps/mobile/src/__tests__/health-sync.service.test.ts` com casos de retry conforme o contrato 4: (a) `200` na primeira, sem retry; (b) `503`, `503`, `200` conclui com 3 chamadas; (c) erro de rede seguido de sucesso conclui; (d) `400` falha sem retry; (e) 3 falhas esgotam as tentativas, o erro é registrado e os dados locais já foram salvos; (f) `timeout` de 45 s aborta a tentativa e conta como falha. Usar atraso injetável (sem esperar de verdade)
+- [x] T016 [US4] Estender `apps/mobile/src/__tests__/health-sync.service.test.ts` com casos de retry conforme o contrato 4: (a) `200` na primeira, sem retry; (b) `503`, `503`, `200` conclui com 3 chamadas; (c) erro de rede seguido de sucesso conclui; (d) `400` falha sem retry; (e) 3 falhas esgotam as tentativas, o erro é registrado e os dados locais já foram salvos; (f) `timeout` de 45 s aborta a tentativa e conta como falha. Usar atraso injetável (sem esperar de verdade)
 
 ### Implementation for User Story 4
 
-- [ ] T017 [US4] Em `apps/mobile/src/services/health-sync.service.ts`, trocar o `fetch` do `/api/health/sync` por uma função de retry (até 3 tentativas, espera de 2 s, 4 s e 8 s, `AbortController` de 45 s, retry em erro de rede e 502/503/504, checagem de `res.ok`), mantendo a gravação local antes do POST (depende de T016)
-- [ ] T018 [P] [US4] Confirmar por leitura que `apps/web/src/services/api-client.ts` e `apps/web/src/lib/server-api.ts` não impõem timeout (FR-008, ver R7 em [research.md](./research.md)) e registrar a conclusão em `docs/deploy.md`
-- [ ] T019 [P] [US4] Em `docs/deploy.md`, documentar o monitor do UptimeRobot (HTTP em `/health`, a cada 5 minutos) e o limite de 750 h/mês do Render (FR-009)
+- [x] T017 [US4] Em `apps/mobile/src/services/health-sync.service.ts`, trocar o `fetch` do `/api/health/sync` por uma função de retry (até 3 tentativas, espera de 2 s, 4 s e 8 s, `AbortController` de 45 s, retry em erro de rede e 502/503/504, checagem de `res.ok`), mantendo a gravação local antes do POST (depende de T016)
+- [x] T018 [P] [US4] Confirmar por leitura que `apps/web/src/services/api-client.ts` e `apps/web/src/lib/server-api.ts` não impõem timeout (FR-008, ver R7 em [research.md](./research.md)) e registrar a conclusão em `docs/deploy.md`
+- [x] T019 [P] [US4] Em `docs/deploy.md`, documentar o monitor do UptimeRobot (HTTP em `/health`, a cada 5 minutos) e o limite de 750 h/mês do Render (FR-009)
 
 **Checkpoint**: US4 entregue.
 
@@ -119,8 +119,8 @@ Nenhuma. As histórias são independentes entre si e não há infraestrutura com
 
 **Independent Test**: gerar um backup, restaurar num banco vazio e comparar contagens por tabela.
 
-- [ ] T020 [US5] Em `docs/deploy.md`, documentar o backup com `pg_dump` (connection string do Supabase em variável de ambiente, arquivo datado fora do repositório) e a restauração com `psql` (FR-010)
-- [ ] T021 [US5] Em `docs/deploy.md`, documentar a configuração do limite de gasto mensal no console da Anthropic (FR-011)
+- [x] T020 [US5] Em `docs/deploy.md`, documentar o backup com `pg_dump` (connection string do Supabase em variável de ambiente, arquivo datado fora do repositório) e a restauração com `psql` (FR-010)
+- [x] T021 [US5] Em `docs/deploy.md`, documentar a configuração do limite de gasto mensal no console da Anthropic (FR-011)
 - [ ] T022 [US5] Executar a rotina de backup e restaurar num banco descartável; comparar a contagem de linhas por tabela e anotar o resultado em `docs/deploy.md` (SC-005). Ação manual do dono, pois exige credenciais do banco
 
 **Checkpoint**: todas as histórias entregues.
@@ -129,7 +129,7 @@ Nenhuma. As histórias são independentes entre si e não há infraestrutura com
 
 ## Phase 8: Polish & Cross-Cutting
 
-- [ ] T023 [P] Varrer arquivos versionados e o histórico da branch por padrões de segredo (`sk-ant-`, JWT `eyJ`, `service_role`) e registrar o comando e o resultado em `docs/deploy.md` (FR-012, SC-006)
+- [x] T023 [P] Varrer arquivos versionados e o histórico da branch por padrões de segredo (`sk-ant-`, JWT `eyJ`, `service_role`) e registrar o comando e o resultado em `docs/deploy.md` (FR-012, SC-006)
 - [ ] T024 Rodar `pnpm typecheck` e `pnpm test` e comparar com a linha de base de T001; nenhuma regressão
 - [x] T025 Atualizar o bloco SPECKIT do `CLAUDE.md` para apontar para `specs/023-producao-render/plan.md`
 - [ ] T026 Executar o roteiro de [quickstart.md](./quickstart.md) no deploy real (ação manual do dono) e marcar SC-001 a SC-006
