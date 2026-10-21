@@ -1,24 +1,24 @@
-# Processo de desenvolvimento — OBRIGATÓRIO, FIXO
+﻿# Processo de desenvolvimento â€” OBRIGATÃ“RIO, FIXO
 
-**Todo pedido de trabalho neste repositório DEVE passar pelo processo SDD do Spec Kit (`speckit-*`). Nunca implementar nada ad-hoc — nenhuma exceção, nem para pedidos pequenos — até que o usuário mude esta regra explicitamente aqui neste arquivo.**
+**Todo pedido de trabalho neste repositÃ³rio DEVE passar pelo processo SDD do Spec Kit (`speckit-*`). Nunca implementar nada ad-hoc â€” nenhuma exceÃ§Ã£o, nem para pedidos pequenos â€” atÃ© que o usuÃ¡rio mude esta regra explicitamente aqui neste arquivo.**
 
-Fluxo a seguir para qualquer pedido novo (funcionalidade, correção, refatoração, etc.):
-1. `speckit-specify` — criar/atualizar a spec da feature
-2. `speckit-clarify` — resolver ambiguidades, se houver
-3. `speckit-plan` — gerar o plano de implementação
-4. `speckit-tasks` — gerar `tasks.md`
-5. `speckit-implement` — executar as tarefas de `tasks.md`
+Fluxo a seguir para qualquer pedido novo (funcionalidade, correÃ§Ã£o, refatoraÃ§Ã£o, etc.):
+1. `speckit-specify` â€” criar/atualizar a spec da feature
+2. `speckit-clarify` â€” resolver ambiguidades, se houver
+3. `speckit-plan` â€” gerar o plano de implementaÃ§Ã£o
+4. `speckit-tasks` â€” gerar `tasks.md`
+5. `speckit-implement` â€” executar as tarefas de `tasks.md`
 
-Se o pedido não se encaixar em nenhuma spec existente, abrir um novo ciclo de spec-kit para ele antes de tocar em código. Não pular etapas nem ir direto para edição de código, mesmo que o pedido pareça trivial.
+Se o pedido nÃ£o se encaixar em nenhuma spec existente, abrir um novo ciclo de spec-kit para ele antes de tocar em cÃ³digo. NÃ£o pular etapas nem ir direto para ediÃ§Ã£o de cÃ³digo, mesmo que o pedido pareÃ§a trivial.
 
 ---
 
 ## TODO: Setup de nova conta (Claude Code)
 
-> Se você está lendo isto numa conta ou máquina nova, rode este checklist de setup antes de começar qualquer trabalho.
+> Se vocÃª estÃ¡ lendo isto numa conta ou mÃ¡quina nova, rode este checklist de setup antes de comeÃ§ar qualquer trabalho.
 
-- [ ] **Plugin superpowers** — abra o Claude Code, vá em Plugins e habilite `superpowers`
-- [ ] **MCP Supabase** — rode no PowerShell:
+- [ ] **Plugin superpowers** â€” abra o Claude Code, vÃ¡ em Plugins e habilite `superpowers`
+- [ ] **MCP Supabase** â€” rode no PowerShell:
   ```powershell
   npm install -g @supabase/mcp-server-supabase
   ```
@@ -34,14 +34,14 @@ Se o pedido não se encaixar em nenhuma spec existente, abrir um novo ciclo de s
   Write-Host "Tamanho do token: $($env:SUPA_TOKEN.Length)"
   ```
   Deve imprimir `Tamanho do token: 44`. Confirme com `claude mcp list`.
-- [ ] **Variáveis de ambiente** — copie `.env.example` → `.env` em `apps/api` e `apps/web` e preencha as credenciais
+- [ ] **VariÃ¡veis de ambiente** â€” copie `.env.example` â†’ `.env` em `apps/api` e `apps/web` e preencha as credenciais
 
-Quando o setup estiver feito, apague (ou marque como concluídos) os itens acima e volte ao fluxo SDD normal.
+Quando o setup estiver feito, apague (ou marque como concluÃ­dos) os itens acima e volte ao fluxo SDD normal.
 
 ---
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/022-agentes-especialistas-ia/plan.md
+at specs/023-producao-render/plan.md
 <!-- SPECKIT END -->
