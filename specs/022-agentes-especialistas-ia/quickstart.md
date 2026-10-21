@@ -47,7 +47,7 @@ pnpm --filter @helux/ai eval:medicina
 ## Estado da implementação (2026-10-20)
 
 - **Branch empilhada** sobre 021 → 018 (R0 resolvido: a 018 já está nesta base; a US2 da 018 foi movida para cá).
-- **Verificação final (T036)**: `pnpm test` — api 248, web 595, ai 187, workouts 100, nutrition 76, genetics 34, health 27, types 17, mobile 9, todos verdes; `pnpm typecheck` 9/9; `pnpm build` 2/2 (o `fetch failed` no log vem do prerender da `/dna` sem a API no ar, como antes). O build de produção não leva código de mock.
+- **Verificação final (T036)**: `pnpm test` — api 234, web 595, ai 187, workouts 100, nutrition 76, genetics 34, health 27, types 17, mobile 9, todos verdes; `pnpm typecheck` 9/9; `pnpm build` 2/2 (o `fetch failed` no log vem do prerender da `/dna` sem a API no ar, como antes). O build de produção não leva código de mock.
 - **Migration não aplicada**: `20261014002645_nutrition.sql` (018) e `20261020120000_specialist_agents.sql` (022) precisam ir para o Supabase antes do deploy da API. Nesta sessão o MCP do Supabase dava timeout de conexão com o banco (o projeto estava `ACTIVE_HEALTHY`).
 - **Não executados (custam dinheiro ou exigem login real)**: o eval `eval:medicina`, a medição de latência (SC-004a) e o roteiro manual acima.
 
