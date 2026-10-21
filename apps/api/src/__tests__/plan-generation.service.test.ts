@@ -1,16 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { MesocycleSession } from '@helux/types'
 
-const MOCK_PLAN_INPUT = {
-  geneticProfile: { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'medio', predisposicao: 'misto', alertas: [] },
-  constraints: { maxWeeklyFrequency: 4, preferredVolume: 'medio', restBetweenSets: '90-120s', forbiddenExerciseTypes: [], cardioIntensityLimit: 'moderado' },
-  workoutHistory: [],
-  recoveryData: [],
-  userGoals: 'Hipertrofia e condicionamento geral',
-  userLevel: 'intermediario' as const,
-  availableDaysPerWeek: 4,
-  bodyCheckins: [],
+const CONSTRAINTS = { availableEquipment: ['halteres'], exercisesToAvoid: [], maxSessionMinutes: 45, blockedPatterns: [], blockedExercises: [] }
+const SOURCES_USED = { ativa: ['perfil'], vazia: ['exames'], desativada: [] }
+const GENETICS_DATA = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'medio', predisposicao: 'misto', alertas: [], traits: [] }
+const BUILD = {
+  profile: { generatedAt: '2026-10-20T10:00:00Z', sources: { perfil: { status: 'ativa', data: { level: 'intermediario' } }, genetica: { status: 'ativa', data: GENETICS_DATA } } },
+  constraints: CONSTRAINTS,
+  sourcesUsed: SOURCES_USED,
+  preferences: { availableDays: [1, 3, 5] },
+  mesocycle: null,
+  tiredness: null,
+  notices: [],
 }
+const DECISIONS = [{ topic: 'divisao', choice: 'ABC', sources: ['preferencias'], reason: '3 dias' }]
+const USAGES = [{ model: 'claude-opus-5-5', input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, cacheTtl: '5m', operation: 'mesociclo', agent: 'treino' }]
 
 const MOCK_MESOCYCLE = {
   generatedAt: '2026-07-22T10:00:00.000Z',
@@ -34,19 +38,25 @@ const DONE_SESSION: MesocycleSession = {
   exercises: [{ name: 'Supino Reto', sets: 4, reps: '8-10', weight: '80kg' }],
 }
 
-const gatherPlanInputMock = vi.fn()
 const fetchSessionsSinceMock = vi.fn()
-vi.mock('../services/plan-context.service', () => ({
-  gatherPlanInput: gatherPlanInputMock,
-  fetchSessionsSince: fetchSessionsSinceMock,
-}))
+vi.mock('../services/plan-context.service', () => ({ fetchSessionsSince: fetchSessionsSinceMock }))
 
+const buildIntegratedProfileMock = vi.fn()
+vi.mock('../services/integrated-profile.service', () => ({ buildIntegratedProfile: buildIntegratedProfileMock }))
+
+class BudgetExceededError extends Error {}
+const assertBudgetMock = vi.fn()
+const recordUsageMock = vi.fn()
+vi.mock('../services/ai-budget.service', () => ({ assertBudget: assertBudgetMock, recordUsage: recordUsageMock, BudgetExceededError }))
+
+class ConstraintsUnsatisfiableError extends Error {
+  constructor(public violations: unknown[], public usages: unknown[]) {
+    super('x')
+  }
+}
 const generateMesocyclePlanMock = vi.fn()
-const generateWorkoutPlanMock = vi.fn()
-vi.mock('@helux/ai', () => ({
-  generateWorkoutPlan: generateWorkoutPlanMock,
-  generateMesocyclePlan: generateMesocyclePlanMock,
-}))
+vi.mock('@helux/ai', () => ({ generateMesocyclePlan: generateMesocyclePlanMock, ConstraintsUnsatisfiableError }))
+const planResult = (plan: unknown) => ({ plan, decisions: DECISIONS, usages: USAGES })
 
 const getActiveMesocycleMock = vi.fn()
 vi.mock('../services/mesocycle.service', () => ({
@@ -69,8 +79,9 @@ describe('generateAndSaveMesocycle', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     insertMock.mockResolvedValue({ error: null })
-    gatherPlanInputMock.mockResolvedValue(MOCK_PLAN_INPUT)
-    generateMesocyclePlanMock.mockResolvedValue(MOCK_MESOCYCLE)
+    buildIntegratedProfileMock.mockResolvedValue(BUILD)
+    assertBudgetMock.mockResolvedValue({ warning: null })
+    generateMesocyclePlanMock.mockResolvedValue(planResult(MOCK_MESOCYCLE))
   })
 
   it('gera e salva o mesociclo quando há perfil genético disponível', async () => {
@@ -78,8 +89,14 @@ describe('generateAndSaveMesocycle', () => {
 
     await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
 
-    expect(gatherPlanInputMock).toHaveBeenCalledWith('user-123', 'token-abc')
-    expect(generateMesocyclePlanMock).toHaveBeenCalledWith(MOCK_PLAN_INPUT)
+    expect(buildIntegratedProfileMock).toHaveBeenCalledWith('user-123', supabase)
+    expect(generateMesocyclePlanMock).toHaveBeenCalledWith({
+      profile: BUILD.profile,
+      constraints: CONSTRAINTS,
+      daysPerWeek: 3,
+      geneticProfile: GENETICS_DATA,
+    })
+    expect(recordUsageMock).toHaveBeenCalledWith('user-123', USAGES, supabase)
     expect(fromMock).toHaveBeenCalledWith('mesocycle_plans')
     expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({
       user_id: 'user-123',
@@ -88,11 +105,13 @@ describe('generateAndSaveMesocycle', () => {
       split_type: MOCK_MESOCYCLE.splitType,
       sessions: MOCK_MESOCYCLE.sessions,
       rationale: MOCK_MESOCYCLE.rationale,
+      rationale_decisions: DECISIONS,
+      sources_used: SOURCES_USED,
     }))
   })
 
   it('spec 014 (FR-003/FR-009): normaliza fases e bisets antes de gravar', async () => {
-    generateMesocyclePlanMock.mockResolvedValue({
+    generateMesocyclePlanMock.mockResolvedValue(planResult({
       ...MOCK_MESOCYCLE,
       sessions: [{
         letter: 'A', focus: 'Peito', completedAt: null,
@@ -102,7 +121,7 @@ describe('generateAndSaveMesocycle', () => {
           { name: 'Esteira', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento' },
         ],
       }],
-    })
+    }))
     const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
 
     await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
@@ -113,14 +132,34 @@ describe('generateAndSaveMesocycle', () => {
     expect(saved[1].supersetGroup).toBeUndefined()
   })
 
-  it('não faz nada quando não há perfil genético (gatherPlanInput retorna null)', async () => {
-    gatherPlanInputMock.mockResolvedValue(null)
+  it('teto de IA atingido: não gera e o mesociclo atual continua (FR-026)', async () => {
+    assertBudgetMock.mockRejectedValue(new BudgetExceededError('teto'))
     const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
 
     await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
 
     expect(generateMesocyclePlanMock).not.toHaveBeenCalled()
     expect(insertMock).not.toHaveBeenCalled()
+  })
+
+  it('restrições impossíveis: registra o uso, loga e não grava (FR-024)', async () => {
+    generateMesocyclePlanMock.mockRejectedValue(new ConstraintsUnsatisfiableError([{ rule: 'duracao' }], USAGES))
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+
+    expect(recordUsageMock).toHaveBeenCalledWith('user-123', USAGES, supabase)
+    expect(insertMock).not.toHaveBeenCalled()
+    expect(logger.error).toHaveBeenCalled()
+  })
+
+  it('sem dias nas preferências usa 4 dias e sem genética usa perfil neutro', async () => {
+    buildIntegratedProfileMock.mockResolvedValue({ ...BUILD, preferences: { availableDays: [] }, profile: { ...BUILD.profile, sources: { perfil: { status: 'vazia', data: null }, genetica: { status: 'desativada', data: null } } } })
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+
+    expect(generateMesocyclePlanMock).toHaveBeenCalledWith(expect.objectContaining({ daysPerWeek: 4, geneticProfile: null }))
   })
 
   it('loga o erro e não lança quando a geração falha', async () => {
@@ -143,22 +182,11 @@ describe('generateAndSaveMesocycle', () => {
     expect(logger.error).toHaveBeenCalled()
   })
 
-  it('US3 (FR-010): usa o perfil mais recente a cada chamada, sem reaproveitar um PlanInput de uma geração anterior', async () => {
+  it('US3 (FR-010): remonta o Perfil Integrado a cada geração', async () => {
     const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
-
-    gatherPlanInputMock.mockResolvedValueOnce({ ...MOCK_PLAN_INPUT, userGoals: 'Hipertrofia', userLevel: 'intermediario' })
     await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
-    expect(generateMesocyclePlanMock).toHaveBeenLastCalledWith(
-      expect.objectContaining({ userGoals: 'Hipertrofia', userLevel: 'intermediario' }),
-    )
-
-    // Perfil atualizado pelo usuário entre a criação do mesociclo anterior e esta nova geração
-    gatherPlanInputMock.mockResolvedValueOnce({ ...MOCK_PLAN_INPUT, userGoals: 'Resistência para maratona', userLevel: 'avancado' })
     await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
-    expect(generateMesocyclePlanMock).toHaveBeenLastCalledWith(
-      expect.objectContaining({ userGoals: 'Resistência para maratona', userLevel: 'avancado' }),
-    )
-    expect(gatherPlanInputMock).toHaveBeenCalledTimes(2)
+    expect(buildIntegratedProfileMock).toHaveBeenCalledTimes(2)
   })
 })
 
@@ -168,8 +196,9 @@ describe('triggerBackgroundPlanGeneration', () => {
     insertMock.mockResolvedValue({ error: null })
     updateEqMock.mockResolvedValue({ error: null })
     fetchSessionsSinceMock.mockResolvedValue([])
-    gatherPlanInputMock.mockResolvedValue(MOCK_PLAN_INPUT)
-    generateMesocyclePlanMock.mockResolvedValue(MOCK_MESOCYCLE)
+    buildIntegratedProfileMock.mockResolvedValue(BUILD)
+    assertBudgetMock.mockResolvedValue({ warning: null })
+    generateMesocyclePlanMock.mockResolvedValue(planResult(MOCK_MESOCYCLE))
   })
 
   it('não faz nada quando o usuário não tem mesociclo ativo (bootstrap é responsabilidade do GET)', async () => {
@@ -232,7 +261,7 @@ describe('triggerBackgroundPlanGeneration', () => {
 
     await triggerBackgroundPlanGeneration('user-123', 'token-abc', supabase, logger as never)
 
-    expect(generateMesocyclePlanMock).toHaveBeenCalledWith(MOCK_PLAN_INPUT)
+    expect(generateMesocyclePlanMock).toHaveBeenCalledWith(expect.objectContaining({ profile: BUILD.profile }))
     expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ user_id: 'user-123' }))
   })
 
@@ -282,11 +311,12 @@ describe('generateAndSaveMesocycle — progressão de carga (spec 014, US3)', ()
   beforeEach(() => {
     vi.clearAllMocks()
     insertMock.mockResolvedValue({ error: null })
-    gatherPlanInputMock.mockResolvedValue(MOCK_PLAN_INPUT)
+    buildIntegratedProfileMock.mockResolvedValue(BUILD)
+    assertBudgetMock.mockResolvedValue({ warning: null })
     fetchSessionsSinceMock.mockResolvedValue([
       { id: 's1', date: '2026-10-05', exercises: [{ name: 'Supino Reto', sets: [{ reps: 10, weight: 80, effort: 7 }, { reps: 10, weight: 80, effort: 7 }, { reps: 10, weight: 80, effort: 7 }] }] },
     ])
-    generateMesocyclePlanMock.mockResolvedValue({
+    generateMesocyclePlanMock.mockResolvedValue(planResult({
       ...MOCK_MESOCYCLE,
       sessions: [{
         letter: 'A', focus: 'Peito', completedAt: null,
@@ -295,7 +325,7 @@ describe('generateAndSaveMesocycle — progressão de carga (spec 014, US3)', ()
           { name: 'Supino Reto', sets: 3, reps: '8-10', weight: '85kg', phase: 'principal' },
         ],
       }],
-    })
+    }))
   })
 
   it('calcula as decisões, envia à IA e aplica a carga depois da geração, independente do que a IA sugeriu', async () => {
