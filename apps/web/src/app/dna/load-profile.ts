@@ -1,4 +1,5 @@
 import type { GeneticProfileView } from '@helux/types'
+import { serverFetch } from '@/lib/server-api'
 
 /** Resultado da leitura do perfil genético (spec 020, FR-010). */
 export type DnaState =
@@ -12,7 +13,7 @@ export type DnaState =
  */
 export async function loadGeneticProfile(): Promise<DnaState> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/genetic-profile`, {
+    const res = await serverFetch('/genetic-profile', {
       next: { revalidate: 3600 },
     } as RequestInit)
     if (res.status === 404) return { status: 'missing' }

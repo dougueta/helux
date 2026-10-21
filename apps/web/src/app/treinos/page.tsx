@@ -1,13 +1,13 @@
 // apps/web/src/app/treinos/page.tsx
 import { redirect } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { serverFetch } from '@/lib/server-api'
+import { getServerSession } from '@/lib/server-session'
 import { TreinosClient } from './TreinosClient'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
 
 async function getLatestPlan(token: string) {
   try {
-    const res = await fetch(`${API}/workout/latest-plan`, {
+    const res = await serverFetch(`/workout/latest-plan`, {
       headers: { Authorization: `Bearer ${token}` },
       next: { revalidate: 300 }
     })
@@ -17,7 +17,7 @@ async function getLatestPlan(token: string) {
 
 async function getRecentHistory(token: string) {
   try {
-    const res = await fetch(`${API}/api/workouts/history?limit=3`, {
+    const res = await serverFetch(`/api/workouts/history?limit=3`, {
       headers: { Authorization: `Bearer ${token}` },
       next: { revalidate: 300 }
     })
@@ -28,8 +28,7 @@ async function getRecentHistory(token: string) {
 }
 
 export default async function TreinosPage() {
-  const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const session = await getServerSession()
   if (!session) redirect('/login')
 
   const [plan, recentSessions] = await Promise.all([

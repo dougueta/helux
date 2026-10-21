@@ -1,4 +1,5 @@
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { isMockActive } from '@/lib/data-source'
 
 export interface ApiErrorDetail {
   path: (string | number)[]
@@ -16,6 +17,12 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<unknown> {
+  if (isMockActive()) {
+    // Modo mock (spec 021): resolve no navegador, sem Supabase nem rede.
+    const { getBrowserMock } = await import('@/mocks/runtime')
+    return getBrowserMock().router.dispatch(path, options)
+  }
+
   const supabase = createSupabaseBrowserClient()
   const { data: { session } } = await supabase.auth.getSession()
 

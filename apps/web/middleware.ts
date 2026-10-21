@@ -1,9 +1,13 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { shouldBypassAuth } from '@/lib/data-source'
 
 const PUBLIC_PATHS = ['/login', '/auth/callback']
 
 export async function middleware(request: NextRequest) {
+  // Modo mock (spec 021): sem Supabase; nunca em produção.
+  if (shouldBypassAuth(request)) return NextResponse.next({ request })
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
