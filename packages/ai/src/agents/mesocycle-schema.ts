@@ -34,6 +34,9 @@ const extraExercise = {
   additionalProperties: false,
 }
 
+/** Item de exercício: principal (nome do banco) ou aquecimento/volta à calma (nome livre). */
+export const EXERCISE_ITEM_SCHEMA = { anyOf: [mainExercise, extraExercise] }
+
 export const MESOCYCLE_SCHEMA = {
   type: 'object',
   properties: {
@@ -46,7 +49,7 @@ export const MESOCYCLE_SCHEMA = {
         properties: {
           letter: { type: 'string' },
           focus: { type: 'string' },
-          exercises: { type: 'array', items: { anyOf: [mainExercise, extraExercise] } },
+          exercises: { type: 'array', items: EXERCISE_ITEM_SCHEMA },
         },
         required: ['letter', 'focus', 'exercises'],
         additionalProperties: false,

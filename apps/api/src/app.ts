@@ -15,14 +15,16 @@ import { tirednessTodayRoutes } from './routes/tiredness-today'
 import { nutritionPhaseRoutes } from './routes/nutrition-phase'
 import { nutritionTodayRoutes } from './routes/nutrition-today'
 import { nutritionGeneticProfileRoutes } from './routes/nutrition-genetic-profile'
+import { workoutProposalsRoutes } from './routes/workout-proposals'
+import { loadEnv, type AppEnv } from './config/env'
 
-export function buildApp(): FastifyInstance {
+export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): FastifyInstance {
   const app = Fastify({
     logger: process.env.NODE_ENV !== 'test',
   })
 
   app.register(cors, {
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+    origin: config.CORS_ORIGIN,
     credentials: true,
     // PUT: /api/tiredness-today (spec 011).
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
@@ -43,6 +45,7 @@ export function buildApp(): FastifyInstance {
   app.register(nutritionPhaseRoutes)
   app.register(nutritionTodayRoutes)
   app.register(nutritionGeneticProfileRoutes)
+  app.register(workoutProposalsRoutes)
 
   return app
 }
