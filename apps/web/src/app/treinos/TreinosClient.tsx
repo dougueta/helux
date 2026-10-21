@@ -2,6 +2,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
@@ -10,6 +11,10 @@ import { Button } from '@/components/ui/Button'
 import { HistoryRow } from '@/components/ui/HistoryRow'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { PlanExerciseList } from '@/components/workout/PlanExerciseList'
+import { PlanRationale } from '@/components/agents/PlanRationale'
+import { SessionEditSheet } from '@/components/agents/SessionEditSheet'
+import { TodayAdjustCard } from '@/components/agents/TodayAdjustCard'
+import { AgentChat } from '@/components/agents/AgentChat'
 import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
 import type { AdjustedWorkoutPlanView } from '@helux/types'
@@ -24,9 +29,13 @@ interface TreinosClientProps {
 export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
-  const { plan, generating, generationError, generatePlan } = useWorkoutPlan()
+  const { plan, generating, generationError, generatePlan, refetch } = useWorkoutPlan()
+  const [editing, setEditing] = useState<number | null>(null)
+  const [coachOpen, setCoachOpen] = useState(false)
   const currentPlan = plan ?? initialPlan
   const today = currentPlan?.today
+  // Sessão pendente no mesociclo = número de concluídas (spec 022, edição manual).
+  const sessionIndex = currentPlan?.progress?.completed ?? 0
 
   function handleStart() {
     if (!today) return
@@ -61,7 +70,46 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
             </Button>
           </div>
         </section>
-      ) : (
+      ) : null}
+
+      {today && (
+        <>
+          <section style={{ marginTop: 24 }}>
+            <SectionHeader title="Ajustar o treino de hoje" />
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} aria-label="editar exercícios">
+              {today.exercises.map((e, i) =>
+                isMainExercise(e) ? (
+                  <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderTop: '1px solid var(--hairline)' }}>
+                    <span className="t-body" style={{ flex: 1 }}>
+                      {e.name}
+                    </span>
+                    <Button kind="ghost" aria-label={`editar ${e.name}`} onClick={() => setEditing(i)}>
+                      Editar
+                    </Button>
+                  </li>
+                ) : null,
+              )}
+            </ul>
+            <TodayAdjustCard onApplied={() => void refetch()} />
+          </section>
+          {editing !== null && today.exercises[editing] && (
+            <SessionEditSheet
+              open
+              sessionIndex={sessionIndex}
+              exerciseIndex={editing}
+              exercise={today.exercises[editing]}
+              onClose={() => setEditing(null)}
+              onSaved={() => {
+                setEditing(null)
+                void refetch()
+              }}
+            />
+          )}
+          {currentPlan?.rationaleDecisions && <PlanRationale decisions={currentPlan.rationaleDecisions} sourcesUsed={currentPlan.sourcesUsed} />}
+        </>
+      )}
+
+      {!today ? (
         <section className="hx-focus" style={{ marginTop: 24, padding: 20 }}>
           <h2 className="t-heading">Nenhum plano gerado ainda</h2>
           <p className="t-secondary" style={{ marginTop: 6 }}>
@@ -73,7 +121,18 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
             </Button>
           </div>
         </section>
-      )}
+      ) : null}
+
+      <section style={{ marginTop: 28 }}>
+        <SectionHeader title="Falar com o treinador" />
+        {coachOpen ? (
+          <AgentChat channel="treino" onHandoff={to => router.push(`/equipe?agente=${to}`)} placeholder="Ex.: posso trocar o supino por algo com halteres?" />
+        ) : (
+          <Button kind="secondary" block onClick={() => setCoachOpen(true)}>
+            Abrir conversa com o Agente de Treino
+          </Button>
+        )}
+      </section>
 
       {generationError && (
         <div style={{ marginTop: 12 }}>

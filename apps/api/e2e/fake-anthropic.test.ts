@@ -1,17 +1,13 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { generateMesocyclePlan } from '@helux/ai'
-import type { PlanInput } from '@helux/types'
+import { SOURCE_KEYS, type HardConstraints, type IntegratedProfile } from '@helux/types'
 import { startFakeAnthropic, type FakeAnthropic } from './fake-anthropic'
 
-const PLAN_INPUT: PlanInput = {
-  geneticProfile: { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] },
-  constraints: { maxWeeklyFrequency: 4, preferredVolume: 'medio', restBetweenSets: '90-120s', cardioIntensityLimit: 'moderado', forbiddenExerciseTypes: [] },
-  workoutHistory: [],
-  recoveryData: [],
-  userGoals: 'Hipertrofia',
-  userLevel: 'intermediario',
-  availableDaysPerWeek: 4,
+const PROFILE: IntegratedProfile = {
+  generatedAt: '2026-01-01T00:00:00.000Z',
+  sources: Object.fromEntries(SOURCE_KEYS.map((k) => [k, { status: 'vazia', updatedAt: null, summary: '', data: null }])) as IntegratedProfile['sources'],
 }
+const CONSTRAINTS: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
 
 describe('startFakeAnthropic', () => {
   let fake: FakeAnthropic | undefined
@@ -31,7 +27,8 @@ describe('startFakeAnthropic', () => {
     process.env.ANTHROPIC_BASE_URL = fake.url
     process.env.ANTHROPIC_API_KEY = 'fake-key'
 
-    const plan = await generateMesocyclePlan(PLAN_INPUT)
+    const { plan, decisions } = await generateMesocyclePlan({ profile: PROFILE, constraints: CONSTRAINTS, daysPerWeek: 4 })
+    expect(decisions).toHaveLength(1)
 
     expect(plan.sessions.map((s) => s.letter)).toEqual(['A', 'B', 'C', 'D'])
     expect(plan.sessions.every((s) => s.completedAt === null)).toBe(true)

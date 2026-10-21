@@ -86,6 +86,8 @@ export async function workoutLatestPlanRoutes(app: FastifyInstance): Promise<voi
       today,
       upcoming,
       progress: { completed, total },
+      ...(mesocycle.rationale_decisions ? { rationaleDecisions: mesocycle.rationale_decisions } : {}),
+      ...(mesocycle.sources_used ? { sourcesUsed: mesocycle.sources_used } : {}),
     }
     return reply.send(view)
   })

@@ -1,4 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
+import Link from 'next/link'
+import { Icon } from '@/components/ui/icons'
 
 interface ShellProps {
   children: ReactNode
@@ -12,7 +14,11 @@ interface ShellProps {
  */
 export function Shell({ children, style }: ShellProps) {
   return (
-    <div className="hx-page" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 120, ...style }}>
+    <div className="hx-page" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 120, position: 'relative', ...style }}>
+      {/* Spec 022: acesso à Equipe Helux em qualquer tela com menu (sem aba nova na barra). */}
+      <Link href="/equipe" className="hx-icbtn" aria-label="Equipe Helux" style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 12px)', right: 16 }}>
+        <Icon name="heart" size={20} />
+      </Link>
       {children}
     </div>
   )

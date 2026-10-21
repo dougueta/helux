@@ -88,3 +88,22 @@ describe('apiFetch', () => {
     }
   })
 })
+
+describe('ApiError com código e corpo (spec 022)', () => {
+  it('expõe code e body da resposta de erro', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 409, json: async () => ({ error: 'fere restrição', code: 'safety-warning', reasons: ['x'] }) })
+    const { apiFetch, ApiError } = await import('@/services/api-client')
+    const err = (await apiFetch('/api/x').catch(e => e)) as InstanceType<typeof ApiError>
+    expect(err).toBeInstanceOf(ApiError)
+    expect(err.code).toBe('safety-warning')
+    expect(err.body?.reasons).toEqual(['x'])
+  })
+})
+
+describe('204 sem corpo (spec 022)', () => {
+  it('devolve null sem tentar ler JSON', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 204, json: async () => { throw new Error('sem corpo') } })
+    const { apiFetch } = await import('@/services/api-client')
+    await expect(apiFetch('/api/agents/sources/exames', { method: 'PUT', body: '{}' })).resolves.toBeNull()
+  })
+})

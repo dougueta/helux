@@ -15,6 +15,12 @@ import { tirednessTodayRoutes } from './routes/tiredness-today'
 import { nutritionPhaseRoutes } from './routes/nutrition-phase'
 import { nutritionTodayRoutes } from './routes/nutrition-today'
 import { nutritionGeneticProfileRoutes } from './routes/nutrition-genetic-profile'
+import { workoutProposalsRoutes } from './routes/workout-proposals'
+import { workoutSessionEditRoutes } from './routes/workout-session-edit'
+import { trainingPreferencesRoutes } from './routes/training-preferences'
+import { agentsProfileRoutes } from './routes/agents-profile'
+import { agentsChatRoutes } from './routes/agents-chat'
+import { agentsGuidanceRoutes } from './routes/agents-guidance'
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({
@@ -24,8 +30,8 @@ export function buildApp(): FastifyInstance {
   app.register(cors, {
     origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
     credentials: true,
-    // PUT: /api/tiredness-today (spec 011).
-    methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
+    // PUT: /api/tiredness-today (spec 011); PATCH: edição manual e relatos (spec 022).
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
   })
 
   app.register(healthRoutes)
@@ -43,6 +49,12 @@ export function buildApp(): FastifyInstance {
   app.register(nutritionPhaseRoutes)
   app.register(nutritionTodayRoutes)
   app.register(nutritionGeneticProfileRoutes)
+  app.register(workoutProposalsRoutes)
+  app.register(workoutSessionEditRoutes)
+  app.register(trainingPreferencesRoutes)
+  app.register(agentsProfileRoutes)
+  app.register(agentsChatRoutes)
+  app.register(agentsGuidanceRoutes)
 
   return app
 }

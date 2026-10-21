@@ -4,6 +4,7 @@ import { ApiError } from '@/services/api-client'
 import type { MockRouter } from './mock-router'
 import type { MockDataset } from './types'
 import { today } from './fixtures/clock'
+import { registerAgentRoutes } from './agents'
 import { tirednessFixture } from './fixtures/tiredness.fixture'
 import { analyticsFixture, latestPlanFixture, MESOCYCLE_SESSIONS } from './fixtures/workouts.fixture'
 
@@ -241,4 +242,5 @@ function registerWrites(router: MockRouter) {
 export function registerMockRoutes(router: MockRouter): void {
   registerReads(router)
   registerWrites(router)
+  registerAgentRoutes(router)
 }

@@ -117,6 +117,16 @@ describe('GET /workout/latest-plan', () => {
     expect(body.progress).toEqual({ completed: 1, total: 3 })
   })
 
+  it('022: devolve a justificativa por decisão e as fontes usadas quando existem', async () => {
+    const decisions = [{ topic: 'divisao', choice: 'ABC', sources: ['preferencias'], reason: '3 dias' }]
+    const sourcesUsed = { ativa: ['perfil'], vazia: ['exames'], desativada: [] }
+    mockGetActiveMesocycle.mockResolvedValue({ ...MESOCYCLE_ROW, rationale_decisions: decisions, sources_used: sourcesUsed })
+    const app = await buildApp()
+    const body = (await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { authorization: 'Bearer valid-token' } })).json()
+    expect(body.rationaleDecisions).toEqual(decisions)
+    expect(body.sourcesUsed).toEqual(sourcesUsed)
+  })
+
   it('reduz o volume da sessão de hoje quando o HRV indica recuperação comprometida', async () => {
     mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
     mockFindPendingSessionIndex.mockReturnValue(1)

@@ -40,11 +40,11 @@ describe('Nutrição › Fase (spec 018, US0)', () => {
     vi.clearAllMocks()
   })
 
-  it('tem as seções Hoje, Fase e Perfil genético (o chat foi para a 022)', async () => {
+  it('tem as seções Hoje, Chat, Fase e Perfil genético (chat da 022)', async () => {
     getPhaseMock.mockResolvedValue({ phase: PHASE, calibrations: CALIBRATIONS, bodyFatPct: 18.4, missing: [] })
     render(<NutricaoClient />)
     const tabs = await screen.findAllByRole('tab')
-    expect(tabs.map((t) => t.textContent)).toEqual(['Hoje', 'Fase', 'Perfil genético'])
+    expect(tabs.map((t) => t.textContent)).toEqual(['Hoje', 'Chat', 'Fase', 'Perfil genético'])
   })
 
   it('fase ativa: objetivo, metas atuais, % de gordura e histórico de recalibrações', async () => {

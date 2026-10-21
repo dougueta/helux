@@ -1,12 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { generateMesocyclePlan } from '@helux/ai'
-import type { MesocycleSession } from '@helux/types'
+import { ConstraintsUnsatisfiableError, generateMesocyclePlan } from '@helux/ai'
+import type { GeneticProfile, MesocycleSession } from '@helux/types'
 import { applyProgression, computeMesocycleProgression, normalizeSessionExercises } from '@helux/workouts'
-import { fetchSessionsSince, gatherPlanInput } from './plan-context.service'
+import { assertBudget, BudgetExceededError, recordUsage } from './ai-budget.service'
+import { buildIntegratedProfile } from './integrated-profile.service'
+import { fetchSessionsSince } from './plan-context.service'
 import { getActiveMesocycle, findPendingSessionIndex, markSessionCompleted, isMesocycleComplete } from './mesocycle.service'
 
 interface MinimalLogger {
   error: (obj: unknown, msg?: string) => void
+  info?: (obj: unknown, msg?: string) => void
 }
 
 /** Mesociclo anterior concluído — base da progressão de carga (spec 014, US3). */
@@ -33,18 +36,58 @@ export async function generateAndSaveMesocycle(
   previous?: PreviousMesocycle,
 ): Promise<void> {
   try {
-    const planInput = await gatherPlanInput(userId, token)
-    if (!planInput) return
+    // Spec 022: o Agente de Treino lê o Perfil Integrado (fontes ativas + restrições rígidas).
+    const build = await buildIntegratedProfile(userId, supabase)
+    try {
+      await assertBudget(userId, supabase)
+    } catch (err) {
+      // Teto de IA atingido: o mesociclo atual continua; tenta de novo no próximo acesso (FR-026).
+      if (err instanceof BudgetExceededError) return
+      throw err
+    }
 
+    const perfil = build.profile.sources.perfil
+    const userLevel = (perfil.status === 'ativa' ? (perfil.data as { level?: string } | null)?.level : null) ?? 'intermediario'
     const decisions = previous
       ? computeMesocycleProgression({
           previousSessions: previous.sessions,
           history: await fetchSessionsSince(userId, supabase, previous.generated_at.slice(0, 10)),
-          userLevel: planInput.userLevel,
+          userLevel: userLevel as 'iniciante' | 'intermediario' | 'avancado',
         })
       : []
     const withLoad = decisions.filter((d) => d.action !== 'sem-dados')
-    const mesocycle = await generateMesocyclePlan(withLoad.length > 0 ? { ...planInput, loadProgression: withLoad } : planInput)
+    const genetica = build.profile.sources.genetica
+    const geneticProfile = genetica.status === 'ativa' ? (genetica.data as GeneticProfile) : null
+
+    let result
+    try {
+      result = await generateMesocyclePlan({
+        profile: build.profile,
+        constraints: build.constraints,
+        daysPerWeek: build.preferences.availableDays.length || 4,
+        geneticProfile,
+        ...(withLoad.length > 0 ? { loadProgression: withLoad } : {}),
+      })
+    } catch (err) {
+      if (err instanceof ConstraintsUnsatisfiableError) await recordUsage(userId, err.usages, supabase)
+      throw err
+    }
+    await recordUsage(userId, result.usages, supabase)
+    // R13: métricas da geração, sem conteúdo.
+    logger.info?.(
+      {
+        agent: 'treino',
+        operation: 'mesociclo',
+        model: result.usages[0]?.model ?? null,
+        attempts: result.usages.filter(u => u.cacheTtl === '5m').length,
+        inputTokens: result.usages.reduce((n, u) => n + u.input_tokens, 0),
+        outputTokens: result.usages.reduce((n, u) => n + u.output_tokens, 0),
+        cacheReadTokens: result.usages.reduce((n, u) => n + u.cache_read_input_tokens, 0),
+      },
+      'ai call',
+    )
+    const mesocycle = result.plan
+
     // Spec 014: fases ordenadas e bisets válidos antes de gravar; depois a carga da progressão.
     const sessions = applyProgression(
       mesocycle.sessions.map((session) => ({
@@ -61,6 +104,8 @@ export async function generateAndSaveMesocycle(
       split_type: mesocycle.splitType,
       sessions,
       rationale: mesocycle.rationale,
+      rationale_decisions: result.decisions,
+      sources_used: build.sourcesUsed,
     })
 
     if (error) {

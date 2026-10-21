@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type CSSProperties } from 'react'
+import Link from 'next/link'
 import type { UserTrainingProfile, UserTrainingProfileInput } from '@helux/types'
 import { Button } from '@/components/ui/Button'
 import { Segmented } from '@/components/ui/Segmented'
@@ -106,6 +107,11 @@ export function ProfileForm({ initial, saving, onSave }: ProfileFormProps) {
         onChange={setCurrentInjury}
         multiline
       />
+      {currentInjury.trim() && (
+        <Link href="/equipe?agente=medicina" className="t-secondary" style={{ color: 'var(--text)', marginTop: -12 }}>
+          Conversar com a Medicina Esportiva sobre isso
+        </Link>
+      )}
 
       <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <h2 className="t-section">Dados corporais</h2>

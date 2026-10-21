@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { MesocycleSession } from '@helux/types'
+import type { MesocycleSession, PlanDecision, SourcesUsed } from '@helux/types'
 
 export interface MesocycleRow {
   id: string
@@ -8,12 +8,15 @@ export interface MesocycleRow {
   split_type: string
   sessions: MesocycleSession[]
   rationale: string
+  /** Spec 022: justificativa por decisão e fontes usadas (null em planos antigos). */
+  rationale_decisions?: PlanDecision[] | null
+  sources_used?: SourcesUsed | null
 }
 
 export async function getActiveMesocycle(userId: string, supabase: SupabaseClient): Promise<MesocycleRow | null> {
   const { data, error } = await supabase
     .from('mesocycle_plans')
-    .select('id, generated_at, days_per_week, split_type, sessions, rationale')
+    .select('id, generated_at, days_per_week, split_type, sessions, rationale, rationale_decisions, sources_used')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(1)
