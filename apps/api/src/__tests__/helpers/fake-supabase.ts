@@ -29,6 +29,7 @@ export function fakeSupabase(tables: Record<string, Row[]> = {}): FakeSupabase {
   function builder(table: string): Builder {
     const filters: [string, unknown][] = []
     const gtes: [string, unknown][] = []
+    const nulls: [string, unknown][] = []
     let order: { col: string; asc: boolean } | null = null
     let limit: number | null = null
     let op: FakeCall['op'] | null = null
@@ -37,7 +38,7 @@ export function fakeSupabase(tables: Record<string, Row[]> = {}): FakeSupabase {
     let onConflict: string[] = []
 
     const rows = () => {
-      let out = (db[table] ?? []).filter((r) => filters.every(([c, v]) => r[c] === v) && gtes.every(([c, v]) => String(r[c]) >= String(v)))
+      let out = (db[table] ?? []).filter((r) => filters.every(([c, v]) => r[c] === v) && gtes.every(([c, v]) => String(r[c]) >= String(v)) && nulls.every(([c, v]) => (r[c] ?? null) === v))
       if (order) {
         const { col, asc } = order
         out = [...out].sort((a, b) => (String(a[col]) < String(b[col]) ? -1 : String(a[col]) > String(b[col]) ? 1 : 0) * (asc ? 1 : -1))
@@ -83,6 +84,8 @@ export function fakeSupabase(tables: Record<string, Row[]> = {}): FakeSupabase {
       select: vi.fn(() => b),
       eq: vi.fn((c: string, v: unknown) => (filters.push([c, v]), b)),
       gte: vi.fn((c: string, v: unknown) => (gtes.push([c, v]), b)),
+      // Spec 022: `is(col, null)` (ex.: conversa não arquivada).
+      is: vi.fn((c: string, v: unknown) => (nulls.push([c, v]), b)),
       order: vi.fn((col: string, opts?: { ascending?: boolean }) => ((order = { col, asc: opts?.ascending ?? true }), b)),
       limit: vi.fn((n: number) => ((limit = n), b)),
       insert: vi.fn((v: unknown) => ((op = 'insert'), (values = v), b)),
