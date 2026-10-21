@@ -7,7 +7,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "eval:medicina": "vitest run --config vitest.eval.config.ts src/agents/__evals__/medicina.eval.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
