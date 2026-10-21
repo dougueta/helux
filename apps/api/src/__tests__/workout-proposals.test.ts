@@ -116,8 +116,8 @@ describe('propostas de ajuste de treino (022 T015)', () => {
     const { proposal } = (await app.inject({ method: 'POST', url: '/api/workout/adjust', headers: auth, payload: { request: 'x' } })).json()
     const res = await app.inject({ method: 'POST', url: `/api/workout/proposals/${proposal.id}/accept`, headers: auth })
     expect(res.statusCode).toBe(200)
-    expect(fake.db.mesocycle_plans[0].sessions[1].exercises[0].name).toBe('Remada Unilateral (Halteres)')
-    expect(fake.db.mesocycle_plans[0].sessions[0].completedAt).toBe('2026-10-18T10:00:00Z')
+    expect((fake.db.mesocycle_plans[0].sessions as any[])[1].exercises[0].name).toBe('Remada Unilateral (Halteres)')
+    expect((fake.db.mesocycle_plans[0].sessions as any[])[0].completedAt).toBe('2026-10-18T10:00:00Z')
     expect(fake.db.workout_adjustment_proposals[0].status).toBe('aceita')
     expect((await app.inject({ method: 'POST', url: `/api/workout/proposals/${proposal.id}/accept`, headers: auth })).statusCode).toBe(409)
   })
@@ -129,7 +129,7 @@ describe('propostas de ajuste de treino (022 T015)', () => {
     expect(res.statusCode).toBe(409)
     expect(res.json().code).toBe('obsolete')
     expect(fake.db.workout_adjustment_proposals[0].status).toBe('obsoleta')
-    expect(fake.db.mesocycle_plans[0].sessions[1].exercises[0].name).toBe('Remada Curvada (Barra)')
+    expect((fake.db.mesocycle_plans[0].sessions as any[])[1].exercises[0].name).toBe('Remada Curvada (Barra)')
   })
 
   it('recusar descarta', async () => {
@@ -137,7 +137,7 @@ describe('propostas de ajuste de treino (022 T015)', () => {
     const res = await app.inject({ method: 'POST', url: `/api/workout/proposals/${proposal.id}/reject`, headers: auth })
     expect(res.statusCode).toBe(200)
     expect(fake.db.workout_adjustment_proposals[0].status).toBe('recusada')
-    expect(fake.db.mesocycle_plans[0].sessions[1].exercises[0].name).toBe('Remada Curvada (Barra)')
+    expect((fake.db.mesocycle_plans[0].sessions as any[])[1].exercises[0].name).toBe('Remada Curvada (Barra)')
   })
 
   it('sem sessão pendente → 409 no-pending-session', async () => {
