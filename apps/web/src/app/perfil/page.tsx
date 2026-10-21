@@ -1,13 +1,12 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { getServerSession } from '@/lib/server-session'
 import { Shell } from '@/components/layout/Shell'
 import { Icon } from '@/components/ui/icons'
 import { PerfilClient } from './PerfilClient'
 
 export default async function PerfilPage() {
-  const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const session = await getServerSession()
   if (!session) redirect('/login')
 
   return (

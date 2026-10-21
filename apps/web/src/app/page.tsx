@@ -1,12 +1,12 @@
 import { redirect } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { serverFetch } from '@/lib/server-api'
+import { getServerSession } from '@/lib/server-session'
 import { HomeClient } from './HomeClient'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'
 
 async function getLatestPlan(token: string) {
   try {
-    const res = await fetch(`${API}/workout/latest-plan`, {
+    const res = await serverFetch(`/workout/latest-plan`, {
       headers: { Authorization: `Bearer ${token}` },
       next: { revalidate: 300 }
     })
@@ -16,7 +16,7 @@ async function getLatestPlan(token: string) {
 
 async function getLatestCheckins(token: string) {
   try {
-    const res = await fetch(`${API}/api/checkins?limit=2`, {
+    const res = await serverFetch(`/api/checkins?limit=2`, {
       headers: { Authorization: `Bearer ${token}` },
       next: { revalidate: 3600 }
     })
@@ -28,7 +28,7 @@ async function getLatestCheckins(token: string) {
 
 async function getAnalytics(token: string) {
   try {
-    const res = await fetch(`${API}/api/workouts/analytics`, {
+    const res = await serverFetch(`/api/workouts/analytics`, {
       headers: { Authorization: `Bearer ${token}` },
       next: { revalidate: 300 }
     })
@@ -37,8 +37,7 @@ async function getAnalytics(token: string) {
 }
 
 export default async function HomePage() {
-  const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const session = await getServerSession()
   if (!session) redirect('/login')
 
   const [plan, checkinsRaw, analytics] = await Promise.all([

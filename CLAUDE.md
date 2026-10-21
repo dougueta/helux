@@ -43,5 +43,5 @@ Quando o setup estiver feito, apague (ou marque como concluídos) os itens acima
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/018-nutricao-genetica/plan.md
+at specs/021-ambiente-testes-mocks/plan.md
 <!-- SPECKIT END -->

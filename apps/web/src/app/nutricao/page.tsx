@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { getServerSession } from '@/lib/server-session'
 import { Shell } from '@/components/layout/Shell'
 import { NutricaoClient } from './NutricaoClient'
 
 export default async function NutricaoPage() {
-  const supabase = createSupabaseServerClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const session = await getServerSession()
   if (!session) redirect('/login')
 
   return (
