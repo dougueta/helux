@@ -104,6 +104,21 @@ apps/api/src/
 
 ---
 
+## Revisão 2026-10-20 (antes da implementação, branch empilhada sobre a 018)
+
+Ao reler o código, a interceptação só no `apiFetch` + `localStorage` não basta. O `middleware.ts` e 5 páginas de servidor (`/`, `/treinos`, `/nutricao`, `/perfil`, `/checkin`) exigem sessão Supabase e redirecionam para `/login`. `/`, `/treinos` e `/dna` também buscam dados no servidor com `fetch` direto. Decisões:
+
+- **R-A — Modo em cookie, não em `localStorage`**: o override da UI vai para o cookie `helux-data-source` (`mock` | `real`), que o middleware, as páginas de servidor e o cliente conseguem ler. Precedência: produção (`NODE_ENV === 'production'`) → sempre `real`; cookie; `NEXT_PUBLIC_DATA_SOURCE`; `real`. A persona ativa fica no cookie `helux-mock-persona`. O **estado mutável** do mock continua em `localStorage` (`helux_mock_state_v1`), como no clarify.
+- **R-B — Sessão de mock no servidor**: em modo mock, o `middleware.ts` não exige usuário, e as páginas usam `getServerSession()` (`lib/server-session.ts`), que devolve uma sessão fake (`access_token: 'mock-token'`, e-mail `atleta.mock@helux.dev`). No cliente, `apiFetch` não chama o Supabase em modo mock.
+- **R-C — Dados das páginas de servidor**: as buscas de servidor passam por `serverApiGet(path, token)` (`lib/server-api.ts`). Em mock, ela despacha para o mesmo `mock-router` com o dataset **inicial** da persona do cookie, porque o servidor não lê `localStorage`. Limitação aceita: blocos renderizados só no servidor (check-ins e sequência da Home, sessões recentes de Treinos, DNA) mostram a persona e não as mutações locais. O plano de treino da Home e todas as telas que buscam no cliente refletem as mutações.
+- **R-D — Nutrição (018) entra nas fixtures**: o dataset ganha `nutrition` (fase, planos do dia gerados por `buildDayPlan` de `@helux/nutrition`, histórico e perfil nutrigenômico). As rotas `/api/nutrition/*` são mockadas, incluindo as escritas (iniciar/encerrar fase, tipo do dia, troca).
+- **R-E — Exames e mobile ficam fora**: a 019 ainda não tem telas nem rotas, então a fixture de exames fica para a 019 (o `MockDataset` não tem `medicalExams`). O `apps/mobile` está despriorizado (decisão web-only).
+- **R-F — API (FR-009)**: o modo mock da API para testes de integração já existe na prática: as suítes da API usam `__tests__/helpers/fake-supabase.ts` (Supabase em memória por teste). Não há `DATA_SOURCE` na API nesta entrega, e o `api-mock-provider.ts` sai da estrutura.
+- **R-G — Dev Bar sem CSS module**: só classes do `helux-v2.css` + estilos inline (o guard do design system proíbe classes fora do v2). O `DevBar.module.css` sai da estrutura.
+- **R-H — Persona "erro de comunicação"** (US5, cenário 2): a persona `network-error` faz o `mock-router` rejeitar toda leitura com `ApiError('HTTP 503')`.
+
+---
+
 ## Complexity Tracking
 
 *Sem violações da constituição a justificar. Toda a arquitetura respeita YAGNI, monorepo e TDD rigoroso.*
