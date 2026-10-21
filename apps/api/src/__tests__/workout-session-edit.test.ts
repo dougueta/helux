@@ -15,7 +15,7 @@ vi.mock('@supabase/supabase-js', () => ({
   }),
 }))
 
-const NONE = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const NONE: { availableEquipment: string[]; exercisesToAvoid: string[]; maxSessionMinutes: number | null; blockedPatterns: string[]; blockedExercises: string[] } = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
 let constraints = NONE
 const buildIntegratedProfileMock = vi.fn()
 vi.mock('../services/integrated-profile.service', () => ({ buildIntegratedProfile: (...a: unknown[]) => buildIntegratedProfileMock(...a) }))
