@@ -1,7 +1,14 @@
 import type { FastifyInstance, FastifyReply } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
-import type { UserTrainingProfile } from '@helux/types'
+import type { Sex, UserTrainingProfile } from '@helux/types'
+import { ageOn } from '@helux/nutrition'
+
+// Spec 018: idade plausível para as fórmulas de nutrição.
+const isPlausibleBirthDate = (date: string) => {
+  const age = ageOn(date, new Date().toISOString().slice(0, 10))
+  return age >= 14 && age <= 100
+}
 
 const ProfileBodySchema = z.object({
   goal: z.string().max(300).optional(),
@@ -9,6 +16,13 @@ const ProfileBodySchema = z.object({
   trainingTime: z.string().max(300).optional(),
   timeOff: z.string().max(300).optional(),
   currentInjury: z.string().max(300).optional(),
+  heightCm: z.number().min(120).max(230).optional(),
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'birthDate must be YYYY-MM-DD')
+    .refine(isPlausibleBirthDate, 'birthDate must give an age between 14 and 100')
+    .optional(),
+  sex: z.enum(['masculino', 'feminino']).optional(),
 })
 
 interface ProfileRow {
@@ -17,6 +31,9 @@ interface ProfileRow {
   training_time: string | null
   time_off: string | null
   current_injury: string | null
+  height_cm?: number | string | null
+  birth_date?: string | null
+  sex?: Sex | null
   updated_at: string
 }
 
@@ -27,6 +44,9 @@ function toProfile(row: ProfileRow): UserTrainingProfile {
     trainingTime: row.training_time,
     timeOff: row.time_off,
     currentInjury: row.current_injury,
+    heightCm: row.height_cm != null ? Number(row.height_cm) : null,
+    birthDate: row.birth_date ?? null,
+    sex: row.sex ?? null,
     updatedAt: row.updated_at,
   }
 }
@@ -81,13 +101,16 @@ export async function profileRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(400).send({ error: 'Bad Request', details: parsed.error.errors })
     }
 
-    const { goal, level, trainingTime, timeOff, currentInjury } = parsed.data
+    const { goal, level, trainingTime, timeOff, currentInjury, heightCm, birthDate, sex } = parsed.data
     const fields: Record<string, unknown> = {}
     if (goal !== undefined) fields.goal = goal
     if (level !== undefined) fields.level = level
     if (trainingTime !== undefined) fields.training_time = trainingTime
     if (timeOff !== undefined) fields.time_off = timeOff
     if (currentInjury !== undefined) fields.current_injury = currentInjury
+    if (heightCm !== undefined) fields.height_cm = heightCm
+    if (birthDate !== undefined) fields.birth_date = birthDate
+    if (sex !== undefined) fields.sex = sex
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: `Bearer ${auth.token}` } },

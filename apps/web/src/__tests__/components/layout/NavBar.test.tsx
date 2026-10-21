@@ -11,13 +11,19 @@ describe('NavBar (v2)', () => {
     pathname = '/'
   })
 
-  it('4 links: Hoje, Treinos, Check-in, Progresso', () => {
+  it('5 links: Hoje, Treinos, Nutrição, Check-in, Progresso (spec 018)', () => {
     render(<NavBar />)
     const nav = screen.getByRole('navigation', { name: 'principal' })
     expect(nav).toHaveClass('hx-nav')
     const links = screen.getAllByRole('link')
-    expect(links.map(l => l.textContent)).toEqual(['Hoje', 'Treinos', 'Check-in', 'Progresso'])
-    expect(links.map(l => l.getAttribute('href'))).toEqual(['/', '/treinos', '/checkin', '/recovery'])
+    expect(links.map(l => l.textContent)).toEqual(['Hoje', 'Treinos', 'Nutrição', 'Check-in', 'Progresso'])
+    expect(links.map(l => l.getAttribute('href'))).toEqual(['/', '/treinos', '/nutricao', '/checkin', '/recovery'])
+  })
+
+  it('Nutrição fica atual em /nutricao', () => {
+    pathname = '/nutricao'
+    render(<NavBar />)
+    expect(screen.getByRole('link', { name: 'Nutrição' })).toHaveAttribute('aria-current', 'page')
   })
 
   it('aria-current="page" só no item da rota', () => {

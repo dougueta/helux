@@ -190,3 +190,43 @@ describe('US3 — updating the profile does not touch mesocycle_plans', () => {
     expect(calledTables.every((t) => t === 'user_training_profile')).toBe(true)
   })
 })
+
+describe('spec 018 — altura, data de nascimento e sexo no perfil', () => {
+  let app: Awaited<ReturnType<typeof buildApp>>
+  const auth = { Authorization: 'Bearer valid-token' }
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    vi.resetModules()
+    process.env.SUPABASE_URL = 'https://test.supabase.co'
+    process.env.SUPABASE_ANON_KEY = 'test-key'
+    const row = { ...mockRow, height_cm: 178, birth_date: '1990-05-10', sex: 'masculino' }
+    mockSingle.mockResolvedValue({ data: row, error: null })
+    mockMaybeSingle.mockResolvedValue({ data: row, error: null })
+    app = await buildApp()
+  })
+
+  it('POST grava height_cm, birth_date e sex', async () => {
+    const res = await app.inject({ method: 'POST', url: '/api/profile', headers: auth, payload: { heightCm: 178, birthDate: '1990-05-10', sex: 'masculino' } })
+    expect(res.statusCode).toBe(200)
+    expect(mockUpsert.mock.calls[0][0]).toMatchObject({ height_cm: 178, birth_date: '1990-05-10', sex: 'masculino' })
+    expect(res.json().profile).toMatchObject({ heightCm: 178, birthDate: '1990-05-10', sex: 'masculino' })
+  })
+
+  it('GET devolve os três campos', async () => {
+    const res = await app.inject({ method: 'GET', url: '/api/profile', headers: auth })
+    expect(res.json().profile).toMatchObject({ heightCm: 178, birthDate: '1990-05-10', sex: 'masculino' })
+  })
+
+  it.each([
+    [{ heightCm: 119 }],
+    [{ heightCm: 231 }],
+    [{ birthDate: '10/05/1990' }],
+    [{ birthDate: '2020-01-01' }],
+    [{ birthDate: '1900-01-01' }],
+    [{ sex: 'outro' }],
+  ])('400 para valor fora da regra: %o', async (payload) => {
+    const res = await app.inject({ method: 'POST', url: '/api/profile', headers: auth, payload })
+    expect(res.statusCode).toBe(400)
+  })
+})

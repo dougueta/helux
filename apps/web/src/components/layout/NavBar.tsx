@@ -7,6 +7,7 @@ import { Icon, type IconName } from '@/components/ui/icons'
 const TABS: { href: string; label: string; icon: IconName; match: string[] }[] = [
   { href: '/', label: 'Hoje', icon: 'home', match: [] },
   { href: '/treinos', label: 'Treinos', icon: 'dumbbell', match: ['/treinos'] },
+  { href: '/nutricao', label: 'Nutrição', icon: 'leaf', match: ['/nutricao'] },
   { href: '/checkin', label: 'Check-in', icon: 'checkin', match: ['/checkin'] },
   // Histórico faz parte de Progresso na v2 (research V9).
   { href: '/recovery', label: 'Progresso', icon: 'chart', match: ['/recovery', '/history'] },

@@ -4,7 +4,10 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { Shell } from '@/components/layout/Shell'
 import { CheckinForm } from '@/components/checkin/CheckinForm'
 
-export default async function CheckinPage() {
+// Spec 018: de onde o usuário veio e para onde volta depois de salvar (só destinos conhecidos).
+const RETURN_TO: Record<string, string> = { nutricao: '/nutricao' }
+
+export default async function CheckinPage({ searchParams }: { searchParams?: { voltar?: string } }) {
   const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) redirect('/login')
@@ -22,7 +25,7 @@ export default async function CheckinPage() {
           Histórico
         </Link>
       </header>
-      <CheckinForm />
+      <CheckinForm returnTo={searchParams?.voltar ? RETURN_TO[searchParams.voltar] : undefined} />
     </Shell>
   )
 }

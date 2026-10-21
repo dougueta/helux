@@ -42,4 +42,10 @@ describe('TraitCard (v2, spec 012 T059)', () => {
     render(<TraitCard gene="WNT16" label="Densidade óssea" level={0.5} note="" />)
     expect(screen.queryByText(/,/)).not.toBeInTheDocument()
   })
+
+  it('shows a status word instead of the level when there is no level', () => {
+    render(<TraitCard gene="MCM6" genotype="G,G" label="Intolerância à lactose" status="atenção" note="" />)
+    expect(screen.getByText('atenção')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/nível/)).not.toBeInTheDocument()
+  })
 })

@@ -33,13 +33,16 @@ export function TraitCard({
   genotype,
   label,
   level,
+  status,
   note,
   warn,
 }: {
   gene: string
   genotype?: string
   label: string
-  level: number
+  /** Nível 0–1 (tela DNA). Sem nível, mostra `status` em palavra (perfil nutrigenômico, 018). */
+  level?: number
+  status?: string
   note: string
   warn?: boolean
 }) {
@@ -56,7 +59,15 @@ export function TraitCard({
             </span>
           )}
         </span>
-        <Level level={level} />
+        {level !== undefined ? (
+          <Level level={level} />
+        ) : (
+          status && (
+            <span className="t-caption" style={{ color: 'var(--text)', flexShrink: 0 }}>
+              {status}
+            </span>
+          )
+        )}
       </div>
       <div className="t-secondary" style={{ marginTop: 6, color: 'var(--text)' }}>
         {label}
