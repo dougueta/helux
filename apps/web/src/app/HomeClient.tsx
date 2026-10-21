@@ -225,6 +225,24 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
         </div>
       )}
 
+      {/* Spec 022: chat com a Equipe Helux (treino, medicina esportiva, nutrição genética). */}
+      <div className="hx-card" style={{ marginTop: 16, overflow: 'hidden' }}>
+        <Link href="/equipe" className="hx-row-btn">
+          <span style={{ width: 40, display: 'grid', placeItems: 'center', color: 'var(--text-dim)' }}>
+            <Icon name="heart" size={22} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span className="t-body-m" style={{ display: 'block' }}>
+              Falar com a Equipe Helux
+            </span>
+            <span className="t-secondary">Treino, medicina esportiva e nutrição genética</span>
+          </span>
+          <span className="dim">
+            <Icon name="chev" size={20} />
+          </span>
+        </Link>
+      </div>
+
       {sessions.length > 0 && currentPlan?.progress && (
         <section style={{ marginTop: 28 }}>
           <SectionHeader
