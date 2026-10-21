@@ -1,42 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import type { GeneticProfile, WorkoutConstraints } from '@helux/types'
-import { buildMesocycleSystemPrompt, buildMesocycleUserPrompt } from '../mesocycle-prompts'
+import type { HardConstraints } from '@helux/types'
+import { buildMesocycleMethod, buildMesocycleRequest } from '../mesocycle-prompts'
 import { buildContextBody, buildUserPrompt } from '../prompts'
 
-const PROFILE: GeneticProfile = {
-  metabolismo: 'moderado',
-  recuperacaoMuscular: 'media',
-  riscoCardiovascular: 'baixo',
-  predisposicao: 'misto',
-  alertas: [],
-}
-
-const CONSTRAINTS: WorkoutConstraints = {
-  maxWeeklyFrequency: 4,
-  preferredVolume: 'medio',
-  restBetweenSets: '90-120s',
-  forbiddenExerciseTypes: [],
-  cardioIntensityLimit: 'moderado',
-}
-
-describe('buildMesocycleSystemPrompt — Alertas Situacionais (US1)', () => {
-  it('inclui o bloco de Alertas Situacionais quando currentInjury está preenchido', () => {
-    const prompt = buildMesocycleSystemPrompt(PROFILE, CONSTRAINTS, 'Dor no ombro direito ao levantar acima da cabeça')
-    expect(prompt).toContain('Alertas Situacionais')
-    expect(prompt).toContain('OBRIGATÓRIO RESPEITAR')
-    expect(prompt).toContain('Dor no ombro direito ao levantar acima da cabeça')
-  })
-
-  it('não inclui o bloco quando currentInjury está ausente', () => {
-    const prompt = buildMesocycleSystemPrompt(PROFILE, CONSTRAINTS)
-    expect(prompt).not.toContain('Alertas Situacionais')
-  })
-
-  it('não inclui o bloco quando currentInjury é string vazia', () => {
-    const prompt = buildMesocycleSystemPrompt(PROFILE, CONSTRAINTS, '')
-    expect(prompt).not.toContain('Alertas Situacionais')
-  })
-})
+const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
 
 describe('buildContextBody — tempo treinando / tempo parado (US1)', () => {
   it('inclui linhas de tempo treinando e tempo parado quando fornecidos', () => {
@@ -51,14 +18,6 @@ describe('buildContextBody — tempo treinando / tempo parado (US1)', () => {
   })
 })
 
-describe('buildMesocycleUserPrompt propaga trainingTime/timeOff', () => {
-  it('inclui os valores no prompt final', () => {
-    const prompt = buildMesocycleUserPrompt([], [], 'Hipertrofia', 'intermediario', 4, undefined, '3 anos', '6 meses parado')
-    expect(prompt).toContain('3 anos')
-    expect(prompt).toContain('6 meses parado')
-  })
-})
-
 describe('buildUserPrompt (fluxo legado) propaga trainingTime/timeOff sem quebrar (Nota de Escopo)', () => {
   it('inclui os valores no prompt final quando fornecidos', () => {
     const prompt = buildUserPrompt([], [], 'Hipertrofia', 'intermediario', 4, undefined, '3 anos', '6 meses parado')
@@ -67,66 +26,88 @@ describe('buildUserPrompt (fluxo legado) propaga trainingTime/timeOff sem quebra
   })
 })
 
-describe('buildMesocycleSystemPrompt — 3 fases (spec 014, US1)', () => {
-  const prompt = buildMesocycleSystemPrompt(PROFILE, CONSTRAINTS)
+describe('buildMesocycleMethod (022 T011)', () => {
+  const method = buildMesocycleMethod('leve')
 
-  it('pede o campo phase com os três valores', () => {
-    expect(prompt).toContain('"phase"')
-    expect(prompt).toContain('"aquecimento"')
-    expect(prompt).toContain('"principal"')
-    expect(prompt).toContain('"volta-calma"')
+  it('é o Agente de Treino, usa o Perfil Integrado e prioriza a segurança em conflitos (FR-010)', () => {
+    expect(method).toContain('Agente de Treino')
+    expect(method).toContain('Perfil Integrado')
+    expect(method).toMatch(/priorize a segurança, explique o conflito/)
+    expect(method).toMatch(/fontes não foram usadas/)
   })
 
-  it('explica aquecimento e volta à calma com 2 a 4 itens de nome livre', () => {
-    expect(prompt).toContain('Estrutura da Sessão em 3 Fases')
-    expect(prompt).toMatch(/Aquecimento.*2 a 4 itens/)
-    expect(prompt).toMatch(/Volta à calma.*2 a 4 itens/)
-    expect(prompt).toContain('catálogo vale apenas para os itens com `"phase": "principal"`')
+  it('pede decisões com fontes (FR-008)', () => {
+    expect(method).toContain('`decisions`')
+    expect(method).toMatch(/perfil, preferencias, historico/)
   })
 
-  it('amarra o cardio das fases ao limite de intensidade do atleta', () => {
-    const intense = buildMesocycleSystemPrompt(PROFILE, { ...CONSTRAINTS, cardioIntensityLimit: 'leve' })
-    expect(intense).toContain('cardio das fases de aquecimento e volta à calma não pode passar de: leve')
+  it('mantém as 3 fases, o biset e o catálogo (spec 014)', () => {
+    expect(method).toContain('"phase": "aquecimento"')
+    expect(method).toContain('"phase": "volta-calma"')
+    expect(method).toContain('supersetGroup')
+    expect(method).toContain('Catálogo de Exercícios')
+    expect(method).toContain('não pode passar de: leve')
   })
 
-  it('mostra o exemplo de JSON com as três fases', () => {
-    const json = prompt.slice(prompt.indexOf('## Formato de Resposta'))
-    expect(json.indexOf('"phase": "aquecimento"')).toBeGreaterThan(-1)
-    expect(json.indexOf('"phase": "aquecimento"')).toBeLessThan(json.indexOf('"phase": "principal"'))
-    expect(json.indexOf('"phase": "principal"')).toBeLessThan(json.indexOf('"phase": "volta-calma"'))
-  })
-})
-
-describe('buildMesocycleSystemPrompt — biset (spec 014, US2)', () => {
-  const prompt = buildMesocycleSystemPrompt(PROFILE, CONSTRAINTS)
-
-  it('explica o campo supersetGroup e os limites do biset', () => {
-    expect(prompt).toContain('## Biset (opcional)')
-    expect(prompt).toContain('"supersetGroup"')
-    expect(prompt).toContain('no máximo 2 bisets por sessão')
-    expect(prompt).toMatch(/exatamente 2 exercícios consecutivos do treino principal/)
-    expect(prompt).toContain('mesmo número de séries')
+  it('é estável (sem data/hora), para o cache', () => {
+    expect(buildMesocycleMethod('leve')).toBe(method)
+    expect(method).not.toMatch(/\d{4}-\d{2}-\d{2}T/)
   })
 })
 
-describe('buildMesocycleUserPrompt — progressão de carga (spec 014, US3, FR-018)', () => {
-  const decisions = [
-    { name: 'Supino Reto', action: 'aumentar' as const, previousWeightKg: 40, nextWeightKg: 42, reason: 'Topo da faixa: +2 kg.' },
-    { name: 'Remada Curvada', action: 'reduzir' as const, previousWeightKg: 50, nextWeightKg: 46, reason: 'Abaixo da faixa no limite: −4 kg.' },
-    { name: 'Agachamento', action: 'sem-dados' as const, previousWeightKg: null, nextWeightKg: null, reason: 'Pulado.' },
-  ]
-
-  it('lista as decisões com carga (ignora sem-dados) na seção obrigatória', () => {
-    const prompt = buildMesocycleUserPrompt([], [], 'Hipertrofia', 'intermediario', 4, undefined, undefined, undefined, decisions)
-    expect(prompt).toContain('## Progressão de carga calculada — OBRIGATÓRIO')
-    expect(prompt).toContain('- Supino Reto: 40 kg → 42 kg (aumentar) — Topo da faixa: +2 kg.')
-    expect(prompt).toContain('- Remada Curvada: 50 kg → 46 kg (reduzir) — Abaixo da faixa no limite: −4 kg.')
-    expect(prompt).not.toContain('Agachamento:')
+describe('buildMesocycleRequest (022 T011)', () => {
+  it('lista as restrições rígidas com nomes do banco', () => {
+    const text = buildMesocycleRequest({
+      daysPerWeek: 3,
+      constraints: {
+        availableEquipment: ['halteres', 'peso-corporal'],
+        exercisesToAvoid: ['agachamento-livre-barra'],
+        maxSessionMinutes: 45,
+        blockedPatterns: ['empurrar-vertical'],
+        blockedExercises: ['Remada Unilateral (Halteres)'],
+      },
+    })
+    expect(text).toContain('Dias de treino por semana: 3')
+    expect(text).toContain('Equipamentos disponíveis: halteres, peso-corporal')
+    expect(text).toContain('Duração máxima por sessão: 45 min')
+    expect(text).toContain('Exercícios a evitar: Agachamento Livre (Barra)')
+    expect(text).toContain('Padrões de movimento bloqueados por restrição de segurança: empurrar-vertical')
+    expect(text).toContain('Remada Unilateral (Halteres)')
   })
 
-  it('sem decisões com carga, a seção não aparece', () => {
-    const none = buildMesocycleUserPrompt([], [], 'Hipertrofia', 'intermediario', 4, undefined, undefined, undefined, [decisions[2]])
-    expect(none).not.toContain('Progressão de carga calculada')
-    expect(buildMesocycleUserPrompt([], [], 'Hipertrofia', 'intermediario', 4)).not.toContain('Progressão de carga calculada')
+  it('sem restrições: equipamentos "todos" e nada de duração', () => {
+    const text = buildMesocycleRequest({ daysPerWeek: 4, constraints: NONE })
+    expect(text).toContain('Equipamentos disponíveis: todos')
+    expect(text).not.toContain('Duração máxima')
+  })
+
+  it('no retry, inclui as violações a corrigir', () => {
+    const text = buildMesocycleRequest({
+      daysPerWeek: 4,
+      constraints: NONE,
+      violations: [{ sessionIndex: 1, exercise: 'Leg Press 45°', rule: 'equipamento', message: 'Leg Press 45° usa equipamento indisponível' }],
+    })
+    expect(text).toContain('## Correção obrigatória')
+    expect(text).toContain('- Sessão 2: Leg Press 45° usa equipamento indisponível')
+  })
+
+  describe('progressão de carga (spec 014, US3, FR-018)', () => {
+    const decisions = [
+      { name: 'Supino Reto', action: 'aumentar' as const, previousWeightKg: 40, nextWeightKg: 42, reason: 'Topo da faixa: +2 kg.' },
+      { name: 'Remada Curvada', action: 'reduzir' as const, previousWeightKg: 50, nextWeightKg: 46, reason: 'Abaixo da faixa no limite: −4 kg.' },
+      { name: 'Agachamento', action: 'sem-dados' as const, previousWeightKg: null, nextWeightKg: null, reason: 'Pulado.' },
+    ]
+
+    it('lista as decisões com carga (ignora sem-dados) na seção obrigatória', () => {
+      const prompt = buildMesocycleRequest({ daysPerWeek: 4, constraints: NONE, loadProgression: decisions })
+      expect(prompt).toContain('## Progressão de carga calculada — OBRIGATÓRIO')
+      expect(prompt).toContain('- Supino Reto: 40 kg → 42 kg (aumentar) — Topo da faixa: +2 kg.')
+      expect(prompt).toContain('- Remada Curvada: 50 kg → 46 kg (reduzir) — Abaixo da faixa no limite: −4 kg.')
+      expect(prompt).not.toContain('Agachamento:')
+    })
+
+    it('sem decisões com carga, a seção não aparece', () => {
+      expect(buildMesocycleRequest({ daysPerWeek: 4, constraints: NONE, loadProgression: [decisions[2]] })).not.toContain('Progressão de carga calculada')
+    })
   })
 })

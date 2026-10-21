@@ -1,73 +1,21 @@
-import type { GeneticProfile, WorkoutConstraints, WorkoutSession, RecoveryData, BodyCheckin, LoadProgression } from '@helux/types'
-import { buildExerciseCatalogSection, buildContextBody } from './prompts'
+import type { HardConstraints, LoadProgression, ConstraintViolation } from '@helux/types'
+import { buildExerciseCatalogSection } from './prompts'
+import { findBankExercise } from './agents/constraints'
 
-export function buildMesocycleSystemPrompt(
-  profile: GeneticProfile,
-  constraints: WorkoutConstraints,
-  currentInjury?: string,
-): string {
-  const profileDefaults: GeneticProfile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] }
-  const constraintDefaults: WorkoutConstraints = { maxWeeklyFrequency: 4, preferredVolume: 'medio', restBetweenSets: '90-120s', cardioIntensityLimit: 'moderado', forbiddenExerciseTypes: [] }
-  profile = { ...profileDefaults, ...profile }
-  constraints = { ...constraintDefaults, ...constraints }
+// Spec 022 (R7): o Agente de Treino gera o mesociclo a partir do Perfil Integrado.
+// Três partes: método estável (cacheável), snapshot do perfil (renderProfile) e o
+// pedido do dia (restrições rígidas, dias, progressão e, no retry, as violações).
 
-  return `Você é um coach de performance esportiva especializado em treinamento personalizado baseado em genética e dados biométricos. Seu papel é prescrever um mesociclo completo de treino — não apenas a próxima sessão — com base no perfil genético único do atleta, suas restrições fisiológicas, histórico de treinos e dados de recuperação.
+/** Método de periodização, fases, biset e catálogo (spec 008/014) — texto estável. */
+export function buildMesocycleMethod(cardioLimit = 'moderado'): string {
+  return `Você é o Agente de Treino do Helux, um time de especialistas (Treino, Medicina Esportiva e Nutrição Genética) que compartilha o mesmo Perfil Integrado do usuário. Seu papel é prescrever um mesociclo completo, 100% personalizado: use TODAS as fontes ativas do Perfil Integrado (perfil declarado, preferências, histórico e cargas, cansaço, check-ins, genética, nutrição, relatos das conversas, restrições compartilhadas e edições manuais) e as instruções do próprio usuário.
 
-## Sua Abordagem
+## Regras de segurança e conflito — OBRIGATÓRIO
 
-Você combina ciência do esporte com genômica aplicada. Cada prescrição é baseada em evidências e adaptada ao perfil genético individual — não ao atleta médio. Você compreende que:
-
-- O metabolismo genético influencia a intensidade e volume ideais de treino
-- A capacidade de recuperação muscular dita o tempo de descanso entre sessões e entre séries
-- O risco cardiovascular define os limites de intensidade para exercícios aeróbicos
-- A predisposição genética (força vs. endurance vs. mista) informa a seleção de exercícios
-- Alertas genéticos específicos exigem modificações protetoras no programa
-
-## Perfil Genético do Atleta
-
-\`\`\`json
-${JSON.stringify(profile, null, 2)}
-\`\`\`
-
-### Interpretação do Perfil
-
-**Metabolismo**: ${profile.metabolismo}
-${profile.metabolismo === 'rapido' ? '→ Atleta com metabolismo acelerado: responde bem a volumes maiores, recupera carboidratos rapidamente, suporta alta frequência de treino.' : ''}
-${profile.metabolismo === 'lento' ? '→ Atleta com metabolismo mais lento: prefere volumes moderados, maior atenção ao timing nutricional, frequência moderada de treino.' : ''}
-${profile.metabolismo === 'moderado' ? '→ Atleta com metabolismo equilibrado: resposta equilibrada a volume e intensidade, boa adaptabilidade a diferentes estímulos.' : ''}
-
-**Recuperação Muscular**: ${profile.recuperacaoMuscular}
-${profile.recuperacaoMuscular === 'alta' ? '→ Recuperação excelente: pode treinar o mesmo grupo muscular com mais frequência, descanso mais curto entre séries.' : ''}
-${profile.recuperacaoMuscular === 'media' ? '→ Recuperação moderada: frequência e descanso balanceados são ideais para maximizar adaptações.' : ''}
-${profile.recuperacaoMuscular === 'baixa' ? '→ Recuperação mais lenta: exige mais tempo de descanso entre séries e sessões, evitar sobrecarregar o mesmo grupo muscular em dias consecutivos.' : ''}
-
-**Risco Cardiovascular**: ${profile.riscoCardiovascular}
-${profile.riscoCardiovascular === 'alto' ? '→ Risco elevado: cardio deve ser leve (caminhada, ciclismo de baixa intensidade), evitar sprints e treinos de alta intensidade cardíaca.' : ''}
-${profile.riscoCardiovascular === 'medio' ? '→ Risco moderado: cardio moderado é adequado, evitar exercícios de intensidade muito alta, monitorar frequência cardíaca.' : ''}
-${profile.riscoCardiovascular === 'baixo' ? '→ Risco baixo: pode realizar cardio em qualquer intensidade, incluindo HIIT e exercícios de alta intensidade.' : ''}
-
-**Predisposição Genética**: ${profile.predisposicao}
-${profile.predisposicao === 'forca' ? '→ Predisposição para força: responde excepcionalmente a treinos de alta carga e baixas repetições, fibras musculares de contração rápida dominantes.' : ''}
-${profile.predisposicao === 'endurance' ? '→ Predisposição para resistência: excelente resposta aeróbica, fibras de contração lenta dominantes, se beneficia de volumes moderados com maior duração.' : ''}
-${profile.predisposicao === 'misto' ? '→ Predisposição mista: adaptação equilibrada tanto a treinos de força quanto de resistência, versatilidade para diferentes estímulos.' : ''}
-
-${profile.alertas.length > 0 ? `**Alertas Genéticos — OBRIGATÓRIO RESPEITAR**:\n${profile.alertas.map(a => `- ⚠️ ${a}`).join('\n')}` : ''}
-
-${currentInjury ? `## Alertas Situacionais — OBRIGATÓRIO RESPEITAR\n\n- ⚠️ ${currentInjury}\n\nEvite ou adapte exercícios que agravariam essa condição. Mencione explicitamente na justificativa (\`rationale\`) qual adaptação foi feita por conta deste alerta.` : ''}
-
-## Restrições de Treino Derivadas do Perfil
-
-\`\`\`json
-${JSON.stringify(constraints, null, 2)}
-\`\`\`
-
-### Regras Obrigatórias
-
-- **Frequência máxima semanal**: ${constraints.maxWeeklyFrequency} sessões — nunca exceder
-- **Volume preferido**: ${constraints.preferredVolume} — calibrar número de séries e exercícios conforme
-- **Descanso entre séries**: ${constraints.restBetweenSets} — respeitar para garantir recuperação adequada
-- **Limite de intensidade cardio**: ${constraints.cardioIntensityLimit} — não prescrever cardio mais intenso que isso
-${constraints.forbiddenExerciseTypes.length > 0 ? `- **Exercícios PROIBIDOS**: ${constraints.forbiddenExerciseTypes.join(', ')} — NUNCA incluir no plano` : ''}
+- Restrições rígidas (equipamentos disponíveis, exercícios a evitar, duração máxima e restrições de segurança compartilhadas) nunca são violadas. Uma checagem automática rejeita o plano que violar qualquer uma.
+- Quando uma instrução do usuário conflitar com outra ou com uma restrição de segurança, priorize a segurança, explique o conflito na justificativa e proponha a alternativa mais próxima do pedido.
+- Exercícios que o usuário trocou repetidamente (fonte "Edições manuais") tendem a não ser prescritos; os escolhidos como substitutos são preferência. Cite isso quando pesar.
+- Se uma fonte estiver ausente ou desativada, gere normalmente com o que existe e diga na justificativa quais fontes não foram usadas.
 
 ## Metodologia de Periodização do Mesociclo — OBRIGATÓRIO
 
@@ -75,7 +23,7 @@ Você DEVE gerar o **mesociclo completo de uma só vez** — todas as sessões d
 
 ### Regras de Divisão por Grupo Muscular
 
-1. **Determine a divisão adequada** ao número de dias disponíveis por semana e à predisposição genética:
+1. **Determine a divisão adequada** ao número de dias disponíveis por semana (informado no pedido) e à predisposição genética:
    - 2 dias/semana → **Upper/Lower**: A = Superior (Peito, Costas, Ombro, Bíceps, Tríceps) | B = Inferior (Glúteo, Quad, Posterior, Panturrilha)
    - 3 dias/semana → **Push/Pull/Legs**: A = Empurrar (Peito, Ombro, Tríceps) | B = Puxar (Costas, Bíceps) | C = Pernas
    - 4 dias/semana → **ABCD**: A = Peito + Tríceps | B = Costas + Bíceps | C = Pernas | D = Ombro + Core
@@ -103,7 +51,7 @@ Cada sessão DEVE ter três fases, indicadas no campo \`"phase"\` de cada item d
 Regras das fases:
 - O catálogo vale apenas para os itens com \`"phase": "principal"\`. Itens de aquecimento e volta à calma têm nome livre e descritivo em português (ex.: "Mobilidade de ombros com bastão", "Alongamento de peitoral na parede").
 - Itens de aquecimento e volta à calma usam \`"sets": 1\`, \`"reps"\` descritivo (ex.: "5 min", "10 por lado", "30s cada lado") e \`"weight": "—"\` (ou a carga das séries de aproximação).
-- O cardio das fases de aquecimento e volta à calma não pode passar de: ${constraints.cardioIntensityLimit}.
+- O cardio das fases de aquecimento e volta à calma não pode passar de: ${cardioLimit}.
 - Respeite os alertas genéticos e situacionais também no aquecimento e na volta à calma.
 
 ## Biset (opcional)
@@ -117,49 +65,6 @@ Você pode agrupar exercícios do treino principal em biset (executados alternad
 
 ${buildExerciseCatalogSection()}
 
-## Formato de Resposta
-
-Você DEVE responder EXCLUSIVAMENTE com um JSON válido no seguinte formato, sem texto adicional antes ou depois:
-
-\`\`\`json
-{
-  "generatedAt": "ISO 8601 timestamp atual",
-  "daysPerWeek": 4,
-  "splitType": "ABCD",
-  "sessions": [
-    {
-      "letter": "A",
-      "focus": "Peito + Tríceps",
-      "exercises": [
-        {
-          "phase": "aquecimento",
-          "name": "Mobilidade de ombros com bastão",
-          "sets": 1,
-          "reps": "10 repetições",
-          "weight": "—"
-        },
-        {
-          "phase": "principal",
-          "name": "Nome do exercício do catálogo, exatamente como aparece",
-          "sets": 4,
-          "reps": "8-10",
-          "weight": "carga sugerida (ex: 80kg, +2.5kg, peso corporal)",
-          "notes": "observações técnicas opcionais — cueing, progressão, modificações"
-        },
-        {
-          "phase": "volta-calma",
-          "name": "Alongamento de peitoral na parede",
-          "sets": 1,
-          "reps": "30s cada lado",
-          "weight": "—"
-        }
-      ]
-    }
-  ],
-  "rationale": "Justificativa geral do mesociclo (4-6 frases) explicando a divisão escolhida, por que ela se adequa a este atleta específico, e como a sequência de sessões respeita a genética e a recuperação. Mencione a predisposição genética e como o ciclo respeita as restrições."
-}
-\`\`\`
-
 ### Diretrizes para os Exercícios
 
 - Prescreva entre 4 e 8 exercícios de treino principal por sessão dependendo do volume genético (sem contar aquecimento e volta à calma)
@@ -169,29 +74,50 @@ Você DEVE responder EXCLUSIVAMENTE com um JSON válido no seguinte formato, sem
 - Organize os exercícios da maior para a menor prioridade neurológica (compostos primeiro)
 - O campo "weight" deve ser específico quando o histórico permitir, ou sugestivo quando não houver dados
 
-### Diretrizes para a Justificativa
+## Justificativa por decisão — OBRIGATÓRIO
 
-A justificativa do mesociclo deve:
-1. Explicar a divisão escolhida e por que ela se adequa aos dias/semana e à predisposição genética
-2. Referenciar pelo menos um dado genético específico que influenciou a prescrição
-3. Explicar a lógica geral da sequência de sessões
-4. Mencionar qualquer adaptação feita por conta dos alertas genéticos (se houver)`
+Além do \`rationale\` geral, preencha \`decisions\`: uma entrada por decisão relevante (divisão, volume, escolha ou substituição de exercício, descanso, intensidade), cada uma com o tópico, a escolha feita, as fontes do Perfil Integrado que a motivaram (chaves: perfil, preferencias, historico, mesociclo, cansaco, checkins, genetica, exames, nutricao, relatos, restricoes, edicoes) e o motivo citando o dado concreto (ex.: "descanso maior entre séries — ferritina abaixo da referência no exame de 05/10").`
 }
 
-export function buildMesocycleUserPrompt(
-  history: WorkoutSession[],
-  recovery: RecoveryData[],
-  goals: string,
-  level: string,
-  daysPerWeek: number,
-  checkins?: BodyCheckin[],
-  trainingTime?: string,
-  timeOff?: string,
-  loadProgression?: LoadProgression[],
-): string {
-  return `${buildContextBody(history, recovery, goals, level, daysPerWeek, checkins, trainingTime, timeOff)}
-${buildProgressionSection(loadProgression)}
-Com base neste contexto e no perfil genético fornecido, prescreva o mesociclo completo (todas as sessões do ciclo de divisão muscular, na ordem em que devem ser executadas). Lembre-se de respeitar todas as restrições genéticas.`
+const exerciseLabel = (idOrName: string) => findBankExercise(idOrName)?.name ?? idOrName
+
+/** Pedido do mesociclo: restrições rígidas explícitas, dias, progressão e violações do retry. */
+export function buildMesocycleRequest({
+  constraints,
+  daysPerWeek,
+  loadProgression,
+  violations,
+}: {
+  constraints: HardConstraints
+  daysPerWeek: number
+  loadProgression?: LoadProgression[]
+  violations?: ConstraintViolation[]
+}): string {
+  const rules = [
+    `- Dias de treino por semana: ${daysPerWeek}`,
+    `- Equipamentos disponíveis: ${constraints.availableEquipment.length > 0 ? constraints.availableEquipment.join(', ') : 'todos'}`,
+    constraints.maxSessionMinutes !== null &&
+      `- Duração máxima por sessão: ${constraints.maxSessionMinutes} min (estimativa: 5 min de aquecimento + cada série do treino principal ≈ 40 s de execução + 90 s de descanso)`,
+    constraints.exercisesToAvoid.length > 0 && `- Exercícios a evitar: ${constraints.exercisesToAvoid.map(exerciseLabel).join(', ')}`,
+    constraints.blockedPatterns.length > 0 && `- Padrões de movimento bloqueados por restrição de segurança: ${constraints.blockedPatterns.join(', ')}`,
+    constraints.blockedExercises.length > 0 && `- Exercícios bloqueados por restrição de segurança: ${constraints.blockedExercises.map(exerciseLabel).join(', ')}`,
+  ].filter(Boolean)
+
+  const retry =
+    violations && violations.length > 0
+      ? `
+## Correção obrigatória
+
+A proposta anterior violou estas restrições. Gere o mesociclo de novo sem nenhuma delas:
+${violations.map(v => `- Sessão ${v.sessionIndex + 1}: ${v.message}`).join('\n')}
+`
+      : ''
+
+  return `## Restrições rígidas deste pedido — OBRIGATÓRIO
+
+${rules.join('\n')}
+${buildProgressionSection(loadProgression)}${retry}
+Prescreva o mesociclo completo (todas as sessões do ciclo, na ordem de execução), com a justificativa geral e as decisões com fontes.`
 }
 
 const fmtKg = (kg: number | null) => `${String(kg).replace('.', ',')} kg`

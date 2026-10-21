@@ -1,170 +1,120 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { PlanInput, GeneticProfile, WorkoutConstraints } from '@helux/types'
+import { SOURCE_KEYS, type HardConstraints, type IntegratedProfile } from '@helux/types'
 
-const { mockCreate } = vi.hoisted(() => ({ mockCreate: vi.fn() }))
+const { mockStream } = vi.hoisted(() => ({ mockStream: vi.fn() }))
 
 vi.mock('@anthropic-ai/sdk', () => ({
-  default: vi.fn(() => ({ messages: { create: mockCreate } })),
+  default: vi.fn(() => ({ beta: { messages: { stream: mockStream } } })),
 }))
 
-import { generateMesocyclePlan } from '../mesocycle-planner'
-import { buildMesocycleSystemPrompt } from '../mesocycle-prompts'
+import { generateMesocyclePlan, ConstraintsUnsatisfiableError } from '../mesocycle-planner'
+import { AgentRefusalError } from '../agents/client'
 
-const MOCK_PROFILE: GeneticProfile = {
-  metabolismo: 'moderado',
-  recuperacaoMuscular: 'media',
-  riscoCardiovascular: 'medio',
-  predisposicao: 'misto',
-  alertas: ['risco de lesão no ligamento'],
+const PROFILE: IntegratedProfile = {
+  generatedAt: '2026-10-20T10:00:00Z',
+  sources: Object.fromEntries(SOURCE_KEYS.map(k => [k, { status: 'vazia', updatedAt: null, summary: '', data: null }])) as IntegratedProfile['sources'],
 }
+PROFILE.sources.perfil = { status: 'ativa', updatedAt: null, summary: 'Objetivo: hipertrofia', data: null }
 
-const MOCK_CONSTRAINTS: WorkoutConstraints = {
-  maxWeeklyFrequency: 4,
-  preferredVolume: 'medio',
-  restBetweenSets: '90-120s',
-  forbiddenExerciseTypes: ['pliometria de alto impacto'],
-  cardioIntensityLimit: 'moderado',
-}
+const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const HALTERES: HardConstraints = { ...NONE, availableEquipment: ['halteres'] }
 
-const MOCK_INPUT: PlanInput = {
-  geneticProfile: MOCK_PROFILE,
-  constraints: MOCK_CONSTRAINTS,
-  workoutHistory: [],
-  recoveryData: [],
-  userGoals: 'ganhar massa muscular',
-  userLevel: 'intermediario',
-  availableDaysPerWeek: 4,
-}
-
-const MOCK_MESOCYCLE = {
-  generatedAt: '2026-07-21T10:00:00.000Z',
-  daysPerWeek: 4,
-  splitType: 'ABCD',
-  rationale: 'Mesociclo de 4 semanas com divisão ABCD, focado em hipertrofia.',
+const ex = (name: string, phase: 'principal' | 'aquecimento' | 'volta-calma' = 'principal') => ({
+  phase,
+  name,
+  sets: phase === 'principal' ? 3 : 1,
+  reps: '10',
+  weight: '20 kg',
+  notes: null,
+  supersetGroup: null,
+})
+const output = (mainName: string) => ({
+  daysPerWeek: 2,
+  splitType: 'Upper/Lower',
+  rationale: 'Divisão superior/inferior.',
+  decisions: [{ topic: 'divisao', choice: 'Upper/Lower', sources: ['preferencias'], reason: '2 dias por semana' }],
   sessions: [
-    { letter: 'A', focus: 'Peito + Tríceps', exercises: [{ name: 'Supino Reto', sets: 4, reps: '8-10', weight: '80kg' }] },
-    { letter: 'B', focus: 'Costas + Bíceps', exercises: [{ name: 'Remada Curvada', sets: 4, reps: '8-10', weight: '60kg' }] },
-    { letter: 'C', focus: 'Pernas', exercises: [{ name: 'Agachamento Livre (Barra)', sets: 4, reps: '6-8', weight: '100kg' }] },
-    { letter: 'D', focus: 'Ombro + Core', exercises: [{ name: 'Desenvolvimento Militar', sets: 3, reps: '8-10', weight: '40kg' }] },
+    { letter: 'A', focus: 'Superior', exercises: [ex('Mobilidade de ombros', 'aquecimento'), ex(mainName), ex('Alongamento de peitoral', 'volta-calma')] },
+    { letter: 'B', focus: 'Inferior', exercises: [ex('Agachamento Goblet (Halteres)')] },
   ],
+})
+
+function reply(body: unknown, stop_reason = 'end_turn') {
+  return {
+    finalMessage: async () => ({
+      model: 'claude-opus-5-5',
+      stop_reason,
+      content: [{ type: 'text', text: JSON.stringify(body) }],
+      usage: {
+        input_tokens: 1000,
+        output_tokens: 2000,
+        cache_creation_input_tokens: 3000,
+        cache_read_input_tokens: 0,
+        cache_creation: { ephemeral_1h_input_tokens: 2000, ephemeral_5m_input_tokens: 1000 },
+      },
+    }),
+  }
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockCreate.mockResolvedValue({
-    content: [{ type: 'text', text: JSON.stringify(MOCK_MESOCYCLE) }],
-    usage: { input_tokens: 100, output_tokens: 200, cache_creation_input_tokens: 2500, cache_read_input_tokens: 0 },
-  })
+  mockStream.mockReset()
 })
 
-describe('generateMesocyclePlan', () => {
-  it('retorna MesocyclePlan com uma sessão por letra da divisão esperada para os dias/semana', async () => {
-    const result = await generateMesocyclePlan(MOCK_INPUT)
-
-    expect(result.sessions).toHaveLength(4)
-    expect(result.sessions.map((s) => s.letter)).toEqual(['A', 'B', 'C', 'D'])
-    expect(result.daysPerWeek).toBe(4)
-  })
-
-  it('retorna todas as sessões com completedAt null (recém-geradas)', async () => {
-    const result = await generateMesocyclePlan(MOCK_INPUT)
-
-    expect(result.sessions.every((s) => s.completedAt === null)).toBe(true)
-  })
-
-  it('o system prompt reaproveita o catálogo de exercícios e as restrições de treino, pedindo o ciclo inteiro', async () => {
-    await generateMesocyclePlan(MOCK_INPUT)
-
-    const callArgs = mockCreate.mock.calls[0][0]
-    const systemText: string = callArgs.system[0].text
-
-    expect(systemText).toContain('Catálogo de Exercícios')
-    expect(systemText).toContain('pliometria de alto impacto')
-    expect(systemText).toMatch(/mesociclo|ciclo completo/i)
-  })
-
-  it('propaga erro quando API key inválida (AuthenticationError)', async () => {
-    const authError = Object.assign(new Error('invalid x-api-key'), { name: 'AuthenticationError', status: 401 })
-    mockCreate.mockRejectedValueOnce(authError)
-
-    await expect(generateMesocyclePlan(MOCK_INPUT)).rejects.toThrow('invalid x-api-key')
-  })
-})
-
-describe('buildMesocycleSystemPrompt', () => {
-  it('inclui o catálogo de exercícios e pede explicitamente um array de sessões cobrindo o ciclo completo', () => {
-    const prompt = buildMesocycleSystemPrompt(MOCK_PROFILE, MOCK_CONSTRAINTS)
-
-    expect(prompt).toContain('Catálogo de Exercícios')
-    expect(prompt).toMatch(/mesociclo|ciclo completo/i)
-    expect(prompt).toContain('"sessions"')
-  })
-})
-
-describe('generateMesocyclePlan — fases (spec 014, US1)', () => {
-  const WITH_PHASES = {
-    ...MOCK_MESOCYCLE,
-    sessions: [
-      {
-        letter: 'A',
-        focus: 'Pernas',
-        exercises: [
-          { phase: 'aquecimento', name: 'Agachamento Livre (Barra)', sets: 1, reps: '10', weight: '20kg' },
-          { phase: 'principal', name: 'Agachamento Livre (Barra)', sets: 4, reps: '6-8', weight: '100kg' },
-          { phase: 'volta-calma', name: 'Alongamento de quadríceps', sets: 1, reps: '30s cada lado', weight: '—' },
-        ],
-      },
-    ],
-  }
-
-  beforeEach(() => {
-    mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: JSON.stringify(WITH_PHASES) }],
-      usage: { input_tokens: 1, output_tokens: 1 },
+describe('generateMesocyclePlan (022 T013)', () => {
+  it('Opus 5.5, esforço medium, structured output, fallback e prompt em blocos com cache', async () => {
+    mockStream.mockReturnValueOnce(reply(output('Supino Reto (Halteres)')))
+    await generateMesocyclePlan({ profile: PROFILE, constraints: HALTERES, daysPerWeek: 2 })
+    const params = mockStream.mock.calls[0][0]
+    expect(params).toMatchObject({
+      model: 'claude-opus-5-5',
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      output_config: { effort: 'medium', format: { type: 'json_schema' } },
     })
+    expect(params.system[0].cache_control).toEqual({ type: 'ephemeral', ttl: '1h' })
+    expect(params.system[0].text).toContain('Agente de Treino')
+    expect(params.system[1].cache_control).toEqual({ type: 'ephemeral' })
+    expect(params.system[1].text).toContain('Objetivo: hipertrofia')
+    expect(params.messages[0].content).toContain('Equipamentos disponíveis: halteres')
+    expect(params.thinking).toBeUndefined()
   })
 
-  it('preserva o campo phase de cada item', async () => {
-    const result = await generateMesocyclePlan(MOCK_INPUT)
-    expect(result.sessions[0].exercises.map((e) => e.phase)).toEqual(['aquecimento', 'principal', 'volta-calma'])
-  })
-
-  it('enriquece (cues, músculos, variantes) só os itens do principal', async () => {
-    const [warmup, main, cooldown] = (await generateMesocyclePlan(MOCK_INPUT)).sessions[0].exercises
+  it('devolve plano enriquecido, decisões e uso (com a escrita de 1 h separada)', async () => {
+    mockStream.mockReturnValueOnce(reply(output('Supino Reto (Halteres)')))
+    const { plan, decisions, usages } = await generateMesocyclePlan({ profile: PROFILE, constraints: HALTERES, daysPerWeek: 2 })
+    expect(plan.sessions).toHaveLength(2)
+    expect(plan.sessions[0].completedAt).toBeNull()
+    const main = plan.sessions[0].exercises.find(e => e.name === 'Supino Reto (Halteres)')!
     expect(main.cues?.length).toBeGreaterThan(0)
-    expect(main.variants?.length).toBeGreaterThan(0)
-    expect(warmup.cues).toBeUndefined()
-    expect(warmup.variants).toBeUndefined()
-    expect(warmup.muscle).toBeUndefined()
-    expect(cooldown.variants).toBeUndefined()
+    expect(main.notes).toBeUndefined()
+    expect(decisions).toEqual([{ topic: 'divisao', choice: 'Upper/Lower', sources: ['preferencias'], reason: '2 dias por semana' }])
+    expect(usages.map(u => [u.cacheTtl, u.cache_creation_input_tokens])).toEqual([
+      ['5m', 1000],
+      ['1h', 2000],
+    ])
+    expect(usages[0]).toMatchObject({ operation: 'mesociclo', agent: 'treino', model: 'claude-opus-5-5' })
   })
-})
 
-describe('generateMesocyclePlan — biset (spec 014, US2)', () => {
-  it('preserva supersetGroup devolvido pela IA', async () => {
-    mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: JSON.stringify({
-        ...MOCK_MESOCYCLE,
-        sessions: [{ letter: 'A', focus: 'Peito + Costas', exercises: [
-          { phase: 'principal', name: 'Supino Reto', sets: 3, reps: '10', weight: '60kg', supersetGroup: 'b1' },
-          { phase: 'principal', name: 'Remada Curvada', sets: 3, reps: '10', weight: '50kg', supersetGroup: 'b1' },
-        ] }],
-      }) }],
-      usage: { input_tokens: 1, output_tokens: 1 },
-    })
-    const result = await generateMesocyclePlan(MOCK_INPUT)
-    expect(result.sessions[0].exercises.map((e) => e.supersetGroup)).toEqual(['b1', 'b1'])
+  it('violação → 1 nova tentativa com as violações; ok na segunda', async () => {
+    mockStream.mockReturnValueOnce(reply(output('Supino Reto (Barra)'))).mockReturnValueOnce(reply(output('Supino Reto (Halteres)')))
+    const { plan, usages } = await generateMesocyclePlan({ profile: PROFILE, constraints: HALTERES, daysPerWeek: 2 })
+    expect(mockStream).toHaveBeenCalledTimes(2)
+    expect(mockStream.mock.calls[1][0].messages[0].content).toContain('Supino Reto (Barra) usa equipamento indisponível')
+    expect(plan.sessions[0].exercises.map(e => e.name)).toContain('Supino Reto (Halteres)')
+    expect(usages).toHaveLength(4)
   })
-})
 
-describe('generateMesocyclePlan — progressão de carga (spec 014, US3)', () => {
-  it('envia input.loadProgression no prompt do usuário', async () => {
-    await generateMesocyclePlan({
-      ...MOCK_INPUT,
-      loadProgression: [{ name: 'Supino Reto', action: 'aumentar', previousWeightKg: 40, nextWeightKg: 42, reason: 'Topo.' }],
-    })
-    const userText = JSON.stringify(mockCreate.mock.calls.at(-1)![0].messages)
-    expect(userText).toContain('Progressão de carga calculada')
-    expect(userText).toContain('Supino Reto: 40 kg → 42 kg (aumentar)')
+  it('violação de novo → ConstraintsUnsatisfiableError com as violações e o uso', async () => {
+    mockStream.mockReturnValue(reply(output('Supino Reto (Barra)')))
+    const err = await generateMesocyclePlan({ profile: PROFILE, constraints: HALTERES, daysPerWeek: 2 }).catch(e => e)
+    expect(err).toBeInstanceOf(ConstraintsUnsatisfiableError)
+    expect(err.violations[0]).toMatchObject({ rule: 'equipamento' })
+    expect(err.usages).toHaveLength(4)
+  })
+
+  it('recusa → AgentRefusalError', async () => {
+    mockStream.mockReturnValueOnce(reply({}, 'refusal'))
+    await expect(generateMesocyclePlan({ profile: PROFILE, constraints: NONE, daysPerWeek: 2 })).rejects.toBeInstanceOf(AgentRefusalError)
   })
 })
