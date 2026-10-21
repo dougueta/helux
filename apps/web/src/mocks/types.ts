@@ -4,6 +4,7 @@ import type {
   DayType,
   DietCalibration,
   DietPhase,
+  DietTargets,
   ExerciseSet,
   GeneticProfileView,
   MealSwap,
@@ -30,7 +31,8 @@ export interface MockNutrition {
   calibrations: DietCalibration[]
   dayTypeOverride: DayType | null
   swaps: MealSwap[]
-  history: { date: string; dayType: DayType; status: 'concluido' | 'treino-nao-realizado'; kcal: number }[]
+  /** Dias anteriores (formato de `/api/nutrition/history`, sem o dia ativo). */
+  history: { date: string; dayType: DayType; status: 'concluido' | 'treino-nao-realizado'; targets: DietTargets }[]
   genetics: { active: boolean; markers: NutriMarker[]; flags: NutritionFlags }
 }
 

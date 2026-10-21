@@ -154,6 +154,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@helux/genetics':
+        specifier: workspace:*
+        version: link:../../packages/genetics
       '@helux/nutrition':
         specifier: workspace:*
         version: link:../../packages/nutrition
