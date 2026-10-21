@@ -22,6 +22,15 @@ export class ApiError extends Error {
   }
 }
 
+/** `Authorization` com o token da sessão Supabase (vazio sem sessão). */
+export async function authHeader(): Promise<Record<string, string>> {
+  const supabase = createSupabaseBrowserClient()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  return session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+}
+
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<unknown> {
   // A checagem literal de NODE_ENV deixa o bundler remover o modo mock do build de produção.
   if (process.env.NODE_ENV !== 'production' && isMockActive()) {
@@ -29,9 +38,6 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     const { getBrowserMock } = await import('@/mocks/runtime')
     return getBrowserMock().router.dispatch(path, options)
   }
-
-  const supabase = createSupabaseBrowserClient()
-  const { data: { session } } = await supabase.auth.getSession()
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? ''
   const url = `${baseUrl}${path}`
@@ -41,9 +47,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     ...(options.headers as Record<string, string>),
   }
 
-  if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`
-  }
+  Object.assign(headers, await authHeader())
 
   const response = await fetch(url, { ...options, headers })
 

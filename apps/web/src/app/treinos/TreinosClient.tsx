@@ -14,6 +14,7 @@ import { PlanExerciseList } from '@/components/workout/PlanExerciseList'
 import { PlanRationale } from '@/components/agents/PlanRationale'
 import { SessionEditSheet } from '@/components/agents/SessionEditSheet'
 import { TodayAdjustCard } from '@/components/agents/TodayAdjustCard'
+import { AgentChat } from '@/components/agents/AgentChat'
 import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
 import type { AdjustedWorkoutPlanView } from '@helux/types'
@@ -30,6 +31,7 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
   const { startWorkout } = useActiveWorkout()
   const { plan, generating, generationError, generatePlan, refetch } = useWorkoutPlan()
   const [editing, setEditing] = useState<number | null>(null)
+  const [coachOpen, setCoachOpen] = useState(false)
   const currentPlan = plan ?? initialPlan
   const today = currentPlan?.today
   // Sessão pendente no mesociclo = número de concluídas (spec 022, edição manual).
@@ -120,6 +122,17 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
           </div>
         </section>
       ) : null}
+
+      <section style={{ marginTop: 28 }}>
+        <SectionHeader title="Falar com o treinador" />
+        {coachOpen ? (
+          <AgentChat channel="treino" onHandoff={to => router.push(`/equipe?agente=${to}`)} placeholder="Ex.: posso trocar o supino por algo com halteres?" />
+        ) : (
+          <Button kind="secondary" block onClick={() => setCoachOpen(true)}>
+            Abrir conversa com o Agente de Treino
+          </Button>
+        )}
+      </section>
 
       {generationError && (
         <div style={{ marginTop: 12 }}>
