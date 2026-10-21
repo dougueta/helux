@@ -82,12 +82,12 @@ Nenhuma. As histórias são independentes entre si e não há infraestrutura com
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T013 [US3] Estender `apps/api/src/__tests__/deploy-config.test.ts` com verificação do workflow: `.github/workflows/ci.yml` existe, dispara em `push` e `pull_request`, usa `pnpm install --frozen-lockfile` e executa `pnpm typecheck` e `pnpm test` (depende de T008)
+- [x] T013 [US3] Estender `apps/api/src/__tests__/deploy-config.test.ts` com verificação do workflow: `.github/workflows/ci.yml` existe, dispara em `push` e `pull_request`, usa `pnpm install --frozen-lockfile` e executa `pnpm typecheck` e `pnpm test` (depende de T008)
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Criar `.github/workflows/ci.yml`: checkout, `pnpm/action-setup` (v9), `actions/setup-node` (24, cache `pnpm`), `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test` (depende de T013)
-- [ ] T015 [US3] Registrar em `docs/deploy.md` como ativar o bloqueio de merge por falha do CI (proteção de branch no GitHub)
+- [x] T014 [US3] Criar `.github/workflows/ci.yml`: checkout, `pnpm/action-setup` (v9), `actions/setup-node` (24, cache `pnpm`), `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test` (depende de T013) **Já existia (spec 017) e cumpre o contrato 5**: roda em `pull_request` e em `push` na `main`, usa `pnpm/action-setup@v4` (pnpm 9 via `packageManager`) e Node 22 (`engines` pede `>=20`); mantido sem mudança.
+- [x] T015 [US3] Registrar em `docs/deploy.md` como ativar o bloqueio de merge por falha do CI (proteção de branch no GitHub)
 
 **Checkpoint**: US3 entregue.
 

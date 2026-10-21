@@ -58,3 +58,17 @@ projeto Supabase de produção (SQL Editor ou `supabase db push`).
 
 Antes de considerar o deploy concluído, confira que **todas** as migrations do diretório estão aplicadas
 no banco de produção, principalmente se alguma feature nova depender de tabela nova.
+
+## 5. Integração contínua
+
+O workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) roda em todo pull request e em
+todo push na `main`: instala com `pnpm install --frozen-lockfile`, depois `pnpm typecheck` e `pnpm test`.
+Um segundo job roda o e2e com o Supabase local e a IA simulada.
+
+Para impedir merge com o CI vermelho, ative a proteção da branch no GitHub:
+
+1. **Settings → Branches → Add branch ruleset** (ou *Add rule*) para a branch `main`.
+2. Marque **Require status checks to pass before merging**.
+3. Adicione os checks **Typecheck e testes** e **E2E (Supabase local + API + IA simulada)**. Eles só
+   aparecem na busca depois de terem rodado pelo menos uma vez.
+4. Salve. A partir daí o botão de merge fica bloqueado enquanto algum desses checks falhar.

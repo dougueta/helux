@@ -88,3 +88,34 @@ describe('configuração de deploy', () => {
     expect(exposed).toEqual([])
   })
 })
+
+// Spec 023 / FR-005: CI mínimo em push e pull request (contrato 5).
+describe('workflow de CI', () => {
+  const ciPath = path.join(repoRoot, '.github', 'workflows', 'ci.yml')
+  const ci = existsSync(ciPath) ? readFileSync(ciPath, 'utf8').replace(/\r\n/g, '\n') : ''
+
+  /** Bloco `on:` do topo do workflow, até a próxima chave de nível 0. */
+  const triggers = ci.match(/^on:\s*\n((?:[ \t]+.*\n|\s*\n)*)/m)?.[1] ?? ''
+
+  it('existe em .github/workflows/ci.yml', () => {
+    expect(existsSync(ciPath)).toBe(true)
+  })
+
+  it('dispara em push e pull_request', () => {
+    expect(triggers).toMatch(/^\s+push:/m)
+    expect(triggers).toMatch(/^\s+pull_request:/m)
+  })
+
+  it('instala com lockfile congelado e roda typecheck e testes, nessa ordem', () => {
+    const steps = ci
+      .split(/\r?\n/)
+      .map((l) => l.match(/^\s*-?\s*run:\s*(.+)$/)?.[1]?.trim())
+      .filter((cmd): cmd is string => !!cmd)
+    const install = steps.indexOf('pnpm install --frozen-lockfile')
+    const typecheck = steps.indexOf('pnpm typecheck')
+    const test = steps.indexOf('pnpm test')
+    expect(install).toBeGreaterThanOrEqual(0)
+    expect(typecheck).toBeGreaterThan(install)
+    expect(test).toBeGreaterThan(typecheck)
+  })
+})
