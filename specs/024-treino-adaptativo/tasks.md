@@ -90,22 +90,22 @@
 
 **Independent Test**: `POST /workout/generate` responde 404; "Gerar novo plano" gera e salva na conta; falha simulada leva a nova tentativa e ao estado `generation-failed` com "Repetir a última semana".
 
-- [ ] T027 [US7] Escrever testes em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: `stop_reason: 'max_tokens'` → nova tentativa e, persistindo, `IncompleteResponseError`; pedido com `effort: 'xhigh'` e `max_tokens: 64000`
-- [ ] T028 [US7] Implementar em `packages/ai/src/mesocycle-planner.ts` (e exportar `IncompleteResponseError` em `packages/ai/src/index.ts`) até T027 passar
-- [ ] T029 [P] [US7] Escrever testes em `apps/api/src/__tests__/generation-status.service.test.ts`: transições `gerando`/`ok`/`falhou`, `attempts` até 3, `gerando` há > 10 min conta como falha, `shouldRetry(status, now)`
-- [ ] T030 [US7] Implementar `apps/api/src/services/generation-status.service.ts` até T029 passar
-- [ ] T031 [US7] Estender `apps/api/src/__tests__/plan-generation.service.test.ts`: `generateAndSaveMesocycle` marca `gerando` ao começar, `ok` ao salvar e `falhou` com `error_code` (`constraints-unsatisfiable`, `incomplete-response`, `budget-exceeded`, `refusal`, `unknown`)
-- [ ] T032 [US7] Integrar o estado em `apps/api/src/services/plan-generation.service.ts` até T031 passar
-- [ ] T033 [US7] Estender `apps/api/src/__tests__/workout-latest-plan.test.ts`: mesociclo concluído sem próximo → dispara geração quando `shouldRetry`; devolve `status: 'generating'` ou `'generation-failed'` com `generation`
-- [ ] T034 [US7] Implementar em `apps/api/src/routes/workout-latest-plan.ts` até T033 passar
-- [ ] T035 [US7] Escrever testes em `apps/api/src/__tests__/mesocycle-actions.test.ts` para `POST /workout/mesocycle/regenerate` (202, 409 `already-generating`, 402 `budget-exceeded`, 401) e `POST /workout/mesocycle/repeat-week` (201 copia a última semana do ciclo concluído com `completedAt` nulo; 409 `no-completed-cycle`); o 409 `onboarding-required` entra em T063
-- [ ] T036 [US7] Implementar `apps/api/src/routes/mesocycle-actions.ts` e registrar em `apps/api/src/app.ts` até T035 passar
-- [ ] T037 [US7] Remover `apps/api/src/routes/workout-generate.ts`, seu registro em `app.ts` e `apps/api/src/__tests__/workout-generate.test.ts`; adicionar teste em `apps/api/src/__tests__/mesocycle-actions.test.ts` garantindo `POST /workout/generate` → 404
-- [ ] T038 [US7] Remover `packages/ai/src/planner.ts` e o que só ele usa em `packages/ai/src/prompts.ts` (manter `buildExerciseCatalogSection`), seus testes e exports; `pnpm --filter @helux/ai test` verde
-- [ ] T039 [US7] Atualizar testes em `apps/web/src/__tests__/hooks/useWorkoutPlan.test.ts`: `generatePlan` chama `POST /workout/mesocycle/regenerate` e passa a acompanhar `latest-plan` até sair de `generating`; nada de plano gerado gravado em `localStorage`; `repeatWeek()` chama a rota nova
-- [ ] T040 [US7] Reescrever `generatePlan` e adicionar `repeatWeek` em `apps/web/src/hooks/useWorkoutPlan.ts`; remover `generatePlan` legado de `apps/web/src/services/workout.service.ts`; rotas novas no modo mock (`apps/web/src/mocks/routes.ts`); T039 verde
-- [ ] T041 [US7] Escrever testes em `apps/web/src/__tests__/app/HomeClient.test.tsx` e `apps/web/src/__tests__/app/TreinosClient.test.tsx` para os estados `generating` ("gerando seu próximo ciclo"), `generation-failed` (mensagem + "Tentar de novo" + "Repetir a última semana")
-- [ ] T042 [US7] Implementar os estados em `apps/web/src/app/HomeClient.tsx` e `apps/web/src/app/treinos/TreinosClient.tsx` até T041 passar
+- [X] T027 [US7] Escrever testes em `packages/ai/src/__tests__/mesocycle-planner.test.ts`: `stop_reason: 'max_tokens'` → nova tentativa e, persistindo, `IncompleteResponseError`; pedido com `effort: 'xhigh'` e `max_tokens: 64000`
+- [X] T028 [US7] Implementar em `packages/ai/src/mesocycle-planner.ts` (e exportar `IncompleteResponseError` em `packages/ai/src/index.ts`) até T027 passar
+- [X] T029 [P] [US7] Escrever testes em `apps/api/src/__tests__/generation-status.service.test.ts`: transições `gerando`/`ok`/`falhou`, `attempts` até 3, `gerando` há > 10 min conta como falha, `shouldRetry(status, now)`
+- [X] T030 [US7] Implementar `apps/api/src/services/generation-status.service.ts` até T029 passar
+- [X] T031 [US7] Estender `apps/api/src/__tests__/plan-generation.service.test.ts`: `generateAndSaveMesocycle` marca `gerando` ao começar, `ok` ao salvar e `falhou` com `error_code` (`constraints-unsatisfiable`, `incomplete-response`, `budget-exceeded`, `refusal`, `unknown`)
+- [X] T032 [US7] Integrar o estado em `apps/api/src/services/plan-generation.service.ts` até T031 passar
+- [X] T033 [US7] Estender `apps/api/src/__tests__/workout-latest-plan.test.ts`: mesociclo concluído sem próximo → dispara geração quando `shouldRetry`; devolve `status: 'generating'` ou `'generation-failed'` com `generation`
+- [X] T034 [US7] Implementar em `apps/api/src/routes/workout-latest-plan.ts` até T033 passar
+- [X] T035 [US7] Escrever testes em `apps/api/src/__tests__/mesocycle-actions.test.ts` para `POST /workout/mesocycle/regenerate` (202, 409 `already-generating`, 402 `budget-exceeded`, 401) e `POST /workout/mesocycle/repeat-week` (201 copia a última semana do ciclo concluído com `completedAt` nulo; 409 `no-completed-cycle`); o 409 `onboarding-required` entra em T063
+- [X] T036 [US7] Implementar `apps/api/src/routes/mesocycle-actions.ts` e registrar em `apps/api/src/app.ts` até T035 passar
+- [X] T037 [US7] Remover `apps/api/src/routes/workout-generate.ts`, seu registro em `app.ts` e `apps/api/src/__tests__/workout-generate.test.ts`; adicionar teste em `apps/api/src/__tests__/mesocycle-actions.test.ts` garantindo `POST /workout/generate` → 404
+- [X] T038 [US7] Remover `packages/ai/src/planner.ts` e o que só ele usa em `packages/ai/src/prompts.ts` (manter `buildExerciseCatalogSection`), seus testes e exports; `pnpm --filter @helux/ai test` verde
+- [X] T039 [US7] Atualizar testes em `apps/web/src/__tests__/hooks/useWorkoutPlan.test.ts`: `generatePlan` chama `POST /workout/mesocycle/regenerate` e passa a acompanhar `latest-plan` até sair de `generating`; nada de plano gerado gravado em `localStorage`; `repeatWeek()` chama a rota nova
+- [X] T040 [US7] Reescrever `generatePlan` e adicionar `repeatWeek` em `apps/web/src/hooks/useWorkoutPlan.ts`; remover `generatePlan` legado de `apps/web/src/services/workout.service.ts`; rotas novas no modo mock (`apps/web/src/mocks/routes.ts`); T039 verde
+- [X] T041 [US7] Escrever testes em `apps/web/src/__tests__/app/HomeClient.test.tsx` e `apps/web/src/__tests__/app/TreinosClient.test.tsx` para os estados `generating` ("gerando seu próximo ciclo"), `generation-failed` (mensagem + "Tentar de novo" + "Repetir a última semana")
+- [X] T042 [US7] Implementar os estados em `apps/web/src/app/HomeClient.tsx` e `apps/web/src/app/treinos/TreinosClient.tsx` até T041 passar
 
 **Checkpoint F1**: quickstart F1 ok; CI verde → PR F1 (migration F1 aplicada antes do deploy da API).
 

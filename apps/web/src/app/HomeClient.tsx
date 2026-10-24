@@ -16,6 +16,7 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { TirednessSelector } from '@/components/workout/TirednessSelector'
 import { TirednessDialog } from '@/components/workout/TirednessDialog'
+import { PlanGenerationState } from '@/components/workout/PlanGenerationState'
 import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { todayHighlight } from '@/lib/todayHighlight'
 
@@ -73,7 +74,7 @@ function HomeSkeleton() {
 export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }: HomeClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
-  const { plan, loading, generating, generationError, generatePlan, refetch } = useWorkoutPlan()
+  const { plan, loading, generating, generationError, generatePlan, repeatWeek, refetch } = useWorkoutPlan()
   const currentPlan: AdjustedWorkoutPlanView | null = plan ?? initialPlan
   const today = currentPlan?.today
 
@@ -195,13 +196,8 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
               </Button>
             </div>
           </>
-        ) : currentPlan?.status === 'generating' ? (
-          <div role="status">
-            <h2 className="t-heading">Preparando seu próximo ciclo</h2>
-            <p className="t-secondary" style={{ marginTop: 6 }}>
-              Isso leva só alguns instantes. Volte a checar em breve.
-            </p>
-          </div>
+        ) : currentPlan?.status ? (
+          <PlanGenerationState plan={currentPlan} busy={generating} onRetry={() => void generatePlan()} onRepeatWeek={() => void repeatWeek()} />
         ) : (
           <>
             <h2 className="t-heading">Nenhum plano gerado ainda</h2>

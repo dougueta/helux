@@ -192,11 +192,9 @@ function registerWrites(router: MockRouter) {
     return { ...saved, calibration: null }
   })
 
-  router.register('POST', '/workout/generate', ({ data }) => ({
-    generatedAt: new Date().toISOString(),
-    exercises: (data.latestPlan?.today ?? MESOCYCLE_SESSIONS[0]).exercises,
-    rationale: 'Plano de teste (modo mock): sessão do mesociclo da persona.',
-  }))
+  // Spec 024: o botão Gerar novo plano pede um novo mesociclo; no mock, o plano da persona continua.
+  router.register('POST', '/workout/mesocycle/regenerate', () => ({ status: 'gerando' }))
+  router.register('POST', '/workout/mesocycle/repeat-week', ({ data }) => ({ mesocycleId: data.latestPlan?.mesocycleId ?? 'mock-repeat' }))
 
   router.register('POST', '/api/nutrition/phase', ({ store, data, body }) => {
     const { goal, durationWeeks } = body as { goal: DietGoal; durationWeeks: number }
