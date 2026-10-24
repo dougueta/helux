@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { HardConstraints, MesocycleSession, PlannedExercise } from '@helux/types'
 import { compatibleAlternatives, estimateSessionMinutes, validatePlanAgainstConstraints } from '../../agents/constraints'
 
-const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
 const ex = (name: string, sets = 3, over: Partial<PlannedExercise> = {}): PlannedExercise => ({ name, sets, reps: '10', weight: '20 kg', ...over })
 const session = (exercises: PlannedExercise[], letter = 'A'): MesocycleSession => ({ letter, focus: 'x', exercises, completedAt: null })
 
@@ -33,6 +33,9 @@ describe('validatePlanAgainstConstraints (R7)', () => {
       maxSessionMinutes: null,
       blockedPatterns: ['empurrar-vertical'],
       blockedExercises: ['Remada Unilateral (Halteres)'],
+      maxJointStress: {},
+      maxCardioImpact: null,
+      minRir: null,
     }
     const v = validatePlanAgainstConstraints(
       [session([ex('Agachamento Livre (Barra)'), ex('Desenvolvimento com Halteres'), ex('Remada Unilateral (Halteres)'), ex('Supino Reto (Halteres)')])],

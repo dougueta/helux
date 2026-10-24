@@ -3,7 +3,7 @@ import type { HardConstraints } from '@helux/types'
 import { buildMesocycleMethod, buildMesocycleRequest } from '../mesocycle-prompts'
 import { buildContextBody, buildUserPrompt } from '../prompts'
 
-const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
 
 describe('buildContextBody — tempo treinando / tempo parado (US1)', () => {
   it('inclui linhas de tempo treinando e tempo parado quando fornecidos', () => {
@@ -65,6 +65,9 @@ describe('buildMesocycleRequest (022 T011)', () => {
         maxSessionMinutes: 45,
         blockedPatterns: ['empurrar-vertical'],
         blockedExercises: ['Remada Unilateral (Halteres)'],
+        maxJointStress: {},
+        maxCardioImpact: null,
+        minRir: null,
       },
     })
     expect(text).toContain('Dias de treino por semana: 3')

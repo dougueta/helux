@@ -11,7 +11,7 @@ const PROFILE: IntegratedProfile = {
   generatedAt: '2026-10-20T10:00:00Z',
   sources: Object.fromEntries(SOURCE_KEYS.map(k => [k, { status: 'vazia', updatedAt: null, summary: '', data: null }])) as IntegratedProfile['sources'],
 }
-const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
 
 const S = (letter: string, names: string[], completedAt: string | null = null): MesocycleSession => ({
   letter,

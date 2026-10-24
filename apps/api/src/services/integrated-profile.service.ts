@@ -289,6 +289,9 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     maxSessionMinutes: prefsOn ? preferences.maxSessionMinutes : null,
     blockedPatterns: safetyOn ? [...new Set(safety.flatMap(g => g.blockedPatterns))] : [],
     blockedExercises: safetyOn ? [...new Set(safety.flatMap(g => g.blockedExercises))] : [],
+    maxJointStress: {},
+    maxCardioImpact: null,
+    minRir: null,
   }
 
   const profile: IntegratedProfile = { generatedAt: nowIso, sources }

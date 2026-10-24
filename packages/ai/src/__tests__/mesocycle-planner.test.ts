@@ -16,7 +16,7 @@ const PROFILE: IntegratedProfile = {
 }
 PROFILE.sources.perfil = { status: 'ativa', updatedAt: null, summary: 'Objetivo: hipertrofia', data: null }
 
-const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
 const HALTERES: HardConstraints = { ...NONE, availableEquipment: ['halteres'] }
 
 const ex = (name: string, phase: 'principal' | 'aquecimento' | 'volta-calma' = 'principal') => ({

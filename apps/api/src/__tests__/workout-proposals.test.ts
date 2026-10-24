@@ -22,7 +22,7 @@ const SESSION = (letter: string, name: string, completedAt: string | null = null
   exercises: [{ name, sets: 4, reps: '8', weight: '80 kg' }],
 })
 const SESSIONS = [SESSION('A', 'Supino Reto (Barra)', '2026-10-18T10:00:00Z'), SESSION('B', 'Remada Curvada (Barra)'), SESSION('C', 'Agachamento Livre (Barra)')]
-const CONSTRAINTS = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const CONSTRAINTS = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
 
 const buildIntegratedProfileMock = vi.fn()
 vi.mock('../services/integrated-profile.service', () => ({ buildIntegratedProfile: (...a: unknown[]) => buildIntegratedProfileMock(...a) }))

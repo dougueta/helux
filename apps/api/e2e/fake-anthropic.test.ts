@@ -7,7 +7,7 @@ const PROFILE: IntegratedProfile = {
   generatedAt: '2026-01-01T00:00:00.000Z',
   sources: Object.fromEntries(SOURCE_KEYS.map((k) => [k, { status: 'vazia', updatedAt: null, summary: '', data: null }])) as IntegratedProfile['sources'],
 }
-const CONSTRAINTS: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const CONSTRAINTS: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
 
 describe('startFakeAnthropic', () => {
   let fake: FakeAnthropic | undefined

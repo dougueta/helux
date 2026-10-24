@@ -43,6 +43,14 @@ const MESSAGES: Record<ConstraintViolation['rule'], (name: string) => string> = 
   duracao: () => 'duração estimada acima do máximo por sessão',
   'padrao-bloqueado': n => `${n} usa um padrão de movimento bloqueado por restrição de segurança`,
   'exercicio-bloqueado': n => `${n} está bloqueado por restrição de segurança`,
+  'carga-articular': n => `${n} carrega demais uma articulação com condição de saúde registrada`,
+  impacto: n => `${n} tem impacto acima do permitido pelas condições de saúde`,
+  esforco: n => `${n} pede esforço acima do permitido pelas condições de saúde`,
+  'metodo-frequencia': n => `${n} é treinado menos vezes por semana do que o método pede`,
+  'metodo-volume': n => `${n} está com séries semanais fora da faixa do método`,
+  'metodo-cardio': () => 'faltam sessões de cardio pedidas pelo método',
+  'metodo-mobilidade': () => 'faltam sessões de mobilidade pedidas pelo método',
+  'metodo-estrutura': () => 'número de dias de força diferente do pedido pelo método',
 }
 
 /** Violações das restrições rígidas (R7). Puro: roda depois da IA e na edição/adaptação. */

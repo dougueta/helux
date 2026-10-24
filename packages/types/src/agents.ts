@@ -1,4 +1,5 @@
 import type { MesocycleSession } from './mesocycle'
+import type { Joint, StressLevel } from './conditions'
 
 // Spec 022 — time de agentes especialistas (data-model.md).
 
@@ -100,10 +101,28 @@ export interface HardConstraints {
   maxSessionMinutes: number | null
   blockedPatterns: string[]
   blockedExercises: string[]
+  /** Spec 024: carga articular máxima por articulação (condições de saúde). */
+  maxJointStress: Partial<Record<Joint, StressLevel>>
+  /** Spec 024: impacto máximo do cardio; null = sem limite. */
+  maxCardioImpact: StressLevel | null
+  /** Spec 024: repetições na reserva mínimas; null = sem limite. */
+  minRir: number | null
+}
+
+/** Restrições vazias (sem nenhuma regra). */
+export const EMPTY_HARD_CONSTRAINTS: HardConstraints = {
+  availableEquipment: [],
+  exercisesToAvoid: [],
+  maxSessionMinutes: null,
+  blockedPatterns: [],
+  blockedExercises: [],
+  maxJointStress: {},
+  maxCardioImpact: null,
+  minRir: null,
 }
 
 export interface PlanDecision {
-  topic: 'divisao' | 'volume' | 'exercicio' | 'descanso' | 'intensidade' | 'outro'
+  topic: 'divisao' | 'volume' | 'exercicio' | 'descanso' | 'intensidade' | 'condicao' | 'cardio' | 'mobilidade' | 'ciclo' | 'outro'
   choice: string
   sources: SourceKey[]
   reason: string
@@ -197,7 +216,22 @@ export interface ExerciseAlternative {
 export interface ConstraintViolation {
   sessionIndex: number
   exercise: string | null
-  rule: 'fora-do-banco' | 'evitar' | 'equipamento' | 'duracao' | 'padrao-bloqueado' | 'exercicio-bloqueado'
+  rule:
+    | 'fora-do-banco'
+    | 'evitar'
+    | 'equipamento'
+    | 'duracao'
+    | 'padrao-bloqueado'
+    | 'exercicio-bloqueado'
+    // Spec 024
+    | 'carga-articular'
+    | 'impacto'
+    | 'esforco'
+    | 'metodo-frequencia'
+    | 'metodo-volume'
+    | 'metodo-cardio'
+    | 'metodo-mobilidade'
+    | 'metodo-estrutura'
   message: string
 }
 

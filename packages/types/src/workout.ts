@@ -1,3 +1,4 @@
+import type { Region } from './conditions'
 export interface ExerciseSet {
   name: string
   sets: Array<{ reps: number; weight: number; effort: number }>
@@ -58,4 +59,10 @@ export interface PlannedExercise {
   supersetGroup?: string
   /** Spec 014: progressão de carga aplicada a partir do mesociclo anterior. */
   progression?: Omit<LoadProgression, 'name'>
+  /** Spec 024: repetições na reserva alvo por série. */
+  rirTarget?: number
+  /** Spec 024: item de cardio (modalidade do catálogo). */
+  cardio?: { modality: string; minutes: number; zone: string }
+  /** Spec 024: região trabalhada (mobilidade). */
+  region?: Region
 }

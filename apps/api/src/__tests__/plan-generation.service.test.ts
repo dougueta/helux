@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { MesocycleSession } from '@helux/types'
 
-const CONSTRAINTS = { availableEquipment: ['halteres'], exercisesToAvoid: [], maxSessionMinutes: 45, blockedPatterns: [], blockedExercises: [] }
+const CONSTRAINTS = { availableEquipment: ['halteres'], exercisesToAvoid: [], maxSessionMinutes: 45, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
 const SOURCES_USED = { ativa: ['perfil'], vazia: ['exames'], desativada: [] }
 const GENETICS_DATA = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'medio', predisposicao: 'misto', alertas: [], traits: [] }
 const BUILD = {

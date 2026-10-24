@@ -114,6 +114,9 @@ describe('buildIntegratedProfile (022 T008)', () => {
       maxSessionMinutes: 45,
       blockedPatterns: ['empurrar-vertical'],
       blockedExercises: [],
+      maxJointStress: {},
+      maxCardioImpact: null,
+      minRir: null,
     })
     expect(fake.db.shared_guidance.find(g => g.id === 'g2')!.status).toBe('expirada')
     expect(notices.join(' ')).toMatch(/Sem carga axial.*expirou/)
@@ -156,7 +159,7 @@ describe('buildIntegratedProfile (022 T008)', () => {
     const { profile, constraints } = await buildIntegratedProfile('u1', fake.client as never, NOW)
     expect(profile.sources.perfil.status).toBe('vazia')
     expect(profile.sources.historico.status).toBe('vazia')
-    expect(constraints).toEqual({ availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] })
+    expect(constraints).toEqual({ availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null })
   })
 
   it('SC-007: restrição proposta pela Medicina e aceita passa a valer para o treino', async () => {

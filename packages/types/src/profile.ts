@@ -1,4 +1,5 @@
 import type { Sex } from './nutrition'
+import type { Goal } from './conditions'
 
 export interface UserTrainingProfile {
   goal?: string | null
@@ -10,6 +11,14 @@ export interface UserTrainingProfile {
   heightCm?: number | null
   birthDate?: string | null
   sex?: Sex | null
+  /** Spec 024: objetivo estruturado e onboarding. */
+  goalPrimary?: Goal | null
+  goalSecondary?: Goal | null
+  goalTarget?: string | null
+  cardioLikes?: string[]
+  cardioAvoid?: string[]
+  onboardingStep?: number | null
+  onboardingCompletedAt?: string | null
   updatedAt: string
 }
 
@@ -22,4 +31,9 @@ export interface UserTrainingProfileInput {
   heightCm?: number
   birthDate?: string
   sex?: Sex
+  goalPrimary?: Goal | null
+  goalSecondary?: Goal | null
+  goalTarget?: string | null
+  cardioLikes?: string[]
+  cardioAvoid?: string[]
 }
