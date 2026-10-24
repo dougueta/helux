@@ -34,6 +34,7 @@ describe('parseGeneraTraits', () => {
       level: 0.5,
       note: 'Predisposição para melhor desempenho em atividades de força e explosão',
       warn: false,
+      evidence: 'moderada',
     })
   })
 

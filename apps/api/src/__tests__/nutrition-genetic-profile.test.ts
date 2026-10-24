@@ -12,7 +12,10 @@ vi.mock('@supabase/supabase-js', () => ({
 }))
 
 const loadNutritionGeneticsMock = vi.fn()
-vi.mock('../services/nutrition-context.service', () => ({ loadNutritionGenetics: () => loadNutritionGeneticsMock() }))
+vi.mock('../services/nutrition-context.service', () => ({ loadNutritionGenetics: (raw: unknown) => loadNutritionGeneticsMock(raw) }))
+// Spec 024: o laudo vem do banco por usuário.
+const getGeneticRawMock = vi.fn()
+vi.mock('../services/genetics.service', () => ({ getGeneticRaw: (...a: unknown[]) => getGeneticRawMock(...a) }))
 
 const MCM6 = { gene: 'MCM6', snp: 'rs4988235', genotype: 'G,G', label: 'Intolerância à lactose', result: 'Intolerante', section: 'nutri', category: 'metabolismo', status: 'atencao' }
 
@@ -38,10 +41,13 @@ describe('GET /api/nutrition/genetic-profile (spec 018, US4)', () => {
   })
 
   it('devolve active e os marcadores classificados (sem as flags)', async () => {
+    getGeneticRawMock.mockResolvedValue({ nutri: {} })
     loadNutritionGeneticsMock.mockReturnValue({ active: true, markers: [MCM6], flags: { intoleranciaLactose: true } })
     const res = await app.inject({ method: 'GET', url: '/api/nutrition/genetic-profile', headers: { Authorization: 'Bearer valid-token' } })
     expect(res.statusCode).toBe(200)
     expect(res.json()).toEqual({ active: true, markers: [MCM6] })
+    expect(getGeneticRawMock).toHaveBeenCalledWith('u1', expect.anything())
+    expect(loadNutritionGeneticsMock).toHaveBeenCalledWith({ nutri: {} })
   })
 
   it('sem genera.json → active false e lista vazia', async () => {

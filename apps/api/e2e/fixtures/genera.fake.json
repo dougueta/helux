@@ -1,0 +1,16 @@
+{
+  "fit": {
+    "pontos_de_atencao": [
+      { "snp": "rs1800012", "gene": "COL1A1", "genotipo": "G,T", "caracteristica": "Lesões ligamentares", "resultado": "Maior suscetibilidade a lesões ligamentares", "categoria": "lesao" }
+    ],
+    "curiosidades": [
+      { "snp": "rs1815739", "gene": "ACTN3", "genotipo": "C,T", "caracteristica": "Performance atlética", "resultado": "Perfil misto de força e resistência", "categoria": "curiosidade" }
+    ]
+  },
+  "escala_risco_genetico": { "risco_aumentado": [], "risco_padrao": [], "risco_reduzido": [] },
+  "nutri": {
+    "pontos_de_atencao": [
+      { "snp": "rs7041", "gene": "GC", "genotipo": "A,C", "caracteristica": "Vitamina D", "resultado": "Predisposição a vitamina D baixa", "categoria": "ponto_atencao" }
+    ]
+  }
+}

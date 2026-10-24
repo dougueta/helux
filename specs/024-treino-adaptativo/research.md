@@ -243,3 +243,16 @@ Sem chamada de IA extra: a explicação do que mudou sai das `decisions` da pró
 - F0 roda o eval contra o agente **atual** (apenas as checagens que fazem sentido para o formato antigo + juiz) e salva a linha de base.
 
 **Motivo**: SC-003/004 e FR-032–034; segue o padrão já usado na 022.
+
+### Linha de base (F0, 2026-10-24, commit 95291f2, agente da 022 com `effort: 'medium'`)
+
+| Perfil | Segurança | Freq./volume | Cardio/mob. | Notas | Objetivo | Justificativas | Genética prop. |
+|---|---|---|---|---|---|---|---|
+| dono-joelho-gota | 5 | 0 | 0 | 3 | 2 | 2 | 1 |
+| iniciante-hipertrofia | 5 | 0,83 | 0 | 5 | 3 | 3 | 4 |
+| pouco-tempo-emagrecimento | 5 | 0,83 | 0 | 5 | 3 | 3 | 5 |
+| casa-halteres-lombalgia | 5 | 0,83 | 0 | 4 | 2 | 2 | 5 |
+| avancado-forca | 5 | 2,5 | 0 | 3 | 3 | 2 | 5 |
+| **Média** | **5** | **1,0** | **0** | **4,0** | **2,6** | **2,4** | **4,0** |
+
+Total **2,71**, custo US$ 0,90. Achados do juiz: divisões com 1×/semana por grupo (PPL/ABCD) mesmo para iniciante e emagrecimento; nenhum cardio estruturado nos objetivos de condicionamento/emagrecimento; no perfil do dono, faixa de repetições e divisão justificadas pela genética, e justificativa citando regras internas ("60h exigidas"); notas citando datas de sessões anteriores. Resultado em `packages/ai/src/agents/__evals__/results/baseline.json`.

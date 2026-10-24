@@ -38,7 +38,8 @@ const JUDGE_SCHEMA = {
   properties: {
     scores: {
       type: 'object',
-      properties: Object.fromEntries(JUDGE_CRITERIA.map(c => [c, { type: 'integer', minimum: 0, maximum: 5 }])),
+      // Structured outputs não aceitam minimum/maximum em inteiros: a faixa 0–5 vai no prompt e é limitada ao ler.
+      properties: Object.fromEntries(JUDGE_CRITERIA.map(c => [c, { type: 'integer' }])),
       required: [...JUDGE_CRITERIA],
       additionalProperties: false,
     },
@@ -81,7 +82,8 @@ async function judge(p: EvalProfile, sessions: MesocycleSession[], rationale: st
   })
   const block = res.content.find(b => b.type === 'text')
   const parsed = JSON.parse(block && block.type === 'text' ? block.text : '{}') as { scores: Record<JudgeCriterion, number>; comments: string }
-  return { ...parsed, usages: usagesFromMessage(res, 'mesociclo', null) }
+  const scores = Object.fromEntries(JUDGE_CRITERIA.map(c => [c, Math.max(0, Math.min(5, parsed.scores?.[c] ?? 0))])) as Record<JudgeCriterion, number>
+  return { scores, comments: parsed.comments ?? '', usages: usagesFromMessage(res, 'mesociclo', null) }
 }
 
 interface ProfileOutcome extends ProfileResult {
@@ -95,7 +97,10 @@ async function runProfile(p: EvalProfile): Promise<ProfileOutcome> {
     const result = await generateMesocyclePlan({ profile: p.profile, constraints: p.agentConstraints, daysPerWeek: p.daysPerWeek, geneticProfile: p.geneticProfile })
     const sessions = result.plan.sessions
     const det = scorePlan({ sessions, constraints: p.expectedConstraints, expectations: p.expectations })
-    const j = await judge(p, sessions, result.plan.rationale, result.decisions)
+    // O plano fica salvo mesmo se o juiz falhar, para não perder a geração (que é a parte cara).
+    fs.mkdirSync(RESULTS_DIR, { recursive: true })
+    fs.writeFileSync(path.join(RESULTS_DIR, `plan-${p.id}.local.json`), JSON.stringify({ sessions, rationale: result.plan.rationale, decisions: result.decisions }, null, 2))
+    const j = await judge(p, sessions, result.plan.rationale, result.decisions).catch(err => ({ scores: { objetivo: 0, justificativas: 0, 'genetica-proporcional': 0, 'notas-honestas': 0 }, comments: `juiz falhou: ${(err as Error).message}`, usages: [] as UsageRecord[] }))
     return {
       profile: p.id,
       scores: { ...det.scores, objetivo: j.scores.objetivo, justificativas: j.scores.justificativas, 'genetica-proporcional': j.scores['genetica-proporcional'], 'notas-honestas': Math.min(det.scores['notas-honestas'], j.scores['notas-honestas']) },

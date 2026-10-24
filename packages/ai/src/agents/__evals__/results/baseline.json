@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-24T15:20:56.109Z",
+  "sha": "95291f2",
+  "effort": null,
+  "summary": {
+    "byCriterion": {
+      "seguranca": 5,
+      "frequencia-volume": 1,
+      "cardio-mobilidade": 0,
+      "notas-honestas": 4,
+      "objetivo": 2.6,
+      "justificativas": 2.4,
+      "genetica-proporcional": 4
+    },
+    "total": 2.71,
+    "costUsd": 0.8996118000000002
+  },
+  "outcomes": [
+    {
+      "profile": "dono-joelho-gota",
+      "scores": {
+        "seguranca": 5,
+        "frequencia-volume": 0,
+        "cardio-mobilidade": 0,
+        "notas-honestas": 3,
+        "objetivo": 2,
+        "justificativas": 2,
+        "genetica-proporcional": 1
+      },
+      "violations": [],
+      "comments": "Objetivo é entrar em forma e correr 5 km, mas o plano é um split bodybuilding com só 1 dia de pernas, sem trabalho de quadríceps isolado/excêntrico adequado, sem cardio progressivo estruturado e sem plano de retorno à corrida. Falta perna nas sessões.\nGenética como motivo principal: faixa de reps 8-12 justificada por ACTN3/predisposição mista, e divisão justificada por 'recuperação média' genética; COL1A1 usado para excluir exercícios e até citado como fonte da ênfase em cadeia posterior.\nJustificativa cita 'acima das 60h exigidas' e 'limite de cardio moderado nas fases' (regras internas), e diz excluir overhead mas inclui desenvolvimento e tríceps acima da cabeça.\nNota 'Descanso de 75s após o par' na panturrilha sem par (erro); nota 'Retorno após 8 meses parado' é ok, mas algumas notas são justificativas em vez de instrução.\nVolume de peito/braço alto frente a pernas; check-ins usados para cargas iniciais é relação inventada."
+    },
+    {
+      "profile": "iniciante-hipertrofia",
+      "scores": {
+        "seguranca": 5,
+        "frequencia-volume": 0.83,
+        "cardio-mobilidade": 0,
+        "notas-honestas": 5,
+        "objetivo": 3,
+        "justificativas": 3,
+        "genetica-proporcional": 4
+      },
+      "violations": [],
+      "comments": "PPL com frequência 1x/semana por grupo é subótimo para iniciante em hipertrofia; full body ou AB alternado 3x daria frequência 2x com o mesmo tempo.\nA justificativa apresenta '~7 dias de recuperação' como vantagem, mas para iniciante isso é estímulo pouco frequente, não benefício.\nO tempo é otimista: 19-20 séries a ~130 s, mais aquecimento, aproximação e volta à calma, fica perto ou acima de 60 min.\nA decisão de intensidade cita a genética como fonte mesmo sem dados. É inócuo, mas é ruído.\nAs notas ao usuário são boas: instruções de execução e descanso claros, sem raciocínio interno."
+    },
+    {
+      "profile": "pouco-tempo-emagrecimento",
+      "scores": {
+        "seguranca": 5,
+        "frequencia-volume": 0.83,
+        "cardio-mobilidade": 0,
+        "notas-honestas": 5,
+        "objetivo": 3,
+        "justificativas": 3,
+        "genetica-proporcional": 5
+      },
+      "violations": [],
+      "comments": "PPL com 3 dias dá frequência 1x/semana por grupo; para perda de gordura com só 3 dias, full body ou upper/lower/full seria superior em frequência e gasto. Não há cardio estruturado além de aquecimentos curtos, o que é uma lacuna para o objetivo de perder gordura. A conta de tempo ignora a volta-calma (~3-4 min) e as séries de aproximação, e cada biset conta os dois exercícios como séries separadas, então a sessão real tende a passar de 40 min. A decisão de volume cita 'genetica' como fonte apesar de não haver dados, e 'historico' é citado na intensidade sem existir. As notas ao usuário são práticas e adequadas."
+    },
+    {
+      "profile": "casa-halteres-lombalgia",
+      "scores": {
+        "seguranca": 5,
+        "frequencia-volume": 0.83,
+        "cardio-mobilidade": 0,
+        "notas-honestas": 4,
+        "objetivo": 2,
+        "justificativas": 2,
+        "genetica-proporcional": 5
+      },
+      "violations": [],
+      "comments": "Objetivo é condicionamento, mas não há nenhum bloco de cardio/circuito; o plano é um split de hipertrofia/bodybuilding (peito+tríceps, encolhimento, rosca dupla), pouco alinhado ao objetivo.\nJustificativa cita bisets e descanso só após cada par, mas nenhum biset aparece no plano. Também cita ~130 s por série, enquanto a decisão de descanso fala em ~90 s.\nO argumento de 72h ombro→peito é fraco: o tríceps é treinado na segunda e depois na sexta (flexão pike/desenvolvimento), e isso é irrelevante para condicionamento. A fonte 'restricoes' é citada sem dados.\nHá incoerência de equipamento: o plano assume cadeira, banco, degrau e step-up, mas 'banco pode não estar disponível'. Flexão declinada e prancha podem forçar a lombar, embora isso esteja mitigado nas notas.\nAs notas são úteis e voltadas ao usuário. Há um tom levemente de sistema em 'Substitui terra/stiff', mas não é grave."
+    },
+    {
+      "profile": "avancado-forca",
+      "scores": {
+        "seguranca": 5,
+        "frequencia-volume": 2.5,
+        "cardio-mobilidade": 0,
+        "notas-honestas": 3,
+        "objetivo": 3,
+        "justificativas": 2,
+        "genetica-proporcional": 5
+      },
+      "violations": [],
+      "comments": "Terra 4x4 a 170 kg: 16 reps contra 15 na última sessão @9, com a mesma carga. Isso não reduz a fadiga e dificilmente ficará em @8, então a justificativa é contraditória.\nA justificativa cita 'regras de divisão cobrem 2-4 dias' e 'critério de recuperação média (60h)', que são regras internas do sistema e não deveriam aparecer para o usuário. A remada na 'véspera do terra' é falsa: C é qua e D é sex, com a quinta livre.\nO desenho é bom para total (supino 2x, agachamento 2x), mas o terra fica só 1x e pesado, e o volume 19-24 séries com 5 dias tem pouca margem para recuperação sem dados. A estimativa de 65-80 min é otimista para a sessão B.\nAs notas que citam '(20/10)' e '(17/10)' expõem datas de sessões anteriores em vez de dar instruções de execução. As demais notas são úteis.\nGenética ausente e corretamente não usada."
+    }
+  ]
+}

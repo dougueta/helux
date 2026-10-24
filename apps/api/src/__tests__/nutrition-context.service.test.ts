@@ -41,6 +41,8 @@ function tables() {
       { id: 'k1', phase_id: 'phase-1', user_id: 'u1', checkin_id: 'c1', action: 'inicial', created_at: '2026-09-01T10:00:00Z' },
     ],
     workout_sessions: [{ id: 's1', user_id: 'u1', date: '2026-10-13', created_at: '2026-10-13T11:30:00Z' }],
+    // Spec 024: o laudo genético vem do banco, por usuário.
+    genetic_reports: [{ user_id: 'u1', raw: GENERA }],
   }
 }
 
@@ -113,8 +115,7 @@ describe('loadNutritionContext (spec 018)', () => {
     expect(ctx.missing).toEqual(['heightCm', 'birthDate', 'sex', 'checkinWeight'])
   })
 
-  it('sem perfil, fase, mesociclo, treino de hoje e genera.json', async () => {
-    vi.mocked(existsSync).mockReturnValue(false)
+  it('sem perfil, fase, mesociclo, treino de hoje e laudo genético', async () => {
     activeMesocycleMock.mockResolvedValue(null)
     tirednessMock.mockResolvedValue({ effectiveLevel: null })
     const { client } = fakeSupabase({})

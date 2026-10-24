@@ -25,8 +25,9 @@
 
 **Purpose**: linha de base e pré-requisitos comuns.
 
-- [ ] T001 Rodar `pnpm install --frozen-lockfile`, `pnpm typecheck` e `pnpm test` na branch `024-treino-adaptativo` e registrar a contagem por workspace em `specs/024-treino-adaptativo/tasks.md` (nota abaixo de T001) como linha de base de regressão
-- [ ] T002 [P] Criar a pasta `packages/ai/src/agents/__evals__/results/` com `.gitkeep` e uma entrada no `.gitignore` que ignora `*.local.json` (resultados de rodadas locais), mantendo versionados só os resultados aprovados
+- [X] T001 Rodar `pnpm install --frozen-lockfile`, `pnpm typecheck` e `pnpm test` na branch `024-treino-adaptativo` e registrar a contagem por workspace em `specs/024-treino-adaptativo/tasks.md` (nota abaixo de T001) como linha de base de regressão
+  - **Linha de base (2026-10-24):** typecheck 9/9; testes types 17, genetics 34, mobile 17, workouts 100, health 27, nutrition 76, ai 187, api 262, web 595.
+- [X] T002 [P] Criar a pasta `packages/ai/src/agents/__evals__/results/` com `.gitkeep` e uma entrada no `.gitignore` que ignora `*.local.json` (resultados de rodadas locais), mantendo versionados só os resultados aprovados
 
 ---
 
@@ -34,11 +35,11 @@
 
 **Purpose**: tipos compartilhados usados por mais de uma fase.
 
-- [ ] T003 Escrever teste de tipos em `packages/types/src/__tests__/types.test.ts` cobrindo `Goal`, `Region`, `SessionKind`, `HealthCondition`, `ConditionRules`, `MethodPrescription`, `SessionCheckin`, `CycleSummary`, `CheckinTrend`, `GenerationStatus` e os campos opcionais novos de `MesocycleSession`, `PlannedExercise`, `AdjustedWorkoutPlanView` e `HardConstraints` (conforme data-model.md)
-- [ ] T004 [P] Criar `packages/types/src/conditions.ts` (Goal, Region, HealthCondition, ConditionRules)
-- [ ] T005 [P] Criar `packages/types/src/method.ts` (SessionKind, MethodPrescription)
-- [ ] T006 [P] Criar `packages/types/src/cycle.ts` (SessionCheckin, CycleFinding, CycleSummary, CheckinTrend, GenerationStatus)
-- [ ] T007 Evoluir `packages/types/src/agents.ts` (HardConstraints + `maxJointStress`, `maxCardioImpact`, `minRir`; novas regras de `ConstraintViolation`; tópicos de `PlanDecision` + `condicao`, `cardio`, `mobilidade`, `ciclo`), `packages/types/src/mesocycle.ts` (`week`, `kind`, `deload`; view com `week`, `kind`, `status` novos, `generation`), `packages/types/src/workout.ts` (`rirTarget`, `cardio`, `region`) e `packages/types/src/profile.ts` (objetivo estruturado, cardio, onboarding); exportar tudo em `packages/types/src/index.ts`. Ajustar os usos existentes de `HardConstraints` (API, web, mocks, testes) com os campos novos vazios para manter o typecheck verde
+- [X] T003 Escrever teste de tipos em `packages/types/src/__tests__/types.test.ts` cobrindo `Goal`, `Region`, `SessionKind`, `HealthCondition`, `ConditionRules`, `MethodPrescription`, `SessionCheckin`, `CycleSummary`, `CheckinTrend`, `GenerationStatus` e os campos opcionais novos de `MesocycleSession`, `PlannedExercise`, `AdjustedWorkoutPlanView` e `HardConstraints` (conforme data-model.md)
+- [X] T004 [P] Criar `packages/types/src/conditions.ts` (Goal, Region, HealthCondition, ConditionRules)
+- [X] T005 [P] Criar `packages/types/src/method.ts` (SessionKind, MethodPrescription)
+- [X] T006 [P] Criar `packages/types/src/cycle.ts` (SessionCheckin, CycleFinding, CycleSummary, CheckinTrend, GenerationStatus)
+- [X] T007 Evoluir `packages/types/src/agents.ts` (HardConstraints + `maxJointStress`, `maxCardioImpact`, `minRir`; novas regras de `ConstraintViolation`; tópicos de `PlanDecision` + `condicao`, `cardio`, `mobilidade`, `ciclo`), `packages/types/src/mesocycle.ts` (`week`, `kind`, `deload`; view com `week`, `kind`, `status` novos, `generation`), `packages/types/src/workout.ts` (`rirTarget`, `cardio`, `region`) e `packages/types/src/profile.ts` (objetivo estruturado, cardio, onboarding); exportar tudo em `packages/types/src/index.ts`. Ajustar os usos existentes de `HardConstraints` (API, web, mocks, testes) com os campos novos vazios para manter o typecheck verde
 
 **Checkpoint**: `pnpm typecheck` e `pnpm test` iguais à linha de base de T001.
 
@@ -50,12 +51,12 @@
 
 **Independent Test**: `pnpm --filter @helux/ai eval:treino` gera a tabela perfil × critério com custo e salva o resultado.
 
-- [ ] T008 [US8] Escrever testes unitários (sem IA real) em `packages/ai/src/__tests__/agents/treino-eval-scoring.test.ts` para a pontuação determinística: segurança = 0 com qualquer violação; checagem de frequência por grupo, séries semanais por grupo, presença de cardio/mobilidade e estrutura; agregação por critério e custo pela tabela de preços (`agents/cost.ts`)
-- [ ] T009 [US8] Implementar `packages/ai/src/agents/__evals__/treino-scoring.ts` (checagens determinísticas + agregação) até T008 passar; as checagens de método aceitam prescrição ausente (agente atual) e pulam o que não se aplica
-- [ ] T010 [P] [US8] Criar `packages/ai/src/agents/__evals__/treino-profiles.ts` com os perfis 1–5 de research R15 como `IntegratedProfile` + `HardConstraints` (perfil 6, ciclo concluído, entra em T107); dados do dono anonimizados
-- [ ] T011 [US8] Criar `packages/ai/src/agents/__evals__/treino.eval.ts`: gera um plano por perfil com o agente vigente, aplica `treino-scoring.ts`, chama o juiz (Opus 5.5, `effort: 'low'`, structured output `{ scores, comments }` para objetivo, justificativas, genética proporcional e notas honestas), imprime a tabela e o custo, grava `results/<data>-<git-sha>.local.json` e compara com o último resultado aprovado; antes de rodar, imprime o custo estimado e exige `EVAL_CONFIRM=1`
-- [ ] T012 [US8] Adicionar o script `eval:treino` em `packages/ai/package.json` (mesmo padrão de `eval:medicina`)
-- [ ] T013 [US8] Rodar a linha de base com aprovação do dono, revisar a tabela com ele e versionar como `packages/ai/src/agents/__evals__/results/baseline.json`; anotar o resumo em research.md (R15)
+- [X] T008 [US8] Escrever testes unitários (sem IA real) em `packages/ai/src/__tests__/agents/treino-eval-scoring.test.ts` para a pontuação determinística: segurança = 0 com qualquer violação; checagem de frequência por grupo, séries semanais por grupo, presença de cardio/mobilidade e estrutura; agregação por critério e custo pela tabela de preços (`agents/cost.ts`)
+- [X] T009 [US8] Implementar `packages/ai/src/agents/__evals__/treino-scoring.ts` (checagens determinísticas + agregação) até T008 passar; as checagens de método aceitam prescrição ausente (agente atual) e pulam o que não se aplica
+- [X] T010 [P] [US8] Criar `packages/ai/src/agents/__evals__/treino-profiles.ts` com os perfis 1–5 de research R15 como `IntegratedProfile` + `HardConstraints` (perfil 6, ciclo concluído, entra em T107); dados do dono anonimizados
+- [X] T011 [US8] Criar `packages/ai/src/agents/__evals__/treino.eval.ts`: gera um plano por perfil com o agente vigente, aplica `treino-scoring.ts`, chama o juiz (Opus 5.5, `effort: 'low'`, structured output `{ scores, comments }` para objetivo, justificativas, genética proporcional e notas honestas), imprime a tabela e o custo, grava `results/<data>-<git-sha>.local.json` e compara com o último resultado aprovado; antes de rodar, imprime o custo estimado e exige `EVAL_CONFIRM=1`
+- [X] T012 [US8] Adicionar o script `eval:treino` em `packages/ai/package.json` (mesmo padrão de `eval:medicina`)
+- [X] T013 [US8] Rodar a linha de base com aprovação do dono, revisar a tabela com ele e versionar como `packages/ai/src/agents/__evals__/results/baseline.json`; anotar o resumo em research.md (R15)
 
 **Checkpoint F0**: linha de base aprovada → PR F0.
 
@@ -67,13 +68,13 @@
 
 **Independent Test**: com laudo enviado, `GET /genetic-profile` e o Perfil Integrado em produção mostram a genética; o arquivo não existe mais no repositório.
 
-- [ ] T014 [US6] Criar migration `supabase/migrations/20261025000000_024_f1_genetics_generation.sql` com `genetic_reports` e `mesocycle_generation` (data-model.md), RLS e policies
-- [ ] T015 [P] [US6] Escrever testes em `packages/genetics/src/__tests__/evidence.test.ts`: cada traço de `parseGeneraTraits` recebe `evidence` (`forte` | `moderada` | `fraca`) por gene a partir de uma tabela fixa; traço desconhecido → `fraca`
-- [ ] T016 [US6] Implementar a tabela de força de evidência e o campo `evidence` em `packages/genetics/src/traits.ts` até T015 passar
-- [ ] T017 [P] [US6] Escrever testes em `apps/api/src/__tests__/genetics.service.test.ts` para `getGeneticReport(userId, supabase)` (lê de `genetic_reports`, devolve base + traços ou null) e `saveGeneticReport` (valida com o parser; inválido → erro `invalid-report`)
-- [ ] T018 [US6] Implementar `apps/api/src/services/genetics.service.ts` até T017 passar
-- [ ] T019 [US6] Escrever testes em `apps/api/src/__tests__/genetics-report.test.ts` para `POST /api/genetics/report` (201, 400 `invalid-report`, 401, limite de 1 MB) e `DELETE /api/genetics/report` (204)
-- [ ] T020 [US6] Implementar `apps/api/src/routes/genetics-report.ts` e registrar em `apps/api/src/app.ts` até T019 passar
+- [X] T014 [US6] Criar migration `supabase/migrations/20261025000000_024_f1_genetics_generation.sql` com `genetic_reports` e `mesocycle_generation` (data-model.md), RLS e policies
+- [X] T015 [P] [US6] Escrever testes em `packages/genetics/src/__tests__/evidence.test.ts`: cada traço de `parseGeneraTraits` recebe `evidence` (`forte` | `moderada` | `fraca`) por gene a partir de uma tabela fixa; traço desconhecido → `fraca`
+- [X] T016 [US6] Implementar a tabela de força de evidência e o campo `evidence` em `packages/genetics/src/traits.ts` até T015 passar
+- [X] T017 [P] [US6] Escrever testes em `apps/api/src/__tests__/genetics.service.test.ts` para `getGeneticReport(userId, supabase)` (lê de `genetic_reports`, devolve base + traços ou null) e `saveGeneticReport` (valida com o parser; inválido → erro `invalid-report`)
+- [X] T018 [US6] Implementar `apps/api/src/services/genetics.service.ts` até T017 passar
+- [X] T019 [US6] Escrever testes em `apps/api/src/__tests__/genetics-report.test.ts` para `POST /api/genetics/report` (201, 400 `invalid-report`, 401, limite de 1 MB) e `DELETE /api/genetics/report` (204)
+- [X] T020 [US6] Implementar `apps/api/src/routes/genetics-report.ts` e registrar em `apps/api/src/app.ts` até T019 passar
 - [ ] T021 [US6] Atualizar os testes de `genetic-profile.test.ts`, `nutrition-genetic-profile.test.ts`, `nutrition-context.service.test.ts` e `integrated-profile.service.test.ts` para esperar leitura do banco por usuário (sem laudo → 404 `no-genetic-report` nas rotas; fonte `vazia` no perfil)
 - [ ] T022 [US6] Trocar a leitura de `GENERA_PATH` por `genetics.service` em `apps/api/src/routes/genetic-profile.ts`, `apps/api/src/routes/nutrition-genetic-profile.ts`, `apps/api/src/services/nutrition-context.service.ts` e `apps/api/src/services/integrated-profile.service.ts`; no resumo da genética do Perfil Integrado, listar só traços `forte`/`moderada` com a força indicada; T021 verde
 - [ ] T023 [US6] Trocar o pré-requisito do e2e (`apps/api/e2e/prerequisites.ts`) e o fixture do modo mock (`apps/web/src/mocks/fixtures/genetics.fixture.ts`) por um laudo fictício em `apps/api/e2e/fixtures/genera.fake.json`, semeado em `genetic_reports` no setup do e2e
@@ -133,10 +134,10 @@
 
 - [ ] T049 [US2] Escrever testes em `packages/workouts/src/__tests__/conditions.test.ts`: `CONDITION_CATALOG` com as 8 chaves de R1; `rulesFor(condition)` por status (`ativa` reduz o limite em 1, `resolvida` desliga); `mergeRules` fica com a regra mais restritiva de cada campo; crise ativa → região com limite 0 e impacto 0; crise vencida não vale
 - [ ] T050 [US2] Implementar `packages/workouts/src/conditions.ts` e exportar em `packages/workouts/src/index.ts` até T049 passar
-- [ ] T051 [P] [US2] Escrever testes em `packages/ai/src/__tests__/cardio-bank.test.ts`: ids únicos, impacto 0–2, carga articular, ao menos 4 opções de impacto 0
-- [ ] T052 [P] [US2] Implementar `packages/ai/src/cardio-bank.ts` (lista de R6) e exportar em `packages/ai/src/index.ts` até T051 passar
-- [ ] T053 [US2] Estender `packages/ai/src/__tests__/agents/constraints.test.ts`: violação `carga-articular` quando `stress[região] > maxJointStress[região]`; `impacto` para item de cardio acima de `maxCardioImpact`; `esforco` quando `rirTarget < minRir`; `compatibleAlternatives` exclui alternativas acima do limite articular
-- [ ] T054 [US2] Implementar em `packages/ai/src/agents/constraints.ts` até T053 passar
+- [X] T051 [P] [US2] Escrever testes em `packages/ai/src/__tests__/cardio-bank.test.ts`: ids únicos, impacto 0–2, carga articular, ao menos 4 opções de impacto 0
+- [X] T052 [P] [US2] Implementar `packages/ai/src/cardio-bank.ts` (lista de R6) e exportar em `packages/ai/src/index.ts` até T051 passar
+- [X] T053 [US2] Estender `packages/ai/src/__tests__/agents/constraints.test.ts`: violação `carga-articular` quando `stress[região] > maxJointStress[região]`; `impacto` para item de cardio acima de `maxCardioImpact`; `esforco` quando `rirTarget < minRir`; `compatibleAlternatives` exclui alternativas acima do limite articular
+- [X] T054 [US2] Implementar em `packages/ai/src/agents/constraints.ts` até T053 passar
 - [ ] T055 [US2] Escrever testes em `packages/ai/src/__tests__/agents/condition-rules.test.ts` para `proposeConditionRules(condition)` (Agente de Medicina, structured output com `blockedPatterns`, `blockedExercises`, motivo; SDK mockado; recusa → lista vazia + aviso)
 - [ ] T056 [US2] Implementar `packages/ai/src/agents/condition-rules.ts` até T055 passar
 - [ ] T057 [US2] Escrever testes em `apps/api/src/__tests__/conditions.test.ts` para `GET/POST/PATCH/DELETE /api/conditions` (catálogo devolve `rules`; "outra" cria `shared_guidance` pendentes com `condition_id`; DELETE remove as orientações ligadas) e `POST/DELETE /api/conditions/:id/flare` (só `gota`; prazo padrão +5 dias)
