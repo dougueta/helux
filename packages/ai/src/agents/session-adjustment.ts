@@ -1,9 +1,9 @@
 import type { AiOperation, ConstraintViolation, HardConstraints, IntegratedProfile, MesocycleSession, PlannedExercise, SessionChange, UsageRecord } from '@helux/types'
-import { buildMesocycleMethod } from '../mesocycle-prompts'
+import { buildTrainingMethod } from '../mesocycle-prompts'
 import { ConstraintsUnsatisfiableError, enrichExercise } from '../mesocycle-planner'
 import { AGENT_MODEL, AgentRefusalError, anthropic, FALLBACK_PARAMS, messageText, usagesFromMessage } from './client'
 import { validatePlanAgainstConstraints } from './constraints'
-import { EXERCISE_ITEM_SCHEMA, type RawMesocycleOutput } from './mesocycle-schema'
+import { EXERCISE_ITEM_SCHEMA, rawToPlanned, type RawExercise } from './mesocycle-schema'
 import { renderProfile } from './render-profile'
 
 const ADJUSTMENT_SCHEMA = {
@@ -29,8 +29,6 @@ const ADJUSTMENT_SCHEMA = {
   additionalProperties: false,
 } as const
 
-type RawExercise = RawMesocycleOutput['sessions'][number]['exercises'][number]
-
 const isMain = (e: PlannedExercise) => e.phase !== 'aquecimento' && e.phase !== 'volta-calma'
 const describe = (e: PlannedExercise) => `${e.name} ${e.sets}x${e.reps} ${e.weight}`
 
@@ -54,10 +52,7 @@ export function computeSessionChanges(before: MesocycleSession[], after: Mesocyc
 }
 
 function toExercise(e: RawExercise): PlannedExercise {
-  const exercise: PlannedExercise = { name: e.name, sets: e.sets, reps: e.reps, weight: e.weight, phase: e.phase }
-  if (e.notes) exercise.notes = e.notes
-  if (e.supersetGroup) exercise.supersetGroup = e.supersetGroup
-  return enrichExercise(exercise)
+  return enrichExercise(rawToPlanned(e))
 }
 
 function renderSessions(sessions: MesocycleSession[], indexes: number[]): string {
@@ -101,7 +96,7 @@ export async function proposeSessionAdjustment(input: {
         betas: [...FALLBACK_PARAMS.betas],
         output_config: { effort: 'medium', format: { type: 'json_schema', schema: ADJUSTMENT_SCHEMA } },
         system: [
-          { type: 'text', text: buildMesocycleMethod(), cache_control: { type: 'ephemeral', ttl: '1h' } },
+          { type: 'text', text: buildTrainingMethod(), cache_control: { type: 'ephemeral', ttl: '1h' } },
           { type: 'text', text: renderProfile(input.profile), cache_control: { type: 'ephemeral' } },
         ],
         messages: [

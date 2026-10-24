@@ -179,6 +179,22 @@ describe('GET /workout/latest-plan', () => {
     expect(mockGenerateAndSaveMesocycle).toHaveBeenCalledWith('user-123', 'valid-token', expect.anything(), expect.anything())
   })
 
+  it('024 (T081): mesociclo semanal informa semana atual, total, deload e o tipo do dia', async () => {
+    const weekly = (week: number, letter: string, completedAt: string | null, kind: 'forca' | 'cardio' = 'forca') => ({ letter, focus: letter, completedAt, week, kind, deload: week === 4, exercises: [{ name: 'Supino Reto (Barra)', sets: 3, reps: '8', weight: '60kg' }] })
+    mockGetActiveMesocycle.mockResolvedValue({ ...MESOCYCLE_ROW, sessions: [weekly(1, 'A', '2026-10-01'), weekly(1, 'B', '2026-10-02', 'cardio'), weekly(2, 'A', null), weekly(2, 'B', null, 'cardio'), weekly(4, 'A', null), weekly(4, 'B', null, 'cardio')] })
+    mockFindPendingSessionIndex.mockReturnValue(2)
+    const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
+    expect(body.week).toEqual({ current: 2, total: 4, deload: false })
+    expect(body.kind).toBe('forca')
+  })
+
+  it('024: plano antigo (rotação) não tem semana', async () => {
+    mockGetActiveMesocycle.mockResolvedValue(MESOCYCLE_ROW)
+    mockFindPendingSessionIndex.mockReturnValue(1)
+    const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
+    expect(body.week).toBeUndefined()
+  })
+
   it('024 (FR-001): sem sessão pendente e onboarding não concluído → onboarding-required, sem gerar', async () => {
     mockGetActiveMesocycle.mockResolvedValue({ ...MESOCYCLE_ROW, sessions: [DONE_SESSION] })
     mockFindPendingSessionIndex.mockReturnValue(-1)

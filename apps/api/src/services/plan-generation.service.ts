@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { AgentRefusalError, ConstraintsUnsatisfiableError, generateMesocyclePlan, IncompleteResponseError } from '@helux/ai'
 import type { GenerationErrorCode, GeneticProfile, MesocycleSession } from '@helux/types'
-import { applyProgression, computeMesocycleProgression, normalizeSessionExercises } from '@helux/workouts'
+import { applyProgression, computeMesocycleProgression, expandWeeks, normalizeSessionExercises, prescribeMethod } from '@helux/workouts'
 import { assertBudget, BudgetExceededError, recordUsage } from './ai-budget.service'
-import { buildIntegratedProfile } from './integrated-profile.service'
+import { buildIntegratedProfile, conditionsForPrompt } from './integrated-profile.service'
 import { fetchSessionsSince } from './plan-context.service'
 import { getActiveMesocycle, findPendingSessionIndex, markSessionCompleted, isMesocycleComplete } from './mesocycle.service'
 import { markFailed, markGenerating, markOk } from './generation-status.service'
@@ -53,13 +53,23 @@ export async function generateAndSaveMesocycle(
     // Teto de IA atingido: o mesociclo atual continua; o estado "falhou" deixa o usuário saber (FR-026).
     await assertBudget(userId, supabase)
 
-    const perfil = build.profile.sources.perfil
-    const userLevel = (perfil.status === 'ativa' ? (perfil.data as { level?: string } | null)?.level : null) ?? 'intermediario'
+    const userLevel = build.training.level ?? 'intermediario'
+    // Spec 024 (R5): o método vem de regras; sem objetivo estruturado, condicionamento geral.
+    const method = prescribeMethod({
+      goal: build.training.goal ?? 'condicionamento',
+      level: userLevel,
+      timeOffMonths: build.training.timeOffMonths,
+      daysAvailable: build.preferences.availableDays.length || 4,
+      maxCardioImpact: build.constraints.maxCardioImpact,
+      minRir: build.constraints.minRir,
+      cardioLikes: build.training.cardioLikes,
+      cardioAvoid: build.training.cardioAvoid,
+    })
     const decisions = previous
       ? computeMesocycleProgression({
           previousSessions: previous.sessions,
           history: await fetchSessionsSince(userId, supabase, previous.generated_at.slice(0, 10)),
-          userLevel: userLevel as 'iniciante' | 'intermediario' | 'avancado',
+          userLevel,
         })
       : []
     const withLoad = decisions.filter((d) => d.action !== 'sem-dados')
@@ -71,7 +81,8 @@ export async function generateAndSaveMesocycle(
       result = await generateMesocyclePlan({
         profile: build.profile,
         constraints: build.constraints,
-        daysPerWeek: build.preferences.availableDays.length || 4,
+        method,
+        conditions: conditionsForPrompt(build.conditions),
         geneticProfile,
         ...(withLoad.length > 0 ? { loadProgression: withLoad } : {}),
       })
@@ -95,14 +106,12 @@ export async function generateAndSaveMesocycle(
     )
     const mesocycle = result.plan
 
-    // Spec 014: fases ordenadas e bisets válidos antes de gravar; depois a carga da progressão.
-    const sessions = applyProgression(
-      mesocycle.sessions.map((session) => ({
-        ...session,
-        exercises: normalizeSessionExercises(session.exercises),
-      })),
-      withLoad,
-    )
+    // Spec 014: fases ordenadas e bisets válidos; 024: semanas expandidas; depois a carga da progressão.
+    const template = mesocycle.sessions.map((session) => ({
+      ...session,
+      exercises: normalizeSessionExercises(session.exercises),
+    }))
+    const sessions = applyProgression(expandWeeks(template, method), withLoad)
 
     const { error } = await supabase.from('mesocycle_plans').insert({
       user_id: userId,
@@ -113,6 +122,10 @@ export async function generateAndSaveMesocycle(
       rationale: mesocycle.rationale,
       rationale_decisions: result.decisions,
       sources_used: build.sourcesUsed,
+      format: 'semanal',
+      weeks: method.weeks,
+      method,
+      goal_primary: method.goal,
     })
 
     if (error) throw error

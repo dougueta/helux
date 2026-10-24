@@ -127,6 +127,19 @@ beforeAll(async () => {
   // Spec 024: o laudo genético vive no banco por usuário; o e2e usa um laudo fictício.
   const seeded = await admin.from('genetic_reports').insert({ user_id: userId, source: 'genera', raw: GENERA_FAKE })
   if (seeded.error) throw new Error(`[e2e] Falha ao semear o laudo genético: ${seeded.error.message}`)
+
+  // Spec 024: o primeiro mesociclo só é gerado depois do onboarding (hipertrofia, intermediário, 4 dias).
+  const call = (path: string, method: string, body?: unknown) =>
+    fetch(`${apiUrl}${path}`, { method, headers: { Authorization: `Bearer ${token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined })
+  const step = await call('/api/onboarding', 'PUT', {
+    step: 6,
+    goal: { primary: 'hipertrofia' },
+    experience: { level: 'intermediario', trainingTime: '2 anos', timeOff: 'nenhum' },
+    availability: { availableDays: [1, 2, 4, 5], maxSessionMinutes: 90, location: 'academia', availableEquipment: ['barra', 'halteres', 'maquina-cabo', 'peso-corporal'] },
+  })
+  if (step.status !== 200) throw new Error(`[e2e] Onboarding: PUT respondeu ${step.status}`)
+  const done = await call('/api/onboarding/complete', 'POST')
+  if (done.status !== 200) throw new Error(`[e2e] Onboarding: complete respondeu ${done.status}`)
 })
 
 afterAll(async () => {
@@ -148,7 +161,8 @@ describe('Fluxo do mesociclo (quickstart 006) — ponta a ponta', () => {
     expect(plan.status).toBeUndefined()
     expect(plan.mesocycleId).toBe(rows[0].id)
     totalSessions = rows[0].sessions.length
-    expect(totalSessions).toBeGreaterThan(1)
+    // Spec 024: 4 dias × 5 semanas (intermediário), com deload na última.
+    expect(totalSessions).toBe(20)
     expect(plan.progress).toEqual({ completed: 0, total: totalSessions })
     expect(plan.upcoming).toHaveLength(totalSessions - 1)
     expect(plan.today?.adjusted).toBe(false)

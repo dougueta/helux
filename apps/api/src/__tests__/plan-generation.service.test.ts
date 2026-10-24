@@ -12,6 +12,9 @@ const BUILD = {
   mesocycle: null,
   tiredness: null,
   notices: [],
+  // Spec 024: resumo estruturado do treino e condições.
+  training: { goal: 'hipertrofia', level: 'intermediario', timeOffMonths: 0, cardioLikes: ['bike'], cardioAvoid: [] },
+  conditions: [{ id: 'h1', catalogKey: 'artrose', customLabel: null, region: 'joelho', side: 'esquerdo', since: null, count: 1, status: 'controlada', notes: null, flare: null }],
 }
 const DECISIONS = [{ topic: 'divisao', choice: 'ABC', sources: ['preferencias'], reason: '3 dias' }]
 const USAGES = [{ model: 'claude-opus-5-5', input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, cacheTtl: '5m', operation: 'mesociclo', agent: 'treino' }]
@@ -42,7 +45,10 @@ const fetchSessionsSinceMock = vi.fn()
 vi.mock('../services/plan-context.service', () => ({ fetchSessionsSince: fetchSessionsSinceMock }))
 
 const buildIntegratedProfileMock = vi.fn()
-vi.mock('../services/integrated-profile.service', () => ({ buildIntegratedProfile: buildIntegratedProfileMock }))
+vi.mock('../services/integrated-profile.service', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../services/integrated-profile.service')>()
+  return { ...actual, buildIntegratedProfile: buildIntegratedProfileMock }
+})
 
 class BudgetExceededError extends Error {}
 const assertBudgetMock = vi.fn()
@@ -108,9 +114,11 @@ describe('generateAndSaveMesocycle', () => {
     expect(generateMesocyclePlanMock).toHaveBeenCalledWith({
       profile: BUILD.profile,
       constraints: CONSTRAINTS,
-      daysPerWeek: 3,
+      method: expect.objectContaining({ goal: 'hipertrofia', strengthDays: 3, weeks: 5 }),
+      conditions: [expect.objectContaining({ label: expect.stringMatching(/Artrose/), rules: expect.any(Array) })],
       geneticProfile: GENETICS_DATA,
     })
+    expect(generateMesocyclePlanMock.mock.calls[0][0].method.cardio.allowed[0]).toBe('bike')
     expect(recordUsageMock).toHaveBeenCalledWith('user-123', USAGES, supabase)
     expect(fromMock).toHaveBeenCalledWith('mesocycle_plans')
     expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({
@@ -118,11 +126,30 @@ describe('generateAndSaveMesocycle', () => {
       generated_at: MOCK_MESOCYCLE.generatedAt,
       days_per_week: MOCK_MESOCYCLE.daysPerWeek,
       split_type: MOCK_MESOCYCLE.splitType,
-      sessions: MOCK_MESOCYCLE.sessions,
       rationale: MOCK_MESOCYCLE.rationale,
       rationale_decisions: DECISIONS,
       sources_used: SOURCES_USED,
+      format: 'semanal',
+      weeks: 5,
+      goal_primary: 'hipertrofia',
+      method: expect.objectContaining({ weeks: 5 }),
     }))
+  })
+
+  it('024 (R7): expande a semana-modelo em todas as semanas, com deload na última', async () => {
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+    const saved = insertMock.mock.calls[0][0].sessions as Array<{ week: number; deload: boolean; letter: string }>
+    expect(saved).toHaveLength(MOCK_MESOCYCLE.sessions.length * 5)
+    expect(saved.map(s => s.week)).toEqual([1, 2, 3, 4, 5].flatMap(w => MOCK_MESOCYCLE.sessions.map(() => w)))
+    expect(saved.filter(s => s.deload).every(s => s.week === 5)).toBe(true)
+  })
+
+  it('024: sem objetivo estruturado usa condicionamento geral', async () => {
+    buildIntegratedProfileMock.mockResolvedValue({ ...BUILD, training: { ...BUILD.training, goal: null } })
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+    expect(generateMesocyclePlanMock.mock.calls[0][0].method.goal).toBe('condicionamento')
   })
 
   it('spec 014 (FR-003/FR-009): normaliza fases e bisets antes de gravar', async () => {
@@ -174,7 +201,7 @@ describe('generateAndSaveMesocycle', () => {
 
     await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
 
-    expect(generateMesocyclePlanMock).toHaveBeenCalledWith(expect.objectContaining({ daysPerWeek: 4, geneticProfile: null }))
+    expect(generateMesocyclePlanMock).toHaveBeenCalledWith(expect.objectContaining({ method: expect.objectContaining({ strengthDays: 4 }), geneticProfile: null }))
   })
 
   it('loga o erro e não lança quando a geração falha', async () => {

@@ -15,8 +15,10 @@ import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, it } from 'vitest'
-import type { MesocycleSession, PlanDecision, UsageRecord } from '@helux/types'
-import { generateMesocyclePlan } from '../../mesocycle-planner'
+import type { HealthCondition, MesocycleSession, PlanDecision, UsageRecord } from '@helux/types'
+import { CONDITION_CATALOG, constraintsFromConditions, prescribeMethod, rulesFor } from '@helux/workouts'
+import { generateMesocyclePlan, type AgentEffort } from '../../mesocycle-planner'
+import { validateAgainstMethod } from '../method-validation'
 import { renderProfile } from '../render-profile'
 import { usagesFromMessage } from '../client'
 import { aggregate, scorePlan, type ProfileResult } from './treino-scoring'
@@ -92,11 +94,37 @@ interface ProfileOutcome extends ProfileResult {
   error?: string
 }
 
+/** Entrada do agente como a produção monta (024): condições → restrições, método pelos dados estruturados. */
+function agentInput(p: EvalProfile) {
+  const conditions: HealthCondition[] = p.structured.conditions.map((c, i) => ({ ...c, id: `c${i}`, flare: null }))
+  const fromConditions = constraintsFromConditions(conditions)
+  const constraints = { ...p.agentConstraints, ...fromConditions, blockedPatterns: [...p.agentConstraints.blockedPatterns, ...fromConditions.blockedPatterns], blockedExercises: [...p.agentConstraints.blockedExercises, ...fromConditions.blockedExercises] }
+  const method = prescribeMethod({
+    goal: p.structured.goal,
+    level: p.structured.level,
+    timeOffMonths: p.structured.timeOffMonths,
+    daysAvailable: p.daysPerWeek,
+    maxCardioImpact: constraints.maxCardioImpact,
+    minRir: constraints.minRir,
+    cardioLikes: [],
+    cardioAvoid: [],
+  })
+  const labelled = conditions.map(c => {
+    const label = CONDITION_CATALOG.find(k => k.key === c.catalogKey)?.label ?? c.customLabel ?? 'Condição'
+    const r = rulesFor(c)
+    return { label: `${label} (${c.region}${c.side ? ` ${c.side}` : ''}${c.count > 1 ? `, ${c.count}×` : ''})`, rules: [...Object.entries(r.maxJointStress).map(([j, l]) => `carga no ${j} ≤ ${l}`), ...r.cues] }
+  })
+  return { constraints, method, conditions: labelled }
+}
+
 async function runProfile(p: EvalProfile): Promise<ProfileOutcome> {
   try {
-    const result = await generateMesocyclePlan({ profile: p.profile, constraints: p.agentConstraints, daysPerWeek: p.daysPerWeek, geneticProfile: p.geneticProfile })
-    const sessions = result.plan.sessions
-    const det = scorePlan({ sessions, constraints: p.expectedConstraints, expectations: p.expectations })
+    const { constraints, method, conditions } = agentInput(p)
+    const effort = process.env.EVAL_EFFORT as AgentEffort | undefined
+    const result = await generateMesocyclePlan({ profile: p.profile, constraints, method, conditions, geneticProfile: p.geneticProfile, ...(effort ? { effort } : {}) })
+    // A semana-modelo é uma semana: marca semana 1 para a pontuação contar sem escalar.
+    const sessions = result.plan.sessions.map(s => ({ ...s, week: 1 }))
+    const det = scorePlan({ sessions, constraints: p.expectedConstraints, expectations: { ...p.expectations, setsRange: method.weeklySetsPerGroup, cardioPerWeek: method.cardioSessions }, extraViolations: validateAgainstMethod(result.plan.sessions, method) })
     // O plano fica salvo mesmo se o juiz falhar, para não perder a geração (que é a parte cara).
     fs.mkdirSync(RESULTS_DIR, { recursive: true })
     fs.writeFileSync(path.join(RESULTS_DIR, `plan-${p.id}.local.json`), JSON.stringify({ sessions, rationale: result.plan.rationale, decisions: result.decisions }, null, 2))

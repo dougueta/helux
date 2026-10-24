@@ -14,20 +14,37 @@ export interface FakeAnthropic {
   close(): Promise<void>
 }
 
-const exercise = (name: string, sets: number, weight: string) => ({ phase: 'principal', name, sets, reps: '8-10', weight, notes: null, supersetGroup: null })
+const exercise = (name: string, sets: number, weight: string) => ({ phase: 'principal', name, sets, reps: '8-10', weight, rirTarget: 2, notes: null, supersetGroup: null })
 
-// Nomes do EXERCISE_BANK, para o enriquecimento (músculo, variantes) acontecer como em produção.
+// Spec 024: semana-modelo que cabe na prescrição de hipertrofia com 4 dias
+// (superior/inferior ×2, 12 séries por grupo, 1 cardio e 1 mobilidade).
+// Nomes do EXERCISE_BANK, para o enriquecimento acontecer como em produção.
+const upper = [
+  exercise('Supino Reto (Barra)', 3, '60kg'),
+  exercise('Supino Inclinado (Halteres)', 3, '22kg'),
+  exercise('Remada Curvada (Barra)', 3, '60kg'),
+  exercise('Puxada Alta (Cabo)', 3, '55kg'),
+  exercise('Desenvolvimento com Halteres', 3, '18kg'),
+  exercise('Elevação Lateral (Halteres)', 3, '8kg'),
+]
+const lower = [
+  exercise('Agachamento Livre (Barra)', 3, '80kg'),
+  exercise('Leg Press 45°', 3, '150kg'),
+  exercise('Levantamento Terra Romeno (Barra)', 3, '80kg'),
+  exercise('Mesa Flexora', 3, '40kg'),
+  exercise('Elevação Pélvica (Barra)', 3, '80kg'),
+  exercise('Elevação Pélvica na Máquina', 3, '60kg'),
+]
 export const FAKE_MESOCYCLE = {
-  daysPerWeek: 4,
-  splitType: 'Upper/Lower',
+  splitType: 'Superior/Inferior',
   rationale: 'Mesociclo fixo da IA simulada (e2e).',
-  sessions: [
-    { letter: 'A', focus: 'Inferior', exercises: [exercise('Agachamento Livre (Barra)', 4, '80kg'), exercise('Leg Press 45°', 3, '150kg')] },
-    { letter: 'B', focus: 'Superior', exercises: [exercise('Supino Reto (Barra)', 4, '60kg')] },
-    { letter: 'C', focus: 'Inferior', exercises: [exercise('Levantamento Terra (Barra)', 4, '100kg')] },
-    { letter: 'D', focus: 'Superior', exercises: [exercise('Remada Curvada (Barra)', 4, '60kg')] },
+  weekTemplate: [
+    { letter: 'A', kind: 'forca', focus: 'Inferior', exercises: lower },
+    { letter: 'B', kind: 'forca', focus: 'Superior', exercises: [...upper, { phase: 'cardio', modality: 'bike', minutes: 20, zone: 'leve', notes: null }] },
+    { letter: 'C', kind: 'forca', focus: 'Inferior', exercises: [...lower, { phase: 'mobilidade', name: 'Mobilidade de quadril', sets: 1, reps: '10 min', weight: '—', region: 'quadril', notes: null }] },
+    { letter: 'D', kind: 'forca', focus: 'Superior', exercises: upper },
   ],
-  decisions: [{ topic: 'divisao', choice: 'Upper/Lower', sources: ['perfil'], reason: 'Mesociclo fixo da IA simulada (e2e).' }],
+  decisions: [{ topic: 'divisao', choice: 'Superior/Inferior', sources: ['perfil'], reason: 'Mesociclo fixo da IA simulada (e2e).' }],
 }
 
 /** Eventos SSE de uma resposta de texto, no formato da API de mensagens. */

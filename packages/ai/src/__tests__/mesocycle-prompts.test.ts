@@ -1,94 +1,114 @@
 import { describe, it, expect } from 'vitest'
-import type { HardConstraints } from '@helux/types'
-import { buildMesocycleMethod, buildMesocycleRequest } from '../mesocycle-prompts'
+import { EMPTY_HARD_CONSTRAINTS, type MethodPrescription } from '@helux/types'
+import { buildMesocycleRequest, buildTrainingMethod } from '../mesocycle-prompts'
 
-const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
+// Spec 024 T075 — prompt do Agente de Treino reescrito (R12).
 
-describe('buildMesocycleMethod (022 T011)', () => {
-  const method = buildMesocycleMethod('leve')
+const METHOD: MethodPrescription = {
+  goal: 'condicionamento',
+  weeks: 4,
+  deloadWeek: 4,
+  strengthDays: 3,
+  cardioSessions: 2,
+  mobilitySessions: 1,
+  allowedSplits: ['full-body', 'superior-inferior-full'],
+  minFrequencyPerGroup: 2,
+  weeklySetsPerGroup: { min: 7, max: 11 },
+  weekly: [
+    { week: 1, setsFactor: 0.6, rirTarget: 3, deload: false },
+    { week: 2, setsFactor: 0.8, rirTarget: 3, deload: false },
+    { week: 3, setsFactor: 1, rirTarget: 2, deload: false },
+    { week: 4, setsFactor: 0.55, rirTarget: 4, deload: true },
+  ],
+  repRanges: { basicos: [8, 12], acessorios: [12, 15] },
+  cardio: { minutes: 25, zone: 'leve', maxImpact: 0, allowed: ['bike', 'eliptico', 'remo', 'natacao'] },
+  modifiers: [{ source: 'pausa', description: 'Retorno após 8 meses parado: começa com 60% do volume.' }],
+}
 
-  it('é o Agente de Treino, usa o Perfil Integrado e prioriza a segurança em conflitos (FR-010)', () => {
-    expect(method).toContain('Agente de Treino')
-    expect(method).toContain('Perfil Integrado')
-    expect(method).toMatch(/priorize a segurança, explique o conflito/)
-    expect(method).toMatch(/fontes não foram usadas/)
+describe('buildTrainingMethod', () => {
+  const text = buildTrainingMethod()
+
+  it('é o Agente de Treino e trata a prescrição de método e as condições como limites conferidos por código', () => {
+    expect(text).toContain('Agente de Treino')
+    expect(text).toMatch(/prescrição de método/i)
+    expect(text).toMatch(/conferid[ao]s? por código/i)
   })
 
-  it('pede decisões com fontes (FR-008)', () => {
-    expect(method).toContain('`decisions`')
-    expect(method).toMatch(/perfil, preferencias, historico/)
+  it('genética só como ajuste fino, nunca motivo único', () => {
+    expect(text).toMatch(/genética/i)
+    expect(text).toMatch(/ajuste fino/i)
+    expect(text).toMatch(/nunca .*motivo único|nunca é o motivo único/i)
   })
 
-  it('mantém as 3 fases, o biset e o catálogo (spec 014)', () => {
-    expect(method).toContain('"phase": "aquecimento"')
-    expect(method).toContain('"phase": "volta-calma"')
-    expect(method).toContain('supersetGroup')
-    expect(method).toContain('Catálogo de Exercícios')
-    expect(method).toContain('não pode passar de: leve')
+  it('regras de escrita das notas: instrução ao usuário, sem datas de uso anterior nem regras internas', () => {
+    expect(text).toMatch(/notas?.*instru/i)
+    expect(text).toMatch(/datas de uso anterior/i)
+    expect(text).toMatch(/regras do sistema/i)
   })
 
-  it('é estável (sem data/hora), para o cache', () => {
-    expect(buildMesocycleMethod('leve')).toBe(method)
-    expect(method).not.toMatch(/\d{4}-\d{2}-\d{2}T/)
+  it('posiciona cardio e mobilidade e mantém aquecimento, volta à calma, biset e catálogo', () => {
+    expect(text).toMatch(/cardio/i)
+    expect(text).toMatch(/mobilidade/i)
+    expect(text).toMatch(/aquecimento/i)
+    expect(text).toMatch(/volta à calma/i)
+    expect(text).toMatch(/biset/i)
+    expect(text).toContain('Supino Reto (Barra)')
+  })
+
+  it('sem caixa-alta de obrigatoriedade e estável (sem data/hora) para o cache', () => {
+    expect(text).not.toMatch(/OBRIGATÓRIO/)
+    expect(buildTrainingMethod()).toBe(text)
+    expect(text).not.toMatch(/\d{4}-\d{2}-\d{2}/)
   })
 })
 
-describe('buildMesocycleRequest (022 T011)', () => {
-  it('lista as restrições rígidas com nomes do banco', () => {
-    const text = buildMesocycleRequest({
-      daysPerWeek: 3,
-      constraints: {
-        availableEquipment: ['halteres', 'peso-corporal'],
-        exercisesToAvoid: ['agachamento-livre-barra'],
-        maxSessionMinutes: 45,
-        blockedPatterns: ['empurrar-vertical'],
-        blockedExercises: ['Remada Unilateral (Halteres)'],
-        maxJointStress: {},
-        maxCardioImpact: null,
-        minRir: null,
-      },
-    })
-    expect(text).toContain('Dias de treino por semana: 3')
-    expect(text).toContain('Equipamentos disponíveis: halteres, peso-corporal')
-    expect(text).toContain('Duração máxima por sessão: 45 min')
-    expect(text).toContain('Exercícios a evitar: Agachamento Livre (Barra)')
-    expect(text).toContain('Padrões de movimento bloqueados por restrição de segurança: empurrar-vertical')
-    expect(text).toContain('Remada Unilateral (Halteres)')
+describe('buildMesocycleRequest', () => {
+  it('traz a prescrição de método completa', () => {
+    const t = buildMesocycleRequest({ method: METHOD, constraints: EMPTY_HARD_CONSTRAINTS, conditions: [] })
+    expect(t).toMatch(/3 dias de força/)
+    expect(t).toMatch(/2 sessões com cardio/)
+    expect(t).toMatch(/full-body/)
+    expect(t).toMatch(/7–11 séries/)
+    expect(t).toMatch(/pelo menos 2×/)
+    expect(t).toMatch(/8–12/)
+    expect(t).toMatch(/bike, eliptico, remo, natacao/)
+    expect(t).toMatch(/Retorno após 8 meses/)
+    expect(t).toMatch(/semana-modelo/i)
   })
 
-  it('sem restrições: equipamentos "todos" e nada de duração', () => {
-    const text = buildMesocycleRequest({ daysPerWeek: 4, constraints: NONE })
-    expect(text).toContain('Equipamentos disponíveis: todos')
-    expect(text).not.toContain('Duração máxima')
+  it('lista as restrições e as regras das condições', () => {
+    const t = buildMesocycleRequest({
+      method: METHOD,
+      constraints: { ...EMPTY_HARD_CONSTRAINTS, availableEquipment: ['halteres'], exercisesToAvoid: ['agachamento-livre-barra'], maxSessionMinutes: 50, maxJointStress: { joelho: 1 }, maxCardioImpact: 0, minRir: 2 },
+      conditions: [{ label: 'Reconstrução de LCA (joelho esquerdo, 2×)', rules: ['Carga no joelho ≤ 1', 'Joelho alinhado com a ponta do pé'] }],
+    })
+    expect(t).toContain('Equipamentos disponíveis: halteres')
+    expect(t).toContain('Agachamento Livre (Barra)')
+    expect(t).toContain('50 min')
+    expect(t).toMatch(/joelho.*≤ 1/)
+    expect(t).toMatch(/impacto.*0/i)
+    expect(t).toMatch(/RIR.*2/)
+    expect(t).toContain('Reconstrução de LCA (joelho esquerdo, 2×)')
+    expect(t).toContain('Joelho alinhado com a ponta do pé')
   })
 
-  it('no retry, inclui as violações a corrigir', () => {
-    const text = buildMesocycleRequest({
-      daysPerWeek: 4,
-      constraints: NONE,
-      violations: [{ sessionIndex: 1, exercise: 'Leg Press 45°', rule: 'equipamento', message: 'Leg Press 45° usa equipamento indisponível' }],
+  it('progressão de carga e violações do retry (restrições e método)', () => {
+    const t = buildMesocycleRequest({
+      method: METHOD,
+      constraints: EMPTY_HARD_CONSTRAINTS,
+      conditions: [],
+      loadProgression: [
+        { name: 'Supino Reto (Barra)', action: 'aumentar', previousWeightKg: 60, nextWeightKg: 62.5, reason: 'topo da faixa' },
+        { name: 'Remada', action: 'sem-dados', previousWeightKg: null, nextWeightKg: null, reason: '—' },
+      ],
+      violations: [
+        { sessionIndex: 0, exercise: 'Agachamento Livre (Barra)', rule: 'carga-articular', message: 'Agachamento Livre (Barra) carrega demais' },
+        { sessionIndex: 0, exercise: 'peito', rule: 'metodo-frequencia', message: 'peito é treinado 1× na semana; o mínimo é 2×' },
+      ],
     })
-    expect(text).toContain('## Correção obrigatória')
-    expect(text).toContain('- Sessão 2: Leg Press 45° usa equipamento indisponível')
-  })
-
-  describe('progressão de carga (spec 014, US3, FR-018)', () => {
-    const decisions = [
-      { name: 'Supino Reto', action: 'aumentar' as const, previousWeightKg: 40, nextWeightKg: 42, reason: 'Topo da faixa: +2 kg.' },
-      { name: 'Remada Curvada', action: 'reduzir' as const, previousWeightKg: 50, nextWeightKg: 46, reason: 'Abaixo da faixa no limite: −4 kg.' },
-      { name: 'Agachamento', action: 'sem-dados' as const, previousWeightKg: null, nextWeightKg: null, reason: 'Pulado.' },
-    ]
-
-    it('lista as decisões com carga (ignora sem-dados) na seção obrigatória', () => {
-      const prompt = buildMesocycleRequest({ daysPerWeek: 4, constraints: NONE, loadProgression: decisions })
-      expect(prompt).toContain('## Progressão de carga calculada — OBRIGATÓRIO')
-      expect(prompt).toContain('- Supino Reto: 40 kg → 42 kg (aumentar) — Topo da faixa: +2 kg.')
-      expect(prompt).toContain('- Remada Curvada: 50 kg → 46 kg (reduzir) — Abaixo da faixa no limite: −4 kg.')
-      expect(prompt).not.toContain('Agachamento:')
-    })
-
-    it('sem decisões com carga, a seção não aparece', () => {
-      expect(buildMesocycleRequest({ daysPerWeek: 4, constraints: NONE, loadProgression: [decisions[2]] })).not.toContain('Progressão de carga calculada')
-    })
+    expect(t).toMatch(/Supino Reto \(Barra\): 60 kg → 62,5 kg/)
+    expect(t).not.toMatch(/Remada:/)
+    expect(t).toMatch(/Agachamento Livre \(Barra\) carrega demais/)
+    expect(t).toMatch(/peito é treinado 1×/)
   })
 })

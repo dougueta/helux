@@ -1,5 +1,8 @@
 import type {
+  CheckinTrend,
   ConstraintViolation,
+  CycleSummary,
+  MethodPrescription,
   GeneticProfile,
   HardConstraints,
   IntegratedProfile,
@@ -10,12 +13,13 @@ import type {
   PlannedExercise,
   UsageRecord,
 } from '@helux/types'
-import { buildMesocycleMethod, buildMesocycleRequest } from './mesocycle-prompts'
+import { buildMesocycleRequest, buildTrainingMethod } from './mesocycle-prompts'
 import { EXERCISE_BANK, MUSCLE_GROUP_LABEL } from './exercise-bank'
 import { buildVariants } from './variants'
 import { validatePlanAgainstConstraints } from './agents/constraints'
 import { renderProfile } from './agents/render-profile'
-import { MESOCYCLE_SCHEMA, type RawMesocycleOutput } from './agents/mesocycle-schema'
+import { MESOCYCLE_SCHEMA, rawToPlanned, type RawMesocycleOutput } from './agents/mesocycle-schema'
+import { validateAgainstMethod } from './agents/method-validation'
 import { AGENT_MODEL, AgentRefusalError, anthropic, FALLBACK_PARAMS, messageText, usagesFromMessage } from './agents/client'
 
 const NEUTRAL_GENETICS: GeneticProfile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] }
@@ -47,34 +51,40 @@ export const MESOCYCLE_EFFORT: AgentEffort = 'xhigh'
 export interface GenerateMesocycleInput {
   profile: IntegratedProfile
   constraints: HardConstraints
-  daysPerWeek: number
+  /** Prescrição de método (024 R5): moldura que a semana-modelo precisa respeitar. */
+  method: MethodPrescription
+  /** Condições de saúde com as regras em texto, para o prompt. */
+  conditions: { label: string; rules: string[] }[]
+  /** Achados do ciclo anterior (024 R11). */
+  cycle?: CycleSummary
+  /** Tendência dos check-ins (024 R10). */
+  checkinTrend?: CheckinTrend
   /** Para as variantes por exercício (spec 010/013); sem genética, perfil neutro. */
   geneticProfile?: GeneticProfile | null
   /** Progressão de carga do mesociclo anterior (spec 014). */
   loadProgression?: LoadProgression[]
-  /** Limite de cardio das fases de aquecimento/volta à calma. */
-  cardioLimit?: string
   /** Esforço do modelo; padrão `MESOCYCLE_EFFORT` (o eval varia). */
   effort?: AgentEffort
 }
 
 export interface GenerateMesocycleResult {
+  /** `sessions` é a semana-modelo; a API expande as semanas com `expandWeeks`. */
   plan: Omit<MesocyclePlan, 'id'>
   decisions: PlanDecision[]
   usages: UsageRecord[]
 }
 
 /**
- * Agente de Treino (spec 022, R7): mesociclo a partir do Perfil Integrado,
- * com structured output, validação determinística das restrições rígidas e
- * uma nova tentativa com as violações. Sem conformidade → erro; o treino
- * vigente continua (FR-024).
+ * Agente de Treino (spec 022 R7; 024 R12): semana-modelo a partir do Perfil
+ * Integrado e da prescrição de método, com structured outputs, validação
+ * determinística das restrições e do método e uma nova tentativa com as
+ * violações. Sem conformidade → erro; o treino vigente continua (FR-024).
  */
 export async function generateMesocyclePlan(input: GenerateMesocycleInput): Promise<GenerateMesocycleResult> {
   const client = anthropic()
   const usages: UsageRecord[] = []
   const system = [
-    { type: 'text' as const, text: buildMesocycleMethod(input.cardioLimit), cache_control: { type: 'ephemeral' as const, ttl: '1h' as const } },
+    { type: 'text' as const, text: buildTrainingMethod(), cache_control: { type: 'ephemeral' as const, ttl: '1h' as const } },
     { type: 'text' as const, text: renderProfile(input.profile), cache_control: { type: 'ephemeral' as const } },
   ]
 
@@ -92,7 +102,15 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
         messages: [
           {
             role: 'user',
-            content: buildMesocycleRequest({ constraints: input.constraints, daysPerWeek: input.daysPerWeek, loadProgression: input.loadProgression, violations }),
+            content: buildMesocycleRequest({
+              method: input.method,
+              constraints: input.constraints,
+              conditions: input.conditions,
+              cycle: input.cycle,
+              checkinTrend: input.checkinTrend,
+              loadProgression: input.loadProgression,
+              violations,
+            }),
           },
         ],
       })
@@ -106,10 +124,10 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
 
     const raw = JSON.parse(messageText(message)) as RawMesocycleOutput
     const sessions = toSessions(raw, input.geneticProfile ?? NEUTRAL_GENETICS)
-    violations = validatePlanAgainstConstraints(sessions, input.constraints)
+    violations = [...validatePlanAgainstConstraints(sessions, input.constraints), ...validateAgainstMethod(sessions, input.method)]
     if (violations.length === 0) {
       return {
-        plan: { generatedAt: new Date().toISOString(), daysPerWeek: raw.daysPerWeek, splitType: raw.splitType, rationale: raw.rationale, sessions },
+        plan: { generatedAt: new Date().toISOString(), daysPerWeek: sessions.length, splitType: raw.splitType, rationale: raw.rationale, sessions },
         decisions: raw.decisions as PlanDecision[],
         usages,
       }
@@ -120,16 +138,12 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
 }
 
 function toSessions(raw: RawMesocycleOutput, genetics: GeneticProfile): MesocycleSession[] {
-  return raw.sessions.map(session => ({
-    letter: session.letter,
-    focus: session.focus,
+  return raw.weekTemplate.map(day => ({
+    letter: day.letter,
+    focus: day.focus,
+    kind: day.kind,
     completedAt: null,
-    exercises: session.exercises.map(e => {
-      const exercise: PlannedExercise = { name: e.name, sets: e.sets, reps: e.reps, weight: e.weight, phase: e.phase }
-      if (e.notes) exercise.notes = e.notes
-      if (e.supersetGroup) exercise.supersetGroup = e.supersetGroup
-      return enrichExercise(exercise, genetics)
-    }),
+    exercises: day.exercises.map(e => enrichExercise(rawToPlanned(e), genetics)),
   }))
 }
 
@@ -161,7 +175,7 @@ function attachVariants(exercise: PlannedExercise, geneticProfile: GeneticProfil
 export function enrichExercise(exercise: PlannedExercise, geneticProfile: GeneticProfile = NEUTRAL_GENETICS): PlannedExercise {
   // Spec 014: aquecimento e volta à calma têm nome livre (fora do catálogo) —
   // não recebem cues/músculos/variantes mesmo que o nome coincida com o catálogo.
-  if (exercise.phase === 'aquecimento' || exercise.phase === 'volta-calma') return exercise
+  if (exercise.phase === 'aquecimento' || exercise.phase === 'volta-calma' || exercise.cardio || exercise.region) return exercise
   return attachVariants(attachMuscleAndTempo(attachCues(exercise)), geneticProfile)
 }
 

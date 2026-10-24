@@ -153,3 +153,22 @@ export function expandWeeks(template: MesocycleSession[], method: MethodPrescrip
     })),
   )
 }
+
+const WORD_NUMBERS: Record<string, number> = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, três: 3, quatro: 4, cinco: 5, seis: 6, sete: 7, oito: 8, nove: 9, dez: 10, onze: 11, doze: 12 }
+
+/** Tempo parado em meses a partir do texto livre do perfil ("8 meses", "1 ano e meio", "3 semanas"). */
+export function parseTimeOffMonths(text: string | null | undefined): number {
+  if (!text) return 0
+  const t = text.toLowerCase()
+  const num = (re: RegExp): number | null => {
+    const m = t.match(re)
+    if (!m) return null
+    const raw = m[1]
+    return /^\d+([.,]\d+)?$/.test(raw) ? Number(raw.replace(',', '.')) : (WORD_NUMBERS[raw] ?? null)
+  }
+  const years = num(/(\d+(?:[.,]\d+)?|\p{L}+)\s+anos?/u)
+  const months = num(/(\d+(?:[.,]\d+)?|\p{L}+)\s+m[eê]s(?:es)?/u)
+  const weeks = num(/(\d+(?:[.,]\d+)?|\p{L}+)\s+semanas?/u)
+  const half = /e meio/.test(t) && years !== null ? 6 : 0
+  return Math.floor((years ?? 0) * 12 + half + (months ?? 0) + (weeks ?? 0) / 4.3)
+}

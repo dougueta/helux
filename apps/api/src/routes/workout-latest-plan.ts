@@ -119,6 +119,12 @@ export async function workoutLatestPlanRoutes(app: FastifyInstance): Promise<voi
       today,
       upcoming,
       progress: { completed, total },
+      ...(pendingSession.week !== undefined
+        ? {
+            week: { current: pendingSession.week, total: Math.max(...mesocycle.sessions.map((s) => s.week ?? 0)), deload: !!pendingSession.deload },
+            kind: pendingSession.kind ?? 'forca',
+          }
+        : {}),
       ...(mesocycle.rationale_decisions ? { rationaleDecisions: mesocycle.rationale_decisions } : {}),
       ...(mesocycle.sources_used ? { sourcesUsed: mesocycle.sources_used } : {}),
     }

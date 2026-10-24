@@ -5,6 +5,7 @@ import { preferenceSignalsFromEdits, sourcesUsedOf } from '@helux/ai'
 import {
   SOURCE_KEYS,
   type BodyCheckin,
+  type Goal,
   type HealthCondition,
   type HardConstraints,
   type IntegratedProfile,
@@ -20,7 +21,7 @@ import { getActiveMesocycle, findPendingSessionIndex, type MesocycleRow } from '
 import { loadNutritionContext } from './nutrition-context.service'
 import { getGeneticRaw } from './genetics.service'
 import { listConditions } from './conditions.service'
-import { constraintsFromConditions, findCatalogCondition, rulesFor } from '@helux/workouts'
+import { constraintsFromConditions, findCatalogCondition, parseTimeOffMonths, rulesFor } from '@helux/workouts'
 import { resolveDayType } from './nutrition-day.service'
 import { getTodayTirednessAssessment, todaySlug } from './tiredness.service'
 
@@ -42,6 +43,37 @@ export interface ProfileBuild {
   notices: string[]
   /** Spec 024: condições de saúde (todas, inclusive resolvidas). */
   conditions: HealthCondition[]
+  /** Spec 024: dados estruturados do treino (valem mesmo com a fonte "perfil" desligada). */
+  training: TrainingSummary
+}
+
+export interface TrainingSummary {
+  goal: Goal | null
+  level: 'iniciante' | 'intermediario' | 'avancado' | null
+  timeOffMonths: number
+  cardioLikes: string[]
+  cardioAvoid: string[]
+}
+
+/** Condições para o prompt do Agente de Treino (024): rótulo e regras em texto. */
+export function conditionsForPrompt(conditions: HealthCondition[], now: Date = new Date()): { label: string; rules: string[] }[] {
+  return conditions
+    .filter(c => c.status !== 'resolvida')
+    .map(c => {
+      const entry = findCatalogCondition(c.catalogKey)
+      const where = [c.region !== 'sistemica' ? c.region : null, c.side].filter(Boolean).join(' ')
+      const detail = [where || null, c.count > 1 ? `${c.count}×` : null, c.status].filter(Boolean).join(', ')
+      const r = rulesFor(c, now)
+      const rules = [
+        ...Object.entries(r.maxJointStress).map(([j, l]) => `carga no ${j} ≤ ${l}`),
+        r.maxCardioImpact !== null ? `impacto do cardio ≤ ${r.maxCardioImpact}` : null,
+        r.minRir !== null ? `RIR ≥ ${r.minRir}` : null,
+        c.flare ? `crise ativa no ${c.flare.region}: poupar totalmente` : null,
+        ...r.cues,
+        !entry && c.notes ? `observação do usuário: ${c.notes}` : null,
+      ].filter((x): x is string => !!x)
+      return { label: `${entry?.label ?? c.customLabel ?? 'Condição'}${detail ? ` (${detail})` : ''}`, rules }
+    })
 }
 
 const empty = (): IntegratedSource => ({ status: 'vazia', updatedAt: null, summary: '', data: null })
@@ -328,6 +360,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
   }
 
   const profile: IntegratedProfile = { generatedAt: nowIso, sources }
+  const row = profileRes.data as Record<string, unknown> | null
   return {
     profile,
     constraints,
@@ -337,6 +370,13 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     tiredness: disabled.has('cansaco') ? null : tiredness,
     notices,
     conditions,
+    training: {
+      goal: (row?.goal_primary as Goal | null) ?? null,
+      level: (row?.level as TrainingSummary['level']) ?? null,
+      timeOffMonths: parseTimeOffMonths(row?.time_off as string | null),
+      cardioLikes: (row?.cardio_likes as string[] | null) ?? [],
+      cardioAvoid: (row?.cardio_avoid as string[] | null) ?? [],
+    },
   }
 }
 

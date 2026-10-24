@@ -221,6 +221,9 @@ importers:
       '@helux/types':
         specifier: workspace:*
         version: link:../types
+      '@helux/workouts':
+        specifier: workspace:*
+        version: link:../workouts
     devDependencies:
       typescript:
         specifier: '*'

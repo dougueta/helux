@@ -131,3 +131,17 @@ describe('expandWeeks', () => {
     expect(sessions.find(s => s.week === 4 && s.kind === 'mobilidade')!.exercises[0]).toMatchObject({ sets: 1, reps: '10 min' })
   })
 })
+
+describe('parseTimeOffMonths', () => {
+  it('lê meses, anos e semanas do texto livre', async () => {
+    const { parseTimeOffMonths } = await import('../method')
+    expect(parseTimeOffMonths('8 meses')).toBe(8)
+    expect(parseTimeOffMonths('1 ano')).toBe(12)
+    expect(parseTimeOffMonths('um ano e meio')).toBe(18)
+    expect(parseTimeOffMonths('2 anos')).toBe(24)
+    expect(parseTimeOffMonths('3 semanas')).toBe(0)
+    expect(parseTimeOffMonths('6 semanas')).toBe(1)
+    expect(parseTimeOffMonths('nenhum')).toBe(0)
+    expect(parseTimeOffMonths(null)).toBe(0)
+  })
+})

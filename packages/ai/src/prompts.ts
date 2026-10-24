@@ -14,11 +14,11 @@ export function buildExerciseCatalogSection(): string {
     .map(([pattern, entries]) => `**${pattern}**: ${entries.map((e) => e.name).join(', ')}`)
     .join('\n')
 
-  return `## Catálogo de Exercícios — OBRIGATÓRIO
+  return `## Catálogo de exercícios
 
-Escolha os exercícios EXCLUSIVAMENTE da lista de catálogo abaixo, usando o nome exatamente como aparece (não invente variações de nome). Respeite as categorias proibidas listadas nas restrições do atleta, excluindo do catálogo qualquer exercício que se enquadre nelas.
+Os exercícios de força vêm só desta lista, com o nome exatamente como aparece (o schema da resposta também confere).
 
-Priorize variedade em relação aos exercícios recentes listados no histórico de sessões — evite repetir a mesma escolha em múltiplas sessões seguidas quando houver alternativa adequada no catálogo para o mesmo padrão de movimento.
+Varie em relação aos exercícios recentes do histórico quando houver alternativa equivalente para o mesmo padrão de movimento, sem trocar o que está funcionando.
 
 ${sections}`
 }
