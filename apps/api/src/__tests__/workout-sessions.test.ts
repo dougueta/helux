@@ -8,6 +8,9 @@ const mockSingle = vi.fn().mockResolvedValue({
 })
 const mockSelect = vi.fn(() => ({ single: mockSingle }))
 const mockInsert = vi.fn(() => ({ select: mockSelect }))
+const mockCheckinIn = vi.fn().mockResolvedValue({ error: null })
+const mockCheckinEq = vi.fn(() => ({ in: mockCheckinIn }))
+const mockUpdate = vi.fn(() => ({ eq: mockCheckinEq }))
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
@@ -17,7 +20,7 @@ vi.mock('@supabase/supabase-js', () => ({
         error: null,
       }),
     },
-    from: vi.fn(() => ({ insert: mockInsert })),
+    from: vi.fn(() => ({ insert: mockInsert, update: mockUpdate })),
   }),
 }))
 
@@ -111,6 +114,21 @@ describe('POST /api/workouts/sessions', () => {
     expect(res.statusCode).toBe(201)
     const insertedPayload = (mockInsert.mock.calls[0] as any[])[0]
     expect(insertedPayload.exercises[1]).toEqual({ name: 'Supino', sets: [], skipped: true })
+  })
+
+  it('024: liga os check-ins de sensação (antes/depois) à sessão salva', async () => {
+    const ids = ['11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222']
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/workouts/sessions',
+      headers: { Authorization: 'Bearer valid-token' },
+      payload: { date: '2026-06-15', exercises: [{ name: 'Agachamento', sets: [{ reps: 8, weight: 80, effort: 8 }] }], checkinIds: ids },
+    })
+    expect(res.statusCode).toBe(201)
+    expect((mockInsert.mock.calls[0] as any[])[0].checkinIds).toBeUndefined()
+    expect(mockUpdate).toHaveBeenCalledWith({ workout_session_id: 'session-456' })
+    expect(mockCheckinEq).toHaveBeenCalledWith('user_id', 'user-123')
+    expect(mockCheckinIn).toHaveBeenCalledWith('id', ids)
   })
 
   it('returns 201 and preserves executedVariant when an exercise includes one', async () => {

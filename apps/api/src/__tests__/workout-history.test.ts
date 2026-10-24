@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Fastify from 'fastify'
 
 const mockData = [
-  { id: 'sess-1', date: '2026-06-15', duration_s: 3600, exercises: [], created_at: new Date().toISOString() },
+  {
+    id: 'sess-1', date: '2026-06-15', duration_s: 3600, exercises: [], created_at: new Date().toISOString(),
+    session_checkins: [
+      { phase: 'depois', energy: null, sleep: null, motivation: null, rpe: 8, feeling: 4, pains: [{ region: 'lombar', intensity: 1 }] },
+      { phase: 'antes', energy: 3, sleep: 4, motivation: 5, rpe: null, feeling: null, pains: [] },
+    ],
+  },
 ]
 
 const mockCount = vi.fn().mockResolvedValue({ count: 1, error: null })
@@ -71,6 +77,16 @@ describe('GET /api/workouts/history', () => {
     const body = res.json()
     expect(body).toHaveProperty('sessions')
     expect(Array.isArray(body.sessions)).toBe(true)
+  })
+
+  it('024 (T092): inclui as sensações de antes e depois ligadas à sessão', async () => {
+    const res = await app.inject({ method: 'GET', url: '/api/workouts/history', headers: { Authorization: 'Bearer valid-token' } })
+    const [s] = res.json().sessions
+    expect(s.session_checkins).toBeUndefined()
+    expect(s.checkins).toEqual({
+      antes: { energy: 3, sleep: 4, motivation: 5, pains: [] },
+      depois: { rpe: 8, feeling: 4, pains: [{ region: 'lombar', intensity: 1 }] },
+    })
   })
 
   it('respects limit and offset query params', async () => {

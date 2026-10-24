@@ -28,6 +28,8 @@ const mockOnboardingComplete = vi.fn().mockResolvedValue(true)
 vi.mock('../services/onboarding.service', () => ({ isOnboardingComplete: mockOnboardingComplete }))
 const mockListConditions = vi.fn().mockResolvedValue([])
 vi.mock('../services/conditions.service', () => ({ listConditions: mockListConditions }))
+const mockGetTodayPains = vi.fn().mockResolvedValue([])
+vi.mock('../services/session-checkins.service', async (orig) => ({ ...(await orig<object>()), getTodayPains: mockGetTodayPains }))
 
 const mockHealthSamplesOrder = vi.fn().mockResolvedValue({ data: [], error: null })
 const mockHealthSamplesGte = vi.fn(() => ({ order: mockHealthSamplesOrder }))
@@ -98,6 +100,7 @@ describe('GET /workout/latest-plan', () => {
     mockGetGenerationStatus.mockResolvedValue(null)
     mockOnboardingComplete.mockResolvedValue(true)
     mockListConditions.mockResolvedValue([])
+    mockGetTodayPains.mockResolvedValue([])
     vi.resetModules()
     process.env.SUPABASE_URL = 'https://test.supabase.co'
     process.env.SUPABASE_ANON_KEY = 'test-key'
@@ -218,6 +221,18 @@ describe('GET /workout/latest-plan', () => {
     expect(body.today.adjusted).toBe(true)
     expect(body.today.adjustmentReason).toMatch(/crise/i)
     expect(body.today.changes).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Agachamento Livre (Barra)' })]))
+  })
+
+  it('024 (FR-018): dor forte no joelho no check-in de antes poupa o joelho no treino do dia', async () => {
+    mockGetActiveMesocycle.mockResolvedValue({
+      ...MESOCYCLE_ROW,
+      sessions: [{ letter: 'C', focus: 'Pernas', completedAt: null, exercises: [{ name: 'Agachamento Livre (Barra)', sets: 4, reps: '8-10', weight: '80kg' }, { name: 'Supino Reto (Barra)', sets: 3, reps: '8', weight: '60kg' }] }],
+    })
+    mockFindPendingSessionIndex.mockReturnValue(0)
+    mockGetTodayPains.mockResolvedValue([{ region: 'joelho', intensity: 2 }])
+    const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
+    expect(body.today.exercises.map((e: { name: string }) => e.name)).not.toContain('Agachamento Livre (Barra)')
+    expect(body.today.adjustmentReason).toMatch(/dor/i)
   })
 
   it('024: sem sessão pendente e geração em andamento → generating sem disparar de novo', async () => {

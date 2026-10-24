@@ -21,7 +21,7 @@ import { getActiveMesocycle, findPendingSessionIndex, type MesocycleRow } from '
 import { loadNutritionContext } from './nutrition-context.service'
 import { getGeneticRaw } from './genetics.service'
 import { listConditions } from './conditions.service'
-import { constraintsFromConditions, findCatalogCondition, parseTimeOffMonths, rulesFor } from '@helux/workouts'
+import { constraintsFromConditions, findCatalogCondition, isValidSession, parseTimeOffMonths, rulesFor } from '@helux/workouts'
 import { resolveDayType } from './nutrition-day.service'
 import { getTodayTirednessAssessment, todaySlug } from './tiredness.service'
 
@@ -220,7 +220,8 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     supabase.from('agent_source_settings').select('source, enabled').eq('user_id', userId),
     supabase.from('user_training_profile').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('training_preferences').select('*').eq('user_id', userId).maybeSingle(),
-    supabase.from('workout_sessions').select('id, date, duration_s, exercises, created_at').eq('user_id', userId).order('date', { ascending: false }).limit(HISTORY_SESSIONS),
+    // Spec 024: busca mais para sobrar o bastante depois de tirar as sessões suspeitas.
+    supabase.from('workout_sessions').select('id, date, duration_s, exercises, created_at, review_status').eq('user_id', userId).order('date', { ascending: false }).limit(HISTORY_SESSIONS * 2),
     supabase.from('body_checkins').select('*').eq('user_id', userId).order('month', { ascending: false }).limit(2),
     supabase.from('conversation_facts').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
     supabase.from('shared_guidance').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
@@ -301,7 +302,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
   const sources: Record<SourceKey, IntegratedSource> = {
     perfil: profileSummary(profileRes.data as Record<string, unknown> | null, conditions, now),
     preferencias: preferencesSummary(preferences),
-    historico: historySummary((historyRes.data ?? []) as WorkoutSession[]),
+    historico: historySummary(((historyRes.data ?? []) as (WorkoutSession & { duration_s?: number | null; review_status?: string | null })[]).filter(isValidSession).slice(0, HISTORY_SESSIONS)),
     mesociclo: mesocycleSummary(mesocycle),
     cansaco: tirednessSummary(tiredness),
     checkins: checkinsSummary((checkinsRes.data ?? []) as BodyCheckin[]),

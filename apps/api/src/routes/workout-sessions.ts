@@ -26,6 +26,8 @@ const SessionBodySchema = z
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     duration_s: z.number().int().nonnegative().optional(),
     exercises: z.array(ExerciseSchema),
+    // Spec 024: check-ins de sensação (antes/depois) a ligar a esta sessão.
+    checkinIds: z.array(z.string().uuid()).max(4).optional(),
   })
   .superRefine((body, ctx) => {
     for (const [i, ex] of body.exercises.entries()) {
@@ -62,7 +64,7 @@ export async function workoutSessionsRoutes(app: FastifyInstance): Promise<void>
       return reply.code(400).send({ error: 'Bad Request', details: parsed.error.errors })
     }
 
-    const { date, duration_s, exercises } = parsed.data
+    const { date, duration_s, exercises, checkinIds } = parsed.data
 
     // Use user-scoped client so auth.uid() is set and RLS passes
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -78,6 +80,12 @@ export async function workoutSessionsRoutes(app: FastifyInstance): Promise<void>
     if (error) {
       app.log.error(error, 'workout-sessions insert error')
       return reply.code(500).send({ error: 'Internal Server Error' })
+    }
+
+    if (checkinIds && checkinIds.length > 0) {
+      const link = await supabase.from('session_checkins').update({ workout_session_id: data.id }).eq('user_id', user.id).in('id', checkinIds)
+      // A sessão já foi salva: falha na ligação só fica no log.
+      if (link.error) app.log.error(link.error, 'workout-sessions: failed to link checkins')
     }
 
     // Fire-and-forget: generate the next plan now so it's ready by the time

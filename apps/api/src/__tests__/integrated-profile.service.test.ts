@@ -37,7 +37,9 @@ function db(over: Record<string, Record<string, unknown>[]> = {}) {
       },
     ],
     workout_sessions: [
-      { user_id: 'u1', id: 's1', date: '2026-10-18', duration_s: 3600, created_at: '2026-10-18T20:00:00Z', exercises: [{ name: 'Supino Reto (Barra)', sets: [{ reps: 8, weight: 80, effort: 8 }] }] },
+      { user_id: 'u1', id: 's1', date: '2026-10-18', duration_s: 3600, created_at: '2026-10-18T20:00:00Z', exercises: [{ name: 'Supino Reto (Barra)', sets: [{ reps: 8, weight: 80, effort: 8 }, { reps: 8, weight: 80, effort: 8 }, { reps: 8, weight: 80, effort: 8 }] }] },
+      // Spec 024: sessão de teste (2 min) não entra no histórico do perfil.
+      { user_id: 'u1', id: 's0', date: '2026-10-17', duration_s: 124, created_at: '2026-10-17T20:00:00Z', exercises: [{ name: 'Leg Press 45°', sets: [{ reps: 8, weight: 100, effort: 8 }] }] },
     ],
     mesocycle_plans: [
       { user_id: 'u1', id: 'm1', generated_at: '2026-10-10T10:00:00Z', created_at: '2026-10-10T10:00:00Z', days_per_week: 3, split_type: 'ABC', rationale: '', sessions: [SESSION('A', '2026-10-12T10:00:00Z'), SESSION('B', null), SESSION('C', null)] },
@@ -225,6 +227,12 @@ describe('buildIntegratedProfile (022 T008)', () => {
     ]
     const { constraints } = await buildIntegratedProfile('u1', fake.client as never, NOW)
     expect(constraints.maxJointStress).toEqual({ lombar: 1 })
+  })
+
+  it('024 (T094): sessão suspeita (2 min, 1 série) fica fora do histórico do perfil', async () => {
+    const { profile } = await buildIntegratedProfile('u1', db().client as never, NOW)
+    expect(profile.sources.historico.summary).toMatch(/Supino Reto/)
+    expect(profile.sources.historico.summary).not.toMatch(/Leg Press/)
   })
 
   it('recomendação em conflito com restrição ativa aparece marcada; a restrição prevalece (FR-021)', async () => {

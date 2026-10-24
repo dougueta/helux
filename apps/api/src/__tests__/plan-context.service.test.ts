@@ -4,7 +4,8 @@ import { describe, it, expect, vi } from 'vitest'
 
 describe('fetchSessionsSince (spec 014, US3)', () => {
   it('busca as sessões do usuário a partir da data, mais recentes primeiro', async () => {
-    const rows = [{ id: 's2', date: '2026-10-08', exercises: [] }, { id: 's1', date: '2026-10-01', exercises: [] }]
+    const sets = [{ reps: 8, weight: 60, effort: 8 }, { reps: 8, weight: 60, effort: 8 }, { reps: 8, weight: 60, effort: 8 }]
+    const rows = [{ id: 's2', date: '2026-10-08', duration_s: 3600, exercises: [{ name: 'Supino', sets }] }, { id: 's1', date: '2026-10-01', duration_s: 3600, exercises: [{ name: 'Supino', sets }] }]
     const order = vi.fn().mockResolvedValue({ data: rows, error: null })
     const gte = vi.fn(() => ({ order }))
     const eq = vi.fn(() => ({ gte }))
@@ -19,6 +20,20 @@ describe('fetchSessionsSince (spec 014, US3)', () => {
     expect(gte).toHaveBeenCalledWith('date', '2026-09-30')
     expect(order).toHaveBeenCalledWith('date', { ascending: false })
     expect(result).toEqual(rows)
+  })
+
+  it('024 (T094): sessões suspeitas não confirmadas ficam de fora da progressão', async () => {
+    const sets = [{ reps: 8, weight: 60, effort: 8 }, { reps: 8, weight: 60, effort: 8 }, { reps: 8, weight: 60, effort: 8 }]
+    const rows = [
+      { id: 'real', date: '2026-10-08', duration_s: 3600, exercises: [{ name: 'Supino', sets }] },
+      { id: 'teste', date: '2026-10-07', duration_s: 124, exercises: [{ name: 'Supino', sets }] },
+      { id: 'vazia', date: '2026-10-06', duration_s: 3600, exercises: [] },
+      { id: 'confirmada', date: '2026-10-05', duration_s: 300, review_status: 'confirmada', exercises: [{ name: 'Supino', sets }] },
+    ]
+    const order = vi.fn().mockResolvedValue({ data: rows, error: null })
+    const from = vi.fn(() => ({ select: () => ({ eq: () => ({ gte: () => ({ order }) }) }) }))
+    const { fetchSessionsSince } = await import('../services/plan-context.service')
+    expect((await fetchSessionsSince('user-123', { from } as never, '2026-09-30')).map(s => s.id)).toEqual(['real', 'confirmada'])
   })
 
   it('erro na consulta → lista vazia (a geração segue sem progressão)', async () => {

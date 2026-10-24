@@ -2,23 +2,28 @@ import type { FastifyInstance } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
 import { buildAdjustedSession, constraintsFromConditions } from '@helux/workouts'
 import { adaptSessionForSafety } from '@helux/ai'
-import { EMPTY_HARD_CONSTRAINTS, type AdjustedSession, type AdjustedWorkoutPlanView, type HealthCondition } from '@helux/types'
+import { EMPTY_HARD_CONSTRAINTS, type AdjustedSession, type AdjustedWorkoutPlanView, type HealthCondition, type PainReport } from '@helux/types'
 import { getActiveMesocycle, findPendingSessionIndex } from '../services/mesocycle.service'
 import { generateAndSaveMesocycle } from '../services/plan-generation.service'
-import { getTodayTirednessAssessment } from '../services/tiredness.service'
+import { getTodayTirednessAssessment, todaySlug } from '../services/tiredness.service'
 import { effectiveStatus, getGenerationStatus, markGenerating, shouldRetry } from '../services/generation-status.service'
 import type { MesocycleRow } from '../services/mesocycle.service'
 import { isOnboardingComplete } from '../services/onboarding.service'
 import { listConditions } from '../services/conditions.service'
+import { getTodayPains, regionsToProtect } from '../services/session-checkins.service'
 
 /**
  * Regras das condições de saúde aplicadas ao treino do dia (024, FR-009): vale
  * também para ciclos gerados antes da 024 e para a crise de gota.
  */
-function applyConditions(today: AdjustedSession, conditions: HealthCondition[], now: Date): AdjustedSession {
+function applyConditions(today: AdjustedSession, conditions: HealthCondition[], now: Date, pains: PainReport[] = []): AdjustedSession {
   const constraints = { ...EMPTY_HARD_CONSTRAINTS, ...constraintsFromConditions(conditions, now) }
+  // Dor relatada no check-in de antes (FR-018): a articulação fica no estresse mínimo hoje.
+  const painful = regionsToProtect(pains, conditions)
+  if (painful.length > 0) constraints.maxJointStress = { ...constraints.maxJointStress, ...Object.fromEntries(painful.map(j => [j, Math.min(1, constraints.maxJointStress[j] ?? 1)])) }
   const flare = conditions.find(c => c.flare)?.flare
-  const result = adaptSessionForSafety(today.exercises, constraints, flare ? `crise no ${flare.region}` : 'condições de saúde')
+  const why = flare ? `crise no ${flare.region}` : painful.length > 0 ? `dor no ${painful.join(' e ')} relatada hoje` : 'condições de saúde'
+  const result = adaptSessionForSafety(today.exercises, constraints, why)
   if (result.changes.length === 0) return today
   return {
     ...today,
@@ -110,7 +115,11 @@ export async function workoutLatestPlanRoutes(app: FastifyInstance): Promise<voi
       app.log.error(error, 'workout-latest-plan: failed to load conditions')
       return [] as HealthCondition[]
     })
-    const today = applyConditions(buildAdjustedSession(pendingSession, tiredness), conditions, new Date())
+    const pains = await getTodayPains(user.id, supabase, todaySlug()).catch((error) => {
+      app.log.error(error, 'workout-latest-plan: failed to load today pains')
+      return [] as PainReport[]
+    })
+    const today = applyConditions(buildAdjustedSession(pendingSession, tiredness), conditions, new Date(), pains)
     const upcoming = mesocycle.sessions.slice(pendingIndex + 1).map((s) => ({ letter: s.letter, focus: s.focus, ...(s.week !== undefined ? { week: s.week } : {}) }))
 
     const view: AdjustedWorkoutPlanView = {
