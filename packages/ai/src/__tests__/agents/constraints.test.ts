@@ -56,6 +56,38 @@ describe('validatePlanAgainstConstraints (R7)', () => {
   })
 })
 
+describe('validatePlanAgainstConstraints — condições de saúde (024 T053)', () => {
+  it('carga articular acima do limite da região → carga-articular', () => {
+    const v = validatePlanAgainstConstraints(
+      [session([ex('Agachamento Livre (Barra)'), ex('Leg Press 45°'), ex('Supino Reto (Barra)')])],
+      { ...NONE, maxJointStress: { joelho: 1 } },
+    )
+    expect(v.map(x => `${x.exercise}:${x.rule}`)).toEqual(['Agachamento Livre (Barra):carga-articular'])
+  })
+
+  it('cardio com impacto acima do máximo → impacto; aquecimento livre não entra', () => {
+    const run = ex('Corrida', 1, { cardio: { modality: 'corrida', minutes: 20, zone: 'leve' } })
+    const bike = ex('Bike ergométrica', 1, { cardio: { modality: 'bike', minutes: 20, zone: 'leve' } })
+    const v = validatePlanAgainstConstraints([session([run, bike])], { ...NONE, maxCardioImpact: 0 })
+    expect(v.map(x => `${x.exercise}:${x.rule}`)).toEqual(['Corrida:impacto'])
+  })
+
+  it('cardio fora do catálogo → fora-do-banco', () => {
+    const v = validatePlanAgainstConstraints([session([ex('Pular corda', 1, { cardio: { modality: 'pular-corda', minutes: 10, zone: 'leve' } })])], NONE)
+    expect(v.map(x => x.rule)).toEqual(['fora-do-banco'])
+  })
+
+  it('RIR alvo abaixo do mínimo → esforco', () => {
+    const v = validatePlanAgainstConstraints([session([ex('Supino Reto (Barra)', 3, { rirTarget: 1 }), ex('Remada Curvada (Barra)', 3, { rirTarget: 2 })])], { ...NONE, minRir: 2 })
+    expect(v.map(x => `${x.exercise}:${x.rule}`)).toEqual(['Supino Reto (Barra):esforco'])
+  })
+
+  it('mobilidade (região) e aquecimento ficam fora das regras de força', () => {
+    const v = validatePlanAgainstConstraints([session([ex('Mobilidade de joelho', 1, { region: 'joelho' })])], { ...NONE, maxJointStress: { joelho: 0 } })
+    expect(v).toEqual([])
+  })
+})
+
 describe('compatibleAlternatives (FR-009a)', () => {
   it('mesmo grupo e padrão, sem o próprio exercício, respeitando equipamento e evitar', () => {
     const alts = compatibleAlternatives('supino-reto-barra', { ...NONE, availableEquipment: ['halteres', 'peso-corporal'], exercisesToAvoid: ['flexao-braco-corporal'] })
@@ -69,6 +101,13 @@ describe('compatibleAlternatives (FR-009a)', () => {
     const alts = compatibleAlternatives('Supino Reto (Barra)', { ...NONE, blockedPatterns: ['empurrar-horizontal'] })
     expect(alts.length).toBeGreaterThan(0)
     expect(alts.every(a => a.violatesSafety && a.reason)).toBe(true)
+  })
+
+  it('respeita o limite articular (024 T053)', () => {
+    const alts = compatibleAlternatives('agachamento-livre-barra', { ...NONE, maxJointStress: { joelho: 1 } })
+    expect(alts.length).toBeGreaterThan(0)
+    expect(alts.map(a => a.exerciseId)).not.toContain('agachamento-bulgaro-halteres')
+    expect(alts.map(a => a.exerciseId)).toContain('leg-press-45')
   })
 
   it('exercício desconhecido → lista vazia', () => {

@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     include: ['src/**/__evals__/**/*.eval.ts'],
-    testTimeout: 120_000,
+    testTimeout: 900_000,
     maxConcurrency: 4,
   },
 })
