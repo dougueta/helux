@@ -111,8 +111,6 @@ export function findCatalogCondition(key: string | null): CatalogCondition | und
 
 const EMPTY: ConditionRules = { maxJointStress: {}, blockedPatterns: [], blockedExercises: [], maxCardioImpact: null, minRir: null, cues: [], medicalNoteOnFlare: false }
 
-const today = (now: Date) => now.toISOString().slice(0, 10)
-
 /** Regras de uma condição registrada, considerando estado e crise ativa. */
 export function rulesFor(condition: HealthCondition, now: Date = new Date()): ConditionRules {
   const entry = findCatalogCondition(condition.catalogKey)
@@ -123,7 +121,8 @@ export function rulesFor(condition: HealthCondition, now: Date = new Date()): Co
     maxJointStress[joint] = (condition.status === 'ativa' ? Math.max(0, level - 1) : level) as StressLevel
   }
   let maxCardioImpact = base.maxCardioImpact
-  const flare = condition.flare && condition.flare.until >= today(now) ? condition.flare : null
+  // A crise vale até o usuário encerrar, mesmo depois do prazo (aí a Home orienta procurar o médico).
+  const flare = condition.flare
   if (flare) {
     if (isJoint(flare.region)) maxJointStress[flare.region] = 0
     maxCardioImpact = 0

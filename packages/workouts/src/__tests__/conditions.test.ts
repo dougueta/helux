@@ -71,10 +71,10 @@ describe('rulesFor', () => {
     expect(flare).toMatchObject({ maxJointStress: { joelho: 0 }, maxCardioImpact: 0 })
   })
 
-  it('crise vencida não vale', () => {
+  it('crise com prazo vencido continua valendo até o usuário encerrar (segurança)', () => {
     const r = rulesFor(cond('gota', { region: 'sistemica', flare: { region: 'joelho', until: '2026-10-20' } }), NOW)
-    expect(r.maxJointStress).toEqual({})
-    expect(r.maxCardioImpact).toBe(1)
+    expect(r.maxJointStress).toEqual({ joelho: 0 })
+    expect(r.maxCardioImpact).toBe(0)
   })
 
   it('condição "outra" (sem catálogo) não tem regra fixa: vem das orientações aceitas', () => {

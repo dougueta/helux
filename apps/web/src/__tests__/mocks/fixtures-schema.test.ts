@@ -24,6 +24,9 @@ const READS = [
   '/api/nutrition/today',
   '/api/nutrition/history?limit=14',
   '/api/nutrition/genetic-profile',
+  // Spec 024
+  '/api/conditions',
+  '/api/onboarding',
 ]
 
 function routerFor(personaId: string) {

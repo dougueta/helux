@@ -17,8 +17,7 @@ import { listConditions } from '../services/conditions.service'
  */
 function applyConditions(today: AdjustedSession, conditions: HealthCondition[], now: Date): AdjustedSession {
   const constraints = { ...EMPTY_HARD_CONSTRAINTS, ...constraintsFromConditions(conditions, now) }
-  const todayIso = now.toISOString().slice(0, 10)
-  const flare = conditions.find(c => c.flare && c.flare.until >= todayIso)?.flare
+  const flare = conditions.find(c => c.flare)?.flare
   const result = adaptSessionForSafety(today.exercises, constraints, flare ? `crise no ${flare.region}` : 'condições de saúde')
   if (result.changes.length === 0) return today
   return {

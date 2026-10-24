@@ -65,7 +65,7 @@ function conditionLine(c: HealthCondition, now: Date): string {
   const where = [c.region !== 'sistemica' ? c.region : null, c.side].filter(Boolean).join(' ')
   const detail = [where || null, c.count > 1 ? `${c.count}×` : null].filter(Boolean).join(', ')
   const r = rulesFor(c, now)
-  const flare = c.flare && c.flare.until >= now.toISOString().slice(0, 10) ? `; crise no ${c.flare.region} até ${fmtDate(c.flare.until)}` : ''
+  const flare = c.flare ? `; crise no ${c.flare.region} até ${fmtDate(c.flare.until)}${c.flare.until < now.toISOString().slice(0, 10) ? ' (prazo vencido: orientar procurar o médico)' : ''}` : ''
   const limits = [
     ...Object.entries(r.maxJointStress).map(([j, l]) => `carga no ${j} ≤ ${l}`),
     r.maxCardioImpact !== null ? `impacto do cardio ≤ ${r.maxCardioImpact}` : null,
