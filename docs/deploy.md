@@ -48,7 +48,14 @@ Defina estas variáveis no projeto da Vercel:
 | `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | chave `anon` |
 
+Confira que as duas variáveis do Supabase são do projeto de produção (`wgrlavmynbingemdbkjg`). Variáveis
+`NEXT_PUBLIC_*` entram no build, então qualquer troca exige **Redeploy** sem o cache de build.
+
 Depois do deploy, copie o domínio gerado para `CORS_ORIGIN` no Render e faça um novo deploy da API.
+
+No Supabase, em **Authentication → URL Configuration**, defina o **Site URL** como o domínio da Vercel e
+adicione `https://<dominio>/**` e `http://localhost:3000/**` em **Redirect URLs**. Sem isso, o login com Google
+volta para `localhost:3000` em vez do web publicado.
 Faça login no web publicado e confirme que as telas carregam sem erro de CORS no console.
 
 ## 4. Migrations do banco
