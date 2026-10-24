@@ -1,4 +1,4 @@
-import { CARDIO_BANK, type CardioZone, type Goal, type MesocycleSession, type MethodPrescription, type PlannedExercise, type StressLevel, type WeekPrescription } from '@helux/types'
+import { CARDIO_BANK, REGIONS, type CardioZone, type CycleFinding, type Goal, type MesocycleSession, type MethodPrescription, type PlannedExercise, type StressLevel, type WeekPrescription } from '@helux/types'
 
 // Spec 024 (R5, R7): o método de treino é calculado por regras — a IA escolhe
 // exercícios e distribuição dentro desta moldura, e o código confere e expande
@@ -171,4 +171,27 @@ export function parseTimeOffMonths(text: string | null | undefined): number {
   const weeks = num(/(\d+(?:[.,]\d+)?|\p{L}+)\s+semanas?/u)
   const half = /e meio/.test(t) && years !== null ? 6 : 0
   return Math.floor((years ?? 0) * 12 + half + (months ?? 0) + (weeks ?? 0) / 4.3)
+}
+
+/**
+ * Achados da análise do ciclo (R11) → o que muda no próximo: modificadores do
+ * método e exercícios bloqueados por dor recorrente (spec 024, FR-025).
+ */
+export function modifiersFromFindings(findings: CycleFinding[]): { modifiers: MethodModifier[]; blockedExercises: string[] } {
+  const modifiers: MethodModifier[] = []
+  const blockedExercises: string[] = []
+  for (const f of findings) {
+    if (f.kind === 'baixa-aderencia') {
+      modifiers.push({ source: 'ciclo', description: `Baixa adesão ao ${f.subject} (${f.evidence}): ${f.subject} em outro formato no próximo ciclo (outra modalidade ou sessões mais curtas).` })
+    } else if (f.kind === 'estagnacao') {
+      modifiers.push({ source: 'ciclo', description: `${f.subject} estagnou (${f.evidence}): troque a faixa de repetições ou a variação.` })
+    } else if (f.kind === 'cansaco-alto') {
+      modifiers.push({ source: 'ciclo', volumeFactor: 0.85, description: `Cansaço alto no ciclo (${f.evidence}): volume no piso da faixa.` })
+    } else if (f.kind === 'dor-recorrente') {
+      // Exercício com dor recorrente sai do próximo ciclo; dor sem exercício vira cuidado com a região.
+      if (!(REGIONS as readonly string[]).includes(f.subject)) blockedExercises.push(f.subject)
+      else modifiers.push({ source: 'ciclo', description: `Dor recorrente no ${f.subject} (${f.evidence}): prefira exercícios com menor carga nessa região.` })
+    }
+  }
+  return { modifiers, blockedExercises }
 }

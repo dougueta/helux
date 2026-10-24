@@ -35,7 +35,7 @@ function applyConditions(today: AdjustedSession, conditions: HealthCondition[], 
 }
 
 /** Ciclo concluído usado como base da progressão do próximo (spec 014). */
-const previousOf = (m: MesocycleRow) => ({ generated_at: m.generated_at, sessions: m.sessions })
+const previousOf = (m: MesocycleRow) => ({ id: m.id, generated_at: m.generated_at, sessions: m.sessions })
 
 export async function workoutLatestPlanRoutes(app: FastifyInstance): Promise<void> {
   const supabaseUrl = process.env.SUPABASE_URL!

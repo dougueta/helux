@@ -211,6 +211,7 @@ describe('buildIntegratedProfile (022 T008)', () => {
     const { profile, constraints, conditions } = await buildIntegratedProfile('u1', fake.client as never, NOW)
     expect(profile.sources.perfil.summary).toMatch(/Objetivo principal: corrida/)
     expect(profile.sources.perfil.summary).toMatch(/Meta: correr 5 km sem dor/)
+    expect((await buildIntegratedProfile('u1', fake.client as never, NOW)).training.goalTarget).toBe('correr 5 km sem dor')
     expect(profile.sources.perfil.summary).toMatch(/Reconstrução de LCA \(joelho esquerdo, 2×\)/)
     expect(profile.sources.perfil.summary).toMatch(/Gota.*crise no joelho até 22\/10/)
     expect(profile.sources.perfil.summary).not.toMatch(/Artrose/)

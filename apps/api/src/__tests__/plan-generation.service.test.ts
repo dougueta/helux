@@ -41,6 +41,11 @@ const DONE_SESSION: MesocycleSession = {
   exercises: [{ name: 'Supino Reto', sets: 4, reps: '8-10', weight: '80kg' }],
 }
 
+// Spec 024 F5: análise do ciclo concluído.
+const runCycleAnalysisMock = vi.fn()
+const linkNextMesocycleMock = vi.fn().mockResolvedValue(undefined)
+vi.mock('../services/cycle-analysis.service', () => ({ runCycleAnalysis: runCycleAnalysisMock, linkNextMesocycle: linkNextMesocycleMock }))
+
 const fetchSessionsSinceMock = vi.fn()
 vi.mock('../services/plan-context.service', () => ({ fetchSessionsSince: fetchSessionsSinceMock }))
 
@@ -362,6 +367,8 @@ describe('triggerBackgroundPlanGeneration', () => {
     await triggerBackgroundPlanGeneration('user-123', 'token-abc', supabase, logger as never)
 
     expect(fetchSessionsSinceMock).toHaveBeenCalledWith('user-123', supabase, '2026-07-20')
+    // 024: o ciclo concluído vai com o id para a análise.
+    expect(runCycleAnalysisMock).toHaveBeenCalledWith('user-123', supabase, expect.objectContaining({ id: 'meso-001' }), 'hipertrofia', null)
   })
 
   it('loga o erro e não lança quando falha ao marcar a sessão como concluída', async () => {
@@ -426,6 +433,42 @@ describe('generateAndSaveMesocycle — progressão de carga (spec 014, US3)', ()
       weight: '82.5kg',
       progression: { action: 'aumentar', previousWeightKg: 80, nextWeightKg: 82.5 },
     })
+  })
+
+  it('024 T103: ciclo concluído → analisa, aplica os achados e a tendência no método, bloqueia exercício com dor e liga o próximo', async () => {
+    const SUMMARY = {
+      mesocycleId: 'meso-prev', weeks: 4, adherence: {}, exercises: [], avgRpeByWeek: [], pains: [], tirednessAvg: 3.4, checkinTrend: null, missingData: [],
+      findings: [
+        { kind: 'cansaco-alto', subject: 'cansaço', evidence: 'cansaço médio 3.4' },
+        { kind: 'dor-recorrente', subject: 'Leg Press 45°', evidence: '2 relatos' },
+      ],
+    }
+    const TREND = { from: '2026-09', to: '2026-10', deltas: {}, implausible: [], modifiers: ['+1 cardio'], suggestGoalChange: null, methodModifiers: [{ source: 'checkin', cardioSessionsDelta: 1, description: '+1 cardio' }] }
+    runCycleAnalysisMock.mockResolvedValue({ summary: SUMMARY, trend: TREND })
+    buildIntegratedProfileMock.mockResolvedValue({ ...BUILD, training: { ...BUILD.training, goalTarget: 'chegar a 80 kg' } })
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never, { ...previous, id: 'meso-prev' })
+
+    expect(runCycleAnalysisMock).toHaveBeenCalledWith('user-123', supabase, expect.objectContaining({ id: 'meso-prev', generated_at: previous.generated_at }), 'hipertrofia', 'chegar a 80 kg')
+    const input = generateMesocyclePlanMock.mock.calls[0][0]
+    expect(input.cycle).toBe(SUMMARY)
+    expect(input.checkinTrend).toBe(TREND)
+    expect(input.constraints.blockedExercises).toContain('Leg Press 45°')
+    expect(input.method.modifiers.map((m: { source: string }) => m.source)).toEqual(expect.arrayContaining(['checkin', 'ciclo']))
+    const row = insertMock.mock.calls[0][0]
+    expect(row.id).toEqual(expect.any(String))
+    expect(linkNextMesocycleMock).toHaveBeenCalledWith('user-123', supabase, 'meso-prev', row.id)
+  })
+
+  it('024: falha na análise do ciclo não impede a geração', async () => {
+    runCycleAnalysisMock.mockRejectedValue(new Error('boom'))
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never, { ...previous, id: 'meso-prev' })
+    expect(insertMock).toHaveBeenCalled()
+    expect(generateMesocyclePlanMock.mock.calls[0][0].cycle).toBeUndefined()
+    expect(logger.error).toHaveBeenCalledWith(expect.any(Error), 'cycle analysis failed')
+    expect(linkNextMesocycleMock).not.toHaveBeenCalled()
   })
 
   it('bootstrap (sem mesociclo anterior) não aplica progressão (FR-020)', async () => {

@@ -1,7 +1,9 @@
+import { randomUUID } from 'node:crypto'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { AgentRefusalError, ConstraintsUnsatisfiableError, generateMesocyclePlan, IncompleteResponseError } from '@helux/ai'
-import type { GenerationErrorCode, GeneticProfile, MesocycleSession } from '@helux/types'
-import { applyProgression, computeMesocycleProgression, expandWeeks, normalizeSessionExercises, prescribeMethod } from '@helux/workouts'
+import type { CycleSummary, GenerationErrorCode, GeneticProfile, MesocycleSession } from '@helux/types'
+import { applyProgression, computeMesocycleProgression, expandWeeks, modifiersFromFindings, normalizeSessionExercises, prescribeMethod, type CheckinTrendResult, type MethodModifier } from '@helux/workouts'
+import { linkNextMesocycle, runCycleAnalysis } from './cycle-analysis.service'
 import { assertBudget, BudgetExceededError, recordUsage } from './ai-budget.service'
 import { buildIntegratedProfile, conditionsForPrompt } from './integrated-profile.service'
 import { fetchSessionsSince } from './plan-context.service'
@@ -25,6 +27,8 @@ interface MinimalLogger {
 
 /** Mesociclo anterior concluído — base da progressão de carga (spec 014, US3). */
 export interface PreviousMesocycle {
+  /** Spec 024: com o id, o ciclo é analisado (R11) e ligado ao próximo. */
+  id?: string
   generated_at: string
   sessions: Pick<MesocycleSession, 'exercises'>[]
 }
@@ -54,9 +58,31 @@ export async function generateAndSaveMesocycle(
     await assertBudget(userId, supabase)
 
     const userLevel = build.training.level ?? 'intermediario'
+    const goal = build.training.goal ?? 'condicionamento'
+
+    // Spec 024 (R10/R11): o ciclo concluído é analisado; os achados e a tendência dos
+    // check-ins mudam o método, e exercício com dor recorrente sai do próximo ciclo.
+    let cycle: CycleSummary | undefined
+    let checkinTrend: CheckinTrendResult | undefined
+    let cycleModifiers: MethodModifier[] = []
+    let blockedByCycle: string[] = []
+    if (previous?.id) {
+      try {
+        const analysis = await runCycleAnalysis(userId, supabase, { id: previous.id, generated_at: previous.generated_at, sessions: previous.sessions as MesocycleSession[] }, goal, build.training.goalTarget ?? null)
+        cycle = analysis.summary
+        checkinTrend = analysis.trend ?? undefined
+        const fromFindings = modifiersFromFindings(analysis.summary.findings)
+        cycleModifiers = [...(analysis.trend?.methodModifiers ?? []), ...fromFindings.modifiers]
+        blockedByCycle = fromFindings.blockedExercises
+      } catch (err) {
+        logger.error(err, 'cycle analysis failed')
+      }
+    }
+    const constraints = blockedByCycle.length > 0 ? { ...build.constraints, blockedExercises: [...new Set([...build.constraints.blockedExercises, ...blockedByCycle])] } : build.constraints
+
     // Spec 024 (R5): o método vem de regras; sem objetivo estruturado, condicionamento geral.
     const method = prescribeMethod({
-      goal: build.training.goal ?? 'condicionamento',
+      goal,
       level: userLevel,
       timeOffMonths: build.training.timeOffMonths,
       daysAvailable: build.preferences.availableDays.length || 4,
@@ -64,6 +90,7 @@ export async function generateAndSaveMesocycle(
       minRir: build.constraints.minRir,
       cardioLikes: build.training.cardioLikes,
       cardioAvoid: build.training.cardioAvoid,
+      ...(cycleModifiers.length > 0 ? { modifiers: cycleModifiers } : {}),
     })
     const decisions = previous
       ? computeMesocycleProgression({
@@ -80,10 +107,12 @@ export async function generateAndSaveMesocycle(
     try {
       result = await generateMesocyclePlan({
         profile: build.profile,
-        constraints: build.constraints,
+        constraints,
         method,
         conditions: conditionsForPrompt(build.conditions),
         geneticProfile,
+        ...(cycle ? { cycle } : {}),
+        ...(checkinTrend ? { checkinTrend } : {}),
         ...(withLoad.length > 0 ? { loadProgression: withLoad } : {}),
       })
     } catch (err) {
@@ -113,7 +142,10 @@ export async function generateAndSaveMesocycle(
     }))
     const sessions = applyProgression(expandWeeks(template, method), withLoad)
 
+    // id gerado aqui para ligar a análise do ciclo anterior sem reler o insert.
+    const id = randomUUID()
     const { error } = await supabase.from('mesocycle_plans').insert({
+      id,
       user_id: userId,
       generated_at: mesocycle.generatedAt,
       days_per_week: mesocycle.daysPerWeek,
@@ -129,6 +161,9 @@ export async function generateAndSaveMesocycle(
     })
 
     if (error) throw error
+    if (cycle && previous?.id) {
+      await linkNextMesocycle(userId, supabase, previous.id, id).catch((err) => logger.error(err, 'cycle analysis: failed to link next mesocycle'))
+    }
     await markOk(userId, supabase)
   } catch (err) {
     logger.error(err, 'mesocycle generation failed')
@@ -181,6 +216,7 @@ export async function triggerBackgroundPlanGeneration(
     if (!(await isOnboardingComplete(userId, supabase))) return
 
     await generateAndSaveMesocycle(userId, token, supabase, logger, {
+      id: mesocycle.id,
       generated_at: mesocycle.generated_at,
       sessions: updatedSessions,
     })

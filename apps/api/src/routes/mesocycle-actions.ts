@@ -1,11 +1,12 @@
 import type { FastifyInstance } from 'fastify'
-import type { MesocycleSession } from '@helux/types'
+import type { MesocycleSession, PlanDecision } from '@helux/types'
 import { authenticate } from './nutrition-auth'
 import { assertBudget, BudgetExceededError } from '../services/ai-budget.service'
 import { effectiveStatus, getGenerationStatus, markGenerating } from '../services/generation-status.service'
 import { findPendingSessionIndex, getActiveMesocycle } from '../services/mesocycle.service'
 import { generateAndSaveMesocycle } from '../services/plan-generation.service'
 import { isOnboardingComplete } from '../services/onboarding.service'
+import { getCycleAnalysis } from '../services/cycle-analysis.service'
 
 /** Última semana do ciclo (formato semanal) ou a rotação inteira (formato antigo). */
 function lastWeek(sessions: MesocycleSession[]): MesocycleSession[] {
@@ -39,6 +40,23 @@ export async function mesocycleActionsRoutes(app: FastifyInstance): Promise<void
     } catch (error) {
       if (error instanceof BudgetExceededError) return reply.code(402).send({ error: 'O teto mensal de IA foi atingido.', code: 'budget-exceeded' })
       app.log.error(error, 'mesocycle regenerate: failed')
+      return reply.code(500).send({ error: 'Internal Server Error' })
+    }
+  })
+
+  // Resumo do ciclo concluído e o que mudou no novo (024, FR-025/026).
+  app.get<{ Params: { id: string } }>('/workout/mesocycle/:id/analysis', async (request, reply) => {
+    const auth = await authenticate(request, reply)
+    if (!auth) return
+    try {
+      const summary = await getCycleAnalysis(auth.user.id, auth.supabase, request.params.id)
+      if (!summary) return reply.code(404).send({ error: 'Análise não encontrada.' })
+      const { data, error } = await auth.supabase.from('mesocycle_plans').select('rationale_decisions').eq('user_id', auth.user.id).eq('id', request.params.id).maybeSingle()
+      if (error) throw error
+      const decisions = ((data as { rationale_decisions: PlanDecision[] | null } | null)?.rationale_decisions ?? []).filter(d => d.topic === 'ciclo')
+      return reply.send({ summary, changes: decisions })
+    } catch (error) {
+      app.log.error(error, 'mesocycle analysis: failed')
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
   })

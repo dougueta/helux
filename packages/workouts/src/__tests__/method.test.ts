@@ -145,3 +145,31 @@ describe('parseTimeOffMonths', () => {
     expect(parseTimeOffMonths(null)).toBe(0)
   })
 })
+
+describe('modifiersFromFindings (024 T102)', () => {
+  it('achados do ciclo viram modificadores e bloqueios do próximo', async () => {
+    const { modifiersFromFindings } = await import('../method')
+    const out = modifiersFromFindings([
+      { kind: 'baixa-aderencia', subject: 'cardio', evidence: '1 de 4 sessões de cardio feitas' },
+      { kind: 'estagnacao', subject: 'Agachamento Livre (Barra)', evidence: '1RM estimado 126.7 → 127.9 kg' },
+      { kind: 'cansaco-alto', subject: 'cansaço', evidence: 'cansaço médio 3.3' },
+      { kind: 'dor-recorrente', subject: 'Leg Press 45°', evidence: '2 relatos' },
+      { kind: 'dor-recorrente', subject: 'joelho', evidence: '2 relatos no joelho' },
+      { kind: 'progresso', subject: 'Supino Reto (Barra)', evidence: '+16%' },
+    ])
+    expect(out.blockedExercises).toEqual(['Leg Press 45°'])
+    expect(out.modifiers.every(m => m.source === 'ciclo')).toBe(true)
+    const text = out.modifiers.map(m => m.description).join(' | ')
+    expect(text).toMatch(/cardio.*formato/i)
+    expect(text).toMatch(/Agachamento Livre \(Barra\).*(faixa|variação)/)
+    expect(out.modifiers.find(m => m.volumeFactor)?.volumeFactor).toBe(0.85)
+    expect(text).toMatch(/joelho/)
+  })
+
+  it('cansaço alto reduz a faixa de séries no método', async () => {
+    const { modifiersFromFindings, prescribeMethod } = await import('../method')
+    const base = { goal: 'hipertrofia' as const, level: 'intermediario' as const, timeOffMonths: 0, daysAvailable: 4, maxCardioImpact: null, minRir: null, cardioLikes: [], cardioAvoid: [] }
+    const { modifiers } = modifiersFromFindings([{ kind: 'cansaco-alto', subject: 'cansaço', evidence: '3.5' }])
+    expect(prescribeMethod({ ...base, modifiers }).weeklySetsPerGroup.max).toBeLessThan(prescribeMethod(base).weeklySetsPerGroup.max)
+  })
+})

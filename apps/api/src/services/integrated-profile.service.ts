@@ -51,6 +51,8 @@ export interface TrainingSummary {
   goal: Goal | null
   level: 'iniciante' | 'intermediario' | 'avancado' | null
   timeOffMonths: number
+  /** Meta em texto livre ("chegar a 80 kg"): base da sugestão de novo objetivo (R10). */
+  goalTarget: string | null
   cardioLikes: string[]
   cardioAvoid: string[]
 }
@@ -375,6 +377,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
       goal: (row?.goal_primary as Goal | null) ?? null,
       level: (row?.level as TrainingSummary['level']) ?? null,
       timeOffMonths: parseTimeOffMonths(row?.time_off as string | null),
+      goalTarget: (row?.goal_target as string | null) ?? null,
       cardioLikes: (row?.cardio_likes as string[] | null) ?? [],
       cardioAvoid: (row?.cardio_avoid as string[] | null) ?? [],
     },

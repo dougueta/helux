@@ -134,6 +134,33 @@ describe('mesocycle actions (024)', () => {
     })
   })
 
+  describe('GET /workout/mesocycle/:id/analysis (024 T104)', () => {
+    const SUMMARY = { mesocycleId: 'm1', weeks: 4, findings: [{ kind: 'estagnacao', subject: 'Agachamento Livre (Barra)', evidence: 'x' }] }
+
+    it('401 sem token', async () => {
+      expect((await app.inject({ method: 'GET', url: '/workout/mesocycle/m2/analysis' })).statusCode).toBe(401)
+    })
+
+    it('devolve a análise do ciclo anterior e o que mudou (decisões "ciclo" do novo)', async () => {
+      fake.db.cycle_analyses = [{ id: 'a1', user_id: 'u1', mesocycle_id: 'm1', next_mesocycle_id: 'm2', summary: SUMMARY }]
+      fake.db.mesocycle_plans = [{
+        id: 'm2', user_id: 'u1',
+        rationale_decisions: [
+          { topic: 'ciclo', choice: 'Troca do agachamento pelo hack', sources: ['historico'], reason: 'estagnou' },
+          { topic: 'divisao', choice: 'Superior/Inferior', sources: ['preferencias'], reason: '4 dias' },
+        ],
+      }]
+      const res = await app.inject({ method: 'GET', url: '/workout/mesocycle/m2/analysis', headers: AUTH })
+      expect(res.statusCode).toBe(200)
+      expect(res.json()).toEqual({ summary: SUMMARY, changes: [expect.objectContaining({ topic: 'ciclo', choice: 'Troca do agachamento pelo hack' })] })
+    })
+
+    it('404 sem análise (ou de outro usuário)', async () => {
+      fake.db.cycle_analyses = [{ id: 'a1', user_id: 'u2', mesocycle_id: 'm1', next_mesocycle_id: 'm2', summary: SUMMARY }]
+      expect((await app.inject({ method: 'GET', url: '/workout/mesocycle/m2/analysis', headers: AUTH })).statusCode).toBe(404)
+    })
+  })
+
   it('POST /workout/generate (gerador legado sem login) não existe mais', async () => {
     const { buildApp: buildFull } = await import('../app')
     const full = buildFull()

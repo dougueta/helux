@@ -92,6 +92,28 @@ describe('buildMesocycleRequest', () => {
     expect(t).toContain('Joelho alinhado com a ponta do pé')
   })
 
+  it('024 T103: achados do ciclo anterior e tendência dos check-ins entram no pedido', () => {
+    const t = buildMesocycleRequest({
+      method: METHOD,
+      constraints: EMPTY_HARD_CONSTRAINTS,
+      conditions: [],
+      cycle: {
+        mesocycleId: 'm1', weeks: 4,
+        adherence: { forca: { done: 8, planned: 8 }, cardio: { done: 1, planned: 4 }, mobilidade: { done: 0, planned: 0 } },
+        exercises: [], avgRpeByWeek: [7, 8.5], pains: [], tirednessAvg: 2.5, checkinTrend: null,
+        findings: [{ kind: 'estagnacao', subject: 'Agachamento Livre (Barra)', evidence: '1RM estimado 126.7 → 127.9 kg' }],
+        missingData: ['check-in corporal do mês'],
+      },
+      checkinTrend: { from: '2026-09', to: '2026-10', deltas: {}, implausible: [], modifiers: ['+1 sessão de cardio por semana.'], suggestGoalChange: null },
+    })
+    expect(t).toContain('Ciclo anterior (4 semanas)')
+    expect(t).toContain('cardio 1/4')
+    expect(t).toMatch(/estagnacao.*Agachamento Livre/)
+    expect(t).toMatch(/Faltaram dados: check-in corporal/)
+    expect(t).toMatch(/tópico "ciclo"/)
+    expect(t).toContain('+1 sessão de cardio')
+  })
+
   it('progressão de carga e violações do retry (restrições e método)', () => {
     const t = buildMesocycleRequest({
       method: METHOD,
