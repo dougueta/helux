@@ -25,4 +25,8 @@ export interface ExerciseAdjustmentChange {
   setsAfter: number
   weightBefore: string
   weightAfter: string
+  /** Spec 024: exercício trocado por segurança (condição, crise ou dor). */
+  replacedBy?: string
+  /** Spec 024: exercício removido por segurança, sem alternativa. */
+  removed?: boolean
 }

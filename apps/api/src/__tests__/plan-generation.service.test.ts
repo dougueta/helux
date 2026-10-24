@@ -63,6 +63,9 @@ class AgentRefusalError extends Error {}
 const generateMesocyclePlanMock = vi.fn()
 vi.mock('@helux/ai', () => ({ generateMesocyclePlan: generateMesocyclePlanMock, ConstraintsUnsatisfiableError, IncompleteResponseError, AgentRefusalError }))
 
+const onboardingCompleteMock = vi.fn().mockResolvedValue(true)
+vi.mock('../services/onboarding.service', () => ({ isOnboardingComplete: onboardingCompleteMock }))
+
 // Spec 024: estado da geração.
 const markGeneratingMock = vi.fn()
 const markOkMock = vi.fn()
@@ -306,6 +309,15 @@ describe('triggerBackgroundPlanGeneration', () => {
 
     expect(generateMesocyclePlanMock).toHaveBeenCalledWith(expect.objectContaining({ profile: BUILD.profile }))
     expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ user_id: 'user-123' }))
+  })
+
+  it('024 (FR-002): ciclo completo sem onboarding → marca a sessão mas não gera', async () => {
+    onboardingCompleteMock.mockResolvedValueOnce(false)
+    getActiveMesocycleMock.mockResolvedValue({ id: 'meso-001', generated_at: '2026-07-20T10:00:00.000Z', days_per_week: 4, split_type: 'ABCD', rationale: '', sessions: [DONE_SESSION, PENDING_SESSION] })
+    const { triggerBackgroundPlanGeneration } = await import('../services/plan-generation.service')
+    await triggerBackgroundPlanGeneration('user-123', 'token-abc', supabase, logger as never)
+    expect(updateMock).toHaveBeenCalled()
+    expect(generateMesocyclePlanMock).not.toHaveBeenCalled()
   })
 
   it('spec 014 (US3): passa o mesociclo concluído para calcular a progressão a partir do seu generated_at', async () => {

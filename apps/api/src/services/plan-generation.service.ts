@@ -7,6 +7,7 @@ import { buildIntegratedProfile } from './integrated-profile.service'
 import { fetchSessionsSince } from './plan-context.service'
 import { getActiveMesocycle, findPendingSessionIndex, markSessionCompleted, isMesocycleComplete } from './mesocycle.service'
 import { markFailed, markGenerating, markOk } from './generation-status.service'
+import { isOnboardingComplete } from './onboarding.service'
 
 /** Código de erro gravado no estado da geração (024, FR-031). */
 function errorCodeOf(err: unknown): GenerationErrorCode {
@@ -163,6 +164,8 @@ export async function triggerBackgroundPlanGeneration(
     }
 
     if (!isMesocycleComplete(updatedSessions)) return
+    // Spec 024 (FR-002): sem onboarding, o próximo ciclo espera; a Home leva ao onboarding.
+    if (!(await isOnboardingComplete(userId, supabase))) return
 
     await generateAndSaveMesocycle(userId, token, supabase, logger, {
       generated_at: mesocycle.generated_at,

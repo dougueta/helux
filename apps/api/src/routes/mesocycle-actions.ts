@@ -5,6 +5,7 @@ import { assertBudget, BudgetExceededError } from '../services/ai-budget.service
 import { effectiveStatus, getGenerationStatus, markGenerating } from '../services/generation-status.service'
 import { findPendingSessionIndex, getActiveMesocycle } from '../services/mesocycle.service'
 import { generateAndSaveMesocycle } from '../services/plan-generation.service'
+import { isOnboardingComplete } from '../services/onboarding.service'
 
 /** Última semana do ciclo (formato semanal) ou a rotação inteira (formato antigo). */
 function lastWeek(sessions: MesocycleSession[]): MesocycleSession[] {
@@ -25,6 +26,9 @@ export async function mesocycleActionsRoutes(app: FastifyInstance): Promise<void
       const status = await getGenerationStatus(auth.user.id, auth.supabase)
       if (status && effectiveStatus(status).status === 'gerando') {
         return reply.code(409).send({ error: 'O próximo ciclo já está sendo gerado.', code: 'already-generating' })
+      }
+      if (!(await isOnboardingComplete(auth.user.id, auth.supabase))) {
+        return reply.code(409).send({ error: 'Conclua o onboarding antes de gerar um novo ciclo.', code: 'onboarding-required' })
       }
       await assertBudget(auth.user.id, auth.supabase)
       const current = await getActiveMesocycle(auth.user.id, auth.supabase)

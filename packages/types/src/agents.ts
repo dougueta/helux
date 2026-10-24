@@ -237,7 +237,7 @@ export interface ConstraintViolation {
 
 // ---- custo (R11) ----
 
-export type AiOperation = 'chat' | 'roteamento' | 'mesociclo' | 'ajuste-sessao' | 'adaptacao-restricao' | 'conflito'
+export type AiOperation = 'chat' | 'roteamento' | 'mesociclo' | 'ajuste-sessao' | 'adaptacao-restricao' | 'conflito' | 'condicao'
 
 export interface UsageRecord {
   model: string

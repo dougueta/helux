@@ -33,6 +33,9 @@ vi.mock('../services/generation-status.service', async (importOriginal) => {
   return { ...actual, getGenerationStatus: (...a: unknown[]) => statusMock(...a), markGenerating: (...a: unknown[]) => markGeneratingMock(...a) }
 })
 
+const onboardingMock = vi.fn()
+vi.mock('../services/onboarding.service', () => ({ isOnboardingComplete: (...a: unknown[]) => onboardingMock(...a) }))
+
 class BudgetExceededError extends Error {}
 const assertBudgetMock = vi.fn()
 vi.mock('../services/ai-budget.service', () => ({ assertBudget: (...a: unknown[]) => assertBudgetMock(...a), BudgetExceededError }))
@@ -61,6 +64,7 @@ describe('mesocycle actions (024)', () => {
     vi.clearAllMocks()
     fake = fakeSupabase({ mesocycle_plans: [] })
     statusMock.mockResolvedValue(null)
+    onboardingMock.mockResolvedValue(true)
     assertBudgetMock.mockResolvedValue({ warning: null })
     getActiveMesocycleMock.mockResolvedValue(null)
     process.env.SUPABASE_URL = 'https://test.supabase.co'
@@ -88,6 +92,14 @@ describe('mesocycle actions (024)', () => {
       const res = await app.inject({ method: 'POST', url: '/workout/mesocycle/regenerate', headers: AUTH })
       expect(res.statusCode).toBe(409)
       expect(res.json()).toMatchObject({ code: 'already-generating' })
+      expect(generateMock).not.toHaveBeenCalled()
+    })
+
+    it('409 onboarding-required sem onboarding (FR-001)', async () => {
+      onboardingMock.mockResolvedValue(false)
+      const res = await app.inject({ method: 'POST', url: '/workout/mesocycle/regenerate', headers: AUTH })
+      expect(res.statusCode).toBe(409)
+      expect(res.json()).toMatchObject({ code: 'onboarding-required' })
       expect(generateMock).not.toHaveBeenCalled()
     })
 

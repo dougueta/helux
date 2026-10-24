@@ -5,6 +5,7 @@ import { preferenceSignalsFromEdits, sourcesUsedOf } from '@helux/ai'
 import {
   SOURCE_KEYS,
   type BodyCheckin,
+  type HealthCondition,
   type HardConstraints,
   type IntegratedProfile,
   type IntegratedSource,
@@ -18,6 +19,8 @@ import { toFact, toGuidance, toPreferences, toSessionEdit, type FactRow, type Gu
 import { getActiveMesocycle, findPendingSessionIndex, type MesocycleRow } from './mesocycle.service'
 import { loadNutritionContext } from './nutrition-context.service'
 import { getGeneticRaw } from './genetics.service'
+import { listConditions } from './conditions.service'
+import { constraintsFromConditions, findCatalogCondition, rulesFor } from '@helux/workouts'
 import { resolveDayType } from './nutrition-day.service'
 import { getTodayTirednessAssessment, todaySlug } from './tiredness.service'
 
@@ -37,6 +40,8 @@ export interface ProfileBuild {
   tiredness: TirednessAssessment | null
   /** Avisos do dia para os agentes (restrição expirada etc.). */
   notices: string[]
+  /** Spec 024: condições de saúde (todas, inclusive resolvidas). */
+  conditions: HealthCondition[]
 }
 
 const empty = (): IntegratedSource => ({ status: 'vazia', updatedAt: null, summary: '', data: null })
@@ -53,9 +58,30 @@ const FLAG_TEXT: Record<keyof NutritionFlags, string> = {
   perfilPotencia: 'perfil de potência (ACTN3)',
 }
 
-function profileSummary(row: Record<string, unknown> | null): IntegratedSource {
-  if (!row) return empty()
+/** Linha de uma condição de saúde para o prompt (024): rótulo, região, estado, crise e regras. */
+function conditionLine(c: HealthCondition, now: Date): string {
+  const entry = findCatalogCondition(c.catalogKey)
+  const label = entry?.label ?? c.customLabel ?? 'Condição'
+  const where = [c.region !== 'sistemica' ? c.region : null, c.side].filter(Boolean).join(' ')
+  const detail = [where || null, c.count > 1 ? `${c.count}×` : null].filter(Boolean).join(', ')
+  const r = rulesFor(c, now)
+  const flare = c.flare && c.flare.until >= now.toISOString().slice(0, 10) ? `; crise no ${c.flare.region} até ${fmtDate(c.flare.until)}` : ''
+  const limits = [
+    ...Object.entries(r.maxJointStress).map(([j, l]) => `carga no ${j} ≤ ${l}`),
+    r.maxCardioImpact !== null ? `impacto do cardio ≤ ${r.maxCardioImpact}` : null,
+    r.minRir !== null ? `RIR ≥ ${r.minRir}` : null,
+  ].filter(Boolean)
+  return `- ${label}${detail ? ` (${detail})` : ''} — ${c.status}${flare}${limits.length ? `. Regras: ${limits.join(', ')}` : ''}${r.cues.length ? `. Cuidados: ${r.cues.join('; ')}` : ''}`
+}
+
+function profileSummary(row: Record<string, unknown> | null, conditions: HealthCondition[], now: Date): IntegratedSource {
+  const current = conditions.filter(c => c.status !== 'resolvida')
+  if (!row && current.length === 0) return empty()
+  row ??= {}
   const parts = [
+    row.goal_primary && `Objetivo principal: ${row.goal_primary}`,
+    row.goal_secondary && `Objetivo secundário: ${row.goal_secondary}`,
+    row.goal_target && `Meta: ${row.goal_target}`,
     row.goal && `Objetivo: ${row.goal}`,
     row.level && `Nível: ${row.level}`,
     row.training_time && `Treina há: ${row.training_time}`,
@@ -64,8 +90,9 @@ function profileSummary(row: Record<string, unknown> | null): IntegratedSource {
     row.height_cm && `Altura: ${row.height_cm} cm`,
     row.birth_date && `Nascimento: ${row.birth_date}`,
     row.sex && `Sexo: ${row.sex}`,
+    current.length > 0 && `Condições de saúde e cirurgias (regras verificadas pelo app):\n${current.map(c => conditionLine(c, now)).join('\n')}`,
   ].filter(Boolean)
-  return active(parts.join('\n'), row, (row.updated_at as string) ?? null)
+  return active(parts.join('\n'), { ...row, conditions: current }, (row.updated_at as string) ?? null)
 }
 
 function preferencesSummary(p: TrainingPreferences): IntegratedSource {
@@ -157,7 +184,7 @@ function geneticsSummary(raw: unknown | null): IntegratedSource {
 /** Monta o Perfil Integrado (FR-001, R6) e as restrições rígidas (R7). */
 export async function buildIntegratedProfile(userId: string, supabase: SupabaseClient, now: Date = new Date()): Promise<ProfileBuild> {
   const nowIso = now.toISOString()
-  const [settingsRes, profileRes, prefsRes, historyRes, checkinsRes, factsRes, guidanceRes, editsRes, mesocycle, tiredness, nutrition, geneticRaw] = await Promise.all([
+  const [settingsRes, profileRes, prefsRes, historyRes, checkinsRes, factsRes, guidanceRes, editsRes, mesocycle, tiredness, nutrition, geneticRaw, conditions] = await Promise.all([
     supabase.from('agent_source_settings').select('source, enabled').eq('user_id', userId),
     supabase.from('user_training_profile').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('training_preferences').select('*').eq('user_id', userId).maybeSingle(),
@@ -170,6 +197,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     getTodayTirednessAssessment(userId, supabase, now).catch(() => null),
     loadNutritionContext(userId, supabase, now).catch(() => null),
     getGeneticRaw(userId, supabase).catch(() => null),
+    listConditions(userId, supabase).catch(() => [] as HealthCondition[]),
   ])
 
   const disabled = new Set(((settingsRes.data ?? []) as { source: SourceKey; enabled: boolean }[]).filter(s => !s.enabled).map(s => s.source))
@@ -239,7 +267,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
   }
 
   const sources: Record<SourceKey, IntegratedSource> = {
-    perfil: profileSummary(profileRes.data as Record<string, unknown> | null),
+    perfil: profileSummary(profileRes.data as Record<string, unknown> | null, conditions, now),
     preferencias: preferencesSummary(preferences),
     historico: historySummary((historyRes.data ?? []) as WorkoutSession[]),
     mesociclo: mesocycleSummary(mesocycle),
@@ -286,15 +314,17 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
 
   const prefsOn = !disabled.has('preferencias')
   const safetyOn = !disabled.has('restricoes')
+  // Spec 024: as regras das condições de saúde valem sempre (segurança), mesmo com a fonte "perfil" desativada.
+  const fromConditions = constraintsFromConditions(conditions, now)
   const constraints: HardConstraints = {
     availableEquipment: prefsOn ? preferences.availableEquipment : [],
     exercisesToAvoid: prefsOn ? preferences.exercisesToAvoid : [],
     maxSessionMinutes: prefsOn ? preferences.maxSessionMinutes : null,
-    blockedPatterns: safetyOn ? [...new Set(safety.flatMap(g => g.blockedPatterns))] : [],
-    blockedExercises: safetyOn ? [...new Set(safety.flatMap(g => g.blockedExercises))] : [],
-    maxJointStress: {},
-    maxCardioImpact: null,
-    minRir: null,
+    blockedPatterns: [...new Set([...(safetyOn ? safety.flatMap(g => g.blockedPatterns) : []), ...fromConditions.blockedPatterns])],
+    blockedExercises: [...new Set([...(safetyOn ? safety.flatMap(g => g.blockedExercises) : []), ...fromConditions.blockedExercises])],
+    maxJointStress: fromConditions.maxJointStress,
+    maxCardioImpact: fromConditions.maxCardioImpact,
+    minRir: fromConditions.minRir,
   }
 
   const profile: IntegratedProfile = { generatedAt: nowIso, sources }
@@ -306,6 +336,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     mesocycle,
     tiredness: disabled.has('cansaco') ? null : tiredness,
     notices,
+    conditions,
   }
 }
 

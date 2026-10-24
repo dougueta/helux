@@ -1,12 +1,34 @@
 import type { FastifyInstance } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
-import { buildAdjustedSession } from '@helux/workouts'
-import type { AdjustedWorkoutPlanView } from '@helux/types'
+import { buildAdjustedSession, constraintsFromConditions } from '@helux/workouts'
+import { adaptSessionForSafety } from '@helux/ai'
+import { EMPTY_HARD_CONSTRAINTS, type AdjustedSession, type AdjustedWorkoutPlanView, type HealthCondition } from '@helux/types'
 import { getActiveMesocycle, findPendingSessionIndex } from '../services/mesocycle.service'
 import { generateAndSaveMesocycle } from '../services/plan-generation.service'
 import { getTodayTirednessAssessment } from '../services/tiredness.service'
 import { effectiveStatus, getGenerationStatus, markGenerating, shouldRetry } from '../services/generation-status.service'
 import type { MesocycleRow } from '../services/mesocycle.service'
+import { isOnboardingComplete } from '../services/onboarding.service'
+import { listConditions } from '../services/conditions.service'
+
+/**
+ * Regras das condições de saúde aplicadas ao treino do dia (024, FR-009): vale
+ * também para ciclos gerados antes da 024 e para a crise de gota.
+ */
+function applyConditions(today: AdjustedSession, conditions: HealthCondition[], now: Date): AdjustedSession {
+  const constraints = { ...EMPTY_HARD_CONSTRAINTS, ...constraintsFromConditions(conditions, now) }
+  const todayIso = now.toISOString().slice(0, 10)
+  const flare = conditions.find(c => c.flare && c.flare.until >= todayIso)?.flare
+  const result = adaptSessionForSafety(today.exercises, constraints, flare ? `crise no ${flare.region}` : 'condições de saúde')
+  if (result.changes.length === 0) return today
+  return {
+    ...today,
+    exercises: result.exercises,
+    adjusted: true,
+    changes: [...(today.changes ?? []), ...result.changes],
+    adjustmentReason: [today.adjustmentReason, result.reason].filter(Boolean).join(' '),
+  }
+}
 
 /** Ciclo concluído usado como base da progressão do próximo (spec 014). */
 const previousOf = (m: MesocycleRow) => ({ generated_at: m.generated_at, sessions: m.sessions })
@@ -56,6 +78,11 @@ export async function workoutLatestPlanRoutes(app: FastifyInstance): Promise<voi
         status: 'generating',
       }
       try {
+        // Spec 024 (FR-001/002): sem onboarding, o próximo ciclo espera.
+        if (!(await isOnboardingComplete(user.id, supabase))) {
+          view.status = 'onboarding-required'
+          return reply.send(view)
+        }
         const status = await getGenerationStatus(user.id, supabase)
         if (shouldRetry(status)) {
           await markGenerating(user.id, supabase)
@@ -80,7 +107,11 @@ export async function workoutLatestPlanRoutes(app: FastifyInstance): Promise<voi
     }
 
     const pendingSession = mesocycle.sessions[pendingIndex]
-    const today = buildAdjustedSession(pendingSession, tiredness)
+    const conditions = await listConditions(user.id, supabase).catch((error) => {
+      app.log.error(error, 'workout-latest-plan: failed to load conditions')
+      return [] as HealthCondition[]
+    })
+    const today = applyConditions(buildAdjustedSession(pendingSession, tiredness), conditions, new Date())
     const upcoming = mesocycle.sessions.slice(pendingIndex + 1).map((s) => ({ letter: s.letter, focus: s.focus }))
 
     const view: AdjustedWorkoutPlanView = {

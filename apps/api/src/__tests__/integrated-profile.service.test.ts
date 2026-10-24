@@ -198,6 +198,35 @@ describe('buildIntegratedProfile (022 T008)', () => {
     expect(after.profile.sources.restricoes.summary).toMatch(/Evitar supino por 10 dias/)
   })
 
+  it('024 (FR-010, T059): objetivo estruturado e condições com regras no perfil; limites das condições nas restrições', async () => {
+    const fake = db()
+    Object.assign(fake.db.user_training_profile[0], { goal_primary: 'corrida', goal_secondary: 'condicionamento', goal_target: 'correr 5 km sem dor' })
+    fake.db.health_conditions = [
+      { id: 'h1', user_id: 'u1', catalog_key: 'lca-reconstrucao', custom_label: null, region: 'joelho', side: 'esquerdo', since: null, count: 2, status: 'controlada', notes: null, flare_region: null, flare_until: null, created_at: '2026-10-01T10:00:00Z' },
+      { id: 'h2', user_id: 'u1', catalog_key: 'gota', custom_label: null, region: 'sistemica', side: null, since: null, count: 1, status: 'controlada', notes: null, flare_region: 'joelho', flare_until: '2026-10-22', created_at: '2026-10-02T10:00:00Z' },
+      { id: 'h3', user_id: 'u1', catalog_key: 'artrose', custom_label: null, region: 'joelho', side: 'esquerdo', since: null, count: 1, status: 'resolvida', notes: null, flare_region: null, flare_until: null, created_at: '2026-10-03T10:00:00Z' },
+    ]
+    const { profile, constraints, conditions } = await buildIntegratedProfile('u1', fake.client as never, NOW)
+    expect(profile.sources.perfil.summary).toMatch(/Objetivo principal: corrida/)
+    expect(profile.sources.perfil.summary).toMatch(/Meta: correr 5 km sem dor/)
+    expect(profile.sources.perfil.summary).toMatch(/Reconstrução de LCA \(joelho esquerdo, 2×\)/)
+    expect(profile.sources.perfil.summary).toMatch(/Gota.*crise no joelho até 22\/10/)
+    expect(profile.sources.perfil.summary).not.toMatch(/Artrose/)
+    expect(conditions).toHaveLength(3)
+    expect(constraints.maxJointStress).toEqual({ joelho: 0 })
+    expect(constraints.maxCardioImpact).toBe(0)
+  })
+
+  it('024: condições valem para a segurança mesmo com a fonte perfil desativada', async () => {
+    const fake = db()
+    fake.db.agent_source_settings = [{ user_id: 'u1', source: 'perfil', enabled: false }]
+    fake.db.health_conditions = [
+      { id: 'h1', user_id: 'u1', catalog_key: 'lombalgia', custom_label: null, region: 'lombar', side: null, since: null, count: 1, status: 'controlada', notes: null, flare_region: null, flare_until: null, created_at: '2026-10-01T10:00:00Z' },
+    ]
+    const { constraints } = await buildIntegratedProfile('u1', fake.client as never, NOW)
+    expect(constraints.maxJointStress).toEqual({ lombar: 1 })
+  })
+
   it('recomendação em conflito com restrição ativa aparece marcada; a restrição prevalece (FR-021)', async () => {
     const fake = db()
     fake.db.shared_guidance.push({

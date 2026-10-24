@@ -23,6 +23,12 @@ vi.mock('../services/generation-status.service', async (importOriginal) => {
   return { ...actual, getGenerationStatus: mockGetGenerationStatus, markGenerating: mockMarkGenerating }
 })
 
+// Spec 024: onboarding e condições de saúde.
+const mockOnboardingComplete = vi.fn().mockResolvedValue(true)
+vi.mock('../services/onboarding.service', () => ({ isOnboardingComplete: mockOnboardingComplete }))
+const mockListConditions = vi.fn().mockResolvedValue([])
+vi.mock('../services/conditions.service', () => ({ listConditions: mockListConditions }))
+
 const mockHealthSamplesOrder = vi.fn().mockResolvedValue({ data: [], error: null })
 const mockHealthSamplesGte = vi.fn(() => ({ order: mockHealthSamplesOrder }))
 const mockHealthSamplesEq = vi.fn(() => ({ gte: mockHealthSamplesGte }))
@@ -90,6 +96,8 @@ describe('GET /workout/latest-plan', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
     mockGetGenerationStatus.mockResolvedValue(null)
+    mockOnboardingComplete.mockResolvedValue(true)
+    mockListConditions.mockResolvedValue([])
     vi.resetModules()
     process.env.SUPABASE_URL = 'https://test.supabase.co'
     process.env.SUPABASE_ANON_KEY = 'test-key'
@@ -171,7 +179,31 @@ describe('GET /workout/latest-plan', () => {
     expect(mockGenerateAndSaveMesocycle).toHaveBeenCalledWith('user-123', 'valid-token', expect.anything(), expect.anything())
   })
 
-  it('024: sem mesociclo e geração em andamento → generating sem disparar de novo', async () => {
+  it('024 (FR-001): sem sessão pendente e onboarding não concluído → onboarding-required, sem gerar', async () => {
+    mockGetActiveMesocycle.mockResolvedValue({ ...MESOCYCLE_ROW, sessions: [DONE_SESSION] })
+    mockFindPendingSessionIndex.mockReturnValue(-1)
+    mockOnboardingComplete.mockResolvedValue(false)
+    const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
+    expect(body.status).toBe('onboarding-required')
+    expect(mockGenerateAndSaveMesocycle).not.toHaveBeenCalled()
+  })
+
+  it('024 (FR-009): crise de gota no joelho adapta o treino do dia, mesmo num ciclo antigo', async () => {
+    mockGetActiveMesocycle.mockResolvedValue({
+      ...MESOCYCLE_ROW,
+      sessions: [{ letter: 'C', focus: 'Pernas', completedAt: null, exercises: [{ name: 'Agachamento Livre (Barra)', sets: 4, reps: '8-10', weight: '80kg' }, { name: 'Supino Reto (Barra)', sets: 3, reps: '8', weight: '60kg' }] }],
+    })
+    mockFindPendingSessionIndex.mockReturnValue(0)
+    const until = new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10)
+    mockListConditions.mockResolvedValue([{ id: 'g', catalogKey: 'gota', customLabel: null, region: 'sistemica', side: null, since: null, count: 1, status: 'controlada', notes: null, flare: { region: 'joelho', until } }])
+    const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
+    expect(body.today.exercises.map((e: { name: string }) => e.name)).not.toContain('Agachamento Livre (Barra)')
+    expect(body.today.adjusted).toBe(true)
+    expect(body.today.adjustmentReason).toMatch(/crise/i)
+    expect(body.today.changes).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Agachamento Livre (Barra)' })]))
+  })
+
+  it('024: sem sessão pendente e geração em andamento → generating sem disparar de novo', async () => {
     mockGetActiveMesocycle.mockResolvedValue(null)
     mockGetGenerationStatus.mockResolvedValue({ status: 'gerando', attempts: 0, errorCode: null, startedAt: new Date().toISOString() })
     const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
