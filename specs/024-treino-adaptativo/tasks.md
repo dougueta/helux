@@ -230,8 +230,8 @@
 - [X] T102 [US5] Estender `method.test.ts`: achados e tendência viram modificadores (`baixa-aderencia` de cardio → formato alternativo; `estagnacao` → troca de faixa/variação; `cansaco-alto` → volume no piso) e exercícios com `dor-recorrente` viram bloqueados no próximo ciclo; implementar em `method.ts`
 - [X] T103 [US5] Estender `plan-generation.service.test.ts` e `mesocycle-prompts.test.ts`: ao concluir o ciclo, roda `analyzeCycle`, grava `cycle_analyses`, aplica modificadores, envia os achados e a tendência no pedido e liga `next_mesocycle_id`; decisões com tópico `ciclo`; sugestão de troca de objetivo não é aplicada sem aceite; implementar em `plan-generation.service.ts` e `mesocycle-prompts.ts`
 - [X] T104 [US5] Escrever testes e implementar `GET /workout/mesocycle/:id/analysis` em `apps/api/src/routes/mesocycle-actions.ts`
-- [ ] T105 [P] [US5] Escrever testes em `apps/web/src/__tests__/components/cycle/CycleSummary.test.tsx`: aderência por tipo, evolução por exercício, dores, tendência dos check-ins, dados que faltaram, e "o que mudou no próximo ciclo" a partir das decisões `ciclo`; sugestão de novo objetivo com aceitar/recusar
-- [ ] T106 [US5] Implementar `apps/web/src/components/cycle/CycleSummary.tsx`, exibido na Home ao iniciar um ciclo novo e acessível em Treinos; rotas no modo mock; T105 verde
+- [X] T105 [P] [US5] Escrever testes em `apps/web/src/__tests__/components/cycle/CycleSummary.test.tsx`: aderência por tipo, evolução por exercício, dores, tendência dos check-ins, dados que faltaram, e "o que mudou no próximo ciclo" a partir das decisões `ciclo`; sugestão de novo objetivo com aceitar/recusar
+- [X] T106 [US5] Implementar `apps/web/src/components/cycle/CycleSummary.tsx`, exibido na Home ao iniciar um ciclo novo e acessível em Treinos; rotas no modo mock; T105 verde
 - [ ] T107 [US5] Adicionar o perfil 6 ("ciclo concluído" com estagnação no agachamento, dor recorrente no leg press e baixa aderência ao cardio) em `treino-profiles.ts` e o critério `ciclo` no juiz; rodar o eval (aprovação do custo) e confirmar SC-005
 
 **Checkpoint F5**: quickstart F5 ok → PR F5.

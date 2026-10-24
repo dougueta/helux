@@ -18,6 +18,7 @@ import { TirednessSelector } from '@/components/workout/TirednessSelector'
 import { TirednessDialog } from '@/components/workout/TirednessDialog'
 import { PlanGenerationState } from '@/components/workout/PlanGenerationState'
 import { FlareNotice } from '@/components/conditions/FlareNotice'
+import { CycleSummaryCard } from '@/components/cycle/CycleSummaryCard'
 import { WeekBadge } from '@/components/workout/WeekBadge'
 import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { todayHighlight } from '@/lib/todayHighlight'
@@ -237,6 +238,8 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
 
       {/* Spec 024: crise de gota além do prazo → procurar o médico. */}
       <FlareNotice />
+      {/* Spec 024: no começo de um ciclo novo, o resumo do anterior e o que mudou. */}
+      {currentPlan?.mesocycleId && currentPlan.progress?.completed === 0 && <CycleSummaryCard mesocycleId={currentPlan.mesocycleId} />}
 
       {/* Spec 022: chat com a Equipe Helux (treino, medicina esportiva, nutrição genética). */}
       <div className="hx-card" style={{ marginTop: 16, overflow: 'hidden' }}>

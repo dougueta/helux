@@ -20,6 +20,7 @@ import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
 import type { AdjustedWorkoutPlanView } from '@helux/types'
 import { PlanGenerationState } from '@/components/workout/PlanGenerationState'
 import { WeekBadge } from '@/components/workout/WeekBadge'
+import { CycleSummaryCard } from '@/components/cycle/CycleSummaryCard'
 import { isMainExercise } from '@helux/workouts'
 
 interface TreinosClientProps {
@@ -74,6 +75,8 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
           </div>
         </section>
       ) : null}
+
+      {currentPlan?.mesocycleId && <CycleSummaryCard mesocycleId={currentPlan.mesocycleId} />}
 
       {today && (
         <>

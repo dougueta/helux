@@ -28,6 +28,34 @@ function onboardingView(d: MockDataset) {
 }
 
 let checkinSeq = 0
+
+const MOCK_CYCLE_ANALYSIS = {
+  summary: {
+    mesocycleId: 'mock-mesocycle-0',
+    weeks: 4,
+    adherence: { forca: { done: 11, planned: 12 }, cardio: { done: 2, planned: 4 }, mobilidade: { done: 3, planned: 4 } },
+    exercises: [
+      { name: 'Agachamento Livre (Barra)', firstE1rm: 126.7, lastE1rm: 127.9, avgRpe: 8.7, painReports: 0 },
+      { name: 'Supino Reto (Barra)', firstE1rm: 80, lastE1rm: 90.7, avgRpe: 7.5, painReports: 0 },
+      { name: 'Leg Press 45°', firstE1rm: 240, lastE1rm: 253.3, avgRpe: 7.8, painReports: 2 },
+    ],
+    avgRpeByWeek: [7, 7.8, 8.4, 6.2],
+    pains: [{ region: 'joelho', count: 2 }],
+    tirednessAvg: 2.4,
+    checkinTrend: { from: '2026-09', to: '2026-10', deltas: { weight_kg: -0.8, waist_cm: -1.5 }, implausible: [], modifiers: [], suggestGoalChange: null },
+    findings: [
+      { kind: 'estagnacao', subject: 'Agachamento Livre (Barra)', evidence: '1RM estimado 126.7 → 127.9 kg (+1%), esforço médio 8.7' },
+      { kind: 'dor-recorrente', subject: 'Leg Press 45°', evidence: '2 relatos de dor neste exercício' },
+      { kind: 'baixa-aderencia', subject: 'cardio', evidence: '2 de 4 sessões de cardio feitas' },
+    ],
+    missingData: [],
+  },
+  changes: [
+    { topic: 'ciclo', choice: 'Agachamento livre trocado pelo agachamento hack', sources: ['historico'], reason: 'O agachamento parou de subir com esforço alto; a variação muda o estímulo.' },
+    { topic: 'ciclo', choice: 'Leg press fora do ciclo', sources: ['historico', 'condicoes'], reason: 'Dois relatos de dor no joelho nesse exercício.' },
+    { topic: 'ciclo', choice: 'Cardio em sessões de 20 min na bike', sources: ['historico', 'preferencias'], reason: 'Metade das sessões de cardio ficou de fora; sessões mais curtas cabem melhor na semana.' },
+  ],
+}
 const JOINTS: readonly string[] = ['joelho', 'ombro', 'lombar']
 
 export function registerAdaptiveRoutes(router: MockRouter): void {
@@ -42,6 +70,9 @@ export function registerAdaptiveRoutes(router: MockRouter): void {
         : {}),
     }
   })
+
+  // Análise do ciclo anterior (024 F5): exemplo fixo no modo mock.
+  router.register('GET', '/workout/mesocycle/:id/analysis', () => MOCK_CYCLE_ANALYSIS)
 
   router.register('GET', '/api/workouts/review', ({ data }) => ({
     sessions: data.workoutHistory
