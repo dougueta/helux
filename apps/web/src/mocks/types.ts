@@ -23,6 +23,8 @@ export interface MockSessionRow {
   duration_s: number | null
   exercises: ExerciseSet[]
   created_at: string
+  /** Spec 024: sessão suspeita confirmada como real. */
+  review_status?: 'confirmada' | null
 }
 
 /** Estado da nutrição (018); o plano do dia é recalculado na leitura por `buildDayPlan`. */

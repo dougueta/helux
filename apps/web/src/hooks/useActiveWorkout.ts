@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { apiFetch } from '@/services/api-client'
 import { clearCachedPlan } from './useWorkoutPlan'
 import { recommendedVariant } from '@/lib/exerciseDisplay'
@@ -26,6 +26,10 @@ export interface ActiveWorkoutState {
   executedVariantByExerciseIndex: Record<number, string | null>
   /** Esforço percebido relatado por exercício (spec 014, FR-014); ausente em estados antigos. */
   effortByExerciseIndex: Record<number, EffortLevel>
+  /** Spec 024: check-ins de sensação a ligar à sessão salva. */
+  checkinIds?: string[]
+  /** Spec 024: o check-in de antes já foi respondido ou pulado. */
+  preCheckinDone?: boolean
 }
 
 /** Sem relato, o histórico continua gravando 8 (tratado como moderado). */
@@ -48,15 +52,29 @@ function save(state: ActiveWorkoutState | null) {
   }
 }
 
+function setStatesFor(planExercises: PlannedExercise[]): SetState[][] {
+  return planExercises.map(ex => {
+    const count = typeof ex.sets === 'number' ? ex.sets : (parseInt(String(ex.sets)) || 3)
+    return Array.from({ length: count }, () => ({
+      weight: parseWeight(ex.weight),
+      reps: parseReps(ex.reps),
+      done: false,
+    }))
+  })
+}
+
 export function useActiveWorkout() {
   const [session, setSession] = useState<ActiveWorkoutState | null>(null)
   const [loaded, setLoaded] = useState(false)
+  // Lido no salvamento: o check-in de depois é gravado logo antes, no mesmo tick.
+  const checkinIdsRef = useRef<string[]>([])
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       try {
         const parsed = JSON.parse(raw) as ActiveWorkoutState
+        checkinIdsRef.current = parsed.checkinIds ?? []
         setSession({
           ...parsed,
           variantByExerciseIndex: parsed.variantByExerciseIndex ?? {},
@@ -71,18 +89,10 @@ export function useActiveWorkout() {
   }, [])
 
   const startWorkout = useCallback((planExercises: PlannedExercise[]) => {
-    const exerciseStates: SetState[][] = planExercises.map(ex => {
-      const count = typeof ex.sets === 'number' ? ex.sets : (parseInt(String(ex.sets)) || 3)
-      return Array.from({ length: count }, () => ({
-        weight: parseWeight(ex.weight),
-        reps: parseReps(ex.reps),
-        done: false,
-      }))
-    })
-
+    checkinIdsRef.current = []
     const state: ActiveWorkoutState = {
       planExercises,
-      exerciseStates,
+      exerciseStates: setStatesFor(planExercises),
       currentExerciseIndex: 0,
       startedAt: new Date().toISOString(),
       variantByExerciseIndex: {},
@@ -92,6 +102,28 @@ export function useActiveWorkout() {
     save(state)
     setSession(state)
   }, [])
+
+  const update = useCallback((fn: (s: ActiveWorkoutState) => ActiveWorkoutState) => {
+    setSession(prev => {
+      if (!prev) return prev
+      const next = fn(prev)
+      save(next)
+      return next
+    })
+  }, [])
+
+  const addCheckinId = useCallback((id: string) => {
+    checkinIdsRef.current = [...checkinIdsRef.current, id]
+    const ids = checkinIdsRef.current
+    update(s => ({ ...s, checkinIds: ids }))
+  }, [update])
+
+  const markPreCheckinDone = useCallback(() => update(s => ({ ...s, preCheckinDone: true })), [update])
+
+  /** Treino do dia ajustado depois do check-in de antes (spec 024): só antes da primeira série. */
+  const replaceExercises = useCallback((planExercises: PlannedExercise[]) => {
+    update(s => (s.exerciseStates.some(sets => sets.some(x => x.done)) ? s : { ...s, planExercises, exerciseStates: setStatesFor(planExercises), currentExerciseIndex: 0 }))
+  }, [update])
 
   const setExercise = useCallback((index: number) => {
     setSession(prev => {
@@ -233,6 +265,7 @@ export function useActiveWorkout() {
         date: session.startedAt.split('T')[0],
         duration_s: durationS,
         exercises,
+        ...(checkinIdsRef.current.length > 0 ? { checkinIds: checkinIdsRef.current } : {}),
       }),
     })
 
@@ -246,6 +279,9 @@ export function useActiveWorkout() {
     loaded,
     isActive: session !== null,
     startWorkout,
+    addCheckinId,
+    markPreCheckinDone,
+    replaceExercises,
     setExercise,
     toggleSetDone,
     updateSet,

@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { apiFetch } from '@/services/api-client'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
 import { formatNumber } from '@/lib/format'
+import { SessionFeelings } from '@/components/progress/SessionFeelings'
 import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 
 /** Detalhe de um treino (FR-021): variante executada da spec 010 com `Fit` e séries em mono. */
@@ -65,6 +66,8 @@ export default function SessionDetailPage() {
                 </dd>
               </div>
             </dl>
+
+            <SessionFeelings checkins={session.checkins} />
 
             {session.exercises.map((ex, i) => (
               <section key={i} className="hx-plain" style={{ marginTop: 24, paddingTop: 16 }}>

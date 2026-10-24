@@ -256,3 +256,9 @@ Sem chamada de IA extra: a explicação do que mudou sai das `decisions` da pró
 | **Média** | **5** | **1,0** | **0** | **4,0** | **2,6** | **2,4** | **4,0** |
 
 Total **2,71**, custo US$ 0,90. Achados do juiz: divisões com 1×/semana por grupo (PPL/ABCD) mesmo para iniciante e emagrecimento; nenhum cardio estruturado nos objetivos de condicionamento/emagrecimento; no perfil do dono, faixa de repetições e divisão justificadas pela genética, e justificativa citando regras internas ("60h exigidas"); notas citando datas de sessões anteriores. Resultado em `packages/ai/src/agents/__evals__/results/baseline.json`.
+
+## R16 — Check-ins na tela do treino (decidido na implementação da F4, 2026-10-24)
+
+- **Decisão**: o check-in de antes abre como folha no treino ativo, antes da primeira série. Com dor relevante, a web relê `/workout/latest-plan` (que já aplica a dor do dia) e troca os exercícios antes de qualquer série. O de depois abre ao finalizar, antes de salvar, e os ids vão em `checkinIds` no `POST /api/workouts/sessions`. A energia do "antes" só vira o cansaço do dia se ele ainda não foi marcado.
+- **Motivo**: um ponto único (a página do treino) cobre Hoje e Treinos sem mexer no fluxo de cansaço da spec 011, e o check-in nunca bloqueia o treino (erro → segue).
+- **Alternativa descartada**: fundir com o diálogo de cansaço, porque duplicaria a pergunta de energia e mudaria o fluxo validado na 011.

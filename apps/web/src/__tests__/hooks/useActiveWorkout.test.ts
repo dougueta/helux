@@ -131,6 +131,33 @@ describe('useActiveWorkout', () => {
     expect(result.current.session).toBeNull()
   })
 
+  it('024: check-ins ligados ao treino vão junto ao salvar; o "antes" fica marcado como feito', async () => {
+    const { apiFetch } = await import('@/services/api-client')
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const { result } = renderHook(() => useActiveWorkout())
+    act(() => { result.current.startWorkout(mockPlan as any) })
+    expect(result.current.session?.preCheckinDone).toBeFalsy()
+    act(() => { result.current.addCheckinId('c-antes') })
+    act(() => { result.current.markPreCheckinDone() })
+    expect(result.current.session?.preCheckinDone).toBe(true)
+    act(() => { result.current.toggleSetDone(0, 0) })
+    act(() => { result.current.addCheckinId('c-depois') })
+    await act(async () => { await result.current.finishWorkout() })
+    const body = JSON.parse((apiFetch as any).mock.calls.at(-1)[1].body)
+    expect(body.checkinIds).toEqual(['c-antes', 'c-depois'])
+  })
+
+  it('024: o treino do dia ajustado pela dor substitui os exercícios antes da primeira série', async () => {
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const { result } = renderHook(() => useActiveWorkout())
+    act(() => { result.current.startWorkout(mockPlan as any) })
+    act(() => { result.current.addCheckinId('c-antes') })
+    act(() => { result.current.replaceExercises([{ name: 'Cadeira Extensora', sets: 2, reps: '12', weight: '20kg' }] as any) })
+    expect(result.current.session?.planExercises.map(e => e.name)).toEqual(['Cadeira Extensora'])
+    expect(result.current.session?.exerciseStates[0]).toHaveLength(2)
+    expect(result.current.session?.checkinIds).toEqual(['c-antes'])
+  })
+
   it('finishWorkout clears the cached workout plan so the home page refetches', async () => {
     localStorageMock.setItem('helux:workout-plan', JSON.stringify({ mesocycleId: null, today: null }))
     const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')

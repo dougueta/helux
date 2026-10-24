@@ -1,5 +1,5 @@
-import type { HealthCondition, Region } from '@helux/types'
-import { CONDITION_CATALOG, rulesFor } from '@helux/workouts'
+import type { HealthCondition, Joint, PainReport, Region } from '@helux/types'
+import { CONDITION_CATALOG, rulesFor, sessionValidity } from '@helux/workouts'
 import type { MockRouter } from './mock-router'
 import type { MockDataset } from './types'
 import { agentsOf } from './agents'
@@ -27,7 +27,39 @@ function onboardingView(d: MockDataset) {
   }
 }
 
+let checkinSeq = 0
+const JOINTS: readonly string[] = ['joelho', 'ombro', 'lombar']
+
 export function registerAdaptiveRoutes(router: MockRouter): void {
+  // Check-ins de sensação (024 F4): no modo mock só respondem; dor forte numa articulação devolve o aviso.
+  router.register('POST', '/api/session-checkins', ({ body }) => {
+    const { phase, pains } = body as { phase: 'antes' | 'depois'; pains: PainReport[] }
+    const regions = [...new Set(pains.filter(p => p.intensity >= 2 && JOINTS.includes(p.region)).map(p => p.region as Joint))]
+    return {
+      checkin: { id: `mock-checkin-${++checkinSeq}` },
+      ...(phase === 'antes' && regions.length > 0
+        ? { adjustment: { regions, reason: `Hoje o treino poupa ${regions.join(' e ')}: os exercícios que carregam essa região foram trocados.` } }
+        : {}),
+    }
+  })
+
+  router.register('GET', '/api/workouts/review', ({ data }) => ({
+    sessions: data.workoutHistory
+      .map(s => ({ s, v: sessionValidity(s) }))
+      .filter(({ v }) => !v.valid)
+      .map(({ s, v }) => ({ id: s.id, date: s.date, durationS: s.duration_s, exercises: s.exercises.map(e => e.name), reasons: v.reasons })),
+  }))
+
+  router.register('POST', '/api/workouts/:id/confirm', ({ store, params }) => {
+    store.updateDataset(d => ({ workoutHistory: d.workoutHistory.map(s => (s.id === params.id ? { ...s, review_status: 'confirmada' as const } : s)) }))
+    return { id: params.id, reviewStatus: 'confirmada' }
+  })
+
+  router.register('DELETE', '/api/workouts/:id', ({ store, params }) => {
+    store.updateDataset(d => ({ workoutHistory: d.workoutHistory.filter(s => s.id !== params.id) }))
+    return null
+  })
+
   router.register('GET', '/api/conditions', ({ data }) => ({ conditions: conditionsOf(data).map(c => ({ ...c, rules: rulesFor(c) })), catalog: catalogView() }))
 
   router.register('POST', '/api/conditions', ({ store, body }) => {
