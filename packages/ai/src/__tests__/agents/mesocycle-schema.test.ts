@@ -35,6 +35,18 @@ describe('MESOCYCLE_SCHEMA (024 T073: semana-modelo)', () => {
     expect(noNumericBounds(schema)).toEqual([])
   })
 
+  it('enum nunca convive com tipo múltiplo (a API recusa; aprendido no eval da 024)', () => {
+    const bad: string[] = []
+    const walk = (node: unknown, path: string) => {
+      if (!node || typeof node !== 'object') return
+      const o = node as Record<string, unknown>
+      if (Array.isArray(o.enum) && Array.isArray(o.type)) bad.push(path)
+      for (const [k, v] of Object.entries(o)) walk(v, `${path}.${k}`)
+    }
+    walk(schema, '$')
+    expect(bad).toEqual([])
+  })
+
   it('topo: splitType, weekTemplate, rationale, decisions', () => {
     expect(Object.keys(schema.properties!).sort()).toEqual(['decisions', 'rationale', 'splitType', 'weekTemplate'])
   })
@@ -52,7 +64,7 @@ describe('MESOCYCLE_SCHEMA (024 T073: semana-modelo)', () => {
     expect(main.properties!.rirTarget.type).toEqual(['integer', 'null'])
     expect(free.properties!.phase.enum).toEqual(['aquecimento', 'volta-calma', 'mobilidade'])
     expect(free.properties!.name.enum).toBeUndefined()
-    expect(free.properties!.region.type).toEqual(['string', 'null'])
+    expect(free.properties!.region.anyOf).toEqual([{ type: 'string', enum: expect.arrayContaining(['joelho', 'quadril']) }, { type: 'null' }])
     expect(cardio.properties!.phase.enum).toEqual(['cardio'])
     expect(cardio.properties!.modality.enum).toEqual(CARDIO_BANK.map(c => c.id))
   })

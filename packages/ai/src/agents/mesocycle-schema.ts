@@ -30,7 +30,8 @@ const freeItem = {
     sets: { type: 'integer' },
     reps: { type: 'string' },
     weight: { type: 'string' },
-    region: { type: ['string', 'null'], enum: [...REGIONS, null] },
+    // enum com tipo ['string', 'null'] é recusado pela API: o null vai num anyOf separado.
+    region: { anyOf: [{ type: 'string', enum: [...REGIONS] }, { type: 'null' }] },
     notes: { type: ['string', 'null'] },
   },
   required: ['phase', 'name', 'sets', 'reps', 'weight', 'region', 'notes'],
