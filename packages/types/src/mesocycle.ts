@@ -41,6 +41,8 @@ export interface AdjustedSession {
 export interface UpcomingSessionSummary {
   letter: string
   focus: string
+  /** Spec 024: semana da sessão (mesociclo semanal). */
+  week?: number
 }
 
 export interface AdjustedWorkoutPlanView {

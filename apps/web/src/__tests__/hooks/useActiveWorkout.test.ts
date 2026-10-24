@@ -472,6 +472,24 @@ describe('useActiveWorkout — esforço percebido (spec 014, US3, FR-014)', () =
     expect(result.current.session?.effortByExerciseIndex).toEqual({})
   })
 
+  it('024 (T084): cardio e mobilidade concluídos entram no histórico com a duração; não concluídos ficam de fora', async () => {
+    const { apiFetch } = await import('@/services/api-client')
+    const { result } = await mount()
+    act(() => {
+      result.current.startWorkout([
+        { name: 'Supino Reto (Barra)', sets: 1, reps: '8', weight: '60kg' },
+        { name: 'Bike ergométrica', sets: 1, reps: '20 min', weight: '—', cardio: { modality: 'bike', minutes: 20, zone: 'leve' } },
+        { name: 'Mobilidade de quadril', sets: 1, reps: '10 min', weight: '—', region: 'quadril' },
+      ] as any)
+    })
+    act(() => { result.current.toggleSetDone(0, 0) })
+    act(() => { result.current.toggleSetDone(1, 0) })
+    await act(async () => { await result.current.finishWorkout() })
+    const body = payloadOf(apiFetch)
+    expect(body.exercises.map((e: any) => e.name)).toEqual(['Supino Reto (Barra)', 'Bike ergométrica'])
+    expect(body.exercises[1].sets).toEqual([{ reps: 20, weight: 0, effort: 5 }])
+  })
+
   it('carga decimal do plano (progressão em 2,5 kg) entra sem arredondar', async () => {
     const { result } = await mount()
     act(() => { result.current.startWorkout([{ name: 'Supino', sets: 1, reps: '8-10', weight: '102.5kg' }] as any) })

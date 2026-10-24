@@ -186,6 +186,7 @@ describe('GET /workout/latest-plan', () => {
     const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
     expect(body.week).toEqual({ current: 2, total: 4, deload: false })
     expect(body.kind).toBe('forca')
+    expect(body.upcoming[0]).toEqual({ letter: 'B', focus: 'B', week: 2 })
   })
 
   it('024: plano antigo (rotação) não tem semana', async () => {

@@ -18,6 +18,7 @@ import { TirednessSelector } from '@/components/workout/TirednessSelector'
 import { TirednessDialog } from '@/components/workout/TirednessDialog'
 import { PlanGenerationState } from '@/components/workout/PlanGenerationState'
 import { FlareNotice } from '@/components/conditions/FlareNotice'
+import { WeekBadge } from '@/components/workout/WeekBadge'
 import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { todayHighlight } from '@/lib/todayHighlight'
 
@@ -44,6 +45,17 @@ function todayLabel() {
 function cycleSessions(plan: AdjustedWorkoutPlanView): { label: string; state: CycleState }[] {
   const { today, upcoming, progress } = plan
   if (!today || !progress) return []
+  // Spec 024: no mesociclo semanal, os pontos mostram só a semana atual (as letras se repetem a cada semana).
+  if (plan.week) {
+    const perWeek = Math.round(progress.total / plan.week.total)
+    const ahead = upcoming.filter(s => s.week === plan.week!.current)
+    const doneThisWeek = Math.max(0, perWeek - 1 - ahead.length)
+    return [
+      ...Array.from({ length: doneThisWeek }, (_, i) => ({ label: String.fromCharCode(65 + i), state: 'done' as const })),
+      { label: today.letter, state: 'current' as const },
+      ...ahead.map(s => ({ label: s.letter, state: 'todo' as const })),
+    ]
+  }
   const before = Math.max(0, progress.total - 1 - upcoming.length)
   const base = today.letter.charCodeAt(0) - before
   return [
@@ -143,7 +155,8 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
           <HomeSkeleton />
         ) : today ? (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+            <WeekBadge week={currentPlan?.week} kind={currentPlan?.kind} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline', marginTop: currentPlan?.week ? 8 : 0 }}>
               <span className="t-secondary" style={{ color: 'var(--text)' }}>
                 {today.focus ? `Treino ${today.letter} — ${today.focus}` : `Treino ${today.letter}`}
               </span>

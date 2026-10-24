@@ -19,6 +19,7 @@ import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
 import type { AdjustedWorkoutPlanView } from '@helux/types'
 import { PlanGenerationState } from '@/components/workout/PlanGenerationState'
+import { WeekBadge } from '@/components/workout/WeekBadge'
 import { isMainExercise } from '@helux/workouts'
 
 interface TreinosClientProps {
@@ -55,6 +56,7 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
 
       {today ? (
         <section style={{ marginTop: 24 }}>
+          <WeekBadge week={currentPlan?.week} kind={currentPlan?.kind} />
           <SectionHeader
             title={today.focus ? `Treino ${today.letter} — ${today.focus}` : `Treino ${today.letter}`}
             aside={`${today.exercises.filter(isMainExercise).length} exercícios`}

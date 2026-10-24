@@ -22,7 +22,7 @@ import { Tag } from '@/components/ui/Tag'
 import { Tips } from '@/components/ui/Tips'
 import { WorkoutProgress } from '@/components/ui/WorkoutProgress'
 import { EffortPicker } from '@/components/workout/EffortPicker'
-import { exercisePhase, nextStepAfterSet, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
+import { exercisePhase, isMainExercise, nextStepAfterSet, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
 import type { ExercisePhase } from '@helux/types'
 
 /** Tag da fase no treino ativo (spec 014, FR-005). */
@@ -152,7 +152,8 @@ export default function WorkoutPage() {
   const selectedVariant = variants.find(v => v.id === currentVariantId) ?? recVariant
   const display = currentEx ? resolveExerciseDisplay(currentEx, currentVariantId) : null
   const phase: ExercisePhase = currentEx ? exercisePhase(currentEx) : 'principal'
-  const isMain = phase === 'principal'
+  // Spec 024: cardio e mobilidade ficam no treino principal, mas são concluídos com um toque.
+  const isMain = currentEx ? isMainExercise(currentEx) : true
   const partnerIdx = currentEx ? supersetPartnerIndex(session.planExercises, currentIdx) : null
   const partner = partnerIdx !== null ? session.planExercises[partnerIdx] : null
   // Rótulo "descanso Ns" vem do mesmo ponto que o timer (contracts/workout-flow.md).
@@ -270,7 +271,7 @@ export default function WorkoutPage() {
       {currentEx && display && (
         <div style={{ padding: '0 16px', marginTop: 20 }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Tag>{PHASE_TAG[phase]}</Tag>
+            <Tag>{currentEx?.cardio ? 'Cardio' : currentEx?.region ? 'Mobilidade' : PHASE_TAG[phase]}</Tag>
             {isMain && display.fit !== undefined && <Fit value={display.fit} />}
           </div>
           <h1 className="t-title" style={{ marginTop: 12 }}>

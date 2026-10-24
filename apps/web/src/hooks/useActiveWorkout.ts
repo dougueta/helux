@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { apiFetch } from '@/services/api-client'
 import { clearCachedPlan } from './useWorkoutPlan'
 import { recommendedVariant } from '@/lib/exerciseDisplay'
-import { EFFORT_VALUE, isMainExercise, type EffortLevel } from '@helux/workouts'
+import { EFFORT_VALUE, isConditioningItem, isMainExercise, type EffortLevel } from '@helux/workouts'
 import type { PlannedExercise, Variant } from '@helux/types'
 
 const STORAGE_KEY = 'helux:active-workout'
@@ -218,6 +218,14 @@ export function useActiveWorkout() {
         ? { name: ex.name, sets: doneSets, executedVariant: { name: executedVariant.name, match: executedVariant.match } }
         : { name: ex.name, sets: doneSets }
     })
+
+    // Spec 024: cardio e mobilidade concluídos entram com a duração (minutos em reps, carga 0).
+    const conditioning = session.planExercises.flatMap((ex, ei) =>
+      isConditioningItem(ex) && (session.exerciseStates[ei] ?? []).some(s => s.done)
+        ? [{ name: ex.name, sets: [{ reps: ex.cardio?.minutes ?? (parseInt(String(ex.reps), 10) || 1), weight: 0, effort: 5 }] }]
+        : [],
+    )
+    exercises.push(...(conditioning as typeof exercises))
 
     await apiFetch('/api/workouts/sessions', {
       method: 'POST',

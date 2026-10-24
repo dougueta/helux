@@ -62,15 +62,20 @@ export const MESOCYCLE_SESSIONS: Omit<MesocycleSession, 'completedAt'>[] = [
 ]
 
 /** Plano de hoje: as sessões antes de `todayIndex` estão concluídas; sem `todayIndex`, não há treino hoje. */
+/** Spec 024: o mock mostra a semana 1 de um mesociclo semanal de 4 semanas. */
+const MOCK_WEEKS = 4
+
 export function latestPlanFixture(tiredness: TirednessAssessment, todayIndex: number | null = 1): AdjustedWorkoutPlanView {
   const completed = todayIndex ?? MESOCYCLE_SESSIONS.length
   const pending = todayIndex === null ? null : MESOCYCLE_SESSIONS[todayIndex]
+  const laterWeeks = Array.from({ length: MOCK_WEEKS - 1 }, (_, w) => MESOCYCLE_SESSIONS.map(({ letter, focus }) => ({ letter, focus, week: w + 2 }))).flat()
   return {
     mesocycleId: 'mock-mesocycle-1',
     generatedAt: isoDaysAgo(9),
     today: pending ? buildAdjustedSession(pending, tiredness) : null,
-    upcoming: MESOCYCLE_SESSIONS.slice((todayIndex ?? MESOCYCLE_SESSIONS.length) + 1).map(({ letter, focus }) => ({ letter, focus })),
-    progress: { completed, total: MESOCYCLE_SESSIONS.length },
+    upcoming: [...MESOCYCLE_SESSIONS.slice((todayIndex ?? MESOCYCLE_SESSIONS.length) + 1).map(({ letter, focus }) => ({ letter, focus, week: 1 })), ...(pending ? laterWeeks : [])],
+    progress: { completed, total: pending ? MESOCYCLE_SESSIONS.length * MOCK_WEEKS : MESOCYCLE_SESSIONS.length },
+    ...(pending ? { week: { current: 1, total: MOCK_WEEKS, deload: false }, kind: 'forca' as const } : {}),
   }
 }
 

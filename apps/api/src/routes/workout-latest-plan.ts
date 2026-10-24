@@ -111,7 +111,7 @@ export async function workoutLatestPlanRoutes(app: FastifyInstance): Promise<voi
       return [] as HealthCondition[]
     })
     const today = applyConditions(buildAdjustedSession(pendingSession, tiredness), conditions, new Date())
-    const upcoming = mesocycle.sessions.slice(pendingIndex + 1).map((s) => ({ letter: s.letter, focus: s.focus }))
+    const upcoming = mesocycle.sessions.slice(pendingIndex + 1).map((s) => ({ letter: s.letter, focus: s.focus, ...(s.week !== undefined ? { week: s.week } : {}) }))
 
     const view: AdjustedWorkoutPlanView = {
       mesocycleId: mesocycle.id,
