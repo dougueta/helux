@@ -145,6 +145,27 @@ describe('POST /api/profile', () => {
     expect(body.profile).toHaveProperty('updatedAt')
   })
 
+  it('024: aceita e devolve o objetivo estruturado', async () => {
+    mockSingle.mockResolvedValueOnce({ data: { ...mockRow, goal_primary: 'corrida', goal_secondary: 'condicionamento', goal_target: '5 km sem dor', cardio_likes: ['bike'], cardio_avoid: ['corrida'] }, error: null })
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/profile',
+      headers: { Authorization: 'Bearer valid-token' },
+      payload: { goalPrimary: 'corrida', goalSecondary: 'condicionamento', goalTarget: '5 km sem dor', cardioLikes: ['bike'], cardioAvoid: ['corrida'] },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(mockUpsert.mock.calls[0][0]).toMatchObject({ goal_primary: 'corrida', goal_secondary: 'condicionamento', goal_target: '5 km sem dor', cardio_likes: ['bike'], cardio_avoid: ['corrida'] })
+    expect(res.json().profile).toMatchObject({ goalPrimary: 'corrida', goalSecondary: 'condicionamento', goalTarget: '5 km sem dor', cardioLikes: ['bike'], cardioAvoid: ['corrida'] })
+  })
+
+  it('024: objetivo fora da lista, secundário igual ao principal e cardio fora do catálogo → 400', async () => {
+    const post = (payload: Record<string, unknown>) => app.inject({ method: 'POST', url: '/api/profile', headers: { Authorization: 'Bearer valid-token' }, payload })
+    expect((await post({ goalPrimary: 'ficar-forte' })).statusCode).toBe(400)
+    expect((await post({ goalPrimary: 'forca', goalSecondary: 'forca' })).statusCode).toBe(400)
+    expect((await post({ cardioLikes: ['pular-corda'] })).statusCode).toBe(400)
+    expect((await post({ cardioLikes: ['bike'], cardioAvoid: ['bike'] })).statusCode).toBe(400)
+  })
+
   it('returns 400 when level is outside the enum', async () => {
     const res = await app.inject({
       method: 'POST',

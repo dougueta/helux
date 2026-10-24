@@ -6,6 +6,7 @@ import { geneticsReportRoutes } from './routes/genetics-report'
 import { workoutLatestPlanRoutes } from './routes/workout-latest-plan'
 import { mesocycleActionsRoutes } from './routes/mesocycle-actions'
 import { conditionsRoutes } from './routes/conditions'
+import { onboardingRoutes } from './routes/onboarding'
 import { healthSyncRoutes } from './routes/health-sync'
 import { recoveryLatestRoutes } from './routes/recovery-latest'
 import { workoutSessionsRoutes } from './routes/workout-sessions'
@@ -42,6 +43,7 @@ export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): Fasti
   app.register(geneticsReportRoutes)
   app.register(mesocycleActionsRoutes)
   app.register(conditionsRoutes)
+  app.register(onboardingRoutes)
   app.register(workoutLatestPlanRoutes)
   app.register(healthSyncRoutes)
   app.register(recoveryLatestRoutes)

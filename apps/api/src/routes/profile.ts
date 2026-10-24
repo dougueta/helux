@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyReply } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
-import type { Sex, UserTrainingProfile } from '@helux/types'
+import { goalFieldsProblem, goalFieldsToRow, GoalFieldsSchema, toProfile, type ProfileRow } from '../services/profile-rows'
 import { ageOn } from '@helux/nutrition'
 
 // Spec 018: idade plausível para as fórmulas de nutrição.
@@ -23,33 +23,7 @@ const ProfileBodySchema = z.object({
     .refine(isPlausibleBirthDate, 'birthDate must give an age between 14 and 100')
     .optional(),
   sex: z.enum(['masculino', 'feminino']).optional(),
-})
-
-interface ProfileRow {
-  goal: string | null
-  level: 'iniciante' | 'intermediario' | 'avancado' | null
-  training_time: string | null
-  time_off: string | null
-  current_injury: string | null
-  height_cm?: number | string | null
-  birth_date?: string | null
-  sex?: Sex | null
-  updated_at: string
-}
-
-function toProfile(row: ProfileRow): UserTrainingProfile {
-  return {
-    goal: row.goal,
-    level: row.level,
-    trainingTime: row.training_time,
-    timeOff: row.time_off,
-    currentInjury: row.current_injury,
-    heightCm: row.height_cm != null ? Number(row.height_cm) : null,
-    birthDate: row.birth_date ?? null,
-    sex: row.sex ?? null,
-    updatedAt: row.updated_at,
-  }
-}
+}).merge(GoalFieldsSchema)
 
 export async function profileRoutes(app: FastifyInstance): Promise<void> {
   const supabaseUrl = process.env.SUPABASE_URL!
@@ -101,8 +75,11 @@ export async function profileRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(400).send({ error: 'Bad Request', details: parsed.error.errors })
     }
 
+    const problem = goalFieldsProblem(parsed.data)
+    if (problem) return reply.code(400).send({ error: 'Bad Request', details: [{ path: [], message: problem }] })
+
     const { goal, level, trainingTime, timeOff, currentInjury, heightCm, birthDate, sex } = parsed.data
-    const fields: Record<string, unknown> = {}
+    const fields: Record<string, unknown> = { ...goalFieldsToRow(parsed.data) }
     if (goal !== undefined) fields.goal = goal
     if (level !== undefined) fields.level = level
     if (trainingTime !== undefined) fields.training_time = trainingTime
