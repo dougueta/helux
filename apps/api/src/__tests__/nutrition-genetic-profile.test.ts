@@ -50,7 +50,7 @@ describe('GET /api/nutrition/genetic-profile (spec 018, US4)', () => {
     expect(loadNutritionGeneticsMock).toHaveBeenCalledWith({ nutri: {} })
   })
 
-  it('sem genera.json → active false e lista vazia', async () => {
+  it('sem laudo genético → active false e lista vazia', async () => {
     loadNutritionGeneticsMock.mockReturnValue({ active: false, markers: [], flags: {} })
     const res = await app.inject({ method: 'GET', url: '/api/nutrition/genetic-profile', headers: { Authorization: 'Bearer valid-token' } })
     expect(res.json()).toEqual({ active: false, markers: [] })

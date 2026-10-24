@@ -10,7 +10,10 @@ import type { FastifyInstance } from 'fastify'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { AdjustedWorkoutPlanView, PlannedExercise } from '@helux/types'
 import { startFakeAnthropic, type FakeAnthropic } from './fake-anthropic'
-import { resolveAiMode } from './prerequisites'
+import { GENETIC_FIXTURE_PATH, resolveAiMode } from './prerequisites'
+import { readFileSync } from 'node:fs'
+
+const GENERA_FAKE = JSON.parse(readFileSync(GENETIC_FIXTURE_PATH, 'utf-8'))
 
 const BACKGROUND_TIMEOUT_MS = Number(process.env.E2E_BACKGROUND_TIMEOUT_MS ?? 30_000)
 
@@ -120,6 +123,10 @@ beforeAll(async () => {
   if (error || !data.session || !data.user) throw new Error(`[e2e] Falha no signup do usuário de teste: ${error?.message}`)
   userId = data.user.id
   token = data.session.access_token
+
+  // Spec 024: o laudo genético vive no banco por usuário; o e2e usa um laudo fictício.
+  const seeded = await admin.from('genetic_reports').insert({ user_id: userId, source: 'genera', raw: GENERA_FAKE })
+  if (seeded.error) throw new Error(`[e2e] Falha ao semear o laudo genético: ${seeded.error.message}`)
 })
 
 afterAll(async () => {

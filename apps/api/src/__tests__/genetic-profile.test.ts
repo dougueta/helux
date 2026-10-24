@@ -1,74 +1,63 @@
-import { describe, it, expect, afterAll, vi, beforeEach } from 'vitest'
-import { buildApp } from '../app'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import Fastify from 'fastify'
 
-vi.mock('@helux/genetics', () => ({
-  parseGeneraJson: vi.fn().mockReturnValue({
-    metabolismo: 'moderado',
-    recuperacaoMuscular: 'media',
-    riscoCardiovascular: 'medio',
-    predisposicao: 'misto',
-    alertas: ['Predisposição para menor densidade óssea'],
-  }),
-  parseGeneraTraits: vi.fn().mockReturnValue([
-    {
-      key: 'rs2707466:densidade-ossea',
-      gene: 'WNT16',
-      genotype: 'C,T',
-      label: 'Densidade óssea',
-      level: 0.9,
-      note: 'Predisposição para menor densidade óssea',
-      warn: true,
+// Spec 020 + 024: o perfil genético vem do laudo do usuário no banco e exige login.
+
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: () => ({
+    auth: {
+      getUser: vi.fn(async (token: string) =>
+        token === 'valid-token' ? { data: { user: { id: 'u1' } }, error: null } : { data: { user: null }, error: new Error('bad') },
+      ),
     },
-  ]),
+  }),
 }))
 
-vi.mock('node:fs', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs')>()
-  return {
-    ...actual,
-    existsSync: vi.fn().mockReturnValue(true),
-    readFileSync: vi.fn().mockReturnValue(JSON.stringify({ fit: {}, escala_risco_genetico: {} })),
-  }
-})
+const getReportMock = vi.fn()
+vi.mock('../services/genetics.service', () => ({ getGeneticReport: (...a: unknown[]) => getReportMock(...a) }))
+
+const REPORT = {
+  metabolismo: 'moderado',
+  recuperacaoMuscular: 'media',
+  riscoCardiovascular: 'medio',
+  predisposicao: 'misto',
+  alertas: ['Predisposição para menor densidade óssea'],
+  traits: [{ key: 'rs2707466:densidade-ossea', gene: 'WNT16', genotype: 'C,T', label: 'Densidade óssea', level: 0.9, note: 'Menor densidade óssea', warn: true, evidence: 'fraca' }],
+}
+
+async function buildApp() {
+  const app = Fastify()
+  const { geneticProfileRoutes } = await import('../routes/genetic-profile')
+  await app.register(geneticProfileRoutes)
+  return app
+}
 
 describe('GET /genetic-profile', () => {
-  const app = buildApp()
+  let app: Awaited<ReturnType<typeof buildApp>>
 
-  afterAll(async () => {
-    await app.close()
-  })
-
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    process.env.SUPABASE_URL = 'https://test.supabase.co'
+    process.env.SUPABASE_ANON_KEY = 'test-key'
+    app = await buildApp()
   })
 
-  it('retorna status 200 com GeneticProfile quando genera.json existe', async () => {
-    const response = await app.inject({ method: 'GET', url: '/genetic-profile' })
-    expect(response.statusCode).toBe(200)
-    const body = JSON.parse(response.body)
-    expect(body.metabolismo).toBe('moderado')
-    expect(body.recuperacaoMuscular).toBe('media')
-    expect(body.riscoCardiovascular).toBe('medio')
-    expect(body.predisposicao).toBe('misto')
-    expect(body.alertas).toBeInstanceOf(Array)
+  it('401 sem token (024: o laudo é dado pessoal)', async () => {
+    expect((await app.inject({ method: 'GET', url: '/genetic-profile' })).statusCode).toBe(401)
   })
 
-  it('inclui os marcadores (traits) junto do resumo (spec 020)', async () => {
-    const response = await app.inject({ method: 'GET', url: '/genetic-profile' })
-    expect(response.statusCode).toBe(200)
-    const body = JSON.parse(response.body)
-    expect(body.traits).toEqual([
-      expect.objectContaining({ key: 'rs2707466:densidade-ossea', gene: 'WNT16', genotype: 'C,T', warn: true }),
-    ])
-    expect(body.metabolismo).toBe('moderado')
+  it('200 com o resumo e os marcadores do laudo do usuário', async () => {
+    getReportMock.mockResolvedValue(REPORT)
+    const res = await app.inject({ method: 'GET', url: '/genetic-profile', headers: { Authorization: 'Bearer valid-token' } })
+    expect(res.statusCode).toBe(200)
+    expect(res.json()).toEqual(REPORT)
+    expect(getReportMock).toHaveBeenCalledWith('u1', expect.anything())
   })
 
-  it('retorna 404 quando genera.json não existe', async () => {
-    const { existsSync } = await import('node:fs')
-    vi.mocked(existsSync).mockReturnValueOnce(false)
-    const response = await app.inject({ method: 'GET', url: '/genetic-profile' })
-    expect(response.statusCode).toBe(404)
-    const body = JSON.parse(response.body)
-    expect(body.error).toMatch(/genera\.json/)
+  it('404 no-genetic-report quando o usuário não enviou laudo', async () => {
+    getReportMock.mockResolvedValue(null)
+    const res = await app.inject({ method: 'GET', url: '/genetic-profile', headers: { Authorization: 'Bearer valid-token' } })
+    expect(res.statusCode).toBe(404)
+    expect(res.json()).toMatchObject({ code: 'no-genetic-report' })
   })
 })

@@ -3,6 +3,10 @@ import { SOURCE_KEYS } from '@helux/types'
 import { fakeSupabase } from './helpers/fake-supabase'
 import { buildIntegratedProfile } from '../services/integrated-profile.service'
 import { acceptGuidance } from '../services/guidance.service'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+
+const GENERA_FAKE = JSON.parse(readFileSync(path.resolve(__dirname, '../../e2e/fixtures/genera.fake.json'), 'utf-8'))
 
 const NOW = new Date('2026-10-20T15:00:00Z')
 const SESSION = (letter: string, completedAt: string | null) => ({
@@ -39,6 +43,8 @@ function db(over: Record<string, Record<string, unknown>[]> = {}) {
       { user_id: 'u1', id: 'm1', generated_at: '2026-10-10T10:00:00Z', created_at: '2026-10-10T10:00:00Z', days_per_week: 3, split_type: 'ABC', rationale: '', sessions: [SESSION('A', '2026-10-12T10:00:00Z'), SESSION('B', null), SESSION('C', null)] },
     ],
     health_samples: [],
+    // Spec 024: laudo genético no banco (antes vinha do arquivo do repositório).
+    genetic_reports: [{ user_id: 'u1', raw: GENERA_FAKE }],
     daily_tiredness_signals: [{ user_id: 'u1', date: '2026-10-20', level: 'cansado', override_automatic: false }],
     body_checkins: [{ user_id: 'u1', id: 'c1', month: '2026-10', weight_kg: 81, waist_cm: 86, neck_cm: 39, created_at: '2026-10-05T10:00:00Z' }],
     diet_phases: [],

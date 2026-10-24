@@ -16,7 +16,8 @@ declare module 'vitest' {
 }
 
 export const REPO_ROOT = path.resolve(__dirname, '..', '..', '..')
-export const GENETIC_PROFILE_PATH = path.resolve(__dirname, '..', 'data', 'genetics', 'genera.json')
+/** Laudo genético fictício semeado no usuário de teste (spec 024: o real saiu do repositório). */
+export const GENETIC_FIXTURE_PATH = path.resolve(__dirname, 'fixtures', 'genera.fake.json')
 
 export function parseStatusEnv(output: string): LocalEnv | null {
   const values = new Map<string, string>()
@@ -55,8 +56,8 @@ export function assertDocker(): void {
 }
 
 export function assertGeneticProfile(): void {
-  if (!existsSync(GENETIC_PROFILE_PATH)) {
-    throw new Error(`[e2e] Perfil genético ausente em apps/api/data/genetics/genera.json — sem ele o mesociclo não é gerado`)
+  if (!existsSync(GENETIC_FIXTURE_PATH)) {
+    throw new Error(`[e2e] Laudo genético fictício ausente em apps/api/e2e/fixtures/genera.fake.json`)
   }
 }
 

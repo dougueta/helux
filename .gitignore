@@ -31,3 +31,7 @@ supabase/.temp/
 
 # Resultados locais do eval do Agente de Treino (024)
 packages/ai/src/agents/__evals__/results/*.local.json
+
+# Laudo genético pessoal: nunca versionar (spec 024)
+data/genetics/
+apps/api/data/genetics/

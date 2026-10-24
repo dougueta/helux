@@ -1,5 +1,3 @@
-import { existsSync, readFileSync } from 'node:fs'
-import path from 'node:path'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { parseGeneraJson, parseGeneraTraits } from '@helux/genetics'
 import { buildDayPlan, dayTargets, type NutritionFlags } from '@helux/nutrition'
@@ -19,10 +17,10 @@ import {
 import { toFact, toGuidance, toPreferences, toSessionEdit, type FactRow, type GuidanceRow, type PreferencesRow, type SessionEditRow } from './agent-rows'
 import { getActiveMesocycle, findPendingSessionIndex, type MesocycleRow } from './mesocycle.service'
 import { loadNutritionContext } from './nutrition-context.service'
+import { getGeneticRaw } from './genetics.service'
 import { resolveDayType } from './nutrition-day.service'
 import { getTodayTirednessAssessment, todaySlug } from './tiredness.service'
 
-const GENERA_PATH = path.resolve(process.cwd(), 'data', 'genetics', 'genera.json')
 const HISTORY_SESSIONS = 10
 const EDIT_WINDOW_DAYS = 60
 /** Orientação pendente há mais de 7 dias conta como recusada (data-model). */
@@ -139,15 +137,19 @@ function checkinsSummary(list: BodyCheckin[]): IntegratedSource {
   return active(lines.join('\n'), list, list[0].created_at)
 }
 
-function geneticsSummary(): IntegratedSource {
-  if (!existsSync(GENERA_PATH)) return empty()
-  const raw: unknown = JSON.parse(readFileSync(GENERA_PATH, 'utf-8'))
-  const base = parseGeneraJson(raw)
+/**
+ * Genética do laudo do usuário (024: vem do banco). Para o prompt, só os traços
+ * com evidência forte ou moderada, com a força indicada (R14): o agente usa a
+ * genética como ajuste fino, não como motivo de método.
+ */
+function geneticsSummary(raw: unknown | null): IntegratedSource {
+  if (!raw) return empty()
+  const base = parseGeneraJson(raw as never)
   const traits = parseGeneraTraits(raw)
+  const relevant = traits.filter(t => t.evidence === 'forte' || t.evidence === 'moderada')
   const lines = [
-    `Metabolismo ${base.metabolismo}; recuperação muscular ${base.recuperacaoMuscular}; predisposição ${base.predisposicao}; risco cardiovascular ${base.riscoCardiovascular}.`,
-    ...base.alertas.map(a => `Alerta: ${a}`),
-    ...traits.map(t => `${t.gene}${t.genotype ? ` ${t.genotype}` : ''} — ${t.label}: ${t.note}${t.warn ? ' (atenção)' : ''}`),
+    `Metabolismo ${base.metabolismo}; recuperação muscular ${base.recuperacaoMuscular}; predisposição ${base.predisposicao}; risco cardiovascular ${base.riscoCardiovascular} (estimativas genéticas de evidência fraca: use só como ajuste fino).`,
+    ...relevant.map(t => `${t.gene}${t.genotype ? ` ${t.genotype}` : ''} — ${t.label}: ${t.note}${t.warn ? ' (atenção)' : ''} [evidência ${t.evidence}]`),
   ]
   return active(lines.join('\n'), { ...base, traits }, null)
 }
@@ -155,7 +157,7 @@ function geneticsSummary(): IntegratedSource {
 /** Monta o Perfil Integrado (FR-001, R6) e as restrições rígidas (R7). */
 export async function buildIntegratedProfile(userId: string, supabase: SupabaseClient, now: Date = new Date()): Promise<ProfileBuild> {
   const nowIso = now.toISOString()
-  const [settingsRes, profileRes, prefsRes, historyRes, checkinsRes, factsRes, guidanceRes, editsRes, mesocycle, tiredness, nutrition] = await Promise.all([
+  const [settingsRes, profileRes, prefsRes, historyRes, checkinsRes, factsRes, guidanceRes, editsRes, mesocycle, tiredness, nutrition, geneticRaw] = await Promise.all([
     supabase.from('agent_source_settings').select('source, enabled').eq('user_id', userId),
     supabase.from('user_training_profile').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('training_preferences').select('*').eq('user_id', userId).maybeSingle(),
@@ -167,6 +169,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     getActiveMesocycle(userId, supabase).catch(() => null),
     getTodayTirednessAssessment(userId, supabase, now).catch(() => null),
     loadNutritionContext(userId, supabase, now).catch(() => null),
+    getGeneticRaw(userId, supabase).catch(() => null),
   ])
 
   const disabled = new Set(((settingsRes.data ?? []) as { source: SourceKey; enabled: boolean }[]).filter(s => !s.enabled).map(s => s.source))
@@ -242,7 +245,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     mesociclo: mesocycleSummary(mesocycle),
     cansaco: tirednessSummary(tiredness),
     checkins: checkinsSummary((checkinsRes.data ?? []) as BodyCheckin[]),
-    genetica: geneticsSummary(),
+    genetica: geneticsSummary(geneticRaw),
     // Spec 019 (exames) ainda não existe: fonte declarada, sempre vazia (R6).
     exames: empty(),
     nutricao: nutritionSource,
