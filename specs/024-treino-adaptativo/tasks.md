@@ -79,8 +79,8 @@
 - [X] T022 [US6] Trocar a leitura de `GENERA_PATH` por `genetics.service` em `apps/api/src/routes/genetic-profile.ts`, `apps/api/src/routes/nutrition-genetic-profile.ts`, `apps/api/src/services/nutrition-context.service.ts` e `apps/api/src/services/integrated-profile.service.ts`; no resumo da genética do Perfil Integrado, listar só traços `forte`/`moderada` com a força indicada; T021 verde
 - [X] T023 [US6] Trocar o pré-requisito do e2e (`apps/api/e2e/prerequisites.ts`) e o fixture do modo mock (`apps/web/src/mocks/fixtures/genetics.fixture.ts`) por um laudo fictício em `apps/api/e2e/fixtures/genera.fake.json`, semeado em `genetic_reports` no setup do e2e
 - [X] T024 [US6] Remover `data/genetics/genera.json` do repositório (`git rm`); confirmar com `git grep -n "genera.json"` que nenhum código depende do arquivo
-- [ ] T025 [P] [US6] Escrever teste em `apps/web/src/__tests__/components/perfil/GeneticReportUpload.test.tsx`: escolhe arquivo, envia, mostra sucesso/erro e permite remover
-- [ ] T026 [US6] Implementar `apps/web/src/components/perfil/GeneticReportUpload.tsx` e incluí-lo em `apps/web/src/app/perfil/page.tsx` (seção Genética) + serviço em `apps/web/src/services/genetics.service.ts` e rota no modo mock (`apps/web/src/mocks/routes.ts`); T025 verde
+- [X] T025 [P] [US6] Escrever teste em `apps/web/src/__tests__/components/perfil/GeneticReportUpload.test.tsx`: escolhe arquivo, envia, mostra sucesso/erro e permite remover
+- [X] T026 [US6] Implementar `apps/web/src/components/perfil/GeneticReportUpload.tsx` e incluí-lo em `apps/web/src/app/perfil/page.tsx` (seção Genética) + serviço em `apps/web/src/services/genetics.service.ts` e rota no modo mock (`apps/web/src/mocks/routes.ts`); T025 verde
 
 ---
 

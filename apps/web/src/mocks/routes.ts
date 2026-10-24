@@ -98,6 +98,10 @@ function registerReads(router: MockRouter) {
     return data.genetics
   })
 
+  // Spec 024: envio e remoção do laudo genético (o mock só confirma; a persona continua com a genética dela).
+  router.register('POST', '/api/genetics/report', ({ data }) => ({ uploadedAt: new Date().toISOString(), traits: data.genetics?.traits.length ?? 0 }))
+  router.register('DELETE', '/api/genetics/report', () => null)
+
   router.register('GET', '/api/nutrition/phase', ({ data }) => ({
     phase: data.nutrition.phase,
     calibrations: data.nutrition.calibrations,

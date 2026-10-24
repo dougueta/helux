@@ -4,6 +4,7 @@ import { getServerSession } from '@/lib/server-session'
 import { Shell } from '@/components/layout/Shell'
 import { Icon } from '@/components/ui/icons'
 import { PerfilClient } from './PerfilClient'
+import { GeneticReportUpload } from '@/components/perfil/GeneticReportUpload'
 
 export default async function PerfilPage() {
   const session = await getServerSession()
@@ -64,6 +65,7 @@ export default async function PerfilPage() {
       </div>
 
       <PerfilClient />
+      <GeneticReportUpload />
     </Shell>
   )
 }
