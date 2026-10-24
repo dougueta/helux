@@ -1,30 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import type { HardConstraints } from '@helux/types'
 import { buildMesocycleMethod, buildMesocycleRequest } from '../mesocycle-prompts'
-import { buildContextBody, buildUserPrompt } from '../prompts'
 
 const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
-
-describe('buildContextBody — tempo treinando / tempo parado (US1)', () => {
-  it('inclui linhas de tempo treinando e tempo parado quando fornecidos', () => {
-    const body = buildContextBody([], [], 'Hipertrofia', 'intermediario', 4, undefined, '3 anos', '6 meses parado')
-    expect(body).toContain('3 anos')
-    expect(body).toContain('6 meses parado')
-  })
-
-  it('não quebra quando tempo treinando/parado não são fornecidos', () => {
-    const body = buildContextBody([], [], 'Hipertrofia', 'intermediario', 4)
-    expect(body).toContain('Hipertrofia')
-  })
-})
-
-describe('buildUserPrompt (fluxo legado) propaga trainingTime/timeOff sem quebrar (Nota de Escopo)', () => {
-  it('inclui os valores no prompt final quando fornecidos', () => {
-    const prompt = buildUserPrompt([], [], 'Hipertrofia', 'intermediario', 4, undefined, '3 anos', '6 meses parado')
-    expect(prompt).toContain('3 anos')
-    expect(prompt).toContain('6 meses parado')
-  })
-})
 
 describe('buildMesocycleMethod (022 T011)', () => {
   const method = buildMesocycleMethod('leve')

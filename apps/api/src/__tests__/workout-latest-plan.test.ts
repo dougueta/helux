@@ -15,6 +15,14 @@ vi.mock('../services/plan-generation.service', () => ({
   triggerBackgroundPlanGeneration: vi.fn(),
 }))
 
+// Spec 024: estado da geração (as regras de nova tentativa são as reais).
+const mockGetGenerationStatus = vi.fn().mockResolvedValue(null)
+const mockMarkGenerating = vi.fn().mockResolvedValue(undefined)
+vi.mock('../services/generation-status.service', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../services/generation-status.service')>()
+  return { ...actual, getGenerationStatus: mockGetGenerationStatus, markGenerating: mockMarkGenerating }
+})
+
 const mockHealthSamplesOrder = vi.fn().mockResolvedValue({ data: [], error: null })
 const mockHealthSamplesGte = vi.fn(() => ({ order: mockHealthSamplesOrder }))
 const mockHealthSamplesEq = vi.fn(() => ({ gte: mockHealthSamplesGte }))
@@ -81,6 +89,7 @@ describe('GET /workout/latest-plan', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
+    mockGetGenerationStatus.mockResolvedValue(null)
     vi.resetModules()
     process.env.SUPABASE_URL = 'https://test.supabase.co'
     process.env.SUPABASE_ANON_KEY = 'test-key'
@@ -162,7 +171,36 @@ describe('GET /workout/latest-plan', () => {
     expect(mockGenerateAndSaveMesocycle).toHaveBeenCalledWith('user-123', 'valid-token', expect.anything(), expect.anything())
   })
 
-  it('quando o mesociclo ativo existe mas está 100% completo, retorna status generating sem novo disparo', async () => {
+  it('024: sem mesociclo e geração em andamento → generating sem disparar de novo', async () => {
+    mockGetActiveMesocycle.mockResolvedValue(null)
+    mockGetGenerationStatus.mockResolvedValue({ status: 'gerando', attempts: 0, errorCode: null, startedAt: new Date().toISOString() })
+    const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
+    expect(body.status).toBe('generating')
+    expect(mockGenerateAndSaveMesocycle).not.toHaveBeenCalled()
+  })
+
+  it('024 (FR-031): ciclo concluído sem próximo e sem geração em andamento → dispara de novo', async () => {
+    mockGetActiveMesocycle.mockResolvedValue({ ...MESOCYCLE_ROW, sessions: [DONE_SESSION] })
+    mockFindPendingSessionIndex.mockReturnValue(-1)
+    mockGetGenerationStatus.mockResolvedValue({ status: 'falhou', attempts: 1, errorCode: 'unknown', startedAt: null })
+    const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
+    expect(body.status).toBe('generating')
+    expect(mockMarkGenerating).toHaveBeenCalled()
+    expect(mockGenerateAndSaveMesocycle).toHaveBeenCalledWith('user-123', 'valid-token', expect.anything(), expect.anything(), expect.objectContaining({ generated_at: MESOCYCLE_ROW.generated_at }))
+  })
+
+  it('024 (FR-031): 3 falhas seguidas → generation-failed com o estado, sem disparar', async () => {
+    mockGetActiveMesocycle.mockResolvedValue({ ...MESOCYCLE_ROW, sessions: [DONE_SESSION] })
+    mockFindPendingSessionIndex.mockReturnValue(-1)
+    mockGetGenerationStatus.mockResolvedValue({ status: 'falhou', attempts: 3, errorCode: 'incomplete-response', startedAt: null })
+    const body = JSON.parse((await app.inject({ method: 'GET', url: '/workout/latest-plan', headers: { Authorization: 'Bearer valid-token' } })).body)
+    expect(body.status).toBe('generation-failed')
+    expect(body.generation).toMatchObject({ status: 'falhou', attempts: 3, errorCode: 'incomplete-response' })
+    expect(mockGenerateAndSaveMesocycle).not.toHaveBeenCalled()
+  })
+
+  it('quando o mesociclo ativo existe mas está 100% completo e o próximo está sendo gerado, retorna generating sem novo disparo', async () => {
+    mockGetGenerationStatus.mockResolvedValue({ status: 'gerando', attempts: 0, errorCode: null, startedAt: new Date().toISOString() })
     const allDoneRow = {
       ...MESOCYCLE_ROW,
       sessions: [DONE_SESSION, { ...PENDING_SESSION, completedAt: '2026-07-21T10:00:00.000Z' }, { ...UPCOMING_SESSION, completedAt: '2026-07-22T10:00:00.000Z' }],

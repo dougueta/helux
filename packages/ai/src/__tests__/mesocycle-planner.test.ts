@@ -7,7 +7,7 @@ vi.mock('@anthropic-ai/sdk', () => ({
   default: vi.fn(() => ({ beta: { messages: { stream: mockStream } } })),
 }))
 
-import { generateMesocyclePlan, ConstraintsUnsatisfiableError } from '../mesocycle-planner'
+import { generateMesocyclePlan, ConstraintsUnsatisfiableError, IncompleteResponseError } from '../mesocycle-planner'
 import { AgentRefusalError } from '../agents/client'
 
 const PROFILE: IntegratedProfile = {
@@ -61,8 +61,29 @@ beforeEach(() => {
   mockStream.mockReset()
 })
 
+describe('resposta cortada (024 T027)', () => {
+  it('stop_reason max_tokens → nova tentativa; persistindo → IncompleteResponseError com o uso', async () => {
+    mockStream.mockReturnValueOnce(reply({ cortado: true }, 'max_tokens')).mockReturnValueOnce(reply(output('Supino Reto (Halteres)')))
+    const ok = await generateMesocyclePlan({ profile: PROFILE, constraints: HALTERES, daysPerWeek: 2 })
+    expect(mockStream).toHaveBeenCalledTimes(2)
+    expect(ok.plan.sessions).toHaveLength(2)
+
+    mockStream.mockReset()
+    mockStream.mockReturnValue(reply({ cortado: true }, 'max_tokens'))
+    const err = await generateMesocyclePlan({ profile: PROFILE, constraints: HALTERES, daysPerWeek: 2 }).catch(e => e)
+    expect(err).toBeInstanceOf(IncompleteResponseError)
+    expect((err as IncompleteResponseError).usages).toHaveLength(4)
+  })
+
+  it('aceita esforço explícito (eval)', async () => {
+    mockStream.mockReturnValueOnce(reply(output('Supino Reto (Halteres)')))
+    await generateMesocyclePlan({ profile: PROFILE, constraints: HALTERES, daysPerWeek: 2, effort: 'high' })
+    expect(mockStream.mock.calls[0][0].output_config.effort).toBe('high')
+  })
+})
+
 describe('generateMesocyclePlan (022 T013)', () => {
-  it('Opus 5.5, esforço medium, structured output, fallback e prompt em blocos com cache', async () => {
+  it('Opus 5.5, esforço xhigh (024), 64k tokens, structured output, fallback e prompt em blocos com cache', async () => {
     mockStream.mockReturnValueOnce(reply(output('Supino Reto (Halteres)')))
     await generateMesocyclePlan({ profile: PROFILE, constraints: HALTERES, daysPerWeek: 2 })
     const params = mockStream.mock.calls[0][0]
@@ -70,7 +91,8 @@ describe('generateMesocyclePlan (022 T013)', () => {
       model: 'claude-opus-5-5',
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
-      output_config: { effort: 'medium', format: { type: 'json_schema' } },
+      max_tokens: 64000,
+      output_config: { effort: 'xhigh', format: { type: 'json_schema' } },
     })
     expect(params.system[0].cache_control).toEqual({ type: 'ephemeral', ttl: '1h' })
     expect(params.system[0].text).toContain('Agente de Treino')

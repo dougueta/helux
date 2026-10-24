@@ -1,6 +1,5 @@
-export { generateWorkoutPlan } from './planner'
-export { generateMesocyclePlan, enrichExercise, ConstraintsUnsatisfiableError } from './mesocycle-planner'
-export type { GenerateMesocycleInput, GenerateMesocycleResult } from './mesocycle-planner'
+export { generateMesocyclePlan, enrichExercise, ConstraintsUnsatisfiableError, IncompleteResponseError, MESOCYCLE_EFFORT } from './mesocycle-planner'
+export type { GenerateMesocycleInput, GenerateMesocycleResult, AgentEffort } from './mesocycle-planner'
 export { CARDIO_BANK, findCardio, type CardioBankEntry } from './cardio-bank'
 
 // Spec 022 — agentes especialistas

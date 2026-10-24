@@ -3,8 +3,8 @@ import cors from '@fastify/cors'
 import { healthRoutes } from './routes/health'
 import { geneticProfileRoutes } from './routes/genetic-profile'
 import { geneticsReportRoutes } from './routes/genetics-report'
-import { workoutGenerateRoutes } from './routes/workout-generate'
 import { workoutLatestPlanRoutes } from './routes/workout-latest-plan'
+import { mesocycleActionsRoutes } from './routes/mesocycle-actions'
 import { healthSyncRoutes } from './routes/health-sync'
 import { recoveryLatestRoutes } from './routes/recovery-latest'
 import { workoutSessionsRoutes } from './routes/workout-sessions'
@@ -39,7 +39,7 @@ export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): Fasti
   app.register(healthRoutes)
   app.register(geneticProfileRoutes)
   app.register(geneticsReportRoutes)
-  app.register(workoutGenerateRoutes)
+  app.register(mesocycleActionsRoutes)
   app.register(workoutLatestPlanRoutes)
   app.register(healthSyncRoutes)
   app.register(recoveryLatestRoutes)

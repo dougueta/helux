@@ -1,11 +1,21 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { ConstraintsUnsatisfiableError, generateMesocyclePlan } from '@helux/ai'
-import type { GeneticProfile, MesocycleSession } from '@helux/types'
+import { AgentRefusalError, ConstraintsUnsatisfiableError, generateMesocyclePlan, IncompleteResponseError } from '@helux/ai'
+import type { GenerationErrorCode, GeneticProfile, MesocycleSession } from '@helux/types'
 import { applyProgression, computeMesocycleProgression, normalizeSessionExercises } from '@helux/workouts'
 import { assertBudget, BudgetExceededError, recordUsage } from './ai-budget.service'
 import { buildIntegratedProfile } from './integrated-profile.service'
 import { fetchSessionsSince } from './plan-context.service'
 import { getActiveMesocycle, findPendingSessionIndex, markSessionCompleted, isMesocycleComplete } from './mesocycle.service'
+import { markFailed, markGenerating, markOk } from './generation-status.service'
+
+/** Código de erro gravado no estado da geração (024, FR-031). */
+function errorCodeOf(err: unknown): GenerationErrorCode {
+  if (err instanceof BudgetExceededError) return 'budget-exceeded'
+  if (err instanceof ConstraintsUnsatisfiableError) return 'constraints-unsatisfiable'
+  if (err instanceof IncompleteResponseError) return 'incomplete-response'
+  if (err instanceof AgentRefusalError) return 'refusal'
+  return 'unknown'
+}
 
 interface MinimalLogger {
   error: (obj: unknown, msg?: string) => void
@@ -36,15 +46,11 @@ export async function generateAndSaveMesocycle(
   previous?: PreviousMesocycle,
 ): Promise<void> {
   try {
+    await markGenerating(userId, supabase)
     // Spec 022: o Agente de Treino lê o Perfil Integrado (fontes ativas + restrições rígidas).
     const build = await buildIntegratedProfile(userId, supabase)
-    try {
-      await assertBudget(userId, supabase)
-    } catch (err) {
-      // Teto de IA atingido: o mesociclo atual continua; tenta de novo no próximo acesso (FR-026).
-      if (err instanceof BudgetExceededError) return
-      throw err
-    }
+    // Teto de IA atingido: o mesociclo atual continua; o estado "falhou" deixa o usuário saber (FR-026).
+    await assertBudget(userId, supabase)
 
     const perfil = build.profile.sources.perfil
     const userLevel = (perfil.status === 'ativa' ? (perfil.data as { level?: string } | null)?.level : null) ?? 'intermediario'
@@ -69,7 +75,7 @@ export async function generateAndSaveMesocycle(
         ...(withLoad.length > 0 ? { loadProgression: withLoad } : {}),
       })
     } catch (err) {
-      if (err instanceof ConstraintsUnsatisfiableError) await recordUsage(userId, err.usages, supabase)
+      if (err instanceof ConstraintsUnsatisfiableError || err instanceof IncompleteResponseError) await recordUsage(userId, err.usages, supabase)
       throw err
     }
     await recordUsage(userId, result.usages, supabase)
@@ -108,11 +114,15 @@ export async function generateAndSaveMesocycle(
       sources_used: build.sourcesUsed,
     })
 
-    if (error) {
-      logger.error(error, 'mesocycle generation: failed to save plan')
-    }
+    if (error) throw error
+    await markOk(userId, supabase)
   } catch (err) {
     logger.error(err, 'mesocycle generation failed')
+    try {
+      await markFailed(userId, errorCodeOf(err), supabase)
+    } catch (e) {
+      logger.error(e, 'mesocycle generation: failed to save status')
+    }
   }
 }
 

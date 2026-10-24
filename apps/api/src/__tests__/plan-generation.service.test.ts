@@ -54,8 +54,20 @@ class ConstraintsUnsatisfiableError extends Error {
     super('x')
   }
 }
+class IncompleteResponseError extends Error {
+  constructor(public usages: unknown[]) {
+    super('cortada')
+  }
+}
+class AgentRefusalError extends Error {}
 const generateMesocyclePlanMock = vi.fn()
-vi.mock('@helux/ai', () => ({ generateMesocyclePlan: generateMesocyclePlanMock, ConstraintsUnsatisfiableError }))
+vi.mock('@helux/ai', () => ({ generateMesocyclePlan: generateMesocyclePlanMock, ConstraintsUnsatisfiableError, IncompleteResponseError, AgentRefusalError }))
+
+// Spec 024: estado da geração.
+const markGeneratingMock = vi.fn()
+const markOkMock = vi.fn()
+const markFailedMock = vi.fn()
+vi.mock('../services/generation-status.service', () => ({ markGenerating: markGeneratingMock, markOk: markOkMock, markFailed: markFailedMock }))
 const planResult = (plan: unknown) => ({ plan, decisions: DECISIONS, usages: USAGES })
 
 const getActiveMesocycleMock = vi.fn()
@@ -180,6 +192,37 @@ describe('generateAndSaveMesocycle', () => {
       generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never),
     ).resolves.not.toThrow()
     expect(logger.error).toHaveBeenCalled()
+  })
+
+  it('024 (FR-031): marca gerando ao começar e ok ao salvar', async () => {
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+    expect(markGeneratingMock).toHaveBeenCalledWith('user-123', supabase)
+    expect(markOkMock).toHaveBeenCalledWith('user-123', supabase)
+    expect(markFailedMock).not.toHaveBeenCalled()
+    expect(markGeneratingMock.mock.invocationCallOrder[0]).toBeLessThan(markOkMock.mock.invocationCallOrder[0])
+  })
+
+  it.each([
+    ['teto', () => assertBudgetMock.mockRejectedValue(new BudgetExceededError('teto')), 'budget-exceeded'],
+    ['restrições', () => generateMesocyclePlanMock.mockRejectedValue(new ConstraintsUnsatisfiableError([], USAGES)), 'constraints-unsatisfiable'],
+    ['resposta cortada', () => generateMesocyclePlanMock.mockRejectedValue(new IncompleteResponseError(USAGES)), 'incomplete-response'],
+    ['recusa', () => generateMesocyclePlanMock.mockRejectedValue(new AgentRefusalError('não')), 'refusal'],
+    ['erro qualquer', () => generateMesocyclePlanMock.mockRejectedValue(new Error('boom')), 'unknown'],
+    ['falha ao gravar', () => insertMock.mockResolvedValue({ error: new Error('insert failed') }), 'unknown'],
+  ])('024 (FR-031): %s → falhou com o código', async (_n, arrange, code) => {
+    arrange()
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+    expect(markFailedMock).toHaveBeenCalledWith('user-123', code, supabase)
+    expect(markOkMock).not.toHaveBeenCalled()
+  })
+
+  it('024: resposta cortada também registra o uso', async () => {
+    generateMesocyclePlanMock.mockRejectedValue(new IncompleteResponseError(USAGES))
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+    expect(recordUsageMock).toHaveBeenCalledWith('user-123', USAGES, supabase)
   })
 
   it('US3 (FR-010): remonta o Perfil Integrado a cada geração', async () => {

@@ -31,6 +31,19 @@ export class ConstraintsUnsatisfiableError extends Error {
   }
 }
 
+/** A resposta veio cortada (`max_tokens`) em todas as tentativas (024, FR-030). */
+export class IncompleteResponseError extends Error {
+  readonly code = 'incomplete-response'
+  constructor(readonly usages: UsageRecord[]) {
+    super('A resposta da IA veio incompleta')
+  }
+}
+
+export type AgentEffort = 'low' | 'medium' | 'high' | 'xhigh' | 'max'
+
+/** Esforço padrão da geração (024 R12): a mais cara e importante das chamadas, ~1×/ciclo. */
+export const MESOCYCLE_EFFORT: AgentEffort = 'xhigh'
+
 export interface GenerateMesocycleInput {
   profile: IntegratedProfile
   constraints: HardConstraints
@@ -41,6 +54,8 @@ export interface GenerateMesocycleInput {
   loadProgression?: LoadProgression[]
   /** Limite de cardio das fases de aquecimento/volta à calma. */
   cardioLimit?: string
+  /** Esforço do modelo; padrão `MESOCYCLE_EFFORT` (o eval varia). */
+  effort?: AgentEffort
 }
 
 export interface GenerateMesocycleResult {
@@ -64,14 +79,15 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
   ]
 
   let violations: ConstraintViolation[] = []
+  let incomplete = false
   for (let attempt = 0; attempt < 2; attempt++) {
     const message = await client.beta.messages
       .stream({
         model: AGENT_MODEL,
-        max_tokens: 32000,
+        max_tokens: 64000,
         ...FALLBACK_PARAMS,
         betas: [...FALLBACK_PARAMS.betas],
-        output_config: { effort: 'medium', format: { type: 'json_schema', schema: MESOCYCLE_SCHEMA } },
+        output_config: { effort: input.effort ?? MESOCYCLE_EFFORT, format: { type: 'json_schema', schema: MESOCYCLE_SCHEMA } },
         system,
         messages: [
           {
@@ -84,6 +100,9 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
 
     usages.push(...usagesFromMessage(message, 'mesociclo', 'treino'))
     if (message.stop_reason === 'refusal') throw new AgentRefusalError()
+    // Resposta cortada: JSON incompleto, descarta e tenta de novo (FR-030).
+    incomplete = message.stop_reason === 'max_tokens'
+    if (incomplete) continue
 
     const raw = JSON.parse(messageText(message)) as RawMesocycleOutput
     const sessions = toSessions(raw, input.geneticProfile ?? NEUTRAL_GENETICS)
@@ -96,6 +115,7 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
       }
     }
   }
+  if (incomplete) throw new IncompleteResponseError(usages)
   throw new ConstraintsUnsatisfiableError(violations, usages)
 }
 
