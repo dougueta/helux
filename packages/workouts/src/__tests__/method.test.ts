@@ -173,3 +173,25 @@ describe('modifiersFromFindings (024 T102)', () => {
     expect(prescribeMethod({ ...base, modifiers }).weeklySetsPerGroup.max).toBeLessThan(prescribeMethod(base).weeklySetsPerGroup.max)
   })
 })
+
+describe('prescribeMethod — tempo por sessão (achado do eval da 024)', () => {
+  const base = { goal: 'emagrecimento' as const, level: 'intermediario' as const, timeOffMonths: 1, daysAvailable: 3, maxCardioImpact: null, minRir: null, cardioLikes: [], cardioAvoid: [] }
+
+  it('o volume semanal cabe nas sessões: 2 dias de força × 40 min não comportam 7 séries × 6 grupos', async () => {
+    const { prescribeMethod } = await import('../method')
+    const free = prescribeMethod(base)
+    const timed = prescribeMethod({ ...base, maxSessionMinutes: 40 })
+    // 40 min: 5 de aquecimento + 16 séries de 130 s por sessão → 32 séries na semana → 5 por grupo.
+    expect(free.weeklySetsPerGroup.min * 6).toBeGreaterThan(32)
+    expect(timed.weeklySetsPerGroup.min * 6).toBeLessThanOrEqual(32)
+    expect(timed.weeklySetsPerGroup.min).toBe(5)
+    expect(timed.weeklySetsPerGroup.max).toBeGreaterThanOrEqual(timed.weeklySetsPerGroup.min)
+    expect(timed.modifiers).toEqual(expect.arrayContaining([expect.objectContaining({ source: 'tempo', description: expect.stringMatching(/40 min/) })]))
+  })
+
+  it('com tempo de sobra, nada muda', async () => {
+    const { prescribeMethod } = await import('../method')
+    expect(prescribeMethod({ ...base, maxSessionMinutes: 90 }).weeklySetsPerGroup).toEqual(prescribeMethod(base).weeklySetsPerGroup)
+    expect(prescribeMethod({ ...base, maxSessionMinutes: 90 }).modifiers.some(m => m.source === 'tempo')).toBe(false)
+  })
+})

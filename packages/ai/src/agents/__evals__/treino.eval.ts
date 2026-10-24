@@ -16,7 +16,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { describe, it } from 'vitest'
 import type { HealthCondition, MesocycleSession, PlanDecision, UsageRecord } from '@helux/types'
-import { CONDITION_CATALOG, constraintsFromConditions, prescribeMethod, rulesFor } from '@helux/workouts'
+import { CONDITION_CATALOG, constraintsFromConditions, modifiersFromFindings, prescribeMethod, rulesFor } from '@helux/workouts'
 import { generateMesocyclePlan, type AgentEffort } from '../../mesocycle-planner'
 import { validateAgainstMethod } from '../method-validation'
 import { renderProfile } from '../render-profile'
@@ -33,23 +33,29 @@ const RESULTS_DIR = path.resolve('src/agents/__evals__/results')
 const ESTIMATED_USD_PER_PROFILE = 0.6
 
 const JUDGE_CRITERIA = ['objetivo', 'justificativas', 'genetica-proporcional', 'notas-honestas'] as const
-type JudgeCriterion = (typeof JUDGE_CRITERIA)[number]
+/** Só no perfil com ciclo anterior (024 F5). */
+const CYCLE_CRITERION = 'ciclo'
+type JudgeCriterion = (typeof JUDGE_CRITERIA)[number] | typeof CYCLE_CRITERION
 
-const JUDGE_SCHEMA = {
-  type: 'object',
-  properties: {
-    scores: {
-      type: 'object',
-      // Structured outputs não aceitam minimum/maximum em inteiros: a faixa 0–5 vai no prompt e é limitada ao ler.
-      properties: Object.fromEntries(JUDGE_CRITERIA.map(c => [c, { type: 'integer' }])),
-      required: [...JUDGE_CRITERIA],
-      additionalProperties: false,
+function judgeSchema(criteria: readonly JudgeCriterion[]) {
+  return {
+    type: 'object',
+    properties: {
+      scores: {
+        type: 'object',
+        // Structured outputs não aceitam minimum/maximum em inteiros: a faixa 0–5 vai no prompt e é limitada ao ler.
+        properties: Object.fromEntries(criteria.map(c => [c, { type: 'integer' }])),
+        required: [...criteria],
+        additionalProperties: false,
+      },
+      comments: { type: 'string' },
     },
-    comments: { type: 'string' },
-  },
-  required: ['scores', 'comments'],
-  additionalProperties: false,
-} as const
+    required: ['scores', 'comments'],
+    additionalProperties: false,
+  }
+}
+
+const CYCLE_JUDGE = `- ciclo: o plano trata cada achado do ciclo anterior? Exercício estagnado com faixa ou variação diferente, exercício com dor recorrente fora do plano (com alternativa de menor carga articular), cardio em formato que caiba melhor, e as decisões com tópico "ciclo" explicam o que mudou com os números do ciclo.`
 
 const JUDGE_SYSTEM = `Você é um treinador sênior revisando um plano de treino gerado por IA para um usuário real. Dê notas inteiras de 0 a 5:
 - objetivo: o plano serve ao objetivo declarado, ao nível, ao tempo parado e às condições de saúde (método, volume, intensidade, cardio e mobilidade adequados)?
@@ -68,23 +74,25 @@ function compactPlan(sessions: MesocycleSession[]): string {
     .join('\n')
 }
 
-async function judge(p: EvalProfile, sessions: MesocycleSession[], rationale: string, decisions: PlanDecision[]): Promise<{ scores: Record<JudgeCriterion, number>; comments: string; usages: UsageRecord[] }> {
+async function judge(p: EvalProfile, sessions: MesocycleSession[], rationale: string, decisions: PlanDecision[]): Promise<{ scores: Partial<Record<JudgeCriterion, number>>; comments: string; usages: UsageRecord[] }> {
+  const criteria: JudgeCriterion[] = p.cycle ? [...JUDGE_CRITERIA, CYCLE_CRITERION] : [...JUDGE_CRITERIA]
+  const cycleText = p.cycle ? `\n\n# Ciclo anterior\n${p.cycle.findings.map(f => `- ${f.kind}: ${f.subject} — ${f.evidence}`).join('\n')}` : ''
   const client = new Anthropic()
   const res = await client.messages.create({
     model: 'claude-opus-5-5',
     max_tokens: 4000,
-    output_config: { effort: 'low', format: { type: 'json_schema', schema: JUDGE_SCHEMA } },
-    system: JUDGE_SYSTEM,
+    output_config: { effort: 'low', format: { type: 'json_schema', schema: judgeSchema(criteria) } },
+    system: p.cycle ? JUDGE_SYSTEM.replace('\nEm comments', `\n${CYCLE_JUDGE}\nEm comments`) : JUDGE_SYSTEM,
     messages: [
       {
         role: 'user',
-        content: `# Perfil do usuário\n${renderProfile(p.profile)}\n\n# Plano\n${compactPlan(sessions)}\n\n# Justificativa\n${rationale}\n\n# Decisões\n${decisions.map(d => `- [${d.topic}] ${d.choice} — ${d.reason} (fontes: ${d.sources.join(', ')})`).join('\n')}`,
+        content: `# Perfil do usuário\n${renderProfile(p.profile)}${cycleText}\n\n# Plano\n${compactPlan(sessions)}\n\n# Justificativa\n${rationale}\n\n# Decisões\n${decisions.map(d => `- [${d.topic}] ${d.choice} — ${d.reason} (fontes: ${d.sources.join(', ')})`).join('\n')}`,
       },
     ],
   })
   const block = res.content.find(b => b.type === 'text')
   const parsed = JSON.parse(block && block.type === 'text' ? block.text : '{}') as { scores: Record<JudgeCriterion, number>; comments: string }
-  const scores = Object.fromEntries(JUDGE_CRITERIA.map(c => [c, Math.max(0, Math.min(5, parsed.scores?.[c] ?? 0))])) as Record<JudgeCriterion, number>
+  const scores = Object.fromEntries(criteria.map(c => [c, Math.max(0, Math.min(5, parsed.scores?.[c] ?? 0))])) as Partial<Record<JudgeCriterion, number>>
   return { scores, comments: parsed.comments ?? '', usages: usagesFromMessage(res, 'mesociclo', null) }
 }
 
@@ -98,7 +106,9 @@ interface ProfileOutcome extends ProfileResult {
 function agentInput(p: EvalProfile) {
   const conditions: HealthCondition[] = p.structured.conditions.map((c, i) => ({ ...c, id: `c${i}`, flare: null }))
   const fromConditions = constraintsFromConditions(conditions)
-  const constraints = { ...p.agentConstraints, ...fromConditions, blockedPatterns: [...p.agentConstraints.blockedPatterns, ...fromConditions.blockedPatterns], blockedExercises: [...p.agentConstraints.blockedExercises, ...fromConditions.blockedExercises] }
+  // Como em produção (024 F5): achados do ciclo viram modificadores e bloqueios.
+  const fromCycle = p.cycle ? modifiersFromFindings(p.cycle.findings) : { modifiers: [], blockedExercises: [] }
+  const constraints = { ...p.agentConstraints, ...fromConditions, blockedPatterns: [...p.agentConstraints.blockedPatterns, ...fromConditions.blockedPatterns], blockedExercises: [...p.agentConstraints.blockedExercises, ...fromConditions.blockedExercises, ...fromCycle.blockedExercises] }
   const method = prescribeMethod({
     goal: p.structured.goal,
     level: p.structured.level,
@@ -108,6 +118,8 @@ function agentInput(p: EvalProfile) {
     minRir: constraints.minRir,
     cardioLikes: [],
     cardioAvoid: [],
+    maxSessionMinutes: constraints.maxSessionMinutes,
+    modifiers: fromCycle.modifiers,
   })
   const labelled = conditions.map(c => {
     const label = CONDITION_CATALOG.find(k => k.key === c.catalogKey)?.label ?? c.customLabel ?? 'Condição'
@@ -121,24 +133,33 @@ async function runProfile(p: EvalProfile): Promise<ProfileOutcome> {
   try {
     const { constraints, method, conditions } = agentInput(p)
     const effort = process.env.EVAL_EFFORT as AgentEffort | undefined
-    const result = await generateMesocyclePlan({ profile: p.profile, constraints, method, conditions, geneticProfile: p.geneticProfile, ...(effort ? { effort } : {}) })
+    const result = await generateMesocyclePlan({ profile: p.profile, constraints, method, conditions, geneticProfile: p.geneticProfile, ...(p.cycle ? { cycle: p.cycle } : {}), ...(effort ? { effort } : {}) })
     // A semana-modelo é uma semana: marca semana 1 para a pontuação contar sem escalar.
     const sessions = result.plan.sessions.map(s => ({ ...s, week: 1 }))
     const det = scorePlan({ sessions, constraints: p.expectedConstraints, expectations: { ...p.expectations, setsRange: method.weeklySetsPerGroup, cardioPerWeek: method.cardioSessions }, extraViolations: validateAgainstMethod(result.plan.sessions, method) })
     // O plano fica salvo mesmo se o juiz falhar, para não perder a geração (que é a parte cara).
     fs.mkdirSync(RESULTS_DIR, { recursive: true })
     fs.writeFileSync(path.join(RESULTS_DIR, `plan-${p.id}.local.json`), JSON.stringify({ sessions, rationale: result.plan.rationale, decisions: result.decisions }, null, 2))
-    const j = await judge(p, sessions, result.plan.rationale, result.decisions).catch(err => ({ scores: { objetivo: 0, justificativas: 0, 'genetica-proporcional': 0, 'notas-honestas': 0 }, comments: `juiz falhou: ${(err as Error).message}`, usages: [] as UsageRecord[] }))
+    const j = await judge(p, sessions, result.plan.rationale, result.decisions).catch(err => ({ scores: { objetivo: 0, justificativas: 0, 'genetica-proporcional': 0, 'notas-honestas': 0, ...(p.cycle ? { ciclo: 0 } : {}) } as Partial<Record<JudgeCriterion, number>>, comments: `juiz falhou: ${(err as Error).message}`, usages: [] as UsageRecord[] }))
     return {
       profile: p.id,
-      scores: { ...det.scores, objetivo: j.scores.objetivo, justificativas: j.scores.justificativas, 'genetica-proporcional': j.scores['genetica-proporcional'], 'notas-honestas': Math.min(det.scores['notas-honestas'], j.scores['notas-honestas']) },
+      scores: {
+        ...det.scores,
+        objetivo: j.scores.objetivo ?? 0,
+        justificativas: j.scores.justificativas ?? 0,
+        'genetica-proporcional': j.scores['genetica-proporcional'] ?? 0,
+        'notas-honestas': Math.min(det.scores['notas-honestas'], j.scores['notas-honestas'] ?? 0),
+        ...(p.cycle ? { ciclo: j.scores.ciclo ?? 0 } : {}),
+      },
       usages: [...result.usages, ...j.usages],
       violations: det.violations.map(v => `${v.exercise ?? '—'}: ${v.rule}`),
       comments: j.comments,
     }
   } catch (err) {
     const usages = (err as { usages?: UsageRecord[] }).usages ?? []
-    return { profile: p.id, scores: { seguranca: 0, 'frequencia-volume': 0, 'cardio-mobilidade': 0, 'notas-honestas': 0, objetivo: 0, justificativas: 0, 'genetica-proporcional': 0 }, usages, violations: [], comments: '', error: (err as Error).message }
+    // Restrições impossíveis: as violações da última tentativa explicam a falha.
+    const violations = ((err as { violations?: { exercise?: string | null; rule: string; message: string }[] }).violations ?? []).map(v => `${v.exercise ?? '—'}: ${v.rule} — ${v.message}`)
+    return { profile: p.id, scores: { seguranca: 0, 'frequencia-volume': 0, 'cardio-mobilidade': 0, 'notas-honestas': 0, objetivo: 0, justificativas: 0, 'genetica-proporcional': 0 }, usages, violations, comments: '', error: (err as Error).message }
   }
 }
 
@@ -164,7 +185,10 @@ describe.skipIf(!HAS_KEY)('eval: Agente de Treino (024)', () => {
       const summary = aggregate(outcomes)
       const criteria = Object.keys(summary.byCriterion)
       console.log(['perfil', ...criteria].join(' | '))
-      for (const o of outcomes) console.log([o.profile, ...criteria.map(c => o.scores[c] ?? '—')].join(' | ') + (o.error ? `  ERRO: ${o.error}` : ''))
+      for (const o of outcomes) {
+        console.log([o.profile, ...criteria.map(c => o.scores[c] ?? '—')].join(' | ') + (o.error ? `  ERRO: ${o.error}` : ''))
+        if (o.error) for (const v of o.violations) console.log(`    · ${v}`)
+      }
       console.log(['média', ...criteria.map(c => summary.byCriterion[c])].join(' | '))
       console.log(`total ${summary.total} · custo US$ ${summary.costUsd.toFixed(2)}`)
 

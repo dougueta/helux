@@ -262,3 +262,16 @@ Total **2,71**, custo US$ 0,90. Achados do juiz: divisões com 1×/semana por gr
 - **Decisão**: o check-in de antes abre como folha no treino ativo, antes da primeira série. Com dor relevante, a web relê `/workout/latest-plan` (que já aplica a dor do dia) e troca os exercícios antes de qualquer série. O de depois abre ao finalizar, antes de salvar, e os ids vão em `checkinIds` no `POST /api/workouts/sessions`. A energia do "antes" só vira o cansaço do dia se ele ainda não foi marcado.
 - **Motivo**: um ponto único (a página do treino) cobre Hoje e Treinos sem mexer no fluxo de cansaço da spec 011, e o check-in nunca bloqueia o treino (erro → segue).
 - **Alternativa descartada**: fundir com o diálogo de cansaço, porque duplicaria a pergunta de energia e mudaria o fluxo validado na 011.
+
+## R12b — Sweep de effort no eval (medido em 2026-10-24)
+
+| effort | total | segurança | freq/volume | cardio/mob | notas | objetivo | justif. | genética | custo |
+|---|---|---|---|---|---|---|---|---|---|
+| linha de base (medium, gerador antigo) | 2,71 | 5 | 1 | 0 | 4 | 2,6 | 2,4 | 4 | US$ 0,90 |
+| high | 2,63 | 3 | 3 | 3 | 2,6 | 2 | 1,8 | 3 | US$ 2,25 |
+| xhigh | 2,60 | 3 | 3 | 3 | 2,4 | 2 | 1,8 | 3 | US$ 4,16 |
+| max | não rodou (créditos da API acabaram) | | | | | | | | |
+
+- Nos 3 perfis que geraram, high e xhigh ficaram iguais: segurança 5, frequência/volume 5, cardio/mobilidade 5 (antes 1 e 0). A média caiu porque 2 dos 5 perfis falharam nos dois níveis com "restrições impossíveis" (nota 0 em tudo).
+- **Causa encontrada no perfil pouco-tempo-emagrecimento**: o método exigia 6 grupos × 7 séries (42 por semana) em 2 dias de força de 40 min, que comportam 32. Correção: `prescribeMethod` recebe `maxSessionMinutes` e limita a faixa de séries ao que cabe (modificador `tempo`). No dono-joelho-gota, o banco tem exercícios suficientes com carga no joelho ≤ 1 (8 de quadríceps); a causa ainda precisa da lista de violações, que o eval agora imprime.
+- **Decisão provisória**: manter `xhigh`, porque o dono pediu qualidade acima de custo. Rodar de novo high/xhigh/max depois da correção e com créditos; se xhigh continuar igual a high, trocar para `high` (metade do custo).

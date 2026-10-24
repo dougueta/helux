@@ -28,5 +28,5 @@ export interface MethodPrescription {
   weekly: WeekPrescription[]
   repRanges: { basicos: [number, number]; acessorios: [number, number] }
   cardio: { minutes: number; zone: CardioZone; maxImpact: StressLevel; allowed: string[] }
-  modifiers: Array<{ source: 'checkin' | 'ciclo' | 'condicao' | 'pausa'; description: string }>
+  modifiers: Array<{ source: 'checkin' | 'ciclo' | 'condicao' | 'pausa' | 'tempo'; description: string }>
 }

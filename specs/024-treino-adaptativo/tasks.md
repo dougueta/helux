@@ -180,7 +180,7 @@
 - [X] T083 [US3] Implementar em `apps/web/src/components/workout/PlanExerciseList.tsx`, `HomeClient.tsx` e `TreinosClient.tsx` até T082 passar
 - [X] T084 [US3] Testes e implementação no treino ativo (`apps/web/src/app/workout/page.tsx`, `apps/web/src/hooks/useActiveWorkout.ts`): item de cardio com cronômetro de minutos e "concluído" (sem séries), item de mobilidade como checklist; sessão `kind: 'cardio'`/`'mobilidade'` salva sem exigir séries de força (ajustar o `superRefine` de `workout-sessions.ts` com teste)
 - [X] T085 [US3] Atualizar fixtures e rotas do modo mock com um mesociclo semanal (`apps/web/src/mocks/fixtures/workouts.fixture.ts`, `routes.ts`) e o e2e `apps/api/e2e/mesocycle-flow.e2e.ts` para o formato semanal com a IA simulada (`fake-anthropic.ts`)
-- [ ] T086 [US3] Atualizar `treino.eval.ts`/`treino-scoring.ts` para usar a prescrição nas checagens; rodar o eval com `high`, `xhigh` e `max` (aprovação do custo), escolher o effort e registrar a decisão em research.md R12; confirmar SC-001/002/003 e total ≥ linha de base
+- [ ] T086 [US3] Atualizar `treino.eval.ts`/`treino-scoring.ts` para usar a prescrição nas checagens; rodar o eval com `high`, `xhigh` e `max` (aprovação do custo), escolher o effort e registrar a decisão em research.md R12; confirmar SC-001/002/003 e total ≥ linha de base — parcial: high e xhigh medidos (R12b); max e a nova rodada pendentes por falta de créditos da API
 
 **Checkpoint F3**: quickstart F3 ok → PR F3.
 
@@ -232,7 +232,7 @@
 - [X] T104 [US5] Escrever testes e implementar `GET /workout/mesocycle/:id/analysis` em `apps/api/src/routes/mesocycle-actions.ts`
 - [X] T105 [P] [US5] Escrever testes em `apps/web/src/__tests__/components/cycle/CycleSummary.test.tsx`: aderência por tipo, evolução por exercício, dores, tendência dos check-ins, dados que faltaram, e "o que mudou no próximo ciclo" a partir das decisões `ciclo`; sugestão de novo objetivo com aceitar/recusar
 - [X] T106 [US5] Implementar `apps/web/src/components/cycle/CycleSummary.tsx`, exibido na Home ao iniciar um ciclo novo e acessível em Treinos; rotas no modo mock; T105 verde
-- [ ] T107 [US5] Adicionar o perfil 6 ("ciclo concluído" com estagnação no agachamento, dor recorrente no leg press e baixa aderência ao cardio) em `treino-profiles.ts` e o critério `ciclo` no juiz; rodar o eval (aprovação do custo) e confirmar SC-005
+- [ ] T107 [US5] Adicionar o perfil 6 ("ciclo concluído" com estagnação no agachamento, dor recorrente no leg press e baixa aderência ao cardio) em `treino-profiles.ts` e o critério `ciclo` no juiz; rodar o eval (aprovação do custo) e confirmar SC-005 — perfil 6 e critério `ciclo` prontos; a rodada fica pendente (créditos da API)
 
 **Checkpoint F5**: quickstart F5 ok → PR F5.
 
@@ -240,9 +240,9 @@
 
 ## Phase 12: Polish & Cross-Cutting
 
-- [ ] T108 [P] Atualizar `docs/deploy.md` com as migrations da 024, o upload do laudo genético e as ações do dono (repositório privado, `git filter-repo` do laudo)
-- [ ] T109 [P] Revisar logs da API: nenhum dado de saúde (condições, dores, sensações, genética) em logs; só métricas (teste em `apps/api/src/__tests__/` cobrindo o logger da geração)
-- [ ] T110 Rodar `pnpm typecheck` e `pnpm test` e comparar com T001; nenhuma regressão
+- [X] T108 [P] Atualizar `docs/deploy.md` com as migrations da 024, o upload do laudo genético e as ações do dono (repositório privado, `git filter-repo` do laudo)
+- [X] T109 [P] Revisar logs da API: nenhum dado de saúde (condições, dores, sensações, genética) em logs; só métricas (teste em `apps/api/src/__tests__/` cobrindo o logger da geração)
+- [X] T110 Rodar `pnpm typecheck` e `pnpm test` e comparar com T001; nenhuma regressão
 - [ ] T111 Executar o quickstart completo no deploy real com o dono e marcar SC-001 a SC-009
 
 ---

@@ -1,4 +1,4 @@
-import { EMPTY_HARD_CONSTRAINTS, SOURCE_KEYS, type GeneticProfile, type Goal, type HardConstraints, type HealthConditionInput, type IntegratedProfile, type SourceKey } from '@helux/types'
+import { EMPTY_HARD_CONSTRAINTS, SOURCE_KEYS, type CycleSummary, type GeneticProfile, type Goal, type HardConstraints, type HealthConditionInput, type IntegratedProfile, type SourceKey } from '@helux/types'
 import type { EvalExpectations } from './treino-scoring'
 
 // Spec 024 (R15) — perfis de teste do eval do Agente de Treino. Fictícios; o
@@ -25,6 +25,8 @@ export interface EvalProfile {
     conditions: HealthConditionInput[]
   }
   expectations: EvalExpectations
+  /** Spec 024 F5: análise do ciclo anterior entregue ao agente (perfil "ciclo concluído"). */
+  cycle?: CycleSummary
 }
 
 function profileOf(summaries: Partial<Record<SourceKey, string>>): IntegratedProfile {
@@ -134,5 +136,42 @@ export const EVAL_PROFILES: EvalProfile[] = [
     geneticProfile: null,
     structured: { goal: 'forca', level: 'avancado', timeOffMonths: 0, minutesPerSession: 90, conditions: [] },
     expectations: { daysPerWeek: 5, minFrequency: 2, setsRange: { min: 8, max: 20 }, cardioPerWeek: 1, mobilityPerWeek: 1 },
+  },
+  {
+    id: 'ciclo-concluido',
+    description: 'Fim de ciclo: agachamento estagnado, dor recorrente no leg press, cardio pouco feito (024 F5)',
+    profile: profileOf({
+      perfil: 'Objetivo: ganhar massa muscular\nNível: intermediario\nTreina há: 3 anos\nTempo parado: nenhum\nLesão atual: nenhuma declarada',
+      preferencias: 'Dias disponíveis: seg, ter, qui, sex\nDuração máxima por sessão (rígida): 70 min\nLocal: academia\nEquipamentos disponíveis (rígido): todos',
+      historico: '22/10: Agachamento Livre (Barra) 4x8 @ 101 kg (esforço 9); Leg Press 45° 3x10 @ 200 kg (esforço 7, dor no joelho)\n15/10: Agachamento Livre (Barra) 4x8 @ 100 kg (esforço 9); Supino Reto (Barra) 4x10 @ 70 kg (esforço 7)',
+    }),
+    agentConstraints: { ...EMPTY_HARD_CONSTRAINTS, maxSessionMinutes: 70 },
+    // O exercício com dor recorrente sai do próximo ciclo (FR-025).
+    expectedConstraints: { ...EMPTY_HARD_CONSTRAINTS, maxSessionMinutes: 70, blockedExercises: ['Leg Press 45°'] },
+    daysPerWeek: 4,
+    geneticProfile: null,
+    structured: { goal: 'hipertrofia', level: 'intermediario', timeOffMonths: 0, minutesPerSession: 70, conditions: [] },
+    expectations: { daysPerWeek: 4, minFrequency: 2, setsRange: { min: 8, max: 16 }, cardioPerWeek: 1, mobilityPerWeek: 1 },
+    cycle: {
+      mesocycleId: 'eval-ciclo-anterior',
+      weeks: 5,
+      adherence: { forca: { done: 15, planned: 16 }, cardio: { done: 1, planned: 5 }, mobilidade: { done: 4, planned: 5 } },
+      exercises: [
+        { name: 'Agachamento Livre (Barra)', firstE1rm: 126.7, lastE1rm: 127.9, avgRpe: 8.8, painReports: 0 },
+        { name: 'Leg Press 45°', firstE1rm: 266.7, lastE1rm: 266.7, avgRpe: 7.2, painReports: 3 },
+        { name: 'Supino Reto (Barra)', firstE1rm: 85, lastE1rm: 93.3, avgRpe: 7.4, painReports: 0 },
+      ],
+      avgRpeByWeek: [7.2, 7.8, 8.4, 8.9, 6.1],
+      pains: [{ region: 'joelho', count: 3 }],
+      tirednessAvg: 2.3,
+      checkinTrend: null,
+      findings: [
+        { kind: 'estagnacao', subject: 'Agachamento Livre (Barra)', evidence: '1RM estimado 126.7 → 127.9 kg (+1%), esforço médio 8.8' },
+        { kind: 'dor-recorrente', subject: 'Leg Press 45°', evidence: '3 relatos de dor neste exercício' },
+        { kind: 'baixa-aderencia', subject: 'cardio', evidence: '1 de 5 sessões de cardio feitas' },
+        { kind: 'progresso', subject: 'Supino Reto (Barra)', evidence: '1RM estimado 85 → 93.3 kg (+10%), esforço médio 7.4' },
+      ],
+      missingData: ['check-in corporal do mês'],
+    },
   },
 ]

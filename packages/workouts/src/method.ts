@@ -7,7 +7,7 @@ import { CARDIO_BANK, REGIONS, type CardioZone, type CycleFinding, type Goal, ty
 export type Level = 'iniciante' | 'intermediario' | 'avancado'
 
 export interface MethodModifier {
-  source: 'checkin' | 'ciclo' | 'condicao' | 'pausa'
+  source: 'checkin' | 'ciclo' | 'condicao' | 'pausa' | 'tempo'
   description: string
   /** Sessões de cardio a mais (ou a menos) por semana. */
   cardioSessionsDelta?: number
@@ -26,9 +26,13 @@ export interface MethodInput {
   cardioLikes: string[]
   cardioAvoid: string[]
   modifiers?: MethodModifier[]
+  /** Teto de minutos por sessão (restrições); o volume semanal precisa caber nele. */
+  maxSessionMinutes?: number | null
 }
 
 const RETURN_MONTHS = 3
+/** Grupos principais conferidos pelo validador de método (peito, costas, ombro, quadríceps, posterior, glúteo). */
+const MAIN_GROUPS = 6
 const BASE_SETS: Record<Level, [number, number]> = { iniciante: [6, 10], intermediario: [10, 16], avancado: [12, 20] }
 const GOAL_VOLUME: Record<Goal, number> = { hipertrofia: 1, forca: 0.9, condicionamento: 0.7, emagrecimento: 0.7, corrida: 0.6 }
 const REP_RANGES: Record<Goal, MethodPrescription['repRanges']> = {
@@ -40,6 +44,10 @@ const REP_RANGES: Record<Goal, MethodPrescription['repRanges']> = {
 }
 const CARDIO_MINUTES: Record<Goal, number> = { emagrecimento: 30, condicionamento: 25, corrida: 25, hipertrofia: 20, forca: 20 }
 const DELOAD_FACTOR = 0.55
+/** Mesma estimativa do validador de duração (R7): 5 min de aquecimento + 130 s por série. */
+const WARMUP_MIN = 5
+const SECONDS_PER_SET = 130
+const MIN_SETS_PER_GROUP = 4
 const DELOAD_RIR = 4
 
 const round2 = (n: number) => Math.round(n * 100) / 100
@@ -85,7 +93,18 @@ export function prescribeMethod(input: MethodInput): MethodPrescription {
   // Volume semanal por grupo: nível × objetivo (e ajustes de check-in/ciclo).
   const [lo, hi] = BASE_SETS[input.level]
   const factor = GOAL_VOLUME[input.goal] * volumeFactor
-  const weeklySetsPerGroup = { min: Math.max(4, Math.round(lo * factor)), max: Math.max(6, Math.round(hi * factor)) }
+  let weeklySetsPerGroup = { min: Math.max(4, Math.round(lo * factor)), max: Math.max(6, Math.round(hi * factor)) }
+
+  // O volume precisa caber no tempo das sessões de força (achado do eval: 40 min × 2 dias não comportam a faixa cheia).
+  if (input.maxSessionMinutes) {
+    const perSession = Math.floor(((input.maxSessionMinutes - WARMUP_MIN) * 60) / SECONDS_PER_SET)
+    const perGroup = Math.floor((perSession * strengthDays) / MAIN_GROUPS)
+    if (perGroup < weeklySetsPerGroup.min) {
+      const min = Math.max(MIN_SETS_PER_GROUP, perGroup)
+      weeklySetsPerGroup = { min, max: Math.max(min, Math.min(weeklySetsPerGroup.max, perGroup + 2)) }
+      modifiers.push({ source: 'tempo', description: `Sessões de até ${input.maxSessionMinutes} min: ${min}–${weeklySetsPerGroup.max} séries por grupo na semana, o que cabe no tempo; exercícios compostos rendem mais por minuto.` })
+    }
+  }
 
   // Progressão: começa mais leve (retorno de pausa ainda mais) e chega a 100% antes do deload.
   const start = returning ? 0.6 : 0.8

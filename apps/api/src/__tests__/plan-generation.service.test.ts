@@ -124,6 +124,8 @@ describe('generateAndSaveMesocycle', () => {
       geneticProfile: GENETICS_DATA,
     })
     expect(generateMesocyclePlanMock.mock.calls[0][0].method.cardio.allowed[0]).toBe('bike')
+    // 45 min por sessão (restrições): o volume semanal do método cabe no tempo.
+    expect(generateMesocyclePlanMock.mock.calls[0][0].method.modifiers.some((m: { source: string }) => m.source === 'tempo')).toBe(true)
     expect(recordUsageMock).toHaveBeenCalledWith('user-123', USAGES, supabase)
     expect(fromMock).toHaveBeenCalledWith('mesocycle_plans')
     expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({
@@ -139,6 +141,17 @@ describe('generateAndSaveMesocycle', () => {
       goal_primary: 'hipertrofia',
       method: expect.objectContaining({ weeks: 5 }),
     }))
+  })
+
+  it('024 (T109): o log da geração só tem métricas — nada de condições, dores, sensações ou genética', async () => {
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+    const logged = logger.info.mock.calls.map(c => c[0] as Record<string, unknown>)
+    expect(logged.length).toBeGreaterThan(0)
+    for (const entry of logged) {
+      expect(Object.keys(entry).sort()).toEqual(['agent', 'attempts', 'cacheReadTokens', 'inputTokens', 'model', 'operation', 'outputTokens'])
+      expect(JSON.stringify(entry)).not.toMatch(/joelho|artrose|gota|dor|COL1A1|ACTN3/i)
+    }
   })
 
   it('024 (R7): expande a semana-modelo em todas as semanas, com deload na última', async () => {

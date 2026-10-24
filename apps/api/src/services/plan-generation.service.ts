@@ -90,6 +90,7 @@ export async function generateAndSaveMesocycle(
       minRir: build.constraints.minRir,
       cardioLikes: build.training.cardioLikes,
       cardioAvoid: build.training.cardioAvoid,
+      maxSessionMinutes: build.constraints.maxSessionMinutes,
       ...(cycleModifiers.length > 0 ? { modifiers: cycleModifiers } : {}),
     })
     const decisions = previous

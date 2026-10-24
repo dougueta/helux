@@ -59,6 +59,24 @@ projeto Supabase de produção (SQL Editor ou `supabase db push`).
 Antes de considerar o deploy concluído, confira que **todas** as migrations do diretório estão aplicadas
 no banco de produção, principalmente se alguma feature nova depender de tabela nova.
 
+### Migrations da 024 (treino adaptativo)
+
+Aplicar em ordem, antes do deploy da API da 024 (todas aditivas):
+
+1. `20261025000000_024_f1_genetics_generation.sql`: laudo genético no banco e estado da geração do ciclo
+2. `20261026000000_024_f2_onboarding_conditions.sql`: onboarding, condições de saúde e a operação `condicao` em `ai_usage_events`
+3. `20261027000000_024_f3_mesocycle_weekly.sql`: mesociclo semanal (formato, semanas, método)
+4. `20261028000000_024_f4_session_checkins.sql`: check-ins de sensação e `review_status` das sessões
+5. `20261029000000_024_f5_cycle_analyses.sql`: análise do ciclo concluído
+
+Depois das migrations, o dono envia o laudo genético pela tela Perfil (upload do JSON). A API não lê mais
+`data/genetics/genera.json` do disco, e o arquivo saiu do repositório.
+
+### Ações do dono (privacidade)
+
+- Tornar o repositório privado: o laudo genético esteve versionado num repositório público.
+- Limpar o histórico do laudo: `git filter-repo --path data/genetics/genera.json --path apps/api/data/genetics/genera.json --path apps/web/src/mocks/fixtures/genera.fixture.json --invert-paths`, seguido de force-push. Isso reescreve o histórico, então fica a cargo do dono.
+
 ## 5. Integração contínua
 
 O workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) roda em todo pull request e em
