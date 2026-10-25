@@ -17,6 +17,7 @@ const PROFILE: IntegratedProfile = {
   sources: Object.fromEntries(SOURCE_KEYS.map(k => [k, { status: 'vazia', updatedAt: null, summary: '', data: null }])) as IntegratedProfile['sources'],
 }
 PROFILE.sources.perfil = { status: 'ativa', updatedAt: null, summary: 'Objetivo principal: hipertrofia', data: null }
+PROFILE.sources.preferencias = { status: 'ativa', updatedAt: null, summary: 'Dias: 2', data: null }
 
 const NONE: HardConstraints = EMPTY_HARD_CONSTRAINTS
 const HALTERES: HardConstraints = { ...NONE, availableEquipment: ['halteres', 'peso-corporal'] }

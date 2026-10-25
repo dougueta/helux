@@ -175,3 +175,20 @@ describe('perfis do eval têm solução (T119, sem API)', () => {
     })
   }
 })
+
+describe('R17b: viabilidade não desce abaixo do útil; fontes reais', () => {
+  it('pouco tempo com cardio no dia de força: encurta o cardio antes de cortar séries; nunca menos de 4 por grupo', () => {
+    const c = { ...EMPTY_HARD_CONSTRAINTS, maxSessionMinutes: 40 }
+    const { method } = ensureFeasible({ ...METHOD, weeklySetsPerGroup: { min: 5, max: 7 }, cardioSessions: 2, daysAvailable: 3, cardio: { ...METHOD.cardio, minutes: 25 } }, c)
+    expect(method.cardio.minutes).toBeLessThan(25)
+    expect(method.cardio.minutes).toBeGreaterThanOrEqual(10)
+    expect(method.weeklySetsPerGroup.min).toBeGreaterThanOrEqual(4)
+  })
+
+  it('withRealSources tira das decisões as fontes sem dados', async () => {
+    const { withRealSources } = await import('../../mesocycle-planner')
+    const profile = { generatedAt: '', sources: { perfil: { status: 'ativa' }, restricoes: { status: 'vazia' } } } as never
+    const out = withRealSources([{ topic: 'condicao', choice: 'x', sources: ['perfil', 'restricoes'], reason: 'y' }] as never, profile)
+    expect(out[0].sources).toEqual(['perfil'])
+  })
+})

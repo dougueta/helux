@@ -260,6 +260,9 @@
 - [X] T118 API usa o método devolvido pela geração (`apps/api/src/services/plan-generation.service.ts`); fake da Anthropic do E2E aceita o schema por pedido
 - [X] T119 Eval: perfil do dono recebe o limite de 60 min; diagnóstico de viabilidade vira teste sem API em `packages/ai/src/agents/__evals__/`
 - [ ] T120 Typecheck e testes completos sem regressão; rodar o eval (perfil do dono, depois completo em `high`) quando houver créditos — parcial: typecheck ok nos 9 pacotes; testes ok (ai 235, api 340 isolada, web 642/643: `mock-mutations` › nutrição falha também sem esta mudança, fora do escopo); eval pendente de créditos — parcial: typecheck ok nos 9 pacotes; testes ok (ai 235, api 340 isolada, web 642/643: `mock-mutations` › nutrição falha também sem esta mudança, fora do escopo); eval pendente de créditos
+- [X] T121 Eval: pontuar com o método devolvido pela geração; juiz recebe bisets, condições, restrições e aderência/esforço do ciclo anterior (`packages/ai/src/agents/__evals__/treino.eval.ts`) (R17b)
+- [X] T122 Viabilidade: piso de 4 séries por grupo e cardio do dia de força encurtado (até 10 min) antes de cortar séries (`packages/ai/src/agents/feasibility.ts`), com testes
+- [X] T123 Justificativas honestas: fontes das decisões filtradas para as que têm dados (`mesocycle-planner.ts`) e regra no prompt contra mencionar prescrição, código ou listas internas (`mesocycle-prompts.ts`), com testes
 
 ---
 

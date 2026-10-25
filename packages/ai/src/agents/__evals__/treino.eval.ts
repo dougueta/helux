@@ -68,15 +68,35 @@ function compactPlan(sessions: MesocycleSession[]): string {
   return sessions
     .map(s => {
       const head = `${s.letter}${s.week ? ` (semana ${s.week})` : ''}${s.kind ? ` [${s.kind}]` : ''} — ${s.focus}`
-      const items = s.exercises.map(e => `  - ${e.phase ?? 'principal'} | ${e.name} | ${e.sets}x${e.reps} | ${e.weight}${e.rirTarget !== undefined ? ` | RIR ${e.rirTarget}` : ''}${e.notes ? ` | nota: ${e.notes}` : ''}`)
+      const items = s.exercises.map(e => `  - ${e.phase ?? 'principal'} | ${e.name} | ${e.sets}x${e.reps} | ${e.weight}${e.rirTarget !== undefined ? ` | RIR ${e.rirTarget}` : ''}${e.supersetGroup ? ` | biset ${e.supersetGroup}` : ''}${e.notes ? ` | nota: ${e.notes}` : ''}`)
       return [head, ...items].join('\n')
     })
     .join('\n')
 }
 
+/** O que o agente recebeu além do perfil (condições, restrições, ciclo): o juiz precisa ver para não marcar como inventado (R17b). */
+function requestContext(p: EvalProfile): string {
+  const { constraints, conditions } = agentInput(p)
+  const lines = [
+    ...conditions.map(c => `- Condição: ${c.label} — ${c.rules.join('; ')}`),
+    constraints.maxSessionMinutes !== null ? `- Duração máxima por sessão: ${constraints.maxSessionMinutes} min` : '',
+    ...Object.entries(constraints.maxJointStress).map(([j, l]) => `- Carga no ${j} ≤ ${l}`),
+    constraints.maxCardioImpact !== null ? `- Impacto máximo do cardio: ${constraints.maxCardioImpact}` : '',
+    constraints.blockedExercises.length > 0 ? `- Exercícios bloqueados: ${constraints.blockedExercises.join(', ')}` : '',
+  ].filter(Boolean)
+  const cycle = p.cycle
+    ? [
+        `- Aderência: ${Object.entries(p.cycle.adherence).map(([k, a]) => `${k} ${a.done}/${a.planned}`).join(', ')}`,
+        `- Esforço médio por semana: ${p.cycle.avgRpeByWeek.join(' → ')}`,
+        ...p.cycle.findings.map(f => `- ${f.kind}: ${f.subject} — ${f.evidence}`),
+      ]
+    : []
+  return `${lines.length > 0 ? `\n\n# Condições e restrições entregues ao agente\n${lines.join('\n')}` : ''}${cycle.length > 0 ? `\n\n# Ciclo anterior (entregue ao agente)\n${cycle.join('\n')}` : ''}`
+}
+
 async function judge(p: EvalProfile, sessions: MesocycleSession[], rationale: string, decisions: PlanDecision[]): Promise<{ scores: Partial<Record<JudgeCriterion, number>>; comments: string; usages: UsageRecord[] }> {
   const criteria: JudgeCriterion[] = p.cycle ? [...JUDGE_CRITERIA, CYCLE_CRITERION] : [...JUDGE_CRITERIA]
-  const cycleText = p.cycle ? `\n\n# Ciclo anterior\n${p.cycle.findings.map(f => `- ${f.kind}: ${f.subject} — ${f.evidence}`).join('\n')}` : ''
+  const context = requestContext(p)
   const client = new Anthropic()
   const res = await client.messages.create({
     model: 'claude-opus-5-5',
@@ -86,7 +106,7 @@ async function judge(p: EvalProfile, sessions: MesocycleSession[], rationale: st
     messages: [
       {
         role: 'user',
-        content: `# Perfil do usuário\n${renderProfile(p.profile)}${cycleText}\n\n# Plano\n${compactPlan(sessions)}\n\n# Justificativa\n${rationale}\n\n# Decisões\n${decisions.map(d => `- [${d.topic}] ${d.choice} — ${d.reason} (fontes: ${d.sources.join(', ')})`).join('\n')}`,
+        content: `# Perfil do usuário\n${renderProfile(p.profile)}${context}\n\n# Plano\n${compactPlan(sessions)}\n\n# Justificativa\n${rationale}\n\n# Decisões\n${decisions.map(d => `- [${d.topic}] ${d.choice} — ${d.reason} (fontes: ${d.sources.join(', ')})`).join('\n')}`,
       },
     ],
   })
@@ -136,7 +156,9 @@ async function runProfile(p: EvalProfile): Promise<ProfileOutcome> {
     const result = await generateMesocyclePlan({ profile: p.profile, constraints, method, conditions, geneticProfile: p.geneticProfile, ...(p.cycle ? { cycle: p.cycle } : {}), ...(effort ? { effort } : {}) })
     // A semana-modelo é uma semana: marca semana 1 para a pontuação contar sem escalar.
     const sessions = result.plan.sessions.map(s => ({ ...s, week: 1 }))
-    const det = scorePlan({ sessions, constraints: p.expectedConstraints, expectations: { ...p.expectations, setsRange: method.weeklySetsPerGroup, cardioPerWeek: method.cardioSessions }, extraViolations: validateAgainstMethod(result.plan.sessions, method) })
+    // Pontua com o método devolvido: a conferência de viabilidade pode tê-lo ajustado (R17b).
+    const used = result.method ?? method
+    const det = scorePlan({ sessions, constraints: p.expectedConstraints, expectations: { ...p.expectations, setsRange: used.weeklySetsPerGroup, cardioPerWeek: used.cardioSessions }, extraViolations: validateAgainstMethod(result.plan.sessions, used) })
     // O plano fica salvo mesmo se o juiz falhar, para não perder a geração (que é a parte cara).
     fs.mkdirSync(RESULTS_DIR, { recursive: true })
     fs.writeFileSync(path.join(RESULTS_DIR, `plan-${p.id}.local.json`), JSON.stringify({ sessions, rationale: result.plan.rationale, decisions: result.decisions }, null, 2))

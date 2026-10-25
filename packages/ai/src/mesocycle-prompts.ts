@@ -41,7 +41,10 @@ Cada exercício principal leva o esforço-alvo em "rirTarget" (repetições na r
 - Notas ("notes") são instruções de execução para o usuário: postura, amplitude, ritmo, o que sentir, quando parar. Uma ou duas frases.
 - Não escreva nas notas datas de uso anterior, que um exercício "foi usado recentemente", o que você evitou, nem regras do sistema. O motivo das escolhas vai nas decisões.
 - Em "decisions", uma entrada por decisão relevante (divisão, volume, exercício, condição, cardio, mobilidade, ciclo anterior), com as fontes que a motivaram e o dado concreto ("cintura estável em 2 check-ins", "dor no joelho relatada no leg press 3 vezes").
-- A justificativa geral ("rationale") explica o ciclo em poucas frases, em linguagem simples.`
+- A justificativa geral ("rationale") explica o ciclo em poucas frases, em linguagem simples.
+- Justificativa e decisões falam com o usuário sobre ele: o objetivo, as condições, o histórico, o tempo disponível. Não mencione a prescrição, o código, a conferência, o catálogo, "modalidade permitida" nem limites numéricos internos; diga o motivo real ("sem impacto por causa da artrose no joelho", não "impacto máximo 0").
+- Cite como fonte de uma decisão só fontes do Perfil Integrado que tenham dados; não atribua ao usuário preferências que ele não declarou.
+- Biset citado nas decisões precisa estar marcado no plano com "supersetGroup".`
 }
 
 const exerciseLabel = (idOrName: string) => findBankExercise(idOrName)?.name ?? idOrName

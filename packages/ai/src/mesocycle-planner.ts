@@ -142,7 +142,7 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
     if (violations.length === 0) {
       return {
         plan: { generatedAt: new Date().toISOString(), daysPerWeek: sessions.length, splitType: raw.splitType, rationale: raw.rationale, sessions },
-        decisions: raw.decisions as PlanDecision[],
+        decisions: withRealSources(raw.decisions as PlanDecision[], input.profile),
         usages,
         method,
       }
@@ -152,6 +152,11 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
   }
   if (incomplete) throw new IncompleteResponseError(usages)
   throw new ConstraintsUnsatisfiableError(violations, usages)
+}
+
+/** Fontes de cada decisão só entre as que têm dados no Perfil Integrado (R17b): nada de citar fonte vazia. */
+export function withRealSources(decisions: PlanDecision[], profile: IntegratedProfile): PlanDecision[] {
+  return decisions.map(d => ({ ...d, sources: d.sources.filter(k => profile.sources[k]?.status === 'ativa') }))
 }
 
 function toSessions(raw: RawMesocycleOutput, genetics: GeneticProfile): MesocycleSession[] {

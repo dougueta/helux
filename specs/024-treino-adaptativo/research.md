@@ -291,3 +291,11 @@ Total **2,71**, custo US$ 0,90. Achados do juiz: divisões com 1×/semana por gr
 - **D — retry que corrige**: a nova tentativa é uma conversa: o pedido, a resposta anterior completa e "corrija só estes pontos". O pedido fica em cache e o modelo parte do plano que já tinha.
 - A validação de segurança continua rodando depois de tudo, como rede de proteção.
 - **Alternativa descartada**: tolerância de ±1 série no volume (E). Com B, desvio de contagem não chega mais à validação.
+
+## R17b — Resultado do eval depois de A+B+C+D (2026-10-25, effort high)
+
+- Dono sozinho: total 4,43 (linha de base 2,71), segurança 5, uma tentativa, US$ 0,33.
+- Rodada completa (6 perfis): total 3,98, **nenhuma falha de geração**, segurança 5 em todos, US$ 1,88. O juiz do perfil casa-halteres-lombalgia não rodou: a conta atingiu o limite de gasto configurado no console (volta em 2026-11-01).
+- Falsos negativos do próprio eval: (1) a nota de volume usava o método antes da conferência de viabilidade (pouco-tempo apareceu com 6 violações de volume que o agente não cometeu); (2) o juiz não via os bisets (`supersetGroup`), as condições de saúde, as restrições nem a aderência e o esforço do ciclo anterior, e marcava como "inventado" o que veio do pedido.
+- Problemas reais: decisões citando fontes vazias (`restricoes`) e frases que expõem o sistema ("a prescrição pede", "para o código subir", "primeira modalidade permitida"); a conferência de viabilidade baixou o pouco-tempo para 3 séries por grupo, abaixo do útil.
+- **Decisões**: o eval pontua com o método devolvido e mostra ao juiz bisets, condições, restrições e dados do ciclo; as fontes das decisões são filtradas por código para as que têm dados; o prompt proíbe falar do sistema nas justificativas; a conferência de viabilidade mantém pelo menos 4 séries por grupo e encurta o cardio do dia de força (até 10 min) antes de cortar séries.

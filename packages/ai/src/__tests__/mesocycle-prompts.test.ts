@@ -156,3 +156,12 @@ describe('buildRetryRequest (024 R17)', () => {
     expect(t).toMatch(/corrigindo só esses pontos/)
   })
 })
+
+describe('R17b: justificativas sem falar do sistema', () => {
+  it('proíbe mencionar prescrição, código e limites internos; fontes só com dados; biset marcado', () => {
+    const text = buildTrainingMethod()
+    expect(text).toMatch(/Não mencione a prescrição, o código/)
+    expect(text).toMatch(/só fontes do Perfil Integrado que tenham dados/)
+    expect(text).toMatch(/Biset citado nas decisões precisa estar marcado/)
+  })
+})
