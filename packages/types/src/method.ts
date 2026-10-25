@@ -29,4 +29,8 @@ export interface MethodPrescription {
   repRanges: { basicos: [number, number]; acessorios: [number, number] }
   cardio: { minutes: number; zone: CardioZone; maxImpact: StressLevel; allowed: string[] }
   modifiers: Array<{ source: 'checkin' | 'ciclo' | 'condicao' | 'pausa' | 'tempo'; description: string }>
+  /** Dias disponíveis na semana (cardio e mobilidade podem ocupar os dias sem força). */
+  daysAvailable?: number
+  /** Grupos principais sem nenhum exercício permitido pelas restrições: fora da conta de volume (024 R17). */
+  exemptGroups?: string[]
 }

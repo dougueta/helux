@@ -1,6 +1,6 @@
 import type { ConstraintViolation, ExerciseAlternative, HardConstraints, MesocycleSession, PlannedExercise } from '@helux/types'
 import { EXERCISE_BANK, type ExerciseBankEntry } from '../exercise-bank'
-import { findCardio } from '../cardio-bank'
+import { CARDIO_BANK, findCardio, type CardioBankEntry } from '../cardio-bank'
 
 const WARMUP_MIN = 5
 const EXECUTION_S_PER_SET = 40
@@ -57,6 +57,25 @@ const MESSAGES: Record<ConstraintViolation['rule'], (name: string) => string> = 
   'metodo-cardio': () => 'faltam sessões de cardio pedidas pelo método',
   'metodo-mobilidade': () => 'faltam sessões de mobilidade pedidas pelo método',
   'metodo-estrutura': () => 'número de dias de força diferente do pedido pelo método',
+}
+
+/**
+ * Exercícios do banco que as restrições permitem (024 R17): a IA só escolhe entre
+ * eles (enum do schema e catálogo do pedido). Mesmas regras do validador abaixo.
+ */
+export function allowedExercises(c: HardConstraints): ExerciseBankEntry[] {
+  return EXERCISE_BANK.filter(
+    e =>
+      !listHas(c.exercisesToAvoid, e) &&
+      (c.availableEquipment.length === 0 || c.availableEquipment.includes(e.equipment)) &&
+      safetyReasons(e, c).length === 0 &&
+      !exceedsJoint(e.stress, c),
+  )
+}
+
+/** Modalidades de cardio permitidas pelo impacto e pela carga articular (024 R17). */
+export function allowedCardio(c: HardConstraints): CardioBankEntry[] {
+  return CARDIO_BANK.filter(k => (c.maxCardioImpact === null || k.impact <= c.maxCardioImpact) && !exceedsJoint(k.stress, c))
 }
 
 /** Violações das restrições rígidas (R7). Puro: roda depois da IA e na edição/adaptação. */

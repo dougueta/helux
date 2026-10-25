@@ -1,11 +1,12 @@
 import type { CheckinTrend, ConstraintViolation, CycleSummary, HardConstraints, LoadProgression, MethodPrescription } from '@helux/types'
 import { buildExerciseCatalogSection } from './prompts'
-import { findBankExercise } from './agents/constraints'
+import { allowedExercises, findBankExercise } from './agents/constraints'
 
 // Spec 024 (R12): o Agente de Treino monta a semana-modelo dentro de uma
 // prescrição de método calculada por código. Três blocos: método e regras de
 // escrita (estável, cache de 1 h), Perfil Integrado (renderProfile) e o pedido
-// (prescrição, restrições, condições, ciclo anterior, progressão, violações).
+// (prescrição, restrições, condições, catálogo permitido, ciclo anterior,
+// progressão). Violações voltam num turno próprio, sobre a resposta anterior (R17).
 
 /** Método, papel de cada fonte e regras de escrita — texto estável (sem data/hora). */
 export function buildTrainingMethod(): string {
@@ -40,9 +41,7 @@ Cada exercício principal leva o esforço-alvo em "rirTarget" (repetições na r
 - Notas ("notes") são instruções de execução para o usuário: postura, amplitude, ritmo, o que sentir, quando parar. Uma ou duas frases.
 - Não escreva nas notas datas de uso anterior, que um exercício "foi usado recentemente", o que você evitou, nem regras do sistema. O motivo das escolhas vai nas decisões.
 - Em "decisions", uma entrada por decisão relevante (divisão, volume, exercício, condição, cardio, mobilidade, ciclo anterior), com as fontes que a motivaram e o dado concreto ("cintura estável em 2 check-ins", "dor no joelho relatada no leg press 3 vezes").
-- A justificativa geral ("rationale") explica o ciclo em poucas frases, em linguagem simples.
-
-${buildExerciseCatalogSection()}`
+- A justificativa geral ("rationale") explica o ciclo em poucas frases, em linguagem simples.`
 }
 
 const exerciseLabel = (idOrName: string) => findBankExercise(idOrName)?.name ?? idOrName
@@ -59,6 +58,7 @@ function methodSection(m: MethodPrescription): string {
     `- ${m.cardioSessions} sessões com cardio por semana (dia próprio ou bloco), ${m.cardio.minutes} min na zona ${m.cardio.zone}; modalidades permitidas, na ordem de preferência: ${m.cardio.allowed.join(', ') || 'nenhuma'}`,
     `- ${m.mobilitySessions} sessão ou bloco de mobilidade por semana`,
     `- Mesociclo de ${m.weeks} semanas com deload na semana ${m.deloadWeek} (o código aplica a progressão)`,
+    ...(m.exemptGroups?.length ? [`- Fora da conta de volume (sem exercício permitido): ${m.exemptGroups.join(', ')}`] : []),
     ...m.modifiers.map(x => `- Ajuste (${x.source}): ${x.description}`),
   ]
   return `## Prescrição de método\n\n${lines.join('\n')}`
@@ -71,7 +71,7 @@ function constraintsSection(c: HardConstraints): string {
     c.exercisesToAvoid.length > 0 && `- Exercícios a evitar: ${c.exercisesToAvoid.map(exerciseLabel).join(', ')}`,
     c.blockedPatterns.length > 0 && `- Padrões de movimento bloqueados: ${c.blockedPatterns.join(', ')}`,
     c.blockedExercises.length > 0 && `- Exercícios bloqueados: ${c.blockedExercises.map(exerciseLabel).join(', ')}`,
-    ...Object.entries(c.maxJointStress).map(([j, l]) => `- Carga no ${j} ≤ ${l} (0 = nenhuma, 1 = moderada, 2 = alta, pela carga articular de cada exercício do banco)`),
+    ...Object.entries(c.maxJointStress).map(([j, l]) => `- Carga no ${j} ≤ ${l} (0 = nenhuma, 1 = moderada, 2 = alta; o catálogo abaixo já respeita esse limite)`),
     c.maxCardioImpact !== null && `- Impacto máximo do cardio: ${c.maxCardioImpact}`,
     c.minRir !== null && `- RIR mínimo em qualquer série: ${c.minRir}`,
   ].filter(Boolean)
@@ -113,7 +113,7 @@ function progressionSection(decisions?: LoadProgression[]): string {
   return `\n\n## Progressão de carga do ciclo anterior\n\nCargas calculadas pela regra de progressão. Se mantiver estes exercícios, use estas cargas:\n${lines.join('\n')}`
 }
 
-/** Pedido do mesociclo: prescrição, restrições, condições, ciclo anterior, progressão e (no retry) violações. */
+/** Pedido do mesociclo: prescrição, restrições, condições, catálogo permitido, ciclo anterior e progressão. */
 export function buildMesocycleRequest(args: {
   method: MethodPrescription
   constraints: HardConstraints
@@ -121,11 +121,16 @@ export function buildMesocycleRequest(args: {
   cycle?: CycleSummary
   checkinTrend?: CheckinTrend
   loadProgression?: LoadProgression[]
-  violations?: ConstraintViolation[]
 }): string {
-  const retry =
-    args.violations && args.violations.length > 0
-      ? `\n\n## Corrija estes pontos\n\nA proposta anterior foi recusada pela conferência automática:\n${args.violations.map(v => `- ${v.message}`).join('\n')}`
-      : ''
-  return `${methodSection(args.method)}\n\n${constraintsSection(args.constraints)}${conditionsSection(args.conditions)}${cycleSection(args.cycle, args.checkinTrend)}${progressionSection(args.loadProgression)}${retry}\n\nMonte a semana-modelo, com a justificativa e as decisões com fontes.`
+  return `${methodSection(args.method)}\n\n${constraintsSection(args.constraints)}${conditionsSection(args.conditions)}\n\n${buildExerciseCatalogSection(allowedExercises(args.constraints))}${cycleSection(args.cycle, args.checkinTrend)}${progressionSection(args.loadProgression)}\n\nMonte a semana-modelo, com a justificativa e as decisões com fontes.`
+}
+
+/** Turno de correção (024 R17, D): o modelo ajusta a própria resposta só nos pontos recusados. */
+export function buildRetryRequest(violations: ConstraintViolation[]): string {
+  return `## Corrija estes pontos
+
+A conferência automática recusou a proposta acima:
+${violations.map(v => `- ${v.message}`).join('\n')}
+
+Devolva a semana-modelo completa corrigindo só esses pontos e mantendo o resto como estava. Atualize a justificativa e as decisões se a correção mudar alguma escolha.`
 }

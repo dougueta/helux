@@ -1,33 +1,36 @@
 import type { AiOperation, ConstraintViolation, HardConstraints, IntegratedProfile, MesocycleSession, PlannedExercise, SessionChange, UsageRecord } from '@helux/types'
 import { buildTrainingMethod } from '../mesocycle-prompts'
+import { buildExerciseCatalogSection } from '../prompts'
 import { ConstraintsUnsatisfiableError, enrichExercise } from '../mesocycle-planner'
 import { AGENT_MODEL, AgentRefusalError, anthropic, FALLBACK_PARAMS, messageText, usagesFromMessage } from './client'
-import { validatePlanAgainstConstraints } from './constraints'
-import { EXERCISE_ITEM_SCHEMA, rawToPlanned, type RawExercise } from './mesocycle-schema'
+import { allowedCardio, allowedExercises, validatePlanAgainstConstraints } from './constraints'
+import { buildExerciseItemSchema, rawToPlanned, type AllowedChoices, type RawExercise } from './mesocycle-schema'
 import { renderProfile } from './render-profile'
 
-const ADJUSTMENT_SCHEMA = {
-  type: 'object',
-  properties: {
-    sessions: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          index: { type: 'integer' },
-          letter: { type: 'string' },
-          focus: { type: 'string' },
-          exercises: { type: 'array', items: EXERCISE_ITEM_SCHEMA },
+/** Schema do ajuste com só os exercícios e cardio permitidos (024 R17). */
+const adjustmentSchema = (allowed: AllowedChoices) =>
+  ({
+    type: 'object',
+    properties: {
+      sessions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            index: { type: 'integer' },
+            letter: { type: 'string' },
+            focus: { type: 'string' },
+            exercises: { type: 'array', items: buildExerciseItemSchema(allowed) },
+          },
+          required: ['index', 'letter', 'focus', 'exercises'],
+          additionalProperties: false,
         },
-        required: ['index', 'letter', 'focus', 'exercises'],
-        additionalProperties: false,
       },
+      reason: { type: 'string' },
     },
-    reason: { type: 'string' },
-  },
-  required: ['sessions', 'reason'],
-  additionalProperties: false,
-} as const
+    required: ['sessions', 'reason'],
+    additionalProperties: false,
+  }) as const
 
 const isMain = (e: PlannedExercise) => e.phase !== 'aquecimento' && e.phase !== 'volta-calma'
 const describe = (e: PlannedExercise) => `${e.name} ${e.sets}x${e.reps} ${e.weight}`
@@ -85,6 +88,8 @@ export async function proposeSessionAdjustment(input: {
   const usages: UsageRecord[] = []
   const before = sessionIndexes.map(i => sessions[i])
   let violations: ConstraintViolation[] = []
+  const allowed = allowedExercises(input.constraints)
+  const schema = adjustmentSchema({ exercises: allowed.map(e => e.name), cardio: allowedCardio(input.constraints).map(k => k.id) })
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const retry = violations.length > 0 ? `\n\nA proposta anterior violou: ${violations.map(v => v.message).join('; ')}. Corrija sem violar nenhuma restrição.` : ''
@@ -94,7 +99,7 @@ export async function proposeSessionAdjustment(input: {
         max_tokens: 16000,
         ...FALLBACK_PARAMS,
         betas: [...FALLBACK_PARAMS.betas],
-        output_config: { effort: 'medium', format: { type: 'json_schema', schema: ADJUSTMENT_SCHEMA } },
+        output_config: { effort: 'medium', format: { type: 'json_schema', schema } },
         system: [
           { type: 'text', text: buildTrainingMethod(), cache_control: { type: 'ephemeral', ttl: '1h' } },
           { type: 'text', text: renderProfile(input.profile), cache_control: { type: 'ephemeral' } },
@@ -112,7 +117,9 @@ Reescreva apenas as sessões abaixo (mantendo o índice, a letra e as 3 fases) p
 
 Pedido: ${input.request}
 
-${renderSessions(sessions, sessionIndexes)}${retry}`,
+${renderSessions(sessions, sessionIndexes)}
+
+${buildExerciseCatalogSection(allowed)}${retry}`,
           },
         ],
       })

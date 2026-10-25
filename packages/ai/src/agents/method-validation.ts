@@ -7,7 +7,8 @@ import { findBankExercise } from './constraints'
 /** Grupos musculares principais (FR-013). */
 export const MAIN_MUSCLE_GROUPS = ['peito', 'costas', 'ombro', 'quadriceps', 'posterior', 'gluteo'] as const
 
-const isStrength = (e: PlannedExercise) => (e.phase ?? 'principal') === 'principal' && !e.cardio && !e.region
+/** Exercício de força do treino principal (conta séries e frequência). */
+export const isStrength = (e: PlannedExercise) => (e.phase ?? 'principal') === 'principal' && !e.cardio && !e.region
 const hasMobility = (s: MesocycleSession) => s.kind === 'mobilidade' || s.exercises.some(e => !!e.region && (e.phase ?? 'principal') === 'principal')
 
 const MESSAGES = {
@@ -38,7 +39,7 @@ export function validateAgainstMethod(template: MesocycleSession[], method: Meth
     for (const g of groups) frequency[g] = (frequency[g] ?? 0) + 1
   }
   const { min, max } = method.weeklySetsPerGroup
-  for (const g of MAIN_MUSCLE_GROUPS) {
+  for (const g of MAIN_MUSCLE_GROUPS.filter(g => !method.exemptGroups?.includes(g))) {
     const f = frequency[g] ?? 0
     if (f < method.minFrequencyPerGroup) out.push({ sessionIndex: 0, exercise: g, rule: 'metodo-frequencia', message: MESSAGES.frequencia(g, f, method.minFrequencyPerGroup) })
     else if ((sets[g] ?? 0) < min || (sets[g] ?? 0) > max) out.push({ sessionIndex: 0, exercise: g, rule: 'metodo-volume', message: MESSAGES.volume(g, sets[g] ?? 0, min, max) })

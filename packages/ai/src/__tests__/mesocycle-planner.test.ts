@@ -101,16 +101,33 @@ describe('generateMesocyclePlan — pedido', () => {
     expect(params.system[0].text).toContain('Agente de Treino')
     expect(params.system[1].cache_control).toEqual({ type: 'ephemeral' })
     expect(params.system[1].text).toContain('Objetivo principal: hipertrofia')
-    expect(params.messages[0].content).toContain('2 dias de força')
-    expect(params.messages[0].content).toContain('Equipamentos disponíveis: halteres, peso-corporal')
+    expect(params.messages[0].content[0].text).toContain('2 dias de força')
+    expect(params.messages[0].content[0].text).toContain('Equipamentos disponíveis: halteres, peso-corporal')
+    expect(params.messages[0].content[0].cache_control).toEqual({ type: 'ephemeral' })
     expect(params.thinking).toBeUndefined()
+  })
+
+  it('024 R17: o schema só aceita exercícios e cardio permitidos', async () => {
+    mockStream.mockReturnValueOnce(reply(body()))
+    await generateMesocyclePlan(input())
+    const schema = JSON.stringify(mockStream.mock.calls[0][0].output_config.format.schema)
+    expect(schema).toContain('Supino Reto (Halteres)')
+    expect(schema).not.toContain('Supino Reto (Barra)')
+    expect(schema).toContain('"bike"')
+    expect(schema).not.toContain('"corrida"')
+  })
+
+  it('024 R17: sem nenhum exercício permitido → erro antes de chamar a IA', async () => {
+    const err = await generateMesocyclePlan(input({ constraints: { ...NONE, availableEquipment: ['inexistente'] } })).catch(e => e)
+    expect(err).toBeInstanceOf(ConstraintsUnsatisfiableError)
+    expect(mockStream).not.toHaveBeenCalled()
   })
 
   it('aceita esforço explícito (eval) e manda as condições', async () => {
     mockStream.mockReturnValueOnce(reply(body()))
     await generateMesocyclePlan(input({ effort: 'high', conditions: [{ label: 'Artrose (joelho esquerdo)', rules: ['Carga no joelho ≤ 1'] }] }))
     expect(mockStream.mock.calls[0][0].output_config.effort).toBe('high')
-    expect(mockStream.mock.calls[0][0].messages[0].content).toContain('Artrose (joelho esquerdo)')
+    expect(mockStream.mock.calls[0][0].messages[0].content[0].text).toContain('Artrose (joelho esquerdo)')
   })
 })
 
@@ -137,11 +154,15 @@ describe('generateMesocyclePlan — resultado', () => {
     expect(usages[0]).toMatchObject({ operation: 'mesociclo', agent: 'treino', model: 'claude-opus-5-5' })
   })
 
-  it('violação de restrição → 1 nova tentativa com a violação; ok na segunda', async () => {
+  it('violação de restrição → nova tentativa sobre a resposta anterior, com a violação; ok na segunda', async () => {
     mockStream.mockReturnValueOnce(reply(body('Supino Reto (Barra)'))).mockReturnValueOnce(reply(body()))
     const { plan, usages } = await generateMesocyclePlan(input())
     expect(mockStream).toHaveBeenCalledTimes(2)
-    expect(mockStream.mock.calls[1][0].messages[0].content).toContain('Supino Reto (Barra) usa equipamento indisponível')
+    const retry = mockStream.mock.calls[1][0].messages
+    expect(retry).toHaveLength(3)
+    expect(retry[1]).toMatchObject({ role: 'assistant' })
+    expect(retry[1].content).toContain('Supino Reto (Barra)')
+    expect(retry[2].content).toContain('Supino Reto (Barra) usa equipamento indisponível')
     expect(plan.sessions[0].exercises.map(e => e.name)).toContain('Supino Reto (Halteres)')
     expect(usages).toHaveLength(4)
   })
@@ -151,7 +172,7 @@ describe('generateMesocyclePlan — resultado', () => {
     noCardio.weekTemplate[0].exercises = noCardio.weekTemplate[0].exercises.filter(e => e.phase !== 'cardio')
     mockStream.mockReturnValueOnce(reply(noCardio)).mockReturnValueOnce(reply(body()))
     await generateMesocyclePlan(input())
-    expect(mockStream.mock.calls[1][0].messages[0].content).toMatch(/sessões com cardio na semana/)
+    expect(mockStream.mock.calls[1][0].messages[2].content).toMatch(/sessões com cardio na semana/)
   })
 
   it('violação de novo → ConstraintsUnsatisfiableError com as violações e o uso', async () => {
@@ -170,6 +191,15 @@ describe('generateMesocyclePlan — resultado', () => {
     const err = await generateMesocyclePlan(input()).catch(e => e)
     expect(err).toBeInstanceOf(IncompleteResponseError)
     expect((err as IncompleteResponseError).usages).toHaveLength(4)
+  })
+
+  it('024 R17: séries fora da faixa são acertadas por código, sem nova tentativa; o método volta no resultado', async () => {
+    mockStream.mockReturnValueOnce(reply(body()))
+    const { plan, method } = await generateMesocyclePlan(input({ method: { ...METHOD, weeklySetsPerGroup: { min: 6, max: 8 } } }))
+    expect(mockStream).toHaveBeenCalledTimes(1)
+    const chestSets = plan.sessions.flatMap(s => s.exercises).filter(e => e.name === 'Supino Reto (Halteres)').reduce((n, e) => n + e.sets, 0)
+    expect(chestSets).toBe(6)
+    expect(method.weeklySetsPerGroup).toEqual({ min: 6, max: 8 })
   })
 
   it('recusa → AgentRefusalError', async () => {

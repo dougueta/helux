@@ -61,7 +61,8 @@ export const EVAL_PROFILES: EvalProfile[] = [
       checkins: '2026-09: peso 84,1 kg gordura 22% cintura 94 cm\n2026-10: peso 82,6 kg gordura 21% cintura 92 cm',
       genetica: 'Metabolismo moderado; recuperação muscular media; predisposição misto; risco cardiovascular medio.\nCOL1A1 — maior suscetibilidade a lesões ligamentares (atenção) [evidência moderada]\nACTN3 — perfil misto de potência e resistência [evidência moderada]',
     }),
-    agentConstraints: EMPTY_HARD_CONSTRAINTS,
+    // O agente recebe o limite de 60 min das preferências, como em produção (R17).
+    agentConstraints: { ...EMPTY_HARD_CONSTRAINTS, maxSessionMinutes: 60 },
     expectedConstraints: { ...EMPTY_HARD_CONSTRAINTS, maxSessionMinutes: 60, maxJointStress: { joelho: 1 }, maxCardioImpact: 0 },
     daysPerWeek: 4,
     geneticProfile: { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'medio', predisposicao: 'misto', alertas: ['Maior suscetibilidade a lesões ligamentares (COL1A1)'] },

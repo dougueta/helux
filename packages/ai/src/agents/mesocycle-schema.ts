@@ -6,11 +6,19 @@ import { EXERCISE_BANK } from '../exercise-bank'
 // todos os campos obrigatórios (opcional = null). Structured outputs não aceitam
 // minimum/maximum: faixas ficam no prompt e no validador.
 
-const mainExercise = {
+/** Nomes de exercícios e ids de cardio que o pedido aceita (024 R17); sem isso, o banco inteiro. */
+export interface AllowedChoices {
+  exercises: string[]
+  cardio: string[]
+}
+
+const ALL_CHOICES: AllowedChoices = { exercises: EXERCISE_BANK.map(e => e.name), cardio: CARDIO_BANK.map(c => c.id) }
+
+const mainExercise = (names: string[]) => ({
   type: 'object',
   properties: {
     phase: { type: 'string', enum: ['principal'] },
-    name: { type: 'string', enum: EXERCISE_BANK.map(e => e.name) },
+    name: { type: 'string', enum: names },
     sets: { type: 'integer' },
     reps: { type: 'string' },
     weight: { type: 'string' },
@@ -20,7 +28,7 @@ const mainExercise = {
   },
   required: ['phase', 'name', 'sets', 'reps', 'weight', 'rirTarget', 'notes', 'supersetGroup'],
   additionalProperties: false,
-}
+})
 
 const freeItem = {
   type: 'object',
@@ -38,59 +46,72 @@ const freeItem = {
   additionalProperties: false,
 }
 
-const cardioItem = {
+const cardioItem = (ids: string[]) => ({
   type: 'object',
   properties: {
     phase: { type: 'string', enum: ['cardio'] },
-    modality: { type: 'string', enum: CARDIO_BANK.map(c => c.id) },
+    modality: { type: 'string', enum: ids },
     minutes: { type: 'integer' },
     zone: { type: 'string', enum: ['leve', 'moderada', 'intervalado-leve'] },
     notes: { type: ['string', 'null'] },
   },
   required: ['phase', 'modality', 'minutes', 'zone', 'notes'],
   additionalProperties: false,
+})
+
+/**
+ * Item de exercício: força (banco), livre (aquecimento/volta à calma/mobilidade) ou
+ * cardio (catálogo). Com `allowed`, só o que as restrições permitem: um exercício
+ * proibido não tem como sair da IA (024 R17). Sem cardio permitido, sem item de cardio.
+ */
+export function buildExerciseItemSchema(allowed: AllowedChoices = ALL_CHOICES) {
+  return { anyOf: [mainExercise(allowed.exercises), freeItem, ...(allowed.cardio.length > 0 ? [cardioItem(allowed.cardio)] : [])] }
 }
 
-/** Item de exercício: força (banco), livre (aquecimento/volta à calma/mobilidade) ou cardio (catálogo). */
-export const EXERCISE_ITEM_SCHEMA = { anyOf: [mainExercise, freeItem, cardioItem] }
+export const EXERCISE_ITEM_SCHEMA = buildExerciseItemSchema()
 
-export const MESOCYCLE_SCHEMA = {
-  type: 'object',
-  properties: {
-    splitType: { type: 'string' },
-    weekTemplate: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          letter: { type: 'string' },
-          kind: { type: 'string', enum: [...SESSION_KINDS] },
-          focus: { type: 'string' },
-          exercises: { type: 'array', items: EXERCISE_ITEM_SCHEMA },
+/** Schema do mesociclo, por pedido (024 R17). */
+export function buildMesocycleSchema(allowed: AllowedChoices = ALL_CHOICES) {
+  return {
+    type: 'object',
+    properties: {
+      splitType: { type: 'string' },
+      weekTemplate: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            letter: { type: 'string' },
+            kind: { type: 'string', enum: [...SESSION_KINDS] },
+            focus: { type: 'string' },
+            exercises: { type: 'array', items: buildExerciseItemSchema(allowed) },
+          },
+          required: ['letter', 'kind', 'focus', 'exercises'],
+          additionalProperties: false,
         },
-        required: ['letter', 'kind', 'focus', 'exercises'],
-        additionalProperties: false,
+      },
+      rationale: { type: 'string' },
+      decisions: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            topic: { type: 'string', enum: ['divisao', 'volume', 'exercicio', 'descanso', 'intensidade', 'condicao', 'cardio', 'mobilidade', 'ciclo', 'outro'] },
+            choice: { type: 'string' },
+            sources: { type: 'array', items: { type: 'string', enum: [...SOURCE_KEYS] } },
+            reason: { type: 'string' },
+          },
+          required: ['topic', 'choice', 'sources', 'reason'],
+          additionalProperties: false,
+        },
       },
     },
-    rationale: { type: 'string' },
-    decisions: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          topic: { type: 'string', enum: ['divisao', 'volume', 'exercicio', 'descanso', 'intensidade', 'condicao', 'cardio', 'mobilidade', 'ciclo', 'outro'] },
-          choice: { type: 'string' },
-          sources: { type: 'array', items: { type: 'string', enum: [...SOURCE_KEYS] } },
-          reason: { type: 'string' },
-        },
-        required: ['topic', 'choice', 'sources', 'reason'],
-        additionalProperties: false,
-      },
-    },
-  },
-  required: ['splitType', 'weekTemplate', 'rationale', 'decisions'],
-  additionalProperties: false,
-} as const
+    required: ['splitType', 'weekTemplate', 'rationale', 'decisions'],
+    additionalProperties: false,
+  } as const
+}
+
+export const MESOCYCLE_SCHEMA = buildMesocycleSchema()
 
 export type RawExercise =
   | { phase: 'principal'; name: string; sets: number; reps: string; weight: string; rirTarget?: number | null; notes: string | null; supersetGroup?: string | null }

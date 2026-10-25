@@ -247,6 +247,22 @@
 
 ---
 
+## Phase 13: Robustez da geração — zerar falhas (R17, FR-035/036)
+
+**Goal**: nenhum perfil viável falha por "restrições impossíveis"; menos tentativas e menos custo por geração.
+
+- [X] T112 Diagnóstico de viabilidade sem API dos perfis do eval (banco filtrado, método, tempo); registrar em R17
+- [ ] T113 [P] A: `allowedExercises`/`allowedCardio` em `packages/ai/src/agents/constraints.ts` e `buildMesocycleSchema(allowed)` em `packages/ai/src/agents/mesocycle-schema.ts` (enum por pedido), com testes
+- [ ] T114 A: catálogo filtrado e agrupado por grupo muscular no pedido (`packages/ai/src/mesocycle-prompts.ts`, `prompts.ts`), fora do system; testes do prompt
+- [ ] T115 [P] B: `fitPlanToMethod` em `packages/ai/src/agents/method-repair.ts` (séries por grupo e duração), com testes
+- [ ] T116 [P] C: `ensureFeasible` em `packages/ai/src/agents/feasibility.ts` (grupo sem exercício, cardio sem modalidade, tempo), `exemptGroups` no método e no validador, com testes
+- [ ] T117 D: retry em conversa (pedido em cache + resposta anterior + violações) em `packages/ai/src/mesocycle-planner.ts`; resultado devolve o método ajustado; testes
+- [ ] T118 API usa o método devolvido pela geração (`apps/api/src/services/plan-generation.service.ts`); fake da Anthropic do E2E aceita o schema por pedido
+- [ ] T119 Eval: perfil do dono recebe o limite de 60 min; diagnóstico de viabilidade vira teste sem API em `packages/ai/src/agents/__evals__/`
+- [ ] T120 Typecheck e testes completos sem regressão; rodar o eval (perfil do dono, depois completo em `high`) quando houver créditos — parcial: typecheck ok nos 9 pacotes; testes ok (ai 235, api 340 isolada, web 642/643: `mock-mutations` › nutrição falha também sem esta mudança, fora do escopo); eval pendente de créditos
+
+---
+
 ## Dependencies & Execution Order
 
 - **Phase 1 → Phase 2** bloqueiam tudo.

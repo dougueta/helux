@@ -275,3 +275,19 @@ Total **2,71**, custo US$ 0,90. Achados do juiz: divisões com 1×/semana por gr
 - Nos 3 perfis que geraram, high e xhigh ficaram iguais: segurança 5, frequência/volume 5, cardio/mobilidade 5 (antes 1 e 0). A média caiu porque 2 dos 5 perfis falharam nos dois níveis com "restrições impossíveis" (nota 0 em tudo).
 - **Causa encontrada no perfil pouco-tempo-emagrecimento**: o método exigia 6 grupos × 7 séries (42 por semana) em 2 dias de força de 40 min, que comportam 32. Correção: `prescribeMethod` recebe `maxSessionMinutes` e limita a faixa de séries ao que cabe (modificador `tempo`). No dono-joelho-gota, o banco tem exercícios suficientes com carga no joelho ≤ 1 (8 de quadríceps); a causa ainda precisa da lista de violações, que o eval agora imprime.
 - **Decisão provisória**: manter `xhigh`, porque o dono pediu qualidade acima de custo. Rodar de novo high/xhigh/max depois da correção e com créditos; se xhigh continuar igual a high, trocar para `high` (metade do custo).
+
+## R17 — Zerar as falhas de geração (decidido em 2026-10-25)
+
+**Diagnóstico sem API** (perfis do eval, banco filtrado pelas restrições, método e tempo): nenhum perfil é inviável. O dono tem 8 exercícios de quadríceps, 11 de posterior e 7 de glúteo com carga no joelho ≤ 1, e 5 modalidades de cardio sem impacto; o método pede 3 dias de força, 7–11 séries por grupo, 2 cardios e 1 mobilidade, cerca de 35 min de força por dia.
+
+**Causa provável**: o catálogo do prompt mostrava só os nomes dos exercícios. A regra "carga no joelho ≤ 1" não tinha como ser cumprida, porque o modelo não via a carga articular de cada exercício; o perfil com lombar ≤ 1 passou por sorte. O schema aceitava qualquer exercício do banco. As contagens (séries por grupo, minutos) também ficavam de cabeça para o modelo, e a nova tentativa recomeçava do zero só com a lista de violações.
+
+**Achado no eval**: o perfil do dono não passava ao agente o limite de 60 min que a nota cobra (`agentConstraints` vazio). Corrigido: o agente recebe o mesmo limite.
+
+**Decisões** (A+B+C+D):
+- **A — permitido por construção**: `allowedExercises(constraints)` filtra o banco (equipamento, evitar, padrões e exercícios bloqueados, carga articular) e `allowedCardio` filtra o cardio (impacto e carga articular). O schema da resposta é montado por pedido, com `enum` só desses nomes. O catálogo sai do system prompt e vai para o pedido, só com os permitidos, agrupado por grupo muscular (ajuda a contar séries por grupo). O system continua estável e em cache; o pedido ganha cache de 5 min para o retry.
+- **B — contagem por código**: `fitPlanToMethod` corrige, depois da IA e antes da validação, as séries por grupo (sobe ou desce 1 série por vez, do exercício com menos séries para cima, entre 2 e 5 séries por exercício) e a duração (corta séries dos grupos acessórios e depois dos grupos acima do mínimo). Frequência, estrutura, cardio e mobilidade ficam com a IA.
+- **C — viabilidade antes de gastar**: `ensureFeasible(method, constraints)` dispensa do método um grupo principal sem nenhum exercício permitido, zera o cardio se não houver modalidade permitida e reduz a faixa de séries quando o mínimo, somado ao cardio que precisa caber nos dias de força, passa do tempo da sessão. Cada ajuste vira um modificador do método com o motivo. O método ajustado volta no resultado e é o que a API salva.
+- **D — retry que corrige**: a nova tentativa é uma conversa: o pedido, a resposta anterior completa e "corrija só estes pontos". O pedido fica em cache e o modelo parte do plano que já tinha.
+- A validação de segurança continua rodando depois de tudo, como rede de proteção.
+- **Alternativa descartada**: tolerância de ±1 série no volume (E). Com B, desvio de contagem não chega mais à validação.

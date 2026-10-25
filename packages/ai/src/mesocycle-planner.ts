@@ -13,12 +13,15 @@ import type {
   PlannedExercise,
   UsageRecord,
 } from '@helux/types'
-import { buildMesocycleRequest, buildTrainingMethod } from './mesocycle-prompts'
+import type { BetaMessageParam } from '@anthropic-ai/sdk/resources/beta/messages/messages'
+import { buildMesocycleRequest, buildRetryRequest, buildTrainingMethod } from './mesocycle-prompts'
 import { EXERCISE_BANK, MUSCLE_GROUP_LABEL } from './exercise-bank'
 import { buildVariants } from './variants'
-import { validatePlanAgainstConstraints } from './agents/constraints'
+import { allowedExercises, validatePlanAgainstConstraints } from './agents/constraints'
+import { ensureFeasible } from './agents/feasibility'
+import { fitPlanToMethod } from './agents/method-repair'
 import { renderProfile } from './agents/render-profile'
-import { MESOCYCLE_SCHEMA, rawToPlanned, type RawMesocycleOutput } from './agents/mesocycle-schema'
+import { buildMesocycleSchema, rawToPlanned, type RawMesocycleOutput } from './agents/mesocycle-schema'
 import { validateAgainstMethod } from './agents/method-validation'
 import { AGENT_MODEL, AgentRefusalError, anthropic, FALLBACK_PARAMS, messageText, usagesFromMessage } from './agents/client'
 
@@ -72,6 +75,8 @@ export interface GenerateMesocycleResult {
   plan: Omit<MesocyclePlan, 'id'>
   decisions: PlanDecision[]
   usages: UsageRecord[]
+  /** Método depois da conferência de viabilidade (R17): é o que a API expande e salva. */
+  method: MethodPrescription
 }
 
 /**
@@ -79,6 +84,10 @@ export interface GenerateMesocycleResult {
  * Integrado e da prescrição de método, com structured outputs, validação
  * determinística das restrições e do método e uma nova tentativa com as
  * violações. Sem conformidade → erro; o treino vigente continua (FR-024).
+ *
+ * R17: antes da chamada, o método é ajustado ao que tem solução e o schema só
+ * aceita exercícios e cardio permitidos; depois, séries e duração são acertadas
+ * por código; a nova tentativa corrige a resposta anterior em vez de refazê-la.
  */
 export async function generateMesocyclePlan(input: GenerateMesocycleInput): Promise<GenerateMesocycleResult> {
   const client = anthropic()
@@ -87,6 +96,23 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
     { type: 'text' as const, text: buildTrainingMethod(), cache_control: { type: 'ephemeral' as const, ttl: '1h' as const } },
     { type: 'text' as const, text: renderProfile(input.profile), cache_control: { type: 'ephemeral' as const } },
   ]
+
+  const feasible = ensureFeasible(input.method, input.constraints)
+  if (feasible.infeasible) {
+    throw new ConstraintsUnsatisfiableError([{ sessionIndex: 0, exercise: null, rule: 'metodo-estrutura', message: feasible.infeasible }], usages)
+  }
+  const method = feasible.method
+  const schema = buildMesocycleSchema({ exercises: allowedExercises(input.constraints).map(e => e.name), cardio: method.cardio.allowed })
+  const request = buildMesocycleRequest({
+    method,
+    constraints: input.constraints,
+    conditions: input.conditions,
+    cycle: input.cycle,
+    checkinTrend: input.checkinTrend,
+    loadProgression: input.loadProgression,
+  })
+  // O pedido fica em cache (5 min) para a nova tentativa, que só acrescenta turnos.
+  const messages: BetaMessageParam[] = [{ role: 'user', content: [{ type: 'text', text: request, cache_control: { type: 'ephemeral' } }] }]
 
   let violations: ConstraintViolation[] = []
   let incomplete = false
@@ -97,22 +123,9 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
         max_tokens: 64000,
         ...FALLBACK_PARAMS,
         betas: [...FALLBACK_PARAMS.betas],
-        output_config: { effort: input.effort ?? MESOCYCLE_EFFORT, format: { type: 'json_schema', schema: MESOCYCLE_SCHEMA } },
+        output_config: { effort: input.effort ?? MESOCYCLE_EFFORT, format: { type: 'json_schema', schema } },
         system,
-        messages: [
-          {
-            role: 'user',
-            content: buildMesocycleRequest({
-              method: input.method,
-              constraints: input.constraints,
-              conditions: input.conditions,
-              cycle: input.cycle,
-              checkinTrend: input.checkinTrend,
-              loadProgression: input.loadProgression,
-              violations,
-            }),
-          },
-        ],
+        messages,
       })
       .finalMessage()
 
@@ -122,16 +135,20 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
     incomplete = message.stop_reason === 'max_tokens'
     if (incomplete) continue
 
-    const raw = JSON.parse(messageText(message)) as RawMesocycleOutput
-    const sessions = toSessions(raw, input.geneticProfile ?? NEUTRAL_GENETICS)
-    violations = [...validatePlanAgainstConstraints(sessions, input.constraints), ...validateAgainstMethod(sessions, input.method)]
+    const text = messageText(message)
+    const raw = JSON.parse(text) as RawMesocycleOutput
+    const sessions = fitPlanToMethod(toSessions(raw, input.geneticProfile ?? NEUTRAL_GENETICS), method, input.constraints)
+    violations = [...validatePlanAgainstConstraints(sessions, input.constraints), ...validateAgainstMethod(sessions, method)]
     if (violations.length === 0) {
       return {
         plan: { generatedAt: new Date().toISOString(), daysPerWeek: sessions.length, splitType: raw.splitType, rationale: raw.rationale, sessions },
         decisions: raw.decisions as PlanDecision[],
         usages,
+        method,
       }
     }
+    // Só o texto da resposta volta: o pensamento não é necessário para corrigir.
+    messages.push({ role: 'assistant', content: text }, { role: 'user', content: buildRetryRequest(violations) })
   }
   if (incomplete) throw new IncompleteResponseError(usages)
   throw new ConstraintsUnsatisfiableError(violations, usages)

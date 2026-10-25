@@ -72,7 +72,13 @@ class IncompleteResponseError extends Error {
 }
 class AgentRefusalError extends Error {}
 const generateMesocyclePlanMock = vi.fn()
-vi.mock('@helux/ai', () => ({ generateMesocyclePlan: generateMesocyclePlanMock, ConstraintsUnsatisfiableError, IncompleteResponseError, AgentRefusalError }))
+// Como o agente real (R17), devolve o método recebido quando o teste não define outro.
+vi.mock('@helux/ai', () => ({
+  generateMesocyclePlan: async (i: { method: unknown }) => ({ method: i.method, ...(await generateMesocyclePlanMock(i)) }),
+  ConstraintsUnsatisfiableError,
+  IncompleteResponseError,
+  AgentRefusalError,
+}))
 
 const onboardingCompleteMock = vi.fn().mockResolvedValue(true)
 vi.mock('../services/onboarding.service', () => ({ isOnboardingComplete: onboardingCompleteMock }))
@@ -141,6 +147,16 @@ describe('generateAndSaveMesocycle', () => {
       goal_primary: 'hipertrofia',
       method: expect.objectContaining({ weeks: 5 }),
     }))
+  })
+
+  it('024 (R17): salva o método devolvido pela geração (ajustado à viabilidade)', async () => {
+    generateMesocyclePlanMock.mockImplementationOnce(async (i: { method: Record<string, unknown> }) => ({
+      ...planResult(MOCK_MESOCYCLE),
+      method: { ...i.method, exemptGroups: ['quadriceps'] },
+    }))
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+    expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ method: expect.objectContaining({ exemptGroups: ['quadriceps'] }) }))
   })
 
   it('024 (T109): o log da geração só tem métricas — nada de condições, dores, sensações ou genética', async () => {

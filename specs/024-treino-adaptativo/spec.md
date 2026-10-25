@@ -234,6 +234,8 @@ Existe um conjunto de perfis de teste representativos (o caso gota + cirurgias d
 - **FR-029**: A geração MUST usar a configuração de maior qualidade de raciocínio disponível; custo maior por geração é aceitável, respeitando o teto mensal de IA da spec 022.
 - **FR-030**: Respostas incompletas da IA MUST ser detectadas e descartadas, com nova tentativa.
 - **FR-031**: Com o mesociclo concluído sem um próximo gerado, o sistema MUST tentar de novo ao próximo acesso; o usuário MUST ver o estado e poder repetir a última semana enquanto isso.
+- **FR-035**: A IA MUST escolher exercícios e modalidades de cardio só entre os já permitidos pelas restrições do usuário (equipamento, bloqueios, carga articular, impacto); um plano com exercício proibido MUST ser impossível de gerar, não só recusado depois.
+- **FR-036**: Antes de chamar a IA, o sistema MUST conferir se o pedido tem solução (exercícios permitidos em cada grupo principal, volume do método cabendo nos dias e no tempo, cardio permitido) e ajustar o método por código quando não tiver, registrando o motivo. Desvios de contagem (séries por grupo, duração da sessão) MUST ser corrigidos por código antes de recusar o plano, e a nova tentativa MUST corrigir o plano anterior em vez de refazê-lo.
 
 **Qualidade (US8)**
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { EMPTY_HARD_CONSTRAINTS, type MethodPrescription } from '@helux/types'
-import { buildMesocycleRequest, buildTrainingMethod } from '../mesocycle-prompts'
+import { buildMesocycleRequest, buildRetryRequest, buildTrainingMethod } from '../mesocycle-prompts'
 
 // Spec 024 T075 — prompt do Agente de Treino reescrito (R12).
 
@@ -46,13 +46,13 @@ describe('buildTrainingMethod', () => {
     expect(text).toMatch(/regras do sistema/i)
   })
 
-  it('posiciona cardio e mobilidade e mantém aquecimento, volta à calma, biset e catálogo', () => {
+  it('posiciona cardio e mobilidade e mantém aquecimento, volta à calma e biset; o catálogo vai no pedido (R17)', () => {
     expect(text).toMatch(/cardio/i)
     expect(text).toMatch(/mobilidade/i)
     expect(text).toMatch(/aquecimento/i)
     expect(text).toMatch(/volta à calma/i)
     expect(text).toMatch(/biset/i)
-    expect(text).toContain('Supino Reto (Barra)')
+    expect(text).not.toContain('Supino Reto (Barra)')
   })
 
   it('sem caixa-alta de obrigatoriedade e estável (sem data/hora) para o cache', () => {
@@ -114,7 +114,7 @@ describe('buildMesocycleRequest', () => {
     expect(t).toContain('+1 sessão de cardio')
   })
 
-  it('progressão de carga e violações do retry (restrições e método)', () => {
+  it('progressão de carga', () => {
     const t = buildMesocycleRequest({
       method: METHOD,
       constraints: EMPTY_HARD_CONSTRAINTS,
@@ -123,14 +123,36 @@ describe('buildMesocycleRequest', () => {
         { name: 'Supino Reto (Barra)', action: 'aumentar', previousWeightKg: 60, nextWeightKg: 62.5, reason: 'topo da faixa' },
         { name: 'Remada', action: 'sem-dados', previousWeightKg: null, nextWeightKg: null, reason: '—' },
       ],
-      violations: [
-        { sessionIndex: 0, exercise: 'Agachamento Livre (Barra)', rule: 'carga-articular', message: 'Agachamento Livre (Barra) carrega demais' },
-        { sessionIndex: 0, exercise: 'peito', rule: 'metodo-frequencia', message: 'peito é treinado 1× na semana; o mínimo é 2×' },
-      ],
     })
     expect(t).toMatch(/Supino Reto \(Barra\): 60 kg → 62,5 kg/)
     expect(t).not.toMatch(/Remada:/)
+  })
+
+  it('024 R17: catálogo só com os exercícios permitidos, por grupo muscular', () => {
+    const all = buildMesocycleRequest({ method: METHOD, constraints: EMPTY_HARD_CONSTRAINTS, conditions: [] })
+    expect(all).toMatch(/## Catálogo de exercícios/)
+    expect(all).toMatch(/\*\*Peito\*\*: .*Supino Reto \(Barra\)/)
+    expect(all).toContain('Agachamento Livre (Barra)')
+    const knee = buildMesocycleRequest({ method: METHOD, constraints: { ...EMPTY_HARD_CONSTRAINTS, maxJointStress: { joelho: 1 } }, conditions: [] })
+    expect(knee).not.toContain('Agachamento Livre (Barra)')
+    expect(knee).toMatch(/\*\*Quadríceps\*\*: /)
+    expect(knee).toMatch(/o catálogo abaixo já respeita esse limite/)
+  })
+
+  it('024 R17: método com grupo dispensado avisa no pedido', () => {
+    const t = buildMesocycleRequest({ method: { ...METHOD, exemptGroups: ['quadriceps'] }, constraints: EMPTY_HARD_CONSTRAINTS, conditions: [] })
+    expect(t).toMatch(/Fora da conta de volume \(sem exercício permitido\): quadriceps/)
+  })
+})
+
+describe('buildRetryRequest (024 R17)', () => {
+  it('lista as violações e pede para corrigir só esses pontos', () => {
+    const t = buildRetryRequest([
+      { sessionIndex: 0, exercise: 'Agachamento Livre (Barra)', rule: 'carga-articular', message: 'Agachamento Livre (Barra) carrega demais' },
+      { sessionIndex: 0, exercise: 'peito', rule: 'metodo-frequencia', message: 'peito é treinado 1× na semana; o mínimo é 2×' },
+    ])
     expect(t).toMatch(/Agachamento Livre \(Barra\) carrega demais/)
     expect(t).toMatch(/peito é treinado 1×/)
+    expect(t).toMatch(/corrigindo só esses pontos/)
   })
 })

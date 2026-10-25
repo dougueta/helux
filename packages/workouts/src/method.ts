@@ -144,6 +144,7 @@ export function prescribeMethod(input: MethodInput): MethodPrescription {
     repRanges: REP_RANGES[input.goal],
     cardio: { minutes: CARDIO_MINUTES[input.goal], zone, maxImpact, allowed },
     modifiers,
+    daysAvailable: input.daysAvailable,
   }
 }
 

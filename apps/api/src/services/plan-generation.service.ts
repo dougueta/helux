@@ -135,13 +135,15 @@ export async function generateAndSaveMesocycle(
       'ai call',
     )
     const mesocycle = result.plan
+    // R17: o método pode ter sido ajustado à viabilidade antes da chamada; é ele que vale.
+    const usedMethod = result.method
 
     // Spec 014: fases ordenadas e bisets válidos; 024: semanas expandidas; depois a carga da progressão.
     const template = mesocycle.sessions.map((session) => ({
       ...session,
       exercises: normalizeSessionExercises(session.exercises),
     }))
-    const sessions = applyProgression(expandWeeks(template, method), withLoad)
+    const sessions = applyProgression(expandWeeks(template, usedMethod), withLoad)
 
     // id gerado aqui para ligar a análise do ciclo anterior sem reler o insert.
     const id = randomUUID()
@@ -156,9 +158,9 @@ export async function generateAndSaveMesocycle(
       rationale_decisions: result.decisions,
       sources_used: build.sourcesUsed,
       format: 'semanal',
-      weeks: method.weeks,
-      method,
-      goal_primary: method.goal,
+      weeks: usedMethod.weeks,
+      method: usedMethod,
+      goal_primary: usedMethod.goal,
     })
 
     if (error) throw error
