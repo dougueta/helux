@@ -3,7 +3,8 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 
 vi.mock('@/services/workout.service', () => ({
   getLatestPlan: vi.fn().mockResolvedValue(null),
-  generatePlan: vi.fn(),
+  regeneratePlan: vi.fn().mockResolvedValue(undefined),
+  repeatLastWeek: vi.fn().mockResolvedValue(undefined),
   getWorkoutHistory: vi.fn().mockResolvedValue([]),
 }))
 
@@ -37,16 +38,43 @@ describe('useWorkoutPlan', () => {
     expect(result.current.plan?.today?.letter).toBe('A')
   })
 
-  it('generatePlan sets generating true then wraps the legacy single-session result into the plan view', async () => {
-    const { generatePlan } = await import('@/services/workout.service')
-    const newPlan = { generatedAt: new Date().toISOString(), exercises: [{ name: 'Supino Reto', sets: 4, reps: '8-10', weight: '80kg' }], rationale: 'new' }
-    vi.mocked(generatePlan).mockResolvedValueOnce(newPlan)
+  it('024: generatePlan pede um novo mesociclo à API e acompanha até ficar pronto, sem plano solto no cache', async () => {
+    const { getLatestPlan, regeneratePlan } = await import('@/services/workout.service')
+    const generating = { mesocycleId: 'm1', generatedAt: null, today: null, upcoming: [], progress: null, status: 'generating' as const }
+    const ready = { mesocycleId: 'm2', generatedAt: '2026-10-24T10:00:00Z', today: { letter: 'A', focus: 'Superior', exercises: [], adjusted: false }, upcoming: [], progress: { completed: 0, total: 16 } }
+    vi.mocked(getLatestPlan).mockResolvedValueOnce(null).mockResolvedValueOnce(generating).mockResolvedValueOnce(ready)
+    const { useWorkoutPlan } = await import('@/hooks/useWorkoutPlan')
+    const { result } = renderHook(() => useWorkoutPlan({ pollMs: 1 }))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    await act(async () => { await result.current.generatePlan() })
+    expect(regeneratePlan).toHaveBeenCalledTimes(1)
+    expect(result.current.plan?.mesocycleId).toBe('m2')
+    expect(result.current.generating).toBe(false)
+    expect(JSON.parse(localStorage.getItem('helux:workout-plan')!).mesocycleId).toBe('m2')
+  })
+
+  it('024: generatePlan com falha da geração mostra o erro', async () => {
+    const { getLatestPlan } = await import('@/services/workout.service')
+    const failed = { mesocycleId: 'm1', generatedAt: null, today: null, upcoming: [], progress: null, status: 'generation-failed' as const, generation: { status: 'falhou' as const, attempts: 3, errorCode: 'incomplete-response' as const, startedAt: null } }
+    vi.mocked(getLatestPlan).mockResolvedValueOnce(null).mockResolvedValueOnce(failed)
+    const { useWorkoutPlan } = await import('@/hooks/useWorkoutPlan')
+    const { result } = renderHook(() => useWorkoutPlan({ pollMs: 1 }))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    await act(async () => { await result.current.generatePlan() })
+    expect(result.current.generationError).toMatch(/não foi possível gerar/i)
+    expect(localStorage.getItem('helux:workout-plan')).toBeNull()
+  })
+
+  it('024: repeatWeek cria a semana de repetição e recarrega o plano', async () => {
+    const { getLatestPlan, repeatLastWeek } = await import('@/services/workout.service')
+    const ready = { mesocycleId: 'm3', generatedAt: '2026-10-24T10:00:00Z', today: { letter: 'A', focus: 'Superior', exercises: [], adjusted: false }, upcoming: [], progress: { completed: 0, total: 4 } }
+    vi.mocked(getLatestPlan).mockResolvedValueOnce(null).mockResolvedValueOnce(ready)
     const { useWorkoutPlan } = await import('@/hooks/useWorkoutPlan')
     const { result } = renderHook(() => useWorkoutPlan())
-    await act(async () => { await result.current.generatePlan() })
-    expect(result.current.plan?.today?.exercises).toEqual(newPlan.exercises)
-    expect(result.current.plan?.mesocycleId).toBeNull()
-    expect(result.current.generating).toBe(false)
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    await act(async () => { await result.current.repeatWeek() })
+    expect(repeatLastWeek).toHaveBeenCalled()
+    expect(result.current.plan?.mesocycleId).toBe('m3')
   })
 
   describe('011: cache local de outro dia', () => {
@@ -99,7 +127,7 @@ describe('useWorkoutPlan', () => {
       expect(result.current.plan).toBeNull()
     })
 
-    it('FR-018: plano legado do botão gerar (mesocycleId null) continua vindo do cache', async () => {
+    it('024: plano solto do gerador antigo (mesocycleId null) no cache é descartado e busca de novo', async () => {
       const legacy = { ...cachedPlan('ignorado'), mesocycleId: null } as { today: Record<string, unknown> }
       delete legacy.today.tiredness
       localStorage.setItem('helux:workout-plan', JSON.stringify(legacy))
@@ -107,8 +135,7 @@ describe('useWorkoutPlan', () => {
       const { useWorkoutPlan } = await import('@/hooks/useWorkoutPlan')
       const { result } = renderHook(() => useWorkoutPlan())
       await waitFor(() => expect(result.current.loading).toBe(false))
-      expect(getLatestPlan).not.toHaveBeenCalled()
-      expect(result.current.plan?.today?.letter).toBe('A')
+      expect(getLatestPlan).toHaveBeenCalled()
     })
 
     it('descarta o cache cuja avaliação de cansaço é de outro dia e busca de novo', async () => {

@@ -72,6 +72,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+    await user.click(await screen.findByRole('button', { name: 'Pular e concluir' }))
 
     expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
     expect(sessionPosts()).toHaveLength(1)
@@ -88,6 +89,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
     await user.click(await screen.findByRole('button', { name: 'Finalizar mesmo assim' }))
+    await user.click(await screen.findByRole('button', { name: 'Pular e concluir' }))
     await screen.findByText('Treino concluído')
 
     const body = JSON.parse(sessionPosts()[0][1]!.body as string)
@@ -118,6 +120,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
 
     await user.click(screen.getByRole('button', { name: /Finalizar treino/ }))
     await user.click(await screen.findByRole('button', { name: 'Finalizar mesmo assim' }))
+    await user.click(await screen.findByRole('button', { name: 'Pular e concluir' }))
     expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
     expect(sessionPosts()).toHaveLength(1)
   })
@@ -131,10 +134,83 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+    await user.click(await screen.findByRole('button', { name: 'Pular e concluir' }))
     await user.click(await screen.findByRole('button', { name: 'Voltar para Hoje' }))
 
     expect(replaceMock).toHaveBeenCalledWith('/')
     await waitFor(() => expect(sessionPosts()).toHaveLength(1))
+  })
+
+  it('024: "Como foi o treino?" grava o check-in de depois e liga à sessão salva', async () => {
+    seed()
+    vi.mocked(apiFetch).mockImplementation(async (path: string) => (path === '/api/session-checkins' ? { checkin: { id: 'c-depois' } } : {}))
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+    await user.click(await screen.findByRole('button', { name: 'Esforço 8' }))
+    await user.click(screen.getByRole('button', { name: 'Salvar e concluir' }))
+    await screen.findByText('Treino concluído')
+
+    const checkin = vi.mocked(apiFetch).mock.calls.find(([p]) => p === '/api/session-checkins')!
+    expect(JSON.parse(checkin[1]!.body as string)).toMatchObject({ phase: 'depois', rpe: 8, pains: [] })
+    expect(JSON.parse(sessionPosts()[0][1]!.body as string).checkinIds).toEqual(['c-depois'])
+  })
+
+  it('PR #19: energia baixa no check-in de antes recarrega o treino do dia, já reduzido', async () => {
+    const state: ActiveWorkoutState = {
+      planExercises: [{ name: 'Agachamento', sets: 4, reps: '8', weight: '80kg', notes: '' }] as ActiveWorkoutState['planExercises'],
+      exerciseStates: [[0, 1, 2, 3].map(() => ({ weight: 80, reps: 8, done: false }))],
+      currentExerciseIndex: 0,
+      startedAt: new Date().toISOString(),
+      variantByExerciseIndex: {},
+      executedVariantByExerciseIndex: {},
+      effortByExerciseIndex: {},
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    vi.mocked(apiFetch).mockImplementation(async (path: string) => {
+      if (path === '/api/session-checkins') return { checkin: { id: 'c-antes' }, tirednessChanged: true }
+      if (path === '/workout/latest-plan') {
+        return {
+          today: {
+            exercises: [{ name: 'Agachamento', sets: 2, reps: '8', weight: '80kg', notes: '' }],
+            adjusted: true,
+            adjustmentReason: 'Você está cansado: treino de hoje com menos séries.',
+            changes: [{ name: 'Agachamento', setsBefore: 4, setsAfter: 2, weightBefore: '80kg', weightAfter: '80kg' }],
+          },
+        }
+      }
+      return {}
+    })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await screen.findByText('Antes de começar')
+    await user.click(screen.getByRole('button', { name: 'Energia 1' }))
+    await user.click(screen.getByRole('button', { name: 'Começar treino' }))
+    expect(await screen.findByText('Treino de hoje ajustado')).toBeInTheDocument()
+    expect(screen.getByText(/menos séries/)).toBeInTheDocument()
+    expect(vi.mocked(apiFetch).mock.calls.some(([p]) => p === '/workout/latest-plan')).toBe(true)
+  })
+
+  it('024: treino novo abre o check-in de antes; pular segue para o treino', async () => {
+    const state: ActiveWorkoutState = {
+      planExercises: [{ name: 'Agachamento', sets: 2, reps: '8', weight: '80kg', notes: '' }] as ActiveWorkoutState['planExercises'],
+      exerciseStates: [[{ weight: 80, reps: 8, done: false }, { weight: 80, reps: 8, done: false }]],
+      currentExerciseIndex: 0,
+      startedAt: new Date().toISOString(),
+      variantByExerciseIndex: {},
+      executedVariantByExerciseIndex: {},
+      effortByExerciseIndex: {},
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    expect(await screen.findByText('Antes de começar')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Pular' }))
+    expect(screen.queryByText('Antes de começar')).not.toBeInTheDocument()
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).preCheckinDone).toBe(true)
   })
 
   // US2 -----------------------------------------------------------------
@@ -147,6 +223,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+    await user.click(await screen.findByRole('button', { name: 'Pular e concluir' }))
 
     expect(await screen.findByText('Salvando treino…')).toBeInTheDocument()
     expect(screen.queryByText(/registrou suas cargas/)).not.toBeInTheDocument()
@@ -165,6 +242,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+    await user.click(await screen.findByRole('button', { name: 'Pular e concluir' }))
 
     expect(await screen.findByText('Não foi possível salvar')).toBeInTheDocument()
     expect(screen.queryByText(/registrou suas cargas/)).not.toBeInTheDocument()
@@ -184,6 +262,7 @@ describe('WorkoutPage — salvar ao concluir (spec 016)', () => {
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+    await user.click(await screen.findByRole('button', { name: 'Pular e concluir' }))
     await user.click(await screen.findByRole('button', { name: 'Voltar ao treino' }))
 
     expect(await screen.findByRole('button', { name: /Finalizar treino/ })).toBeInTheDocument()
@@ -324,6 +403,7 @@ describe('WorkoutPage — fases (spec 014, US1)', () => {
     render(<WorkoutPage />)
 
     await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+    await user.click(await screen.findByRole('button', { name: 'Pular e concluir' }))
 
     expect(await screen.findByText('Treino concluído')).toBeInTheDocument()
     const body = JSON.parse(sessionPosts()[0][1]!.body as string)

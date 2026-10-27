@@ -44,6 +44,11 @@ function MainRow({ exercise, partner }: { exercise: PlannedExercise; partner: Pl
           {exercise.progression.reason}
         </span>
       )}
+      {exercise.rirTarget !== undefined && (
+        <span className="t-secondary" style={{ gridColumn: '1 / -1' }}>
+          Deixe {exercise.rirTarget} {exercise.rirTarget === 1 ? 'repetição' : 'repetições'} na reserva
+        </span>
+      )}
       {partner && (
         <span className="t-secondary" style={{ gridColumn: '1 / -1' }}>
           Biset · com {partner.name}
@@ -53,13 +58,18 @@ function MainRow({ exercise, partner }: { exercise: PlannedExercise; partner: Pl
   )
 }
 
-/** Aquecimento/volta à calma: nome livre e a prescrição descritiva, sem carga nem fit. */
+/** Aquecimento, volta à calma, cardio e mobilidade: nome e a prescrição descritiva, sem carga nem fit. */
 function SimpleRow({ exercise }: { exercise: PlannedExercise }) {
+  const detail = exercise.cardio
+    ? `${exercise.cardio.minutes} min · zona ${exercise.cardio.zone}`
+    : exercise.region
+      ? `${exercise.reps} · ${exercise.region}`
+      : exercise.reps
   return (
     <li style={ROW_STYLE}>
       <span className="t-body">{exercise.name}</span>
       <span className="t-secondary" style={{ textAlign: 'right' }}>
-        {exercise.reps}
+        {detail}
       </span>
     </li>
   )

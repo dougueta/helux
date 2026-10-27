@@ -95,10 +95,10 @@ describe('escritas do modo mock (021 T014)', () => {
     await expect(router.dispatch('/api/nutrition/phase', post({ goal: 'manutencao', durationWeeks: 8 }))).rejects.toThrow('needs-profile')
   })
 
-  it('gerar treino devolve um plano e não falha', async () => {
+  it('024: gerar novo plano e repetir a semana respondem sem falhar', async () => {
     const { router } = runtime()
-    const plan = (await router.dispatch('/workout/generate', post({}))) as { exercises: unknown[]; rationale: string }
-    expect(plan.exercises.length).toBeGreaterThan(0)
+    expect(await router.dispatch('/workout/mesocycle/regenerate', post({}))).toEqual({ status: 'gerando' })
+    expect(await router.dispatch('/workout/mesocycle/repeat-week', post({}))).toMatchObject({ mesocycleId: expect.any(String) })
   })
 
   it('reset desfaz as escritas', async () => {

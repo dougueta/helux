@@ -20,7 +20,11 @@ export interface GeneticTrait {
   note: string
   /** Ponto de atenção, cuidado relevante ou lesão. */
   warn: boolean
+  /** Spec 024: força da evidência do gene para decisões de treino. */
+  evidence?: GeneticEvidence
 }
+
+export type GeneticEvidence = 'forte' | 'moderada' | 'fraca'
 
 /** Resposta de GET /genetic-profile: o resumo de sempre + os marcadores. */
 export interface GeneticProfileView extends GeneticProfile {

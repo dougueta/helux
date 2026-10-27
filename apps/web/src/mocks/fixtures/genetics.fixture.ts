@@ -4,7 +4,7 @@ import { classifyMarkers, nutritionFlags } from '@helux/nutrition'
 import type { MockNutrition } from '../types'
 import genera from './genera.fixture.json'
 
-/** Perfil genético da tela DNA, montado como em `GET /genetic-profile` (cópia de `data/genetics/genera.json`). */
+/** Perfil genético da tela DNA, montado como em `GET /genetic-profile` (laudo sintético: spec 024 tirou o laudo real do repositório). */
 export function geneticsFixture(): GeneticProfileView {
   return { ...parseGeneraJson(genera), traits: parseGeneraTraits(genera) }
 }

@@ -100,3 +100,24 @@ describe('PlanExerciseList — progressão de carga (spec 014, US3, FR-019)', ()
     expect(within(crucifixo).queryByText('mantida')).not.toBeInTheDocument()
   })
 })
+
+describe('PlanExerciseList — esforço, cardio e mobilidade (spec 024, T082)', () => {
+  const items: PlannedExercise[] = [
+    { name: 'Supino Reto (Barra)', sets: 3, reps: '8-10', weight: '60kg', phase: 'principal', rirTarget: 2 },
+    { name: 'Bike ergométrica', sets: 1, reps: '25 min', weight: '—', phase: 'principal', cardio: { modality: 'bike', minutes: 25, zone: 'moderada' } },
+    { name: 'Mobilidade de quadril', sets: 1, reps: '10 min', weight: '—', phase: 'principal', region: 'quadril' },
+  ]
+
+  it('mostra o esforço-alvo em linguagem simples', () => {
+    render(<PlanExerciseList exercises={items} />)
+    expect(screen.getByText(/deixe 2 repetições na reserva/i)).toBeInTheDocument()
+  })
+
+  it('cardio com minutos e zona; mobilidade com a região; sem carga', () => {
+    render(<PlanExerciseList exercises={items} />)
+    expect(screen.getByText('Bike ergométrica')).toBeInTheDocument()
+    expect(screen.getByText(/25 min · zona moderada/i)).toBeInTheDocument()
+    expect(screen.getByText(/10 min · quadril/i)).toBeInTheDocument()
+    expect(screen.queryAllByText('—')).toHaveLength(0)
+  })
+})

@@ -3,6 +3,10 @@ import { SOURCE_KEYS } from '@helux/types'
 import { fakeSupabase } from './helpers/fake-supabase'
 import { buildIntegratedProfile } from '../services/integrated-profile.service'
 import { acceptGuidance } from '../services/guidance.service'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+
+const GENERA_FAKE = JSON.parse(readFileSync(path.resolve(__dirname, '../../e2e/fixtures/genera.fake.json'), 'utf-8'))
 
 const NOW = new Date('2026-10-20T15:00:00Z')
 const SESSION = (letter: string, completedAt: string | null) => ({
@@ -33,12 +37,16 @@ function db(over: Record<string, Record<string, unknown>[]> = {}) {
       },
     ],
     workout_sessions: [
-      { user_id: 'u1', id: 's1', date: '2026-10-18', duration_s: 3600, created_at: '2026-10-18T20:00:00Z', exercises: [{ name: 'Supino Reto (Barra)', sets: [{ reps: 8, weight: 80, effort: 8 }] }] },
+      { user_id: 'u1', id: 's1', date: '2026-10-18', duration_s: 3600, created_at: '2026-10-18T20:00:00Z', exercises: [{ name: 'Supino Reto (Barra)', sets: [{ reps: 8, weight: 80, effort: 8 }, { reps: 8, weight: 80, effort: 8 }, { reps: 8, weight: 80, effort: 8 }] }] },
+      // Spec 024: sessão de teste (2 min) não entra no histórico do perfil.
+      { user_id: 'u1', id: 's0', date: '2026-10-17', duration_s: 124, created_at: '2026-10-17T20:00:00Z', exercises: [{ name: 'Leg Press 45°', sets: [{ reps: 8, weight: 100, effort: 8 }] }] },
     ],
     mesocycle_plans: [
       { user_id: 'u1', id: 'm1', generated_at: '2026-10-10T10:00:00Z', created_at: '2026-10-10T10:00:00Z', days_per_week: 3, split_type: 'ABC', rationale: '', sessions: [SESSION('A', '2026-10-12T10:00:00Z'), SESSION('B', null), SESSION('C', null)] },
     ],
     health_samples: [],
+    // Spec 024: laudo genético no banco (antes vinha do arquivo do repositório).
+    genetic_reports: [{ user_id: 'u1', raw: GENERA_FAKE }],
     daily_tiredness_signals: [{ user_id: 'u1', date: '2026-10-20', level: 'cansado', override_automatic: false }],
     body_checkins: [{ user_id: 'u1', id: 'c1', month: '2026-10', weight_kg: 81, waist_cm: 86, neck_cm: 39, created_at: '2026-10-05T10:00:00Z' }],
     diet_phases: [],
@@ -114,6 +122,9 @@ describe('buildIntegratedProfile (022 T008)', () => {
       maxSessionMinutes: 45,
       blockedPatterns: ['empurrar-vertical'],
       blockedExercises: [],
+      maxJointStress: {},
+      maxCardioImpact: null,
+      minRir: null,
     })
     expect(fake.db.shared_guidance.find(g => g.id === 'g2')!.status).toBe('expirada')
     expect(notices.join(' ')).toMatch(/Sem carga axial.*expirou/)
@@ -156,7 +167,7 @@ describe('buildIntegratedProfile (022 T008)', () => {
     const { profile, constraints } = await buildIntegratedProfile('u1', fake.client as never, NOW)
     expect(profile.sources.perfil.status).toBe('vazia')
     expect(profile.sources.historico.status).toBe('vazia')
-    expect(constraints).toEqual({ availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] })
+    expect(constraints).toEqual({ availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null })
   })
 
   it('SC-007: restrição proposta pela Medicina e aceita passa a valer para o treino', async () => {
@@ -187,6 +198,42 @@ describe('buildIntegratedProfile (022 T008)', () => {
     expect(after.constraints.blockedPatterns).toEqual(['empurrar-horizontal'])
     expect(after.constraints.blockedExercises).toEqual(['supino-reto-barra'])
     expect(after.profile.sources.restricoes.summary).toMatch(/Evitar supino por 10 dias/)
+  })
+
+  it('024 (FR-010, T059): objetivo estruturado e condições com regras no perfil; limites das condições nas restrições', async () => {
+    const fake = db()
+    Object.assign(fake.db.user_training_profile[0], { goal_primary: 'corrida', goal_secondary: 'condicionamento', goal_target: 'correr 5 km sem dor' })
+    fake.db.health_conditions = [
+      { id: 'h1', user_id: 'u1', catalog_key: 'lca-reconstrucao', custom_label: null, region: 'joelho', side: 'esquerdo', since: null, count: 2, status: 'controlada', notes: null, flare_region: null, flare_until: null, created_at: '2026-10-01T10:00:00Z' },
+      { id: 'h2', user_id: 'u1', catalog_key: 'gota', custom_label: null, region: 'sistemica', side: null, since: null, count: 1, status: 'controlada', notes: null, flare_region: 'joelho', flare_until: '2026-10-22', created_at: '2026-10-02T10:00:00Z' },
+      { id: 'h3', user_id: 'u1', catalog_key: 'artrose', custom_label: null, region: 'joelho', side: 'esquerdo', since: null, count: 1, status: 'resolvida', notes: null, flare_region: null, flare_until: null, created_at: '2026-10-03T10:00:00Z' },
+    ]
+    const { profile, constraints, conditions } = await buildIntegratedProfile('u1', fake.client as never, NOW)
+    expect(profile.sources.perfil.summary).toMatch(/Objetivo principal: corrida/)
+    expect(profile.sources.perfil.summary).toMatch(/Meta: correr 5 km sem dor/)
+    expect((await buildIntegratedProfile('u1', fake.client as never, NOW)).training.goalTarget).toBe('correr 5 km sem dor')
+    expect(profile.sources.perfil.summary).toMatch(/Reconstrução de LCA \(joelho esquerdo, 2×\)/)
+    expect(profile.sources.perfil.summary).toMatch(/Gota.*crise no joelho até 22\/10/)
+    expect(profile.sources.perfil.summary).not.toMatch(/Artrose/)
+    expect(conditions).toHaveLength(3)
+    expect(constraints.maxJointStress).toEqual({ joelho: 0 })
+    expect(constraints.maxCardioImpact).toBe(0)
+  })
+
+  it('024: condições valem para a segurança mesmo com a fonte perfil desativada', async () => {
+    const fake = db()
+    fake.db.agent_source_settings = [{ user_id: 'u1', source: 'perfil', enabled: false }]
+    fake.db.health_conditions = [
+      { id: 'h1', user_id: 'u1', catalog_key: 'lombalgia', custom_label: null, region: 'lombar', side: null, since: null, count: 1, status: 'controlada', notes: null, flare_region: null, flare_until: null, created_at: '2026-10-01T10:00:00Z' },
+    ]
+    const { constraints } = await buildIntegratedProfile('u1', fake.client as never, NOW)
+    expect(constraints.maxJointStress).toEqual({ lombar: 1 })
+  })
+
+  it('024 (T094): sessão suspeita (2 min, 1 série) fica fora do histórico do perfil', async () => {
+    const { profile } = await buildIntegratedProfile('u1', db().client as never, NOW)
+    expect(profile.sources.historico.summary).toMatch(/Supino Reto/)
+    expect(profile.sources.historico.summary).not.toMatch(/Leg Press/)
   })
 
   it('recomendação em conflito com restrição ativa aparece marcada; a restrição prevalece (FR-021)', async () => {

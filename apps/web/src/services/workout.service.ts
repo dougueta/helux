@@ -1,5 +1,5 @@
 import { apiFetch } from '@/services/api-client'
-import type { NextWorkoutPlan, WorkoutSession, WorkoutAnalytics, BodyCheckin, AdjustedWorkoutPlanView } from '@helux/types'
+import type { WorkoutSession, WorkoutAnalytics, AdjustedWorkoutPlanView } from '@helux/types'
 
 export async function getLatestPlan(): Promise<AdjustedWorkoutPlanView | null> {
   try {
@@ -18,26 +18,14 @@ export async function getWorkoutHistory(limit = 5): Promise<WorkoutSession[]> {
   }
 }
 
-export async function generatePlan(
-  geneticProfile: unknown,
-  recoveryData: unknown | null,
-  workoutHistory: WorkoutSession[] = [],
-  bodyCheckins: BodyCheckin[] = [],
-): Promise<NextWorkoutPlan> {
-  const body = {
-    geneticProfile: geneticProfile ?? {},
-    constraints: {},
-    workoutHistory,
-    recoveryData: recoveryData ? [recoveryData] : [],
-    userGoals: 'Hipertrofia e condicionamento geral',
-    userLevel: 'intermediario',
-    availableDaysPerWeek: 4,
-    bodyCheckins,
-  }
-  return (await apiFetch('/workout/generate', {
-    method: 'POST',
-    body: JSON.stringify(body),
-  })) as NextWorkoutPlan
+/** Pede um novo mesociclo ao Agente de Treino (spec 024; substitui o antigo POST /workout/generate). */
+export async function regeneratePlan(): Promise<void> {
+  await apiFetch('/workout/mesocycle/regenerate', { method: 'POST' })
+}
+
+/** Repete a última semana do ciclo concluído enquanto o próximo é gerado (spec 024). */
+export async function repeatLastWeek(): Promise<void> {
+  await apiFetch('/workout/mesocycle/repeat-week', { method: 'POST' })
 }
 
 export async function getWorkoutAnalytics(): Promise<WorkoutAnalytics | null> {

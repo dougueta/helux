@@ -16,6 +16,10 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { TirednessSelector } from '@/components/workout/TirednessSelector'
 import { TirednessDialog } from '@/components/workout/TirednessDialog'
+import { PlanGenerationState } from '@/components/workout/PlanGenerationState'
+import { FlareNotice } from '@/components/conditions/FlareNotice'
+import { CycleSummaryCard } from '@/components/cycle/CycleSummaryCard'
+import { WeekBadge } from '@/components/workout/WeekBadge'
 import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { todayHighlight } from '@/lib/todayHighlight'
 
@@ -42,6 +46,17 @@ function todayLabel() {
 function cycleSessions(plan: AdjustedWorkoutPlanView): { label: string; state: CycleState }[] {
   const { today, upcoming, progress } = plan
   if (!today || !progress) return []
+  // Spec 024: no mesociclo semanal, os pontos mostram só a semana atual (as letras se repetem a cada semana).
+  if (plan.week) {
+    const perWeek = Math.round(progress.total / plan.week.total)
+    const ahead = upcoming.filter(s => s.week === plan.week!.current)
+    const doneThisWeek = Math.max(0, perWeek - 1 - ahead.length)
+    return [
+      ...Array.from({ length: doneThisWeek }, (_, i) => ({ label: String.fromCharCode(65 + i), state: 'done' as const })),
+      { label: today.letter, state: 'current' as const },
+      ...ahead.map(s => ({ label: s.letter, state: 'todo' as const })),
+    ]
+  }
   const before = Math.max(0, progress.total - 1 - upcoming.length)
   const base = today.letter.charCodeAt(0) - before
   return [
@@ -73,7 +88,7 @@ function HomeSkeleton() {
 export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }: HomeClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
-  const { plan, loading, generating, generationError, generatePlan, refetch } = useWorkoutPlan()
+  const { plan, loading, generating, generationError, generatePlan, repeatWeek, refetch } = useWorkoutPlan()
   const currentPlan: AdjustedWorkoutPlanView | null = plan ?? initialPlan
   const today = currentPlan?.today
 
@@ -141,7 +156,8 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
           <HomeSkeleton />
         ) : today ? (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+            <WeekBadge week={currentPlan?.week} kind={currentPlan?.kind} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline', marginTop: currentPlan?.week ? 8 : 0 }}>
               <span className="t-secondary" style={{ color: 'var(--text)' }}>
                 {today.focus ? `Treino ${today.letter} — ${today.focus}` : `Treino ${today.letter}`}
               </span>
@@ -195,13 +211,8 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
               </Button>
             </div>
           </>
-        ) : currentPlan?.status === 'generating' ? (
-          <div role="status">
-            <h2 className="t-heading">Preparando seu próximo ciclo</h2>
-            <p className="t-secondary" style={{ marginTop: 6 }}>
-              Isso leva só alguns instantes. Volte a checar em breve.
-            </p>
-          </div>
+        ) : currentPlan?.status ? (
+          <PlanGenerationState plan={currentPlan} busy={generating} onRetry={() => void generatePlan()} onRepeatWeek={() => void repeatWeek()} />
         ) : (
           <>
             <h2 className="t-heading">Nenhum plano gerado ainda</h2>
@@ -224,6 +235,11 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
           </Banner>
         </div>
       )}
+
+      {/* Spec 024: crise de gota além do prazo → procurar o médico. */}
+      <FlareNotice onChange={() => void refetch()} />
+      {/* Spec 024: no começo de um ciclo novo, o resumo do anterior e o que mudou. */}
+      {currentPlan?.mesocycleId && currentPlan.progress?.completed === 0 && <CycleSummaryCard mesocycleId={currentPlan.mesocycleId} />}
 
       {/* Spec 022: chat com a Equipe Helux (treino, medicina esportiva, nutrição genética). */}
       <div className="hx-card" style={{ marginTop: 16, overflow: 'hidden' }}>

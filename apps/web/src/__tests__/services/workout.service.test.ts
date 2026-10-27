@@ -42,23 +42,20 @@ describe('workout.service', () => {
     expect(result).toBeNull()
   })
 
-  it('generatePlan calls POST /workout/generate with PlanInput', async () => {
+  it('024: regeneratePlan chama POST /workout/mesocycle/regenerate', async () => {
     const { apiFetch } = await import('@/services/api-client')
-    const mockPlan = { generatedAt: new Date().toISOString(), exercises: [], rationale: 'ok' }
-    vi.mocked(apiFetch).mockResolvedValueOnce(mockPlan)
-
-    const { generatePlan } = await import('@/services/workout.service')
-    const mockProfile = { traits: [] }
-    const result = await generatePlan(mockProfile as any, null)
-
-    expect(apiFetch).toHaveBeenCalledWith('/workout/generate', expect.objectContaining({ method: 'POST' }))
-    expect(result).toEqual(mockPlan)
+    vi.mocked(apiFetch).mockResolvedValueOnce({ status: 'gerando' })
+    const { regeneratePlan } = await import('@/services/workout.service')
+    await regeneratePlan()
+    expect(apiFetch).toHaveBeenCalledWith('/workout/mesocycle/regenerate', { method: 'POST' })
   })
 
-  it('generatePlan handles AI unavailable (500)', async () => {
+  it('024: repeatLastWeek chama POST /workout/mesocycle/repeat-week e propaga o erro', async () => {
     const { apiFetch } = await import('@/services/api-client')
-    vi.mocked(apiFetch).mockRejectedValueOnce(new Error('HTTP 500'))
-    const { generatePlan } = await import('@/services/workout.service')
-    await expect(generatePlan({} as any, null)).rejects.toThrow()
+    vi.mocked(apiFetch).mockResolvedValueOnce({ mesocycleId: 'm9' }).mockRejectedValueOnce(new Error('HTTP 409'))
+    const { repeatLastWeek } = await import('@/services/workout.service')
+    await repeatLastWeek()
+    expect(apiFetch).toHaveBeenCalledWith('/workout/mesocycle/repeat-week', { method: 'POST' })
+    await expect(repeatLastWeek()).rejects.toThrow()
   })
 })

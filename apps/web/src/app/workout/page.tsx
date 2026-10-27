@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
+import { clearCachedPlan } from '@/hooks/useWorkoutPlan'
 import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
 import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import { FinishWorkoutConfirmDialog } from '@/components/workout/FinishWorkoutConfirmDialog'
@@ -22,8 +23,13 @@ import { Tag } from '@/components/ui/Tag'
 import { Tips } from '@/components/ui/Tips'
 import { WorkoutProgress } from '@/components/ui/WorkoutProgress'
 import { EffortPicker } from '@/components/workout/EffortPicker'
-import { exercisePhase, nextStepAfterSet, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
-import type { ExercisePhase } from '@helux/types'
+import { Sheet } from '@/components/ui/Sheet'
+import { PreWorkoutCheckin, type PreCheckinAdjustment, type PreCheckinValues } from '@/components/workout/PreWorkoutCheckin'
+import { PostWorkoutCheckin, type PostCheckinValues } from '@/components/workout/PostWorkoutCheckin'
+import { saveSessionCheckin } from '@/services/session-checkins.service'
+import { apiFetch } from '@/services/api-client'
+import { exercisePhase, isMainExercise, nextStepAfterSet, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
+import type { AdjustedWorkoutPlanView, ExercisePhase } from '@helux/types'
 
 /** Tag da fase no treino ativo (spec 014, FR-005). */
 const PHASE_TAG: Record<ExercisePhase, string> = {
@@ -68,7 +74,14 @@ export default function WorkoutPage() {
     setEffort,
     getSkippedExercises,
     finishWorkout,
+    addCheckinId,
+    markPreCheckinDone,
+    replaceExercises,
   } = useActiveWorkout()
+  // Spec 024 (FR-017/018): check-ins de sensação antes e depois do treino.
+  const [checkinSaving, setCheckinSaving] = useState(false)
+  const [preAdjustment, setPreAdjustment] = useState<PreCheckinAdjustment | null>(null)
+  const [postOpen, setPostOpen] = useState(false)
 
   const [restLeft, setRestLeft] = useState(0)
   const [restTotal, setRestTotal] = useState(0)
@@ -152,7 +165,8 @@ export default function WorkoutPage() {
   const selectedVariant = variants.find(v => v.id === currentVariantId) ?? recVariant
   const display = currentEx ? resolveExerciseDisplay(currentEx, currentVariantId) : null
   const phase: ExercisePhase = currentEx ? exercisePhase(currentEx) : 'principal'
-  const isMain = phase === 'principal'
+  // Spec 024: cardio e mobilidade ficam no treino principal, mas são concluídos com um toque.
+  const isMain = currentEx ? isMainExercise(currentEx) : true
   const partnerIdx = currentEx ? supersetPartnerIndex(session.planExercises, currentIdx) : null
   const partner = partnerIdx !== null ? session.planExercises[partnerIdx] : null
   // Rótulo "descanso Ns" vem do mesmo ponto que o timer (contracts/workout-flow.md).
@@ -214,8 +228,54 @@ export default function WorkoutPage() {
     }
   }
 
-  // Spec 016: the workout is saved when it is finished, not when leaving the done screen.
+  const todayDate = () => new Date().toISOString().slice(0, 10)
+
+  async function handlePreSubmit(values: PreCheckinValues) {
+    setCheckinSaving(true)
+    try {
+      const res = await saveSessionCheckin({ phase: 'antes', date: todayDate(), ...values })
+      addCheckinId(res.checkin.id)
+      if (res.adjustment || res.tirednessChanged) {
+        // A API já aplica a dor e o cansaço de hoje ao treino do dia: troca os exercícios antes da primeira série.
+        clearCachedPlan()
+        const plan = (await apiFetch('/workout/latest-plan')) as AdjustedWorkoutPlanView
+        if (plan.today) replaceExercises(plan.today.exercises)
+        const reason = plan.today?.adjustmentReason || res.adjustment?.reason
+        if (plan.today?.adjusted && reason) {
+          setPreAdjustment({ reason, changes: plan.today.changes ?? [] })
+          return
+        }
+      }
+      markPreCheckinDone()
+    } catch {
+      // O check-in nunca bloqueia o treino.
+      markPreCheckinDone()
+    } finally {
+      setCheckinSaving(false)
+    }
+  }
+
+  async function handlePostSubmit(values: PostCheckinValues | null) {
+    if (values) {
+      setCheckinSaving(true)
+      try {
+        addCheckinId((await saveSessionCheckin({ phase: 'depois', date: todayDate(), ...values })).checkin.id)
+      } catch {
+        // Sem o check-in, o treino é salvo do mesmo jeito.
+      } finally {
+        setCheckinSaving(false)
+      }
+    }
+    setPostOpen(false)
+    saveFinish()
+  }
+
   function startFinish() {
+    setPostOpen(true)
+  }
+
+  // Spec 016: the workout is saved when it is finished, not when leaving the done screen.
+  function saveFinish() {
     setFinishSummary({
       totalDone,
       totalSets,
@@ -270,7 +330,7 @@ export default function WorkoutPage() {
       {currentEx && display && (
         <div style={{ padding: '0 16px', marginTop: 20 }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Tag>{PHASE_TAG[phase]}</Tag>
+            <Tag>{currentEx?.cardio ? 'Cardio' : currentEx?.region ? 'Mobilidade' : PHASE_TAG[phase]}</Tag>
             {isMain && display.fit !== undefined && <Fit value={display.fit} />}
           </div>
           <h1 className="t-title" style={{ marginTop: 12 }}>
@@ -523,6 +583,31 @@ export default function WorkoutPage() {
           onClose={() => setSheetOpen(false)}
         />
       )}
+
+      <Sheet
+        open={!session.preCheckinDone && totalDone === 0}
+        onClose={markPreCheckinDone}
+        label="check-in antes do treino"
+      >
+        <PreWorkoutCheckin
+          saving={checkinSaving}
+          adjustment={preAdjustment}
+          onSubmit={values => { void handlePreSubmit(values) }}
+          onSkip={markPreCheckinDone}
+          onContinue={() => {
+            setPreAdjustment(null)
+            markPreCheckinDone()
+          }}
+        />
+      </Sheet>
+
+      <Sheet open={postOpen} onClose={() => setPostOpen(false)} label="check-in depois do treino">
+        <PostWorkoutCheckin
+          saving={checkinSaving}
+          onSubmit={values => { void handlePostSubmit(values) }}
+          onSkip={() => { void handlePostSubmit(null) }}
+        />
+      </Sheet>
 
       {finishConfirmOpen && (
         <FinishWorkoutConfirmDialog

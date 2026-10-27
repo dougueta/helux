@@ -6,6 +6,7 @@ import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { Segmented } from '@/components/ui/Segmented'
 import { Tag } from '@/components/ui/Tag'
+import { clearCachedPlan } from '@/hooks/useWorkoutPlan'
 import { resolveProposal, savePreferences, type CatalogExercise } from '@/services/agents.service'
 import { ProposalCard } from './ProposalCard'
 
@@ -98,6 +99,7 @@ export function PreferencesForm({ initial, catalog }: { initial: TrainingPrefere
   async function resolve(action: 'accept' | 'reject') {
     if (!outcome?.proposal) return
     await resolveProposal(outcome.proposal.id, action)
+    if (action === 'accept') clearCachedPlan()
     setOutcome({ ...outcome, proposal: { ...outcome.proposal, status: action === 'accept' ? 'aceita' : 'recusada' } })
   }
 

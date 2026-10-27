@@ -4,6 +4,7 @@ import { getServerSession } from '@/lib/server-session'
 import { Shell } from '@/components/layout/Shell'
 import { Icon } from '@/components/ui/icons'
 import { PerfilClient } from './PerfilClient'
+import { GeneticReportUpload } from '@/components/perfil/GeneticReportUpload'
 
 export default async function PerfilPage() {
   const session = await getServerSession()
@@ -47,6 +48,20 @@ export default async function PerfilPage() {
             <Icon name="chev" size={20} />
           </span>
         </Link>
+        <Link href="/perfil/condicoes" className="hx-row-btn">
+          <span style={{ width: 40, display: 'grid', placeItems: 'center', color: 'var(--text-dim)' }}>
+            <Icon name="heart" size={22} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span className="t-body-m" style={{ display: 'block' }}>
+              Condições e cirurgias
+            </span>
+            <span className="t-secondary">Regras de segurança do treino e crise de gota</span>
+          </span>
+          <span className="dim">
+            <Icon name="chev" size={20} />
+          </span>
+        </Link>
         <Link href="/dna" className="hx-row-btn">
           <span style={{ width: 40, display: 'grid', placeItems: 'center', color: 'var(--text-dim)' }}>
             <Icon name="dna" size={22} />
@@ -64,6 +79,7 @@ export default async function PerfilPage() {
       </div>
 
       <PerfilClient />
+      <GeneticReportUpload />
     </Shell>
   )
 }

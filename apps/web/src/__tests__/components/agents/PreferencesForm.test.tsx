@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { TrainingPreferences } from '@helux/types'
 
@@ -69,12 +69,14 @@ describe('PreferencesForm (022 T010, FR-005)', () => {
       appliesFrom: 'imediato',
       proposal: { id: 'p1', mesocycleId: 'm1', kind: 'adaptacao-restricao', sessionIndexes: [1], before: [], after: [], changes: [{ sessionIndex: 1, letter: 'B', kind: 'trocado', before: 'Leg Press 45°', after: 'Agachamento Goblet (Halteres)' }], reason: 'Só halteres.', status: 'pendente', createdAt: '' },
     })
+    localStorage.setItem('helux:workout-plan', '{"mesocycleId":"m1"}')
     const user = userEvent.setup()
     render(<PreferencesForm initial={EMPTY} catalog={CATALOG} />)
     await user.click(screen.getByRole('button', { name: /salvar preferências/i }))
     expect(await screen.findByText('Só halteres.')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /aplicar mudanças/i }))
     expect(resolveProposalMock).toHaveBeenCalledWith('p1', 'accept')
+    await waitFor(() => expect(localStorage.getItem('helux:workout-plan')).toBeNull())
   })
 
   it('teto atingido: avisa que a adaptação fica para depois', async () => {

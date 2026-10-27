@@ -18,6 +18,9 @@ import { AgentChat } from '@/components/agents/AgentChat'
 import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
 import type { AdjustedWorkoutPlanView } from '@helux/types'
+import { PlanGenerationState } from '@/components/workout/PlanGenerationState'
+import { WeekBadge } from '@/components/workout/WeekBadge'
+import { CycleSummaryCard } from '@/components/cycle/CycleSummaryCard'
 import { isMainExercise } from '@helux/workouts'
 
 interface TreinosClientProps {
@@ -29,7 +32,7 @@ interface TreinosClientProps {
 export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
-  const { plan, generating, generationError, generatePlan, refetch } = useWorkoutPlan()
+  const { plan, generating, generationError, generatePlan, repeatWeek, refetch } = useWorkoutPlan()
   const [editing, setEditing] = useState<number | null>(null)
   const [coachOpen, setCoachOpen] = useState(false)
   const currentPlan = plan ?? initialPlan
@@ -54,6 +57,7 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
 
       {today ? (
         <section style={{ marginTop: 24 }}>
+          <WeekBadge week={currentPlan?.week} kind={currentPlan?.kind} />
           <SectionHeader
             title={today.focus ? `Treino ${today.letter} — ${today.focus}` : `Treino ${today.letter}`}
             aside={`${today.exercises.filter(isMainExercise).length} exercícios`}
@@ -71,6 +75,8 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
           </div>
         </section>
       ) : null}
+
+      {currentPlan?.mesocycleId && <CycleSummaryCard mesocycleId={currentPlan.mesocycleId} />}
 
       {today && (
         <>
@@ -109,7 +115,11 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
         </>
       )}
 
-      {!today ? (
+      {!today && currentPlan?.status ? (
+        <section className="hx-focus" style={{ marginTop: 24, padding: 20 }}>
+          <PlanGenerationState plan={currentPlan} busy={generating} onRetry={() => void generatePlan()} onRepeatWeek={() => void repeatWeek()} />
+        </section>
+      ) : !today ? (
         <section className="hx-focus" style={{ marginTop: 24, padding: 20 }}>
           <h2 className="t-heading">Nenhum plano gerado ainda</h2>
           <p className="t-secondary" style={{ marginTop: 6 }}>

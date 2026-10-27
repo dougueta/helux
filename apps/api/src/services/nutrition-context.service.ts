@@ -6,8 +6,7 @@ import { parseGeneraNutrition } from '@helux/genetics'
 import { classifyMarkers, nutritionFlags, type NutritionFlags } from '@helux/nutrition'
 import { getTodayTirednessAssessment, todaySlug } from './tiredness.service'
 import { getActiveMesocycle } from './mesocycle.service'
-
-const GENERA_PATH = path.resolve(process.cwd(), 'data', 'genetics', 'genera.json')
+import { getGeneticRaw } from './genetics.service'
 
 export type MissingField = 'heightCm' | 'birthDate' | 'sex' | 'checkinWeight' | 'checkinStale'
 
@@ -52,10 +51,10 @@ export function toDietPhase(row: DietPhaseRow): DietPhase {
   }
 }
 
-/** Marcadores e flags de nutrição do `genera.json` (sem arquivo → personalização inativa). */
-export function loadNutritionGenetics(): NutritionContext['genetics'] {
-  if (!existsSync(GENERA_PATH)) return { active: false, markers: [], flags: nutritionFlags([]) }
-  const markers = classifyMarkers(parseGeneraNutrition(JSON.parse(readFileSync(GENERA_PATH, 'utf-8'))))
+/** Marcadores e flags de nutrição do laudo genético do usuário (sem laudo → personalização inativa). */
+export function loadNutritionGenetics(raw: unknown | null): NutritionContext['genetics'] {
+  if (!raw) return { active: false, markers: [], flags: nutritionFlags([]) }
+  const markers = classifyMarkers(parseGeneraNutrition(raw))
   return { active: true, markers, flags: nutritionFlags(markers) }
 }
 
@@ -67,13 +66,14 @@ export function loadNutritionGenetics(): NutritionContext['genetics'] {
 export async function loadNutritionContext(userId: string, supabase: SupabaseClient, now: Date = new Date()): Promise<NutritionContext> {
   const today = todaySlug(now)
 
-  const [profileRes, checkinsRes, phaseRes, workoutRes, tiredness, mesocycle] = await Promise.all([
+  const [profileRes, checkinsRes, phaseRes, workoutRes, tiredness, mesocycle, geneticRaw] = await Promise.all([
     supabase.from('user_training_profile').select('height_cm, birth_date, sex').eq('user_id', userId).maybeSingle(),
     supabase.from('body_checkins').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(2),
     supabase.from('diet_phases').select('*').eq('user_id', userId).eq('status', 'ativa').maybeSingle(),
     supabase.from('workout_sessions').select('created_at').eq('user_id', userId).eq('date', today).order('created_at', { ascending: false }).limit(1),
     getTodayTirednessAssessment(userId, supabase, now).then(a => a.effectiveLevel, () => null),
     getActiveMesocycle(userId, supabase).catch(() => null),
+    getGeneticRaw(userId, supabase).catch(() => null),
   ])
 
   const p = profileRes.data as { height_cm: number | null; birth_date: string | null; sex: Sex | null } | null
@@ -117,7 +117,7 @@ export async function loadNutritionContext(userId: string, supabase: SupabaseCli
     tiredness: tiredness ?? null,
     daysPerWeek: mesocycle?.days_per_week ?? null,
     workoutToday: lastWorkout ? { finishedAt: lastWorkout.created_at } : null,
-    genetics: loadNutritionGenetics(),
+    genetics: loadNutritionGenetics(geneticRaw),
     missing,
   }
 }

@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { generateMesocyclePlan } from '@helux/ai'
+import { prescribeMethod } from '@helux/workouts'
 import { SOURCE_KEYS, type HardConstraints, type IntegratedProfile } from '@helux/types'
 import { startFakeAnthropic, type FakeAnthropic } from './fake-anthropic'
 
@@ -7,7 +8,7 @@ const PROFILE: IntegratedProfile = {
   generatedAt: '2026-01-01T00:00:00.000Z',
   sources: Object.fromEntries(SOURCE_KEYS.map((k) => [k, { status: 'vazia', updatedAt: null, summary: '', data: null }])) as IntegratedProfile['sources'],
 }
-const CONSTRAINTS: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const CONSTRAINTS: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
 
 describe('startFakeAnthropic', () => {
   let fake: FakeAnthropic | undefined
@@ -27,12 +28,14 @@ describe('startFakeAnthropic', () => {
     process.env.ANTHROPIC_BASE_URL = fake.url
     process.env.ANTHROPIC_API_KEY = 'fake-key'
 
-    const { plan, decisions } = await generateMesocyclePlan({ profile: PROFILE, constraints: CONSTRAINTS, daysPerWeek: 4 })
+    // Mesmo método do usuário do e2e (onboarding: hipertrofia, intermediário, 4 dias).
+    const method = prescribeMethod({ goal: 'hipertrofia', level: 'intermediario', timeOffMonths: 0, daysAvailable: 4, maxCardioImpact: null, minRir: null, cardioLikes: [], cardioAvoid: [] })
+    const { plan, decisions } = await generateMesocyclePlan({ profile: PROFILE, constraints: CONSTRAINTS, method, conditions: [] })
     expect(decisions).toHaveLength(1)
 
     expect(plan.sessions.map((s) => s.letter)).toEqual(['A', 'B', 'C', 'D'])
     expect(plan.sessions.every((s) => s.completedAt === null)).toBe(true)
-    for (const exercise of plan.sessions.flatMap((s) => s.exercises)) {
+    for (const exercise of plan.sessions.flatMap((s) => s.exercises).filter((e) => !e.cardio && !e.region)) {
       // `muscle` só é preenchido quando o nome existe no EXERCISE_BANK.
       expect(exercise.muscle, exercise.name).toBeTruthy()
       expect(exercise.sets).toBeGreaterThanOrEqual(3)

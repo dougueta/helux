@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { PlannedExercise } from '@helux/types'
 import {
   exercisePhase,
+  isConditioningItem,
   isMainExercise,
   groupByPhase,
   normalizeSessionExercises,
@@ -25,6 +26,18 @@ describe('exercisePhase / isMainExercise', () => {
 
   it('trata fase desconhecida como principal', () => {
     expect(exercisePhase(ex('X', { phase: 'bla' as never }))).toBe('principal')
+  })
+
+  it('024: cardio e mobilidade ficam no treino principal mas não são exercício de força', () => {
+    const bike = ex('Bike ergométrica', { sets: 1, reps: '20 min', weight: '—', cardio: { modality: 'bike', minutes: 20, zone: 'leve' } })
+    const mob = ex('Mobilidade de quadril', { sets: 1, reps: '10 min', weight: '—', region: 'quadril' })
+    expect(exercisePhase(bike)).toBe('principal')
+    expect(isMainExercise(bike)).toBe(false)
+    expect(isMainExercise(mob)).toBe(false)
+    expect(isConditioningItem(bike)).toBe(true)
+    expect(isConditioningItem(mob)).toBe(true)
+    expect(isConditioningItem(ex('Supino'))).toBe(false)
+    expect(isConditioningItem(ex('Esteira', { phase: 'aquecimento' }))).toBe(false)
   })
 })
 

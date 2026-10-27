@@ -1,4 +1,5 @@
 import type { GeneticTrait } from '@helux/types'
+import { evidenceFor } from './evidence'
 
 type RawEntry = {
   snp?: unknown
@@ -76,7 +77,7 @@ export function parseGeneraTraits(raw: unknown): GeneticTrait[] {
       const genotype = str(e.genotipo)
 
       ranked.push({
-        trait: { key, gene, ...(genotype ? { genotype } : {}), label, level, note, warn },
+        trait: { key, gene, ...(genotype ? { genotype } : {}), label, level, note, warn, evidence: evidenceFor(gene) },
         priority: attention ? 0 : warn ? 1 : 2,
       })
     }

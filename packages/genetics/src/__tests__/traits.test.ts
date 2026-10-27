@@ -34,6 +34,7 @@ describe('parseGeneraTraits', () => {
       level: 0.5,
       note: 'Predisposição para melhor desempenho em atividades de força e explosão',
       warn: false,
+      evidence: 'moderada',
     })
   })
 
@@ -107,12 +108,12 @@ describe('parseGeneraTraits', () => {
     expect(parseGeneraTraits({ fit: { curiosidades: [{ snp: 'x' }] } })).toEqual([])
   })
 
-  it('com o teste Genera real, gera 21 marcadores e WNT16 em primeiro (SC-001)', () => {
-    const file = path.resolve(__dirname, '../../../../apps/api/data/genetics/genera.json')
+  it('com um laudo Genera completo (sintético, 024), risco primeiro e todos os campos (SC-001)', () => {
+    const file = path.resolve(__dirname, '../../../../apps/web/src/mocks/fixtures/genera.fixture.json')
     const traits = parseGeneraTraits(JSON.parse(readFileSync(file, 'utf-8')))
-    expect(traits).toHaveLength(21)
-    expect(traits[0]).toMatchObject({ gene: 'WNT16', genotype: 'C,T', warn: true, level: 0.9 })
-    expect(traits.filter(t => t.gene === 'COL1A1')).toHaveLength(2)
+    expect(traits).toHaveLength(7)
+    expect(traits[0]).toMatchObject({ gene: 'COL1A1', warn: true, level: 0.9 })
+    expect(traits.slice(0, 3).every(t => t.warn)).toBe(true)
     expect(traits.every(t => t.key && t.label && t.note)).toBe(true)
   })
 })

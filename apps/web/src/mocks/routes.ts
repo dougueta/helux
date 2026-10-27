@@ -5,6 +5,7 @@ import type { MockRouter } from './mock-router'
 import type { MockDataset } from './types'
 import { today } from './fixtures/clock'
 import { registerAgentRoutes } from './agents'
+import { registerAdaptiveRoutes } from './adaptive'
 import { tirednessFixture } from './fixtures/tiredness.fixture'
 import { analyticsFixture, latestPlanFixture, MESOCYCLE_SESSIONS } from './fixtures/workouts.fixture'
 
@@ -98,6 +99,10 @@ function registerReads(router: MockRouter) {
     return data.genetics
   })
 
+  // Spec 024: envio e remoção do laudo genético (o mock só confirma; a persona continua com a genética dela).
+  router.register('POST', '/api/genetics/report', ({ data }) => ({ uploadedAt: new Date().toISOString(), traits: data.genetics?.traits.length ?? 0 }))
+  router.register('DELETE', '/api/genetics/report', () => null)
+
   router.register('GET', '/api/nutrition/phase', ({ data }) => ({
     phase: data.nutrition.phase,
     calibrations: data.nutrition.calibrations,
@@ -188,11 +193,9 @@ function registerWrites(router: MockRouter) {
     return { ...saved, calibration: null }
   })
 
-  router.register('POST', '/workout/generate', ({ data }) => ({
-    generatedAt: new Date().toISOString(),
-    exercises: (data.latestPlan?.today ?? MESOCYCLE_SESSIONS[0]).exercises,
-    rationale: 'Plano de teste (modo mock): sessão do mesociclo da persona.',
-  }))
+  // Spec 024: o botão Gerar novo plano pede um novo mesociclo; no mock, o plano da persona continua.
+  router.register('POST', '/workout/mesocycle/regenerate', () => ({ status: 'gerando' }))
+  router.register('POST', '/workout/mesocycle/repeat-week', ({ data }) => ({ mesocycleId: data.latestPlan?.mesocycleId ?? 'mock-repeat' }))
 
   router.register('POST', '/api/nutrition/phase', ({ store, data, body }) => {
     const { goal, durationWeeks } = body as { goal: DietGoal; durationWeeks: number }
@@ -243,4 +246,5 @@ export function registerMockRoutes(router: MockRouter): void {
   registerReads(router)
   registerWrites(router)
   registerAgentRoutes(router)
+  registerAdaptiveRoutes(router)
 }

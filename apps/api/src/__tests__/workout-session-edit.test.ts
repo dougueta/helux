@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Fastify from 'fastify'
 import { fakeSupabase, type FakeSupabase } from './helpers/fake-supabase'
+import { EMPTY_HARD_CONSTRAINTS, type HardConstraints } from '@helux/types'
 
 let fake: FakeSupabase
 
@@ -15,7 +16,7 @@ vi.mock('@supabase/supabase-js', () => ({
   }),
 }))
 
-const NONE: { availableEquipment: string[]; exercisesToAvoid: string[]; maxSessionMinutes: number | null; blockedPatterns: string[]; blockedExercises: string[] } = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const NONE: HardConstraints = EMPTY_HARD_CONSTRAINTS
 let constraints = NONE
 const buildIntegratedProfileMock = vi.fn()
 vi.mock('../services/integrated-profile.service', () => ({ buildIntegratedProfile: (...a: unknown[]) => buildIntegratedProfileMock(...a) }))

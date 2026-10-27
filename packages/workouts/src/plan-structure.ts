@@ -17,8 +17,14 @@ export function exercisePhase(exercise: PlannedExercise): ExercisePhase {
   return EXERCISE_PHASES.includes(exercise.phase as ExercisePhase) ? (exercise.phase as ExercisePhase) : 'principal'
 }
 
+/** Exercício de força do treino principal (séries, carga, descanso). */
 export function isMainExercise(exercise: PlannedExercise): boolean {
-  return exercisePhase(exercise) === 'principal'
+  return exercisePhase(exercise) === 'principal' && !isConditioningItem(exercise)
+}
+
+/** Spec 024: cardio ou mobilidade dentro do treino principal (concluído com um toque, sem carga). */
+export function isConditioningItem(exercise: PlannedExercise): boolean {
+  return exercisePhase(exercise) === 'principal' && (!!exercise.cardio || !!exercise.region)
 }
 
 export interface PhaseGroup {

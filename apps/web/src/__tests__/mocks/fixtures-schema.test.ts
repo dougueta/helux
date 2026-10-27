@@ -7,7 +7,6 @@ import { registerMockRoutes } from '@/mocks/routes'
 import { datasetForPersona, PERSONAS } from '@/mocks/fixtures/personas'
 import { MESOCYCLE_SESSIONS } from '@/mocks/fixtures/workouts.fixture'
 import genera from '@/mocks/fixtures/genera.fixture.json'
-import realGenera from '../../../../../data/genetics/genera.json'
 
 const BANK = new Set(EXERCISE_BANK.map(e => e.name))
 
@@ -25,6 +24,9 @@ const READS = [
   '/api/nutrition/today',
   '/api/nutrition/history?limit=14',
   '/api/nutrition/genetic-profile',
+  // Spec 024
+  '/api/conditions',
+  '/api/onboarding',
 ]
 
 function routerFor(personaId: string) {
@@ -53,8 +55,9 @@ describe('fixtures da persona padrão (021 T011)', () => {
     expect(d.workoutAnalytics.totalSessions).toBe(12)
   })
 
-  it('genera.fixture.json é a cópia de data/genetics/genera.json', () => {
-    expect(genera).toEqual(realGenera)
+  it('genera.fixture.json é sintético: só fit, nutri e painel esportivo, sem dados pessoais (024)', () => {
+    expect(genera.metadata.nome).toBe('Persona de demonstração')
+    for (const key of ['ancestralidade', 'doencas_geneticas', 'farma', 'skin', 'aging', 'you']) expect(genera).not.toHaveProperty(key)
   })
 
   it('plano do dia sem lactose (MCM6 G,G) e com a genética ativa', async () => {

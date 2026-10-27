@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { apiFetch } from '@/services/api-client'
 import type { ExerciseSet } from '@helux/types'
+import type { SessionCheckinsView } from '@/components/progress/SessionFeelings'
 
 export interface WorkoutSessionRow {
   id: string
@@ -10,6 +11,8 @@ export interface WorkoutSessionRow {
   duration_s: number | null
   exercises: ExerciseSet[]
   created_at: string
+  /** Spec 024: sensações de antes e depois ligadas à sessão. */
+  checkins?: SessionCheckinsView
 }
 
 export function useWorkoutHistory(limit = 20, offset = 0) {

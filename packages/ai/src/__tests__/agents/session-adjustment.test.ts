@@ -11,7 +11,7 @@ const PROFILE: IntegratedProfile = {
   generatedAt: '2026-10-20T10:00:00Z',
   sources: Object.fromEntries(SOURCE_KEYS.map(k => [k, { status: 'vazia', updatedAt: null, summary: '', data: null }])) as IntegratedProfile['sources'],
 }
-const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [] }
+const NONE: HardConstraints = { availableEquipment: [], exercisesToAvoid: [], maxSessionMinutes: null, blockedPatterns: [], blockedExercises: [], maxJointStress: {}, maxCardioImpact: null, minRir: null }
 
 const S = (letter: string, names: string[], completedAt: string | null = null): MesocycleSession => ({
   letter,
@@ -72,6 +72,13 @@ describe('proposeSessionAdjustment (022 T015)', () => {
     expect(r.changes.length).toBeGreaterThan(0)
     expect(r.reason).toBe('Hotel com halteres e 30 min.')
     expect(r.usages[0]).toMatchObject({ operation: 'ajuste-sessao', agent: 'treino' })
+  })
+
+  it('PR #19: a sessão ajustada mantém semana, tipo e deload', async () => {
+    const weekly = SESSIONS.map(s => ({ ...s, week: 2, kind: 'forca' as const, deload: false }))
+    mockStream.mockReturnValueOnce(reply([{ index: 1, letter: 'B', focus: 'Costas', exercises: [ex('Remada Unilateral (Halteres)')] }]))
+    const r = await proposeSessionAdjustment({ profile: PROFILE, constraints: NONE, sessions: weekly, sessionIndexes: [1], request: 'só halteres', operation: 'ajuste-sessao' })
+    expect(r.after[0]).toMatchObject({ letter: 'B', focus: 'Costas', week: 2, kind: 'forca', deload: false, completedAt: null })
   })
 
   it('sessão concluída nunca entra', async () => {

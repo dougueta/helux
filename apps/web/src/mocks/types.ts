@@ -23,6 +23,8 @@ export interface MockSessionRow {
   duration_s: number | null
   exercises: ExerciseSet[]
   created_at: string
+  /** Spec 024: sessão suspeita confirmada como real. */
+  review_status?: 'confirmada' | null
 }
 
 /** Estado da nutrição (018); o plano do dia é recalculado na leitura por `buildDayPlan`. */
@@ -49,6 +51,8 @@ export interface MockDataset {
   nutrition: MockNutrition
   /** Spec 022: preferências, Perfil Integrado, conversas e propostas (ausente em datasets antigos). */
   agents?: import('./agents').MockAgents
+  /** Spec 024: condições de saúde (ausente em datasets antigos). */
+  conditions?: import('@helux/types').HealthCondition[]
   /** Persona `network-error` (R-H): toda leitura falha. */
   failReads?: boolean
 }

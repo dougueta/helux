@@ -1,6 +1,28 @@
 import type { FastifyInstance } from 'fastify'
 import { createClient } from '@supabase/supabase-js'
 
+interface CheckinRow {
+  phase: 'antes' | 'depois'
+  energy: number | null
+  sleep: number | null
+  motivation: number | null
+  rpe: number | null
+  feeling: number | null
+  pains: unknown[] | null
+}
+
+/** Spec 024: sensações de antes e depois ligadas à sessão, no formato da tela de histórico. */
+function withCheckins<T extends { session_checkins?: CheckinRow[] | null }>(row: T) {
+  const { session_checkins, ...session } = row
+  const antes = session_checkins?.find(c => c.phase === 'antes')
+  const depois = session_checkins?.find(c => c.phase === 'depois')
+  const checkins = {
+    ...(antes ? { antes: { energy: antes.energy, sleep: antes.sleep, motivation: antes.motivation, pains: antes.pains ?? [] } } : {}),
+    ...(depois ? { depois: { rpe: depois.rpe, feeling: depois.feeling, pains: depois.pains ?? [] } } : {}),
+  }
+  return antes || depois ? { ...session, checkins } : session
+}
+
 export async function workoutHistoryRoutes(app: FastifyInstance): Promise<void> {
   const supabaseUrl = process.env.SUPABASE_URL!
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!
@@ -28,7 +50,7 @@ export async function workoutHistoryRoutes(app: FastifyInstance): Promise<void> 
 
     const { data: sessions, error, count } = await supabase
       .from('workout_sessions')
-      .select('id, date, duration_s, exercises, created_at', { count: 'exact' })
+      .select('id, date, duration_s, exercises, created_at, session_checkins(phase, energy, sleep, motivation, rpe, feeling, pains)', { count: 'exact' })
       .eq('user_id', user.id)
       .order('date', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -38,6 +60,6 @@ export async function workoutHistoryRoutes(app: FastifyInstance): Promise<void> 
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
 
-    return reply.send({ sessions: sessions ?? [], total: count ?? 0 })
+    return reply.send({ sessions: (sessions ?? []).map(withCheckins), total: count ?? 0 })
   })
 }

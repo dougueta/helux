@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { useRecovery } from '@/hooks/useRecovery'
 import { useWorkoutAnalytics } from '@/hooks/useWorkoutAnalytics'
 import { useWorkoutHistory } from '@/hooks/useWorkoutHistory'
+import { ReviewSessions } from '@/components/progress/ReviewSessions'
 import { formatNumber } from '@/lib/format'
 import { formatRelativeWhen } from '@/lib/format-relative-date'
 import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
@@ -39,6 +40,8 @@ export default function RecoveryPage() {
       <h1 className="t-display" style={{ marginTop: 20 }}>
         Sua evolução
       </h1>
+
+      <ReviewSessions />
 
       <section style={{ marginTop: 24 }}>
         <SectionHeader title="Recovery de hoje" aside="Apple Watch" />

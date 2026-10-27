@@ -65,6 +65,9 @@ describe('preferências de treino (022 T009)', () => {
           maxSessionMinutes: row?.max_session_minutes ?? null,
           blockedPatterns: [],
           blockedExercises: [],
+          maxJointStress: {},
+          maxCardioImpact: null,
+          minRir: null,
         },
         mesocycle: { id: 'm1', sessions: SESSIONS },
       }
