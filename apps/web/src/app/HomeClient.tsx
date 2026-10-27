@@ -237,7 +237,7 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
       )}
 
       {/* Spec 024: crise de gota além do prazo → procurar o médico. */}
-      <FlareNotice />
+      <FlareNotice onChange={() => void refetch()} />
       {/* Spec 024: no começo de um ciclo novo, o resumo do anterior e o que mudou. */}
       {currentPlan?.mesocycleId && currentPlan.progress?.completed === 0 && <CycleSummaryCard mesocycleId={currentPlan.mesocycleId} />}
 

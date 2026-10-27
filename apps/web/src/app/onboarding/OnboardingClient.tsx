@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Segmented } from '@/components/ui/Segmented'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ConditionsEditor } from '@/components/conditions/ConditionsEditor'
+import { clearCachedPlan } from '@/hooks/useWorkoutPlan'
 import { completeOnboarding, getOnboarding, saveOnboardingStep, type OnboardingState, type OnboardingStepInput } from '@/services/onboarding.service'
 
 // Spec 024 (US1): objetivo → experiência → saúde → rotina → cardio → revisão.
@@ -112,6 +113,7 @@ export function OnboardingClient() {
     setError(null)
     try {
       await completeOnboarding()
+      clearCachedPlan()
       router.push('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível concluir.')

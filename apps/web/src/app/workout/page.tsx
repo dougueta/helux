@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
+import { clearCachedPlan } from '@/hooks/useWorkoutPlan'
 import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
 import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import { FinishWorkoutConfirmDialog } from '@/components/workout/FinishWorkoutConfirmDialog'
@@ -234,12 +235,16 @@ export default function WorkoutPage() {
     try {
       const res = await saveSessionCheckin({ phase: 'antes', date: todayDate(), ...values })
       addCheckinId(res.checkin.id)
-      if (res.adjustment) {
-        // A API já aplica a dor de hoje ao treino do dia: troca os exercícios antes da primeira série.
+      if (res.adjustment || res.tirednessChanged) {
+        // A API já aplica a dor e o cansaço de hoje ao treino do dia: troca os exercícios antes da primeira série.
+        clearCachedPlan()
         const plan = (await apiFetch('/workout/latest-plan')) as AdjustedWorkoutPlanView
         if (plan.today) replaceExercises(plan.today.exercises)
-        setPreAdjustment({ reason: plan.today?.adjustmentReason || res.adjustment.reason, changes: plan.today?.changes ?? [] })
-        return
+        const reason = plan.today?.adjustmentReason || res.adjustment?.reason
+        if (plan.today?.adjusted && reason) {
+          setPreAdjustment({ reason, changes: plan.today.changes ?? [] })
+          return
+        }
       }
       markPreCheckinDone()
     } catch {

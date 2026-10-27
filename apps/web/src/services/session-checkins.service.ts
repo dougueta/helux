@@ -17,6 +17,8 @@ export interface SessionCheckinInput {
 export interface SessionCheckinResult {
   checkin: { id: string }
   adjustment?: { regions: Joint[]; reason: string }
+  /** Energia baixa marcou o cansaço do dia: o treino de hoje pode ter sido reduzido. */
+  tirednessChanged?: boolean
 }
 
 export async function saveSessionCheckin(input: SessionCheckinInput): Promise<SessionCheckinResult> {

@@ -8,6 +8,9 @@ import type { GenerationErrorCode, GenerationStatus } from '@helux/types'
 export const MAX_ATTEMPTS = 3
 /** "gerando" há mais tempo que isso é tratado como falha (o processo morreu). */
 const STALE_MS = 10 * 60_000
+/** Teto da coluna `attempts` no banco (check 0–10). */
+const MAX_STORED_ATTEMPTS = 10
+const nextAttempt = (attempts: number) => Math.min(MAX_STORED_ATTEMPTS, attempts + 1)
 
 interface Row {
   status: GenerationStatus['status']
@@ -29,10 +32,10 @@ async function write(userId: string, supabase: SupabaseClient, values: Partial<R
   if (error) throw error
 }
 
-/** Começou a gerar: mantém a contagem de falhas até dar certo. */
+/** Começou a gerar: mantém a contagem de falhas até dar certo (uma geração anterior que expirou conta como falha). */
 export async function markGenerating(userId: string, supabase: SupabaseClient, now: Date = new Date()): Promise<void> {
   const current = await getGenerationStatus(userId, supabase)
-  await write(userId, supabase, { status: 'gerando', started_at: now.toISOString(), attempts: current?.attempts ?? 0, error_code: null }, now)
+  await write(userId, supabase, { status: 'gerando', started_at: now.toISOString(), attempts: current ? effectiveStatus(current, now).attempts : 0, error_code: null }, now)
 }
 
 export async function markOk(userId: string, supabase: SupabaseClient, now: Date = new Date()): Promise<void> {
@@ -41,13 +44,13 @@ export async function markOk(userId: string, supabase: SupabaseClient, now: Date
 
 export async function markFailed(userId: string, code: GenerationErrorCode, supabase: SupabaseClient, now: Date = new Date()): Promise<void> {
   const current = await getGenerationStatus(userId, supabase)
-  await write(userId, supabase, { status: 'falhou', attempts: (current?.attempts ?? 0) + 1, error_code: code }, now)
+  await write(userId, supabase, { status: 'falhou', attempts: nextAttempt(current?.attempts ?? 0), error_code: code }, now)
 }
 
 /** Estado visto pelo usuário: "gerando" velho demais vira falha. */
 export function effectiveStatus(s: GenerationStatus, now: Date = new Date()): GenerationStatus {
   if (s.status === 'gerando' && s.startedAt && now.getTime() - Date.parse(s.startedAt) > STALE_MS) {
-    return { ...s, status: 'falhou', attempts: s.attempts + 1, errorCode: 'unknown' }
+    return { ...s, status: 'falhou', attempts: nextAttempt(s.attempts), errorCode: 'unknown' }
   }
   return s
 }
@@ -57,6 +60,7 @@ export function shouldRetry(s: GenerationStatus | null, now: Date = new Date()):
   if (!s) return true
   const e = effectiveStatus(s, now)
   if (e.status === 'gerando') return false
-  if (e.status === 'falhou') return e.attempts < MAX_ATTEMPTS || s.status === 'gerando'
+  // Geração que expirou conta como falha: o limite vale para ela também (PR #19).
+  if (e.status === 'falhou') return e.attempts < MAX_ATTEMPTS
   return true
 }

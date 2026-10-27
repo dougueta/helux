@@ -264,6 +264,19 @@
 - [X] T122 Viabilidade: piso de 4 séries por grupo e cardio do dia de força encurtado (até 10 min) antes de cortar séries (`packages/ai/src/agents/feasibility.ts`), com testes
 - [X] T123 Justificativas honestas: fontes das decisões filtradas para as que têm dados (`mesocycle-planner.ts`) e regra no prompt contra mencionar prescrição, código ou listas internas (`mesocycle-prompts.ts`), com testes
 
+## Phase 14: Correções da revisão do PR #19
+
+**Objetivo**: corrigir os 7 pontos da revisão do PR #19 antes do merge, cada um com teste. Decisões em research R18.
+
+- [X] T124 [P] Cache do plano no navegador limpo ao mudar condições, marcar ou encerrar crise e concluir o onboarding (`ConditionsEditor.tsx`, `FlareNotice.tsx`, `OnboardingClient.tsx`), com testes
+- [X] T125 [P] Estado da geração: `attempts` com teto de 10; `markGenerating` grava o incremento de uma geração expirada; `shouldRetry` respeita `MAX_ATTEMPTS` também nas expiradas (`generation-status.service.ts`), com testes
+- [X] T126 "Tentar de novo" com ciclo concluído passa o `id` do ciclo, para a análise e o vínculo rodarem; com ciclo em andamento, não analisa (`mesocycle-actions.ts`), com testes
+- [X] T127 [P] Substituto de segurança passa por `enrichExercise`; sessão ajustada mantém `week`, `kind` e `deload` (`safety-adjustment.ts`, `session-adjustment.ts`), com testes
+- [X] T128 Repetir semana: última semana sem deload, gravada com `format`, `weeks`, `method` e `goal_primary`; a próxima geração analisa o ciclo completo, não a semana repetida (`mesocycle-actions.ts`, `mesocycle.service.ts`/`plan-generation.service.ts`), com testes
+- [X] T129 Check-in pré-treino: energia baixa que muda o cansaço do dia também recarrega o treino aberto; substituição do check-in usa `session_index is null` quando não há sessão (`session-checkins.ts`, `workout/page.tsx`), com testes
+- [X] T130 [P] Validade da sessão: cardio reconhecido pelo catálogo de cardio, não por carga 0 e 10 repetições (`session-validity.ts`), com testes
+- [X] T131 Typecheck e testes completos; enviar ao PR #19 — typecheck ok; testes: types 19, workouts 151, ai 239, genetics 37, nutrition 76, health 27, api 344 (com `--testTimeout=30000`), web 644
+
 ---
 
 ## Dependencies & Execution Order

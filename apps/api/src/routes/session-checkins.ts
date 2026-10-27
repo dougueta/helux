@@ -40,7 +40,8 @@ export async function sessionCheckinsRoutes(app: FastifyInstance): Promise<void>
     try {
       // Um check-in por dia, fase e sessão: o novo substitui o anterior.
       let existing = auth.supabase.from('session_checkins').select('id').eq('user_id', auth.user.id).eq('date', b.date).eq('phase', b.phase)
-      if (b.sessionIndex !== undefined && b.sessionIndex !== null) existing = existing.eq('session_index', b.sessionIndex)
+      // Sem sessão informada, substitui só o check-in também sem sessão (PR #19).
+      existing = b.sessionIndex !== undefined && b.sessionIndex !== null ? existing.eq('session_index', b.sessionIndex) : existing.is('session_index', null)
       const found = await existing
       if (found.error) throw found.error
       for (const row of (found.data ?? []) as { id: string }[]) {
@@ -70,6 +71,7 @@ export async function sessionCheckinsRoutes(app: FastifyInstance): Promise<void>
       if (b.phase === 'depois') return reply.code(201).send({ checkin: data })
 
       // Energia baixa vira o cansaço do dia, se o usuário ainda não marcou (não sobrescreve escolha manual).
+      let tirednessChanged = false
       if (b.energy !== undefined) {
         const signal = await auth.supabase.from('daily_tiredness_signals').select('level').eq('user_id', auth.user.id).eq('date', b.date).maybeSingle()
         if (signal.error) throw signal.error
@@ -78,12 +80,15 @@ export async function sessionCheckinsRoutes(app: FastifyInstance): Promise<void>
             .from('daily_tiredness_signals')
             .upsert({ user_id: auth.user.id, date: b.date, level: LEVEL_BY_ENERGY[b.energy], override_automatic: false, updated_at: new Date().toISOString() }, { onConflict: 'user_id,date' })
           if (saved.error) throw saved.error
+          // Cansado ou exausto reduz o treino do dia: a tela recarrega antes da primeira série (PR #19).
+          tirednessChanged = LEVEL_BY_ENERGY[b.energy] !== 'normal' && LEVEL_BY_ENERGY[b.energy] !== 'otimo'
         }
       }
 
       const regions = regionsToProtect(b.pains, await listConditions(auth.user.id, auth.supabase))
       return reply.code(201).send({
         checkin: data,
+        ...(tirednessChanged ? { tirednessChanged: true } : {}),
         ...(regions.length > 0 ? { adjustment: { regions, reason: `Hoje o treino poupa ${regions.join(' e ')}: os exercícios que carregam essa região foram trocados.` } } : {}),
       })
     } catch (error) {

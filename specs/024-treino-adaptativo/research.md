@@ -317,3 +317,13 @@ Total **2,71**, custo US$ 0,90. Achados do juiz: divisões com 1×/semana por gr
 - **Decisão de effort**: `MESOCYCLE_EFFORT` passa de `xhigh` para `high`. Em R12b os dois mediram igual, e high agora tem segurança, frequência/volume e cardio/mobilidade 5 em todos os perfis, pela metade do custo. `max` não será medido: não há o que ganhar nos critérios de segurança, e os pontos fracos que sobraram são de método, não de raciocínio.
 - **Limite do eval**: o juiz vê só a semana-modelo, mas a progressão e o deload são aplicados por código depois (`expandWeeks`/`applyProgression`). Por isso ele marca como "prometido e não entregue" o que a justificativa diz sobre progressão e descarga.
 - **Pontos fracos reais apontados pelo juiz** (backlog, não entram nesta spec): RIR 1 uniforme no avançado e no ciclo concluído, contra a própria justificativa; RIR aplicado a prancha; mobilidade marcada como 'principal'; sessões que parecem passar do tempo (aquecimento, descanso e cardio na mesma sessão); objetivo de condicionamento atendido com treino de força tradicional, sem circuitos nem intervalados; dono sem caminho de volta à corrida; dobradiça de quadril carregada 2×/semana com lombar ≤ 1.
+
+## R18 — Correções da revisão do PR #19 (2026-10-27)
+
+Os 7 pontos foram conferidos no código e procediam. Decisões onde a correção sugerida mudou:
+
+- **Tentar de novo (T126)**: o `id` do ciclo só é passado quando o ciclo atual está concluído. Passar sempre faria a análise rodar sobre um ciclo pela metade quando o usuário pede um plano novo no meio do ciclo. A análise usa `upsert` por `mesocycle_id`, então repetir não duplica.
+- **Repetir semana (T128)**: em vez de criar um plano avulso, a semana repetida entra no próprio ciclo (sessões acrescentadas, semana N+1, sem deload). Assim, quando terminar, a análise e a progressão olham o ciclo inteiro, sem precisar de coluna nova nem migration. A semana copiada é a última sem deload.
+- **Cache do plano (T124)**: além dos três lugares apontados, a proposta aceita em Preferências também limpa o cache. Ao encerrar a crise pelo aviso da Home, a Home busca o plano de novo.
+- **Check-in pré-treino (T129)**: a API devolve `tirednessChanged` quando a energia baixa marca o dia como cansado ou exausto; a tela recarrega o treino e mostra o ajuste. Check-in sem sessão substitui só o que também não tem sessão.
+- **Validade da sessão (T130)**: cardio sozinho é reconhecido pelo catálogo de cardio (`CARDIO_BANK`) e pelos minutos (≥ 10). Mobilidade tem nome livre e não entra nessa exceção; um dia só de mobilidade costuma ter 3+ itens e passa pela contagem normal, e o caso raro com 1–2 itens fica para o usuário confirmar.

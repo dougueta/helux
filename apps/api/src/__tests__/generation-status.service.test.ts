@@ -33,7 +33,20 @@ describe('generation-status.service', () => {
     expect(shouldRetry({ status: 'ok', attempts: 0, errorCode: null, startedAt: null }, NOW)).toBe(true)
     expect(shouldRetry({ status: 'gerando', attempts: 0, errorCode: null, startedAt: minutesAgo(2) }, NOW)).toBe(false)
     expect(shouldRetry({ status: 'gerando', attempts: 0, errorCode: null, startedAt: minutesAgo(30) }, NOW)).toBe(true)
+    // PR #19: geração que expira de novo e de novo também para no limite.
+    expect(shouldRetry({ status: 'gerando', attempts: 2, errorCode: null, startedAt: minutesAgo(30) }, NOW)).toBe(false)
     expect(shouldRetry({ status: 'falhou', attempts: 2, errorCode: 'unknown', startedAt: null }, NOW)).toBe(true)
     expect(shouldRetry({ status: 'falhou', attempts: 3, errorCode: 'unknown', startedAt: null }, NOW)).toBe(false)
+  })
+
+  it('PR #19: nova geração depois de uma que expirou grava a falha; contagem nunca passa de 10', async () => {
+    const fake = fakeSupabase({ mesocycle_generation: [{ user_id: 'u1', status: 'gerando', attempts: 1, error_code: null, started_at: minutesAgo(30) }] })
+    await markGenerating('u1', fake.client as never, NOW)
+    expect(await getGenerationStatus('u1', fake.client as never)).toMatchObject({ status: 'gerando', attempts: 2 })
+
+    const full = fakeSupabase({ mesocycle_generation: [{ user_id: 'u1', status: 'falhou', attempts: 10, error_code: 'unknown', started_at: null }] })
+    await markFailed('u1', 'unknown', full.client as never, NOW)
+    expect(await getGenerationStatus('u1', full.client as never)).toMatchObject({ attempts: 10 })
+    expect(effectiveStatus({ status: 'gerando', attempts: 10, errorCode: null, startedAt: minutesAgo(30) }, NOW).attempts).toBe(10)
   })
 })

@@ -58,11 +58,14 @@ describe('check-ins de sensação (024)', () => {
   })
 
   it('antes: energia baixa marca o cansaço do dia quando ainda não foi marcado; não sobrescreve escolha manual', async () => {
-    await post(app, { phase: 'antes', date: TODAY, energy: 1, pains: [] })
+    const low = await post(app, { phase: 'antes', date: TODAY, energy: 1, pains: [] })
     expect(fake.db.daily_tiredness_signals[0]).toMatchObject({ user_id: 'u1', date: TODAY, level: 'exausto' })
+    // PR #19: a tela recarrega o treino do dia, já reduzido.
+    expect(low.json().tirednessChanged).toBe(true)
     fake.db.daily_tiredness_signals[0].level = 'normal'
-    await post(app, { phase: 'antes', date: TODAY, energy: 2, pains: [] })
+    const again = await post(app, { phase: 'antes', date: TODAY, energy: 2, pains: [] })
     expect(fake.db.daily_tiredness_signals[0].level).toBe('normal')
+    expect(again.json().tirednessChanged).toBeUndefined()
   })
 
   it('antes: dor forte numa articulação (ou dor numa região com condição) devolve a adaptação do dia', async () => {
@@ -78,5 +81,12 @@ describe('check-ins de sensação (024)', () => {
     await post(app, { phase: 'depois', date: TODAY, sessionIndex: 1, rpe: 9, feeling: 2, pains: [{ region: 'lombar', intensity: 2 }] })
     expect(fake.db.session_checkins).toHaveLength(1)
     expect(fake.db.session_checkins[0]).toMatchObject({ rpe: 9, feeling: 2 })
+  })
+
+  it('PR #19: check-in sem sessão não apaga o de uma sessão informada', async () => {
+    await post(app, { phase: 'antes', date: TODAY, sessionIndex: 1, energy: 4, pains: [] })
+    await post(app, { phase: 'antes', date: TODAY, energy: 3, pains: [] })
+    await post(app, { phase: 'antes', date: TODAY, energy: 5, pains: [] })
+    expect(fake.db.session_checkins.map(c => [c.session_index, c.energy])).toEqual([[1, 4], [null, 5]])
   })
 })

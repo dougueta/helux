@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
+import { clearCachedPlan } from '@/hooks/useWorkoutPlan'
 import { endFlare, getConditions, type ConditionView } from '@/services/conditions.service'
 
 /** Crise de gota que passou do prazo informado (spec 024, FR-009): orienta procurar o médico. */
-export function FlareNotice() {
+export function FlareNotice({ onChange }: { onChange?: () => void } = {}) {
   const [expired, setExpired] = useState<ConditionView[]>([])
 
   useEffect(() => {
@@ -27,7 +28,12 @@ export function FlareNotice() {
           <Button
             kind="secondary"
             onClick={() => {
-              void endFlare(c.id).then(() => setExpired(list => list.filter(x => x.id !== c.id)))
+              void endFlare(c.id).then(() => {
+                setExpired(list => list.filter(x => x.id !== c.id))
+                // Sem crise, o treino do dia deixa de poupar a articulação: busca o plano de novo.
+                clearCachedPlan()
+                onChange?.()
+              })
             }}
           >
             A crise acabou

@@ -27,6 +27,10 @@ describe('sessionValidity', () => {
     expect(sessionValidity(row({ duration_s: 1500, exercises: [{ name: 'Bike ergométrica', sets: [{ reps: 25, weight: 0, effort: 5 }] }] })).valid).toBe(true)
   })
 
+  it('PR #19: uma série de peso corporal com 10 repetições não passa como cardio', () => {
+    expect(sessionValidity(row({ duration_s: null, exercises: [{ name: 'Flexão de Braço', sets: [{ reps: 10, weight: 0, effort: 5 }] }] })).reasons).toEqual(['menos de 3 séries'])
+  })
+
   it('confirmada pelo usuário é sempre válida', () => {
     expect(sessionValidity(row({ duration_s: 84, exercises: [], review_status: 'confirmada' }))).toEqual({ valid: true, reasons: [] })
   })

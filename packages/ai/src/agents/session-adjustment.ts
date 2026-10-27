@@ -131,7 +131,8 @@ ${buildExerciseCatalogSection(allowed)}${retry}`,
     const raw = JSON.parse(messageText(message)) as { sessions: { index: number; letter: string; focus: string; exercises: RawExercise[] }[]; reason: string }
     const after: MesocycleSession[] = sessionIndexes.map(i => {
       const proposed = raw.sessions.find(s => s.index === i)
-      return proposed ? { letter: sessions[i].letter, focus: proposed.focus, completedAt: null, exercises: proposed.exercises.map(toExercise) } : sessions[i]
+      // Mantém semana, tipo e deload da sessão original (PR #19).
+      return proposed ? { ...sessions[i], focus: proposed.focus, completedAt: null, exercises: proposed.exercises.map(toExercise) } : sessions[i]
     })
     violations = validatePlanAgainstConstraints(after, input.constraints)
     if (violations.length === 0) {

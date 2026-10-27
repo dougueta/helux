@@ -22,12 +22,17 @@ describe('FlareNotice', () => {
   it('crise vencida: aviso para procurar o médico e "a crise acabou"', async () => {
     getMock.mockResolvedValue({ conditions: [gout(day(-2))], catalog: [] })
     endFlareMock.mockResolvedValue(undefined)
+    localStorage.setItem('helux:workout-plan', '{"mesocycleId":"m1"}')
+    const onChange = vi.fn()
     const user = userEvent.setup()
-    render(<FlareNotice />)
+    render(<FlareNotice onChange={onChange} />)
     expect(await screen.findByText(/procure seu médico/i)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /a crise acabou/i }))
     expect(endFlareMock).toHaveBeenCalledWith('g1')
     await waitFor(() => expect(screen.queryByText(/procure seu médico/i)).not.toBeInTheDocument())
+    // PR #19: o plano guardado deixa de valer e a Home busca de novo.
+    expect(localStorage.getItem('helux:workout-plan')).toBeNull()
+    expect(onChange).toHaveBeenCalled()
   })
 
   it('crise dentro do prazo ou sem crise: nada', async () => {

@@ -20,6 +20,9 @@ describe('adaptSessionForSafety', () => {
     expect(out.exercises[0].name).not.toBe('Agachamento Livre (Barra)')
     expect(out.exercises[0]).toMatchObject({ sets: 3, reps: '8-10' })
     expect(out.exercises[0].notes).toMatch(/carga/i)
+    // PR #19: o substituto vem com dicas e músculos, como os outros exercícios.
+    expect(out.exercises[0].cues?.length).toBeGreaterThan(0)
+    expect(out.exercises[0].muscle).toBeTruthy()
     expect(out.exercises[1].name).toBe('Supino Reto (Barra)')
     expect(out.changes).toEqual([expect.objectContaining({ name: 'Agachamento Livre (Barra)', replacedBy: out.exercises[0].name })])
     expect(out.reason).toMatch(/crise de gota no joelho/)

@@ -69,11 +69,13 @@ describe('OnboardingClient', () => {
 
   it('revisão: conclui e vai para a Home', async () => {
     getMock.mockResolvedValue(STATE({ step: 6, profile: { ...STATE().profile, goalPrimary: 'condicionamento' } }))
+    localStorage.setItem('helux:workout-plan', '{"mesocycleId":"m1"}')
     const user = userEvent.setup()
     render(<OnboardingClient />)
     await user.click(await screen.findByRole('button', { name: /concluir/i }))
     expect(completeMock).toHaveBeenCalled()
     await waitFor(() => expect(push).toHaveBeenCalledWith('/'))
+    expect(localStorage.getItem('helux:workout-plan')).toBeNull()
   })
 
   it('erro ao concluir aparece na tela', async () => {

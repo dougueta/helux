@@ -8,12 +8,18 @@ import { generateAndSaveMesocycle } from '../services/plan-generation.service'
 import { isOnboardingComplete } from '../services/onboarding.service'
 import { getCycleAnalysis } from '../services/cycle-analysis.service'
 
-/** Última semana do ciclo (formato semanal) ou a rotação inteira (formato antigo). */
-function lastWeek(sessions: MesocycleSession[]): MesocycleSession[] {
+/**
+ * Semana a repetir, já pronta para ser feita de novo: a última semana sem deload
+ * (repetir a descarga não faz sentido), numerada depois da última do ciclo.
+ * Formato antigo (sem semanas): a rotação inteira.
+ */
+export function weekToRepeat(sessions: MesocycleSession[]): MesocycleSession[] {
   const weeks = sessions.map(s => s.week).filter((w): w is number => w !== undefined)
-  if (weeks.length === 0) return sessions
-  const last = Math.max(...weeks)
-  return sessions.filter(s => s.week === last)
+  if (weeks.length === 0) return sessions.map(s => ({ ...s, completedAt: null }))
+  const regular = sessions.filter(s => s.week !== undefined && !s.deload).map(s => s.week!)
+  const source = regular.length > 0 ? Math.max(...regular) : Math.max(...weeks)
+  const next = Math.max(...weeks) + 1
+  return sessions.filter(s => s.week === source).map(s => ({ ...s, completedAt: null, week: next, deload: false }))
 }
 
 /** Ações sobre o mesociclo (spec 024, R13): gerar de novo e repetir a última semana. */
@@ -34,7 +40,10 @@ export async function mesocycleActionsRoutes(app: FastifyInstance): Promise<void
       await assertBudget(auth.user.id, auth.supabase)
       const current = await getActiveMesocycle(auth.user.id, auth.supabase)
       await markGenerating(auth.user.id, auth.supabase)
-      if (current) void generateAndSaveMesocycle(auth.user.id, token, auth.supabase, app.log, { generated_at: current.generated_at, sessions: current.sessions })
+      // Ciclo concluído: passa o id para a análise do ciclo e o vínculo com o novo (PR #19).
+      // Ciclo em andamento: só a progressão de carga; analisar um ciclo pela metade daria achados falsos.
+      const completed = current && findPendingSessionIndex(current.sessions) === -1
+      if (current) void generateAndSaveMesocycle(auth.user.id, token, auth.supabase, app.log, { ...(completed ? { id: current.id } : {}), generated_at: current.generated_at, sessions: current.sessions })
       else void generateAndSaveMesocycle(auth.user.id, token, auth.supabase, app.log)
       return reply.code(202).send({ status: 'gerando' })
     } catch (error) {
@@ -70,21 +79,15 @@ export async function mesocycleActionsRoutes(app: FastifyInstance): Promise<void
       if (!current || findPendingSessionIndex(current.sessions) !== -1) {
         return reply.code(409).send({ error: 'Não há um ciclo concluído para repetir.', code: 'no-completed-cycle' })
       }
-      const sessions = lastWeek(current.sessions).map(s => ({ ...s, completedAt: null, ...(s.week !== undefined ? { week: 1 } : {}) }))
-      const { data, error } = await auth.supabase
+      // A semana repetida entra no próprio ciclo (PR #19): quando acabar, a análise e a
+      // progressão olham o ciclo inteiro, e não uma semana avulsa.
+      const { error } = await auth.supabase
         .from('mesocycle_plans')
-        .insert({
-          user_id: auth.user.id,
-          generated_at: new Date().toISOString(),
-          days_per_week: current.days_per_week,
-          split_type: current.split_type,
-          sessions,
-          rationale: 'Repetição da última semana do ciclo anterior enquanto o próximo ciclo é gerado.',
-        })
-        .select('id')
-        .single()
+        .update({ sessions: [...current.sessions, ...weekToRepeat(current.sessions)] })
+        .eq('user_id', auth.user.id)
+        .eq('id', current.id)
       if (error) throw error
-      return reply.code(201).send({ mesocycleId: (data as { id: string }).id })
+      return reply.code(201).send({ mesocycleId: current.id })
     } catch (error) {
       app.log.error(error, 'mesocycle repeat-week: failed')
       return reply.code(500).send({ error: 'Internal Server Error' })

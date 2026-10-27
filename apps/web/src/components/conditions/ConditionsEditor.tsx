@@ -5,6 +5,7 @@ import type { ConditionStatus, Region, SharedGuidance, Side } from '@helux/types
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { Segmented } from '@/components/ui/Segmented'
+import { clearCachedPlan } from '@/hooks/useWorkoutPlan'
 import { resolveGuidance } from '@/services/agents.service'
 import {
   createCondition,
@@ -81,6 +82,8 @@ export function ConditionsEditor({ onChange }: { onChange?: () => void } = {}) {
     setError(null)
     try {
       await action()
+      // O treino do dia depende das condições: o plano guardado no navegador deixa de valer (PR #19).
+      clearCachedPlan()
       await reload()
       onChange?.()
     } catch (err) {

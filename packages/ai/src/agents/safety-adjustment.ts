@@ -1,5 +1,6 @@
 import type { ExerciseAdjustmentChange, HardConstraints, PlannedExercise } from '@helux/types'
 import { CARDIO_BANK } from '../cardio-bank'
+import { enrichExercise } from '../mesocycle-planner'
 import { compatibleAlternatives, findBankExercise, validatePlanAgainstConstraints } from './constraints'
 
 // Spec 024 (FR-009, FR-018): adapta a sessão do dia às regras de segurança
@@ -29,7 +30,8 @@ function saferStrength(item: PlannedExercise, c: HardConstraints): PlannedExerci
   const alt = compatibleAlternatives(item.name, c).find(a => !a.violatesSafety)
   if (!alt) return null
   const entry = findBankExercise(alt.exerciseId)!
-  return {
+  // Com dicas, músculos e variantes do substituto, como qualquer exercício do plano (PR #19).
+  return enrichExercise({
     name: entry.name,
     sets: item.sets,
     reps: item.reps,
@@ -37,7 +39,7 @@ function saferStrength(item: PlannedExercise, c: HardConstraints): PlannedExerci
     ...(item.phase ? { phase: item.phase } : {}),
     ...(item.rirTarget !== undefined ? { rirTarget: item.rirTarget } : {}),
     notes: 'Substituto de hoje: escolha a carga pela sensação, sem dor.',
-  }
+  })
 }
 
 export function adaptSessionForSafety(exercises: PlannedExercise[], constraints: HardConstraints, why?: string): SafetyAdjustment {

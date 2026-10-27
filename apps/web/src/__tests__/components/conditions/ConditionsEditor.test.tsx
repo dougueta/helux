@@ -82,12 +82,15 @@ describe('ConditionsEditor', () => {
 
   it('marca e encerra a crise de gota', async () => {
     startFlareMock.mockResolvedValue(undefined)
+    localStorage.setItem('helux:workout-plan', '{"mesocycleId":"m1"}')
     const user = userEvent.setup()
     render(<ConditionsEditor />)
     const item = await screen.findByRole('listitem', { name: /gota/i })
     await user.selectOptions(within(item).getByLabelText(/onde é a crise/i), 'joelho')
     await user.click(within(item).getByRole('button', { name: /marcar crise/i }))
     expect(startFlareMock).toHaveBeenCalledWith('g1', 'joelho')
+    // PR #19: a Home não pode mostrar o treino de antes da crise.
+    await waitFor(() => expect(localStorage.getItem('helux:workout-plan')).toBeNull())
   })
 
   it('crise ativa aparece com o prazo e pode ser encerrada', async () => {

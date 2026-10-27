@@ -74,6 +74,13 @@ describe('proposeSessionAdjustment (022 T015)', () => {
     expect(r.usages[0]).toMatchObject({ operation: 'ajuste-sessao', agent: 'treino' })
   })
 
+  it('PR #19: a sessão ajustada mantém semana, tipo e deload', async () => {
+    const weekly = SESSIONS.map(s => ({ ...s, week: 2, kind: 'forca' as const, deload: false }))
+    mockStream.mockReturnValueOnce(reply([{ index: 1, letter: 'B', focus: 'Costas', exercises: [ex('Remada Unilateral (Halteres)')] }]))
+    const r = await proposeSessionAdjustment({ profile: PROFILE, constraints: NONE, sessions: weekly, sessionIndexes: [1], request: 'só halteres', operation: 'ajuste-sessao' })
+    expect(r.after[0]).toMatchObject({ letter: 'B', focus: 'Costas', week: 2, kind: 'forca', deload: false, completedAt: null })
+  })
+
   it('sessão concluída nunca entra', async () => {
     await expect(
       proposeSessionAdjustment({ profile: PROFILE, constraints: NONE, sessions: SESSIONS, sessionIndexes: [0], request: 'x', operation: 'ajuste-sessao' }),

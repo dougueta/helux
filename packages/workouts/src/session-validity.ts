@@ -1,4 +1,4 @@
-import type { ExerciseSet } from '@helux/types'
+import { CARDIO_BANK, type ExerciseSet } from '@helux/types'
 
 // Spec 024 (R9): sessões curtas demais ou sem séries são suspeitas (ex.: testes
 // de validação) e ficam fora da progressão, da variedade e da análise do ciclo
@@ -6,6 +6,9 @@ import type { ExerciseSet } from '@helux/types'
 
 const MIN_SETS = 3
 const MIN_DURATION_S = 600
+/** Minutos mínimos para um cardio sozinho contar como treino. */
+const MIN_CARDIO_MINUTES = 10
+const CARDIO_NAMES = new Set(CARDIO_BANK.map(c => c.name))
 
 export interface SessionLike {
   duration_s?: number | null
@@ -16,8 +19,9 @@ export interface SessionLike {
 export function sessionValidity(s: SessionLike): { valid: boolean; reasons: string[] } {
   if (s.review_status === 'confirmada') return { valid: true, reasons: [] }
   const sets = s.exercises.reduce((n, e) => n + (e.skipped ? 0 : e.sets.length), 0)
-  // Cardio concluído entra com os minutos e carga 0 (spec 024): conta como treino.
-  const cardio = s.exercises.some(e => !e.skipped && e.sets.some(x => x.weight === 0 && x.reps >= 10))
+  // Cardio concluído entra com os minutos e carga 0 (spec 024): conta como treino. Reconhecido pelo
+  // catálogo de cardio, para uma série de flexão com 10 repetições não passar como cardio (PR #19).
+  const cardio = s.exercises.some(e => !e.skipped && CARDIO_NAMES.has(e.name) && e.sets.some(x => x.weight === 0 && x.reps >= MIN_CARDIO_MINUTES))
   const reasons: string[] = []
   if (sets === 0) reasons.push('sem séries registradas')
   else if (sets < MIN_SETS && !cardio) reasons.push('menos de 3 séries')

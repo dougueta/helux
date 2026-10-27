@@ -40,12 +40,12 @@ class BudgetExceededError extends Error {}
 const assertBudgetMock = vi.fn()
 vi.mock('../services/ai-budget.service', () => ({ assertBudget: (...a: unknown[]) => assertBudgetMock(...a), BudgetExceededError }))
 
-const session = (letter: string, completedAt: string | null, week?: number): MesocycleSession => ({
+const session = (letter: string, completedAt: string | null, week?: number, deload = false): MesocycleSession => ({
   letter,
   focus: `Foco ${letter}`,
   completedAt,
   exercises: [{ name: 'Supino Reto (Barra)', sets: 3, reps: '8', weight: '60kg' }],
-  ...(week ? { week, kind: 'forca' as const } : {}),
+  ...(week ? { week, kind: 'forca' as const, deload } : {}),
 })
 
 async function buildApp() {
@@ -87,6 +87,13 @@ describe('mesocycle actions (024)', () => {
       expect(generateMock).toHaveBeenCalledWith('u1', 'valid-token', expect.anything(), expect.anything(), { generated_at: row.generated_at, sessions: row.sessions })
     })
 
+    it('PR #19: ciclo concluído → passa o id, para a análise do ciclo rodar na nova tentativa', async () => {
+      const row = { id: 'm1', generated_at: '2026-10-01T10:00:00Z', days_per_week: 2, split_type: 'AB', rationale: '', sessions: [session('A', '2026-10-02')] }
+      getActiveMesocycleMock.mockResolvedValue(row)
+      await app.inject({ method: 'POST', url: '/workout/mesocycle/regenerate', headers: AUTH })
+      expect(generateMock).toHaveBeenCalledWith('u1', 'valid-token', expect.anything(), expect.anything(), { id: 'm1', generated_at: row.generated_at, sessions: row.sessions })
+    })
+
     it('409 already-generating quando já está gerando', async () => {
       statusMock.mockResolvedValue({ status: 'gerando', attempts: 0, errorCode: null, startedAt: new Date().toISOString() })
       const res = await app.inject({ method: 'POST', url: '/workout/mesocycle/regenerate', headers: AUTH })
@@ -119,18 +126,26 @@ describe('mesocycle actions (024)', () => {
       expect(res.json()).toMatchObject({ code: 'no-completed-cycle' })
     })
 
-    it('201: copia a última semana do ciclo concluído, sem conclusões', async () => {
-      getActiveMesocycleMock.mockResolvedValue({
-        id: 'm1', generated_at: '2026-09-01T10:00:00Z', days_per_week: 2, split_type: 'Superior/Inferior', rationale: '',
-        sessions: [session('A', '2026-09-02', 1), session('B', '2026-09-04', 1), session('A', '2026-09-09', 2), session('B', '2026-09-11', 2)],
-      })
+    it('201: repete a última semana sem deload dentro do próprio ciclo, sem conclusões (PR #19)', async () => {
+      const sessions = [session('A', '2026-09-02', 1), session('B', '2026-09-04', 1), session('A', '2026-09-09', 2), session('B', '2026-09-11', 2), session('A', '2026-09-16', 3, true), session('B', '2026-09-18', 3, true)]
+      fake.db.mesocycle_plans = [{ id: 'm1', user_id: 'u1', sessions }]
+      getActiveMesocycleMock.mockResolvedValue({ id: 'm1', generated_at: '2026-09-01T10:00:00Z', days_per_week: 2, split_type: 'Superior/Inferior', rationale: '', sessions })
       const res = await app.inject({ method: 'POST', url: '/workout/mesocycle/repeat-week', headers: AUTH })
       expect(res.statusCode).toBe(201)
-      expect(res.json()).toEqual({ mesocycleId: expect.any(String) })
-      const saved = fake.db.mesocycle_plans[0] as { user_id: string; sessions: MesocycleSession[]; split_type: string }
-      expect(saved.user_id).toBe('u1')
-      expect(saved.split_type).toBe('Superior/Inferior')
-      expect(saved.sessions.map(s => [s.letter, s.week, s.completedAt])).toEqual([['A', 1, null], ['B', 1, null]])
+      expect(res.json()).toEqual({ mesocycleId: 'm1' })
+      expect(fake.db.mesocycle_plans).toHaveLength(1)
+      const saved = fake.db.mesocycle_plans[0] as { sessions: MesocycleSession[] }
+      expect(saved.sessions).toHaveLength(8)
+      expect(saved.sessions.slice(6).map(s => [s.letter, s.week, s.deload, s.completedAt])).toEqual([['A', 4, false, null], ['B', 4, false, null]])
+    })
+
+    it('formato antigo (sem semanas): repete a rotação inteira', async () => {
+      const sessions = [session('A', '2026-09-02'), session('B', '2026-09-04')]
+      fake.db.mesocycle_plans = [{ id: 'm1', user_id: 'u1', sessions }]
+      getActiveMesocycleMock.mockResolvedValue({ id: 'm1', generated_at: '2026-09-01T10:00:00Z', days_per_week: 2, split_type: 'AB', rationale: '', sessions })
+      await app.inject({ method: 'POST', url: '/workout/mesocycle/repeat-week', headers: AUTH })
+      const saved = fake.db.mesocycle_plans[0] as { sessions: MesocycleSession[] }
+      expect(saved.sessions.slice(2).map(s => [s.letter, s.completedAt])).toEqual([['A', null], ['B', null]])
     })
   })
 
