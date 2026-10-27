@@ -299,3 +299,21 @@ Total **2,71**, custo US$ 0,90. Achados do juiz: divisões com 1×/semana por gr
 - Falsos negativos do próprio eval: (1) a nota de volume usava o método antes da conferência de viabilidade (pouco-tempo apareceu com 6 violações de volume que o agente não cometeu); (2) o juiz não via os bisets (`supersetGroup`), as condições de saúde, as restrições nem a aderência e o esforço do ciclo anterior, e marcava como "inventado" o que veio do pedido.
 - Problemas reais: decisões citando fontes vazias (`restricoes`) e frases que expõem o sistema ("a prescrição pede", "para o código subir", "primeira modalidade permitida"); a conferência de viabilidade baixou o pouco-tempo para 3 séries por grupo, abaixo do útil.
 - **Decisões**: o eval pontua com o método devolvido e mostra ao juiz bisets, condições, restrições e dados do ciclo; as fontes das decisões são filtradas por código para as que têm dados; o prompt proíbe falar do sistema nas justificativas; a conferência de viabilidade mantém pelo menos 4 séries por grupo e encurta o cardio do dia de força (até 10 min) antes de cortar séries.
+
+## R17c — Eval completo depois de T121–T123 (2026-10-27, effort high)
+
+| perfil | segurança | freq/volume | cardio/mob | notas | objetivo | justif. | genética | ciclo |
+|---|---|---|---|---|---|---|---|---|
+| dono-joelho-gota | 5 | 5 | 5 | 5 | 3 | 3 | 5 | — |
+| iniciante-hipertrofia | 5 | 5 | 5 | 5 | 4 | 3 | 5 | — |
+| pouco-tempo-emagrecimento | 5 | 5 | 5 | 4 | 3 | 3 | 5 | — |
+| casa-halteres-lombalgia | 5 | 5 | 5 | 5 | 3 | 3 | 5 | — |
+| avancado-forca | 5 | 5 | 5 | 5 | 3 | 3 | 5 | — |
+| ciclo-concluido | 5 | 5 | 5 | 5 | 4 | 3 | 5 | 4 |
+| **média** | **5** | **5** | **5** | **4,83** | **3,33** | **3** | **5** | **4** |
+
+- Total 4,45 (linha de base 2,71; R17b 3,98). Custo US$ 1,76. Zero falhas de geração. O avancado-forca caiu na primeira rodada com "terminated" (conexão cortada no streaming, não foi falha do agente) e foi rodado de novo sozinho.
+- SC-001, SC-002, SC-003 e SC-004 atendidos; SC-005 com nota 4 no critério ciclo.
+- **Decisão de effort**: `MESOCYCLE_EFFORT` passa de `xhigh` para `high`. Em R12b os dois mediram igual, e high agora tem segurança, frequência/volume e cardio/mobilidade 5 em todos os perfis, pela metade do custo. `max` não será medido: não há o que ganhar nos critérios de segurança, e os pontos fracos que sobraram são de método, não de raciocínio.
+- **Limite do eval**: o juiz vê só a semana-modelo, mas a progressão e o deload são aplicados por código depois (`expandWeeks`/`applyProgression`). Por isso ele marca como "prometido e não entregue" o que a justificativa diz sobre progressão e descarga.
+- **Pontos fracos reais apontados pelo juiz** (backlog, não entram nesta spec): RIR 1 uniforme no avançado e no ciclo concluído, contra a própria justificativa; RIR aplicado a prancha; mobilidade marcada como 'principal'; sessões que parecem passar do tempo (aquecimento, descanso e cardio na mesma sessão); objetivo de condicionamento atendido com treino de força tradicional, sem circuitos nem intervalados; dono sem caminho de volta à corrida; dobradiça de quadril carregada 2×/semana com lombar ≤ 1.

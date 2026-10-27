@@ -48,8 +48,8 @@ export class IncompleteResponseError extends Error {
 
 export type AgentEffort = 'low' | 'medium' | 'high' | 'xhigh' | 'max'
 
-/** Esforço padrão da geração (024 R12): a mais cara e importante das chamadas, ~1×/ciclo. */
-export const MESOCYCLE_EFFORT: AgentEffort = 'xhigh'
+/** Esforço padrão da geração (024 R12b/R17c): high mede igual a xhigh pela metade do custo. */
+export const MESOCYCLE_EFFORT: AgentEffort = 'high'
 
 export interface GenerateMesocycleInput {
   profile: IntegratedProfile

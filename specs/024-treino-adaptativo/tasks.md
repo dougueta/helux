@@ -180,7 +180,7 @@
 - [X] T083 [US3] Implementar em `apps/web/src/components/workout/PlanExerciseList.tsx`, `HomeClient.tsx` e `TreinosClient.tsx` até T082 passar
 - [X] T084 [US3] Testes e implementação no treino ativo (`apps/web/src/app/workout/page.tsx`, `apps/web/src/hooks/useActiveWorkout.ts`): item de cardio com cronômetro de minutos e "concluído" (sem séries), item de mobilidade como checklist; sessão `kind: 'cardio'`/`'mobilidade'` salva sem exigir séries de força (ajustar o `superRefine` de `workout-sessions.ts` com teste)
 - [X] T085 [US3] Atualizar fixtures e rotas do modo mock com um mesociclo semanal (`apps/web/src/mocks/fixtures/workouts.fixture.ts`, `routes.ts`) e o e2e `apps/api/e2e/mesocycle-flow.e2e.ts` para o formato semanal com a IA simulada (`fake-anthropic.ts`)
-- [ ] T086 [US3] Atualizar `treino.eval.ts`/`treino-scoring.ts` para usar a prescrição nas checagens; rodar o eval com `high`, `xhigh` e `max` (aprovação do custo), escolher o effort e registrar a decisão em research.md R12; confirmar SC-001/002/003 e total ≥ linha de base — parcial: high e xhigh medidos (R12b); max e a nova rodada pendentes por falta de créditos da API
+- [X] T086 [US3] Atualizar `treino.eval.ts`/`treino-scoring.ts` para usar a prescrição nas checagens; rodar o eval com `high`, `xhigh` e `max` (aprovação do custo), escolher o effort e registrar a decisão em research.md R12; confirmar SC-001/002/003 e total ≥ linha de base — high e xhigh medidos (R12b); rodada final em high (R17c); escolhido `high`; `max` não medido (decisão em R17c)
 
 **Checkpoint F3**: quickstart F3 ok → PR F3.
 
@@ -232,7 +232,7 @@
 - [X] T104 [US5] Escrever testes e implementar `GET /workout/mesocycle/:id/analysis` em `apps/api/src/routes/mesocycle-actions.ts`
 - [X] T105 [P] [US5] Escrever testes em `apps/web/src/__tests__/components/cycle/CycleSummary.test.tsx`: aderência por tipo, evolução por exercício, dores, tendência dos check-ins, dados que faltaram, e "o que mudou no próximo ciclo" a partir das decisões `ciclo`; sugestão de novo objetivo com aceitar/recusar
 - [X] T106 [US5] Implementar `apps/web/src/components/cycle/CycleSummary.tsx`, exibido na Home ao iniciar um ciclo novo e acessível em Treinos; rotas no modo mock; T105 verde
-- [ ] T107 [US5] Adicionar o perfil 6 ("ciclo concluído" com estagnação no agachamento, dor recorrente no leg press e baixa aderência ao cardio) em `treino-profiles.ts` e o critério `ciclo` no juiz; rodar o eval (aprovação do custo) e confirmar SC-005 — perfil 6 e critério `ciclo` prontos; a rodada fica pendente (créditos da API)
+- [X] T107 [US5] Adicionar o perfil 6 ("ciclo concluído" com estagnação no agachamento, dor recorrente no leg press e baixa aderência ao cardio) em `treino-profiles.ts` e o critério `ciclo` no juiz; rodar o eval (aprovação do custo) e confirmar SC-005 — rodado em R17c: critério ciclo 4
 
 **Checkpoint F5**: quickstart F5 ok → PR F5.
 
@@ -259,7 +259,7 @@
 - [X] T117 D: retry em conversa (pedido em cache + resposta anterior + violações) em `packages/ai/src/mesocycle-planner.ts`; resultado devolve o método ajustado; testes
 - [X] T118 API usa o método devolvido pela geração (`apps/api/src/services/plan-generation.service.ts`); fake da Anthropic do E2E aceita o schema por pedido
 - [X] T119 Eval: perfil do dono recebe o limite de 60 min; diagnóstico de viabilidade vira teste sem API em `packages/ai/src/agents/__evals__/`
-- [ ] T120 Typecheck e testes completos sem regressão; rodar o eval (perfil do dono, depois completo em `high`) quando houver créditos — parcial: typecheck ok nos 9 pacotes; testes ok (ai 235, api 340 isolada, web 642/643: `mock-mutations` › nutrição falha também sem esta mudança, fora do escopo); eval pendente de créditos — parcial: typecheck ok nos 9 pacotes; testes ok (ai 235, api 340 isolada, web 642/643: `mock-mutations` › nutrição falha também sem esta mudança, fora do escopo); eval pendente de créditos
+- [X] T120 Typecheck e testes completos sem regressão; rodar o eval (perfil do dono, depois completo em `high`) quando houver créditos — typecheck ok nos 9 pacotes; testes ok (ai, api 340 com `--testTimeout=30000`, web 642/643: `mock-mutations` › nutrição falha também sem esta mudança, fora do escopo); eval completo em R17c (total 4,45)
 - [X] T121 Eval: pontuar com o método devolvido pela geração; juiz recebe bisets, condições, restrições e aderência/esforço do ciclo anterior (`packages/ai/src/agents/__evals__/treino.eval.ts`) (R17b)
 - [X] T122 Viabilidade: piso de 4 séries por grupo e cardio do dia de força encurtado (até 10 min) antes de cortar séries (`packages/ai/src/agents/feasibility.ts`), com testes
 - [X] T123 Justificativas honestas: fontes das decisões filtradas para as que têm dados (`mesocycle-planner.ts`) e regra no prompt contra mencionar prescrição, código ou listas internas (`mesocycle-prompts.ts`), com testes

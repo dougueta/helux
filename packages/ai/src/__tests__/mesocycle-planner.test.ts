@@ -87,7 +87,7 @@ beforeEach(() => {
 })
 
 describe('generateMesocyclePlan — pedido', () => {
-  it('Opus 5.5, esforço xhigh, 64k tokens, structured output, fallback e prompt em blocos com cache', async () => {
+  it('Opus 5.5, esforço high, 64k tokens, structured output, fallback e prompt em blocos com cache', async () => {
     mockStream.mockReturnValueOnce(reply(body()))
     await generateMesocyclePlan(input())
     const params = mockStream.mock.calls[0][0]
@@ -96,7 +96,7 @@ describe('generateMesocyclePlan — pedido', () => {
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
       max_tokens: 64000,
-      output_config: { effort: 'xhigh', format: { type: 'json_schema' } },
+      output_config: { effort: 'high', format: { type: 'json_schema' } },
     })
     expect(params.system[0].cache_control).toEqual({ type: 'ephemeral', ttl: '1h' })
     expect(params.system[0].text).toContain('Agente de Treino')
