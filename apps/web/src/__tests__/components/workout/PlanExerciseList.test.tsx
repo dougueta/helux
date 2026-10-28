@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, within, fireEvent } from '@testing-library/react'
 import type { PlannedExercise } from '@helux/types'
 import { PlanExerciseList } from '@/components/workout/PlanExerciseList'
 
@@ -119,5 +119,39 @@ describe('PlanExerciseList — esforço, cardio e mobilidade (spec 024, T082)', 
     expect(screen.getByText(/25 min · zona moderada/i)).toBeInTheDocument()
     expect(screen.getByText(/10 min · quadril/i)).toBeInTheDocument()
     expect(screen.queryAllByText('—')).toHaveLength(0)
+  })
+})
+
+describe('PlanExerciseList — descanso e detalhe (spec 026, US2)', () => {
+  const plan: PlannedExercise[] = [
+    { name: 'Esteira leve', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento' },
+    { name: 'Supino Reto', sets: 3, reps: '10', weight: '60kg', phase: 'principal', supersetGroup: 'b1' },
+    { name: 'Remada Curvada', sets: 3, reps: '10', weight: '50kg', phase: 'principal', supersetGroup: 'b1' },
+    { name: 'Rosca Direta', sets: 3, reps: '12', weight: '20kg', phase: 'principal' },
+  ]
+
+  it('mostra o descanso como na sessão: biset sem descanso antes do par', () => {
+    render(<PlanExerciseList exercises={plan} />)
+    const main = screen.getByRole('list', { name: 'Treino principal' })
+    const [supino, remada, rosca] = within(main).getAllByRole('listitem')
+    expect(within(supino).getByText('sem descanso antes do par')).toBeInTheDocument()
+    expect(within(remada).getByText('descanso 90s')).toBeInTheDocument()
+    expect(within(rosca).getByText('descanso 90s')).toBeInTheDocument()
+    const warmup = screen.getByRole('list', { name: 'Aquecimento' })
+    expect(within(warmup).queryByText(/descanso/)).not.toBeInTheDocument()
+  })
+
+  it('com onSelect, cada exercício abre o detalhe com o índice no plano', () => {
+    const onSelect = vi.fn()
+    render(<PlanExerciseList exercises={plan} onSelect={onSelect} />)
+    fireEvent.click(screen.getByRole('button', { name: 'ver execução de Rosca Direta' }))
+    expect(onSelect).toHaveBeenLastCalledWith(3)
+    fireEvent.click(screen.getByRole('button', { name: 'ver execução de Esteira leve' }))
+    expect(onSelect).toHaveBeenLastCalledWith(0)
+  })
+
+  it('sem onSelect, a lista não é tocável', () => {
+    render(<PlanExerciseList exercises={plan} />)
+    expect(screen.queryAllByRole('button')).toHaveLength(0)
   })
 })

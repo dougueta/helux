@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Stepper } from '@/components/ui/Stepper'
 import { Field } from '@/components/ui/Field'
 
@@ -9,7 +10,8 @@ describe('Stepper', () => {
     expect(screen.getByRole('button', { name: 'diminuir kg' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'aumentar kg' })).toBeInTheDocument()
     const live = container.querySelector('[aria-live="polite"]')!
-    expect(live).toHaveTextContent('82,5')
+    // Spec 026: o valor fica no campo digitável dentro da região aria-live.
+    expect(live.querySelector('input')).toHaveValue('82,5')
     expect(live).toHaveTextContent('kg')
     expect(container.querySelector('.hx-step')).not.toHaveClass('is-err')
   })
@@ -34,6 +36,84 @@ describe('Stepper', () => {
     const { container } = render(<Stepper value={1} unit="kg" step={1} label="kg" onChange={() => {}} error disabled />)
     expect(container.querySelector('.hx-step')).toHaveClass('hx-step', 'is-err')
     expect(screen.getByRole('button', { name: 'aumentar kg' })).toBeDisabled()
+    expect(screen.getByRole('textbox', { name: 'kg' })).toBeDisabled()
+  })
+})
+
+describe('Stepper — digitação (spec 026, US1)', () => {
+  it('o valor é um campo de texto com teclado numérico', () => {
+    const { unmount } = render(<Stepper value={82.5} unit="kg" step={2.5} decimals={2} label="kg" onChange={() => {}} />)
+    expect(screen.getByRole('textbox', { name: 'kg' })).toHaveValue('82,5')
+    expect(screen.getByRole('textbox', { name: 'kg' })).toHaveAttribute('inputmode', 'decimal')
+    unmount()
+    render(<Stepper value={10} unit="reps" step={1} decimals={0} label="reps" onChange={() => {}} />)
+    expect(screen.getByRole('textbox', { name: 'reps' })).toHaveAttribute('inputmode', 'numeric')
+  })
+
+  it('confirma no blur e no Enter, não a cada tecla', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Stepper value={20} unit="kg" step={2.5} label="kg" onChange={onChange} />)
+    const input = screen.getByRole('textbox', { name: 'kg' })
+    await user.clear(input)
+    await user.type(input, '10,25')
+    expect(onChange).not.toHaveBeenCalled()
+    await user.tab()
+    expect(onChange).toHaveBeenCalledTimes(1)
+    expect(onChange).toHaveBeenLastCalledWith(10.25)
+
+    await user.clear(input)
+    await user.type(input, '60{Enter}')
+    expect(onChange).toHaveBeenLastCalledWith(60)
+  })
+
+  it('vazio mantém o valor anterior; Escape descarta o rascunho', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Stepper value={20} unit="kg" step={2.5} label="kg" onChange={onChange} />)
+    const input = screen.getByRole('textbox', { name: 'kg' })
+    await user.clear(input)
+    await user.tab()
+    expect(onChange).not.toHaveBeenCalled()
+    expect(input).toHaveValue('20')
+
+    await user.clear(input)
+    await user.type(input, '99{Escape}')
+    expect(onChange).not.toHaveBeenCalled()
+    expect(input).toHaveValue('20')
+  })
+
+  it('corrige para o máximo e ignora valor igual ao atual', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Stepper value={20} unit="kg" step={2.5} max={500} label="kg" onChange={onChange} />)
+    const input = screen.getByRole('textbox', { name: 'kg' })
+    await user.clear(input)
+    await user.type(input, '20,0')
+    await user.tab()
+    expect(onChange).not.toHaveBeenCalled()
+    await user.clear(input)
+    await user.type(input, '900')
+    await user.tab()
+    expect(onChange).toHaveBeenLastCalledWith(500)
+  })
+
+  it('os botões preservam duas casas e respeitam o máximo', () => {
+    const onChange = vi.fn()
+    const { rerender } = render(<Stepper value={10.25} unit="kg" step={2.5} decimals={2} label="kg" onChange={onChange} />)
+    fireEvent.click(screen.getByRole('button', { name: 'aumentar kg' }))
+    expect(onChange).toHaveBeenLastCalledWith(12.75)
+    fireEvent.click(screen.getByRole('button', { name: 'diminuir kg' }))
+    expect(onChange).toHaveBeenLastCalledWith(7.75)
+    rerender(<Stepper value={499} unit="kg" step={2.5} max={500} label="kg" onChange={onChange} />)
+    fireEvent.click(screen.getByRole('button', { name: 'aumentar kg' }))
+    expect(onChange).toHaveBeenLastCalledWith(500)
+  })
+
+  it('o campo mostra o novo valor quando a prop muda', () => {
+    const { rerender } = render(<Stepper value={20} unit="kg" step={2.5} label="kg" onChange={() => {}} />)
+    rerender(<Stepper value={22.5} unit="kg" step={2.5} label="kg" onChange={() => {}} />)
+    expect(screen.getByRole('textbox', { name: 'kg' })).toHaveValue('22,5')
   })
 })
 

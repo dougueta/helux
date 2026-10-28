@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { HistoryRow } from '@/components/ui/HistoryRow'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { PlanExerciseList } from '@/components/workout/PlanExerciseList'
+import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import { PlanRationale } from '@/components/agents/PlanRationale'
 import { SessionEditSheet } from '@/components/agents/SessionEditSheet'
 import { TodayAdjustCard } from '@/components/agents/TodayAdjustCard'
@@ -34,6 +35,8 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
   const { startWorkout } = useActiveWorkout()
   const { plan, generating, generationError, generatePlan, repeatWeek, refetch } = useWorkoutPlan()
   const [editing, setEditing] = useState<number | null>(null)
+  // Spec 026: detalhe só leitura do exercício tocado na lista.
+  const [viewing, setViewing] = useState<number | null>(null)
   const [coachOpen, setCoachOpen] = useState(false)
   const currentPlan = plan ?? initialPlan
   const today = currentPlan?.today
@@ -62,7 +65,15 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
             title={today.focus ? `Treino ${today.letter} — ${today.focus}` : `Treino ${today.letter}`}
             aside={`${today.exercises.filter(isMainExercise).length} exercícios`}
           />
-          <PlanExerciseList exercises={today.exercises} />
+          <PlanExerciseList exercises={today.exercises} onSelect={setViewing} />
+          <div style={{ marginTop: 12 }}>
+            <Link href="/treinos/proximo" className="hx-btn hx-btn--secondary hx-btn--block">
+              Ver treino completo
+            </Link>
+          </div>
+          {viewing !== null && today.exercises[viewing] && (
+            <ExerciseSheet open exercise={today.exercises[viewing]} onClose={() => setViewing(null)} />
+          )}
           <div style={{ marginTop: 16 }}>
             <Button kind="primary" size="lg" block iconRight="play" onClick={handleStart}>
               Iniciar treino
