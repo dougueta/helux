@@ -1,5 +1,6 @@
+import type { ReactNode } from 'react'
 import type { PlannedExercise } from '@helux/types'
-import { PHASE_LABELS, groupByPhase, isMainExercise, supersetPartnerIndex } from '@helux/workouts'
+import { PHASE_LABELS, groupByPhase, isMainExercise, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
 import { Fit } from '@/components/ui/Fit'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
@@ -13,6 +14,38 @@ const ROW_STYLE = {
   alignItems: 'baseline',
 } as const
 
+/**
+ * Linha da lista; com `onSelect` vira botão que abre o detalhe do exercício (spec 026, FR-016).
+ * O prefixo oculto mantém a prescrição no nome acessível do botão (revisão do PR #20).
+ */
+function Row({ onSelect, children }: { onSelect?: () => void; children: ReactNode }) {
+  if (!onSelect) return <li style={ROW_STYLE}>{children}</li>
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onSelect}
+        style={{
+          // Zera a borda do botão antes de aplicar a linha divisória de ROW_STYLE.
+          border: 0,
+          ...ROW_STYLE,
+          position: 'relative',
+          width: '100%',
+          minHeight: 44,
+          background: 'none',
+          color: 'inherit',
+          font: 'inherit',
+          textAlign: 'left',
+          cursor: 'pointer',
+        }}
+      >
+        <span className="sr">ver execução de </span>
+        {children}
+      </button>
+    </li>
+  )
+}
+
 /** "+2 kg" / "−10 kg" / "mantida" (spec 014, FR-019). */
 function progressionDelta(p: NonNullable<PlannedExercise['progression']>): string {
   const delta = Math.round(((p.nextWeightKg ?? 0) - (p.previousWeightKg ?? 0)) * 100) / 100
@@ -21,10 +54,20 @@ function progressionDelta(p: NonNullable<PlannedExercise['progression']>): strin
   return `${delta > 0 ? '+' : '−'}${kg} kg`
 }
 
-function MainRow({ exercise, partner }: { exercise: PlannedExercise; partner: PlannedExercise | null }) {
+function MainRow({
+  exercise,
+  partner,
+  restSeconds,
+  onSelect,
+}: {
+  exercise: PlannedExercise
+  partner: PlannedExercise | null
+  restSeconds: number
+  onSelect?: () => void
+}) {
   const fit = resolveExerciseDisplay(exercise, undefined).fit
   return (
-    <li style={ROW_STYLE}>
+    <Row onSelect={onSelect}>
       <span className="t-body-m">{exercise.name}</span>
       <span className="n-sm" style={{ color: 'var(--text)', textAlign: 'right' }}>
         {exercise.sets} × {String(exercise.reps).replace('-', '–')}
@@ -54,24 +97,27 @@ function MainRow({ exercise, partner }: { exercise: PlannedExercise; partner: Pl
           Biset · com {partner.name}
         </span>
       )}
-    </li>
+      <span className="t-secondary" style={{ gridColumn: '1 / -1' }}>
+        {restSeconds > 0 ? `descanso ${restSeconds}s` : 'sem descanso antes do par'}
+      </span>
+    </Row>
   )
 }
 
 /** Aquecimento, volta à calma, cardio e mobilidade: nome e a prescrição descritiva, sem carga nem fit. */
-function SimpleRow({ exercise }: { exercise: PlannedExercise }) {
+function SimpleRow({ exercise, onSelect }: { exercise: PlannedExercise; onSelect?: () => void }) {
   const detail = exercise.cardio
     ? `${exercise.cardio.minutes} min · zona ${exercise.cardio.zone}`
     : exercise.region
       ? `${exercise.reps} · ${exercise.region}`
       : exercise.reps
   return (
-    <li style={ROW_STYLE}>
+    <Row onSelect={onSelect}>
       <span className="t-body">{exercise.name}</span>
       <span className="t-secondary" style={{ textAlign: 'right' }}>
         {detail}
       </span>
-    </li>
+    </Row>
   )
 }
 
@@ -85,8 +131,16 @@ function partnerOf(exercises: PlannedExercise[], index: number): PlannedExercise
  * Lista do treino do dia (spec 014, FR-004): agrupada por fase quando o plano
  * tem aquecimento/volta à calma; planos antigos (só principal) ficam como antes.
  */
-export function PlanExerciseList({ exercises }: { exercises: PlannedExercise[] }) {
+export function PlanExerciseList({
+  exercises,
+  onSelect,
+}: {
+  exercises: PlannedExercise[]
+  onSelect?: (index: number) => void
+}) {
   const groups = groupByPhase(exercises)
+  // Descanso como na sessão antes da 1ª série (spec 026): todos com séries pendentes.
+  const hasPendingSets = exercises.map(() => true)
   const showHeadings = groups.length > 1
 
   return (
@@ -100,9 +154,15 @@ export function PlanExerciseList({ exercises }: { exercises: PlannedExercise[] }
           >
             {group.items.map(({ exercise, index }) =>
               isMainExercise(exercise) ? (
-                <MainRow key={index} exercise={exercise} partner={partnerOf(exercises, index)} />
+                <MainRow
+                  key={index}
+                  exercise={exercise}
+                  partner={partnerOf(exercises, index)}
+                  restSeconds={restSecondsAfterSet({ exercises, exerciseIndex: index, hasPendingSets })}
+                  onSelect={onSelect && (() => onSelect(index))}
+                />
               ) : (
-                <SimpleRow key={index} exercise={exercise} />
+                <SimpleRow key={index} exercise={exercise} onSelect={onSelect && (() => onSelect(index))} />
               ),
             )}
           </ol>

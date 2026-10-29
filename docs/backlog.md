@@ -40,6 +40,9 @@ Descanso entre séries por exercício/genética/cansaço. Ponto de extensão pro
 
 - Item B4 do roteiro de 2026-08-29.
 - Hook órfão `apps/web/src/hooks/useRestTimer.ts` (sem uso; avaliar junto da 015).
+- "Iniciar treino" na Home e na aba Treinos sobrescreve, sem aviso, um treino em andamento (`startWorkout` em `useActiveWorkout` substitui a sessão do `localStorage`). O preview da 026 já oferece "Continuar treino" nesse caso; falta fazer o mesmo na Home e na aba Treinos (observado no plano da 026, 2026-10-28).
+- A ligação do `TirednessDialog` com o `useTirednessFlow` (16 props) e o fluxo de iniciar o treino estão duplicados entre `HomeClient` e `ProximoTreinoClient`; extrair um adaptador `<TirednessDialog flow={...} />` (revisão do PR #20, 2026-10-29).
+- `pnpm --filter @helux/web lint` abre o assistente de configuração do ESLint do Next: o lint da web nunca foi configurado (observado na 026, 2026-10-28).
 
 ## LGPD — políticas de armazenamento de dados
 

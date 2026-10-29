@@ -118,6 +118,9 @@ button{font:inherit;color:inherit}
 .hx-step button[disabled]{color:var(--text-disabled);cursor:not-allowed}
 .hx-step-v{text-align:center;display:flex;flex-direction:column;align-items:center;line-height:1}
 .hx-step-v .n-md{font-size:20px;line-height:22px}
+.hx-step-v input{appearance:none;border:0;background:transparent;color:var(--text);width:100%;min-width:0;padding:2px 0;text-align:center;font-family:var(--mono);font-weight:600;letter-spacing:-.02em;border-radius:var(--r-xs)}
+.hx-step-v input:focus-visible{outline:none;box-shadow:var(--focus)}
+.hx-step-v input[disabled]{color:var(--text-disabled);cursor:not-allowed}
 .hx-step-v small{font-size:11px;color:var(--text-dim);margin-top:2px;font-weight:500}
 .hx-step.is-err{box-shadow:inset 0 0 0 1px var(--danger-line)}
 

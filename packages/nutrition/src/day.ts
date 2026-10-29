@@ -316,6 +316,8 @@ interface Draft {
   pool: FoodItem[]
   /** Menor porção possível: 0 para itens opcionais e de gordura. */
   min: number
+  /** Escolhido pelo usuário numa troca: o ajuste não substitui o alimento. */
+  swapped?: boolean
 }
 
 /** Ajuste fino global: mexe ±½ porção onde mais aproxima o total do dia das metas. Devolve se fechou na tolerância. */
@@ -365,7 +367,7 @@ function balanceWithLeanerProtein(drafts: Draft[][], targets: DietTargets): void
     const used = new Set(drafts.flat().map(d => d.food.id))
     const fattiest = drafts
       .flat()
-      .filter(d => d.role === 'protein')
+      .filter(d => d.role === 'protein' && !d.swapped)
       .sort((a, b) => fatPerProtein(b.food) - fatPerProtein(a.food))
       .find(d => d.pool.some(f => !used.has(f.id) && fatPerProtein(f) < fatPerProtein(d.food)))
     if (!fattiest) return
@@ -475,7 +477,10 @@ export function buildDayPlan({ date, dayType, base, weightKg, flags: rawFlags, g
     return meal
   })
 
-  // Trocas do usuário antes do ajuste fino, para o total continuar perto da meta (FR-010).
+  balanceWithLeanerProtein(drafts, targets)
+
+  // Cada troca parte do plano que o usuário viu (já ajustado) e é seguida de novo ajuste,
+  // para o total continuar perto da meta (FR-010). O alimento escolhido não é substituído.
   for (const swap of swaps) {
     const mealIndex = specs.findIndex(s => `${date}:${s.slot}` === swap.mealId)
     const draft = drafts[mealIndex]?.find(d => d.food.id === swap.fromFoodId)
@@ -484,9 +489,9 @@ export function buildDayPlan({ date, dayType, base, weightKg, flags: rawFlags, g
     const grams = scaledItem(draft.food, draft.portions).macros[groupMacro(draft.food)]
     draft.food = to
     draft.portions = swapPortions(to, grams)
+    draft.swapped = true
+    balanceWithLeanerProtein(drafts, targets)
   }
-
-  balanceWithLeanerProtein(drafts, targets)
 
   const meals: Meal[] = specs.map((spec, i) => {
     const items = drafts[i].filter(d => d.portions > 0).map(d => scaledItem(d.food, d.portions))

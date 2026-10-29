@@ -172,3 +172,18 @@ describe('ExerciseSheet — equivalente de outro padrão (spec 013)', () => {
     expect(onApply).toHaveBeenCalledWith('rdl')
   })
 })
+
+describe('ExerciseSheet — só leitura (spec 026, FR-011)', () => {
+  it('sem onApply, lista as variantes com "Atual" e sem "Trocar"', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+    render(<ExerciseSheet open exercise={EXERCISE} onClose={onClose} />)
+    expect(screen.getByRole('tab', { name: 'Execução', selected: true })).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'Variantes (3)' }))
+    expect(screen.getByText('Supino reto com halteres')).toBeInTheDocument()
+    expect(screen.getByText('Atual')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Trocar/ })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Fechar' }))
+    expect(onClose).toHaveBeenCalled()
+  })
+})

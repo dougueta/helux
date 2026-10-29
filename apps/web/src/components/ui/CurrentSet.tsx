@@ -1,7 +1,7 @@
 import { Check } from '@/components/ui/Check'
 import { Stepper } from '@/components/ui/Stepper'
 
-/** Série atual em área de foco (`.hx-cur`): steppers de kg e reps e ✓ de 52 px. */
+/** Série atual em área de foco (`.hx-cur`): steppers digitáveis de kg (0–500, 2 casas) e reps (0–100) e ✓ de 52 px. */
 export function CurrentSet({
   no,
   total,
@@ -36,8 +36,8 @@ export function CurrentSet({
         </span>
       </div>
       <div className="hx-cur-row">
-        <Stepper value={weight} unit="kg" step={2.5} onChange={onWeight} label="kg" />
-        <Stepper value={reps} unit="reps" step={1} onChange={onReps} label="reps" />
+        <Stepper value={weight} unit="kg" step={2.5} decimals={2} max={500} onChange={onWeight} label="kg" />
+        <Stepper value={reps} unit="reps" step={1} decimals={0} max={100} onChange={onReps} label="reps" />
         <Check
           big
           on={done}

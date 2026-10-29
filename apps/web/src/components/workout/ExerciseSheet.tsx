@@ -38,7 +38,8 @@ export function ExerciseSheet({
   open: boolean
   exercise: PlannedExercise
   currentVariantId?: string
-  onApply: (variantId: string) => void
+  /** Sem `onApply` a folha é só leitura (spec 026, preview): variantes sem "Trocar". */
+  onApply?: (variantId: string) => void
   onClose: () => void
 }) {
   const variants = exercise.variants ?? []
@@ -53,7 +54,7 @@ export function ExerciseSheet({
   const [nonce, setNonce] = useState(0)
 
   function handleSwap(id: string) {
-    onApply(id)
+    onApply?.(id)
     onClose()
   }
 
@@ -176,7 +177,7 @@ export function ExerciseSheet({
                   {v.rec && !isCurrent && <Tag>Recomendado</Tag>}
                   {isCurrent && <Tag kind="outline">Atual</Tag>}
                 </div>
-                {!isCurrent && (
+                {!isCurrent && onApply && (
                   <Button
                     kind={better ? 'secondary' : 'ghost'}
                     aria-label={`Trocar para ${v.name}`}
