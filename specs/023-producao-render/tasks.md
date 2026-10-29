@@ -121,7 +121,7 @@ Nenhuma. As histórias são independentes entre si e não há infraestrutura com
 
 - [x] T020 [US5] Em `docs/deploy.md`, documentar o backup com `pg_dump` (connection string do Supabase em variável de ambiente, arquivo datado fora do repositório) e a restauração com `psql` (FR-010)
 - [x] T021 [US5] Em `docs/deploy.md`, documentar a configuração do limite de gasto mensal no console da Anthropic (FR-011)
-- [ ] T022 [US5] Executar a rotina de backup e restaurar num banco descartável; comparar a contagem de linhas por tabela e anotar o resultado em `docs/deploy.md` (SC-005). Ação manual do dono, pois exige credenciais do banco
+- [ ] T022 [US5] Executar a rotina de backup e restaurar num banco descartável; comparar a contagem de linhas por tabela e anotar o resultado em `docs/deploy.md` (SC-005). Ação manual do dono, pois exige credenciais do banco. **Adiada pelo dono em 2026-10-24**, fica pendente depois do deploy
 
 **Checkpoint**: todas as histórias entregues.
 
