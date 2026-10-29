@@ -68,7 +68,7 @@ describe('ProximoTreinoClient (spec 026, US2)', () => {
   it('abre a execução do exercício só leitura e não escreve nada', async () => {
     const user = userEvent.setup()
     render(<ProximoTreinoClient plan={null} />)
-    await user.click(screen.getByRole('button', { name: 'ver execução de Supino Reto' }))
+    await user.click(screen.getByRole('button', { name: /^ver execução de Supino Reto/ }))
     expect(screen.getByRole('dialog', { name: 'Execução do exercício' })).toBeInTheDocument()
     await user.click(screen.getByRole('tab', { name: 'Variantes (2)' }))
     expect(screen.queryByRole('button', { name: /^Trocar/ })).not.toBeInTheDocument()
@@ -108,5 +108,17 @@ describe('ProximoTreinoClient (spec 026, US2)', () => {
     hooks.plan = { ...planWith(), today: null }
     render(<ProximoTreinoClient plan={null} />)
     expect(router.replace).toHaveBeenCalledWith('/treinos')
+  })
+
+  it('"voltar" vai para a origem sem depender do histórico (revisão PR #20)', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<ProximoTreinoClient plan={null} from="home" />)
+    await user.click(screen.getByRole('button', { name: 'voltar' }))
+    expect(router.push).toHaveBeenLastCalledWith('/')
+    unmount()
+    render(<ProximoTreinoClient plan={null} />)
+    await user.click(screen.getByRole('button', { name: 'voltar' }))
+    expect(router.push).toHaveBeenLastCalledWith('/treinos')
+    expect(router.back).not.toHaveBeenCalled()
   })
 })

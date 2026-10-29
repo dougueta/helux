@@ -144,14 +144,29 @@ describe('PlanExerciseList — descanso e detalhe (spec 026, US2)', () => {
   it('com onSelect, cada exercício abre o detalhe com o índice no plano', () => {
     const onSelect = vi.fn()
     render(<PlanExerciseList exercises={plan} onSelect={onSelect} />)
-    fireEvent.click(screen.getByRole('button', { name: 'ver execução de Rosca Direta' }))
+    fireEvent.click(screen.getByRole('button', { name: /^ver execução de Rosca Direta/ }))
     expect(onSelect).toHaveBeenLastCalledWith(3)
-    fireEvent.click(screen.getByRole('button', { name: 'ver execução de Esteira leve' }))
+    fireEvent.click(screen.getByRole('button', { name: /^ver execução de Esteira leve/ }))
     expect(onSelect).toHaveBeenLastCalledWith(0)
   })
 
   it('sem onSelect, a lista não é tocável', () => {
     render(<PlanExerciseList exercises={plan} />)
     expect(screen.queryAllByRole('button')).toHaveLength(0)
+  })
+})
+
+describe('PlanExerciseList — nome acessível da linha (revisão PR #20)', () => {
+  it('o botão da linha lê a prescrição, não só o nome', () => {
+    render(
+      <PlanExerciseList
+        exercises={[{ name: 'Rosca Direta', sets: 3, reps: '12', weight: '20kg', phase: 'principal' }]}
+        onSelect={() => {}}
+      />,
+    )
+    const button = screen.getByRole('button', { name: /^ver execução de Rosca Direta/ })
+    expect(button).toHaveAccessibleName(/3 × 12/)
+    expect(button).toHaveAccessibleName(/20kg/)
+    expect(button).toHaveAccessibleName(/descanso 90s/)
   })
 })

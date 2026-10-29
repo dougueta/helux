@@ -212,7 +212,7 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
             </div>
             {/* Spec 026: ver o treino completo sem iniciar a sessão nem fazer check-in. */}
             <div style={{ marginTop: 8 }}>
-              <Link href="/treinos/proximo" className="hx-btn hx-btn--ghost hx-btn--block">
+              <Link href="/treinos/proximo?de=home" className="hx-btn hx-btn--ghost hx-btn--block">
                 Ver treino
               </Link>
             </div>

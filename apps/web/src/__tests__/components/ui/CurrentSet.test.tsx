@@ -61,6 +61,7 @@ describe('CurrentSet — digitação (spec 026, US1)', () => {
     await user.clear(input)
     await user.type(input, '60')
     await user.click(screen.getByRole('button', { name: 'concluir série 1' }))
-    expect(order).toEqual(['w:60', 'done'])
+    // O valor vai a cada tecla (revisão do PR #20): o último antes do ✓ é o digitado.
+    expect(order.slice(-2)).toEqual(['w:60', 'done'])
   })
 })

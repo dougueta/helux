@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -5,14 +6,12 @@ import { Stepper } from '@/components/ui/Stepper'
 import { Field } from '@/components/ui/Field'
 
 describe('Stepper', () => {
-  it('− e + com aria-label e valor pt-BR com aria-live', () => {
+  it('− e + com aria-label e valor pt-BR', () => {
     const { container } = render(<Stepper value={82.5} unit="kg" step={2.5} label="kg" onChange={() => {}} />)
     expect(screen.getByRole('button', { name: 'diminuir kg' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'aumentar kg' })).toBeInTheDocument()
-    const live = container.querySelector('[aria-live="polite"]')!
-    // Spec 026: o valor fica no campo digitável dentro da região aria-live.
-    expect(live.querySelector('input')).toHaveValue('82,5')
-    expect(live).toHaveTextContent('kg')
+    expect(screen.getByRole('textbox', { name: 'kg' })).toHaveValue('82,5')
+    expect(container.querySelector('.hx-step-v')).toHaveTextContent('kg')
     expect(container.querySelector('.hx-step')).not.toHaveClass('is-err')
   })
 
@@ -40,6 +39,15 @@ describe('Stepper', () => {
   })
 })
 
+/** Stepper controlado, como no `CurrentSet`: o pai guarda o valor recebido. */
+function Controlled({ initial, onChange, ...props }: { initial: number; onChange: (v: number) => void; max?: number }) {
+  const [value, setValue] = useState(initial)
+  return (
+    <Stepper value={value} unit="kg" step={2.5} label="kg" {...props}
+      onChange={v => { setValue(v); onChange(v) }} />
+  )
+}
+
 describe('Stepper — digitação (spec 026, US1)', () => {
   it('o valor é um campo de texto com teclado numérico', () => {
     const { unmount } = render(<Stepper value={82.5} unit="kg" step={2.5} decimals={2} label="kg" onChange={() => {}} />)
@@ -50,27 +58,37 @@ describe('Stepper — digitação (spec 026, US1)', () => {
     expect(screen.getByRole('textbox', { name: 'reps' })).toHaveAttribute('inputmode', 'numeric')
   })
 
-  it('confirma no blur e no Enter, não a cada tecla', async () => {
+  it('envia o valor válido a cada tecla, sem depender do blur (revisão PR #20)', async () => {
     const user = userEvent.setup()
     const onChange = vi.fn()
-    render(<Stepper value={20} unit="kg" step={2.5} label="kg" onChange={onChange} />)
+    const { unmount } = render(<Controlled initial={20} onChange={onChange} />)
     const input = screen.getByRole('textbox', { name: 'kg' })
     await user.clear(input)
     await user.type(input, '10,25')
-    expect(onChange).not.toHaveBeenCalled()
-    await user.tab()
-    expect(onChange).toHaveBeenCalledTimes(1)
     expect(onChange).toHaveBeenLastCalledWith(10.25)
-
-    await user.clear(input)
-    await user.type(input, '60{Enter}')
-    expect(onChange).toHaveBeenLastCalledWith(60)
+    expect(input).toHaveValue('10,25')
+    // ✓ tocado sem o campo perder o foco: a série sai da tela e o valor já foi enviado.
+    const calls = onChange.mock.calls.length
+    unmount()
+    expect(onChange).toHaveBeenCalledTimes(calls)
+    expect(onChange).toHaveBeenLastCalledWith(10.25)
   })
 
-  it('vazio mantém o valor anterior; Escape descarta o rascunho', async () => {
+  it('Enter encerra a edição e mostra o valor normalizado', async () => {
     const user = userEvent.setup()
     const onChange = vi.fn()
-    render(<Stepper value={20} unit="kg" step={2.5} label="kg" onChange={onChange} />)
+    render(<Controlled initial={20} max={500} onChange={onChange} />)
+    const input = screen.getByRole('textbox', { name: 'kg' })
+    await user.clear(input)
+    await user.type(input, '900{Enter}')
+    expect(onChange).toHaveBeenLastCalledWith(500)
+    expect(input).toHaveValue('500')
+  })
+
+  it('vazio mantém o valor anterior; Escape volta ao valor de antes da edição', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Controlled initial={20} onChange={onChange} />)
     const input = screen.getByRole('textbox', { name: 'kg' })
     await user.clear(input)
     await user.tab()
@@ -79,11 +97,53 @@ describe('Stepper — digitação (spec 026, US1)', () => {
 
     await user.clear(input)
     await user.type(input, '99{Escape}')
-    expect(onChange).not.toHaveBeenCalled()
+    expect(onChange).toHaveBeenLastCalledWith(20)
     expect(input).toHaveValue('20')
   })
 
-  it('corrige para o máximo e ignora valor igual ao atual', async () => {
+  it('focar e sair sem digitar não muda o valor', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const { rerender } = render(<Stepper value={12.345} unit="kg" step={2.5} label="kg" onChange={onChange} />)
+    await user.click(screen.getByRole('textbox', { name: 'kg' }))
+    await user.tab()
+    rerender(<Stepper value={1000} unit="kg" step={2.5} label="kg" onChange={onChange} />)
+    await user.click(screen.getByRole('textbox', { name: 'kg' }))
+    expect(screen.getByRole('textbox', { name: 'kg' })).toHaveValue('1000')
+    await user.tab()
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it('"+" com o campo em edição parte do valor digitado e o blur não sobrescreve', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<Controlled initial={40} onChange={onChange} />)
+    const input = screen.getByRole('textbox', { name: 'kg' })
+    await user.clear(input)
+    await user.type(input, '50')
+    // Toque sem blur (celular): o clique não tira o foco do campo.
+    fireEvent.click(screen.getByRole('button', { name: 'aumentar kg' }))
+    expect(onChange).toHaveBeenLastCalledWith(52.5)
+    expect(input).toHaveValue('52,5')
+    fireEvent.blur(input)
+    expect(onChange).toHaveBeenLastCalledWith(52.5)
+    expect(input).toHaveValue('52,5')
+  })
+
+  it('valor alterado de fora com o campo focado substitui o rascunho', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const { rerender } = render(<Stepper value={20} unit="kg" step={2.5} label="kg" onChange={onChange} />)
+    const input = screen.getByRole('textbox', { name: 'kg' })
+    await user.click(input)
+    rerender(<Stepper value={30} unit="kg" step={2.5} label="kg" onChange={onChange} />)
+    expect(input).toHaveValue('30')
+    await user.tab()
+    expect(onChange).not.toHaveBeenCalled()
+    expect(input).toHaveValue('30')
+  })
+
+  it('ignora valor igual ao atual', async () => {
     const user = userEvent.setup()
     const onChange = vi.fn()
     render(<Stepper value={20} unit="kg" step={2.5} max={500} label="kg" onChange={onChange} />)
@@ -91,11 +151,7 @@ describe('Stepper — digitação (spec 026, US1)', () => {
     await user.clear(input)
     await user.type(input, '20,0')
     await user.tab()
-    expect(onChange).not.toHaveBeenCalled()
-    await user.clear(input)
-    await user.type(input, '900')
-    await user.tab()
-    expect(onChange).toHaveBeenLastCalledWith(500)
+    expect(onChange).not.toHaveBeenCalledWith(20)
   })
 
   it('os botões preservam duas casas e respeitam o máximo', () => {
@@ -114,6 +170,19 @@ describe('Stepper — digitação (spec 026, US1)', () => {
     const { rerender } = render(<Stepper value={20} unit="kg" step={2.5} label="kg" onChange={() => {}} />)
     rerender(<Stepper value={22.5} unit="kg" step={2.5} label="kg" onChange={() => {}} />)
     expect(screen.getByRole('textbox', { name: 'kg' })).toHaveValue('22,5')
+  })
+
+  it('a região aria-live fica fora do campo e anuncia só os botões', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<Controlled initial={20} onChange={() => {}} />)
+    const live = container.querySelector('[aria-live="polite"]')!
+    expect(live.querySelector('input')).toBeNull()
+    const input = screen.getByRole('textbox', { name: 'kg' })
+    await user.clear(input)
+    await user.type(input, '50')
+    expect(live).toHaveTextContent('')
+    fireEvent.click(screen.getByRole('button', { name: 'aumentar kg' }))
+    expect(live).toHaveTextContent('52,5 kg')
   })
 })
 

@@ -16,6 +16,7 @@
 - **Rationale**:
   - `type="number"` não aceita vírgula de forma consistente entre navegadores e locales pt-BR, e permite rolar o valor sem querer. Texto com `inputMode` abre o teclado numérico no celular (FR-005) e deixa o parse sob nosso controle (vírgula ou ponto, FR-003).
   - O rascunho local evita gravar valores intermediários ("1", "10", "10,") a cada tecla.
+  - **Revisão do PR #20**: confirmar só no blur perdia a carga quando o ✓ era tocado sem o campo perder o foco (iOS). O valor válido passa a ser enviado a cada tecla; os intermediários só mudam o estado local da sessão, e a série grava o valor do momento em que é concluída.
   - Mostrado fora de edição, o valor continua passando por `formatNumber`, então o visual de hoje se mantém.
 - **Parse/normalização** (função pura testável, em `apps/web/src/lib/`): troca `,` por `.`, faz `trim` e `Number()`. Vazio ou `NaN` → `null` (mantém o anterior). Depois vem o clamp `[min, max]` e o arredondamento por casas (kg: 2; reps: 0).
 - **Alternatives considered**: Teclado numérico próprio na tela (descartado: YAGNI, o teclado do sistema basta). Abrir o valor num modal (descartado: mais toques que o SC-001).

@@ -21,13 +21,15 @@ import { WeekBadge } from '@/components/workout/WeekBadge'
  * Preview do próximo treino (spec 026, US2): o treino de hoje completo, só
  * leitura. Não cria sessão nem pede check-in; "Iniciar treino" segue o fluxo da Home.
  */
-export function ProximoTreinoClient({ plan: initialPlan }: { plan: AdjustedWorkoutPlanView | null }) {
+export function ProximoTreinoClient({ plan: initialPlan, from }: { plan: AdjustedWorkoutPlanView | null; from?: string }) {
   const router = useRouter()
   const { isActive, startWorkout } = useActiveWorkout()
   const { plan, loading, refetch } = useWorkoutPlan()
   const currentPlan = plan ?? initialPlan
   const today = currentPlan?.today
   const [viewing, setViewing] = useState<number | null>(null)
+  // Destino explícito: aberto por link direto não há histórico do app para voltar (revisão do PR #20).
+  const backHref = from === 'home' ? '/' : '/treinos'
 
   const tiredness = useTirednessFlow({
     today: today ?? undefined,
@@ -51,7 +53,7 @@ export function ProximoTreinoClient({ plan: initialPlan }: { plan: AdjustedWorko
   return (
     <div className="hx-page" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 120 }}>
       <ScreenHeader
-        left={<IconButton icon="back" label="voltar" bare onClick={() => router.back()} />}
+        left={<IconButton icon="back" label="voltar" bare onClick={() => router.push(backHref)} />}
         title="Próximo treino"
       />
 

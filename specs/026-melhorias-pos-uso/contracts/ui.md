@@ -21,8 +21,10 @@ Stepper({
 
 - O valor central é um campo de texto com `inputMode="decimal"` (quando `decimals > 0`) ou `"numeric"`, e com `aria-label={label}`.
 - Fora de edição, mostra `formatNumber(value)` (vírgula decimal, até 2 casas).
-- `onChange` é chamado **só** na confirmação (blur / Enter) com o valor normalizado, e só se ele mudou. Com entrada vazia ou inválida, o campo volta a mostrar `value` e `onChange` não é chamado. Escape descarta o rascunho.
-- "−" chama `onChange(max(min, roundTo(value − step, decimals)))`. "+" chama `onChange(min(max, roundTo(value + step, decimals)))`.
+- Durante a edição, cada texto válido chama `onChange` com o valor normalizado (se ele mudou), para que concluir a série sem sair do campo salve o valor digitado (revisão do PR #20). Blur e Enter só encerram a edição e mostram o valor normalizado. Com entrada vazia ou inválida, `onChange` não é chamado e o campo volta a mostrar `value` ao sair. Escape restaura o valor de antes da edição.
+- Ao focar, o rascunho começa com o número cru (sem separador de milhar nem arredondamento); focar e sair sem mudar o texto não chama `onChange`. Se `value` muda de fora durante a edição, o rascunho passa a mostrar o novo valor.
+- "−" chama `onChange(max(min, roundTo(value − step, decimals)))`. "+" chama `onChange(min(max, roundTo(value + step, decimals)))`. Os botões encerram o rascunho aberto.
+- O campo fica fora da região `aria-live`; só as mudanças dos botões são anunciadas.
 - Os botões mantêm os rótulos `diminuir {label}` / `aumentar {label}` (testes atuais continuam válidos).
 
 `CurrentSet` passa `decimals={2} max={500}` para kg e `decimals={0} max={100}` para reps.

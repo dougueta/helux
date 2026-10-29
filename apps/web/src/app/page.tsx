@@ -1,18 +1,8 @@
 import { redirect } from 'next/navigation'
-import { serverFetch } from '@/lib/server-api'
+import { getLatestPlan, serverFetch } from '@/lib/server-api'
 import { getServerSession } from '@/lib/server-session'
 import { HomeClient } from './HomeClient'
 
-
-async function getLatestPlan(token: string) {
-  try {
-    const res = await serverFetch(`/workout/latest-plan`, {
-      headers: { Authorization: `Bearer ${token}` },
-      next: { revalidate: 300 }
-    })
-    return res.ok ? res.json() : null
-  } catch { return null }
-}
 
 async function getLatestCheckins(token: string) {
   try {

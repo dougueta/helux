@@ -26,7 +26,7 @@ describe('HomeClient — "Ver treino" (spec 026, FR-009)', () => {
   it('com próximo treino, mostra "Ver treino" para o preview junto de "Iniciar treino"', () => {
     render(<HomeClient plan={null} firstName="Doug" checkins={[]} analytics={null} />)
     expect(screen.getByRole('button', { name: 'Iniciar treino' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Ver treino' })).toHaveAttribute('href', '/treinos/proximo')
+    expect(screen.getByRole('link', { name: 'Ver treino' })).toHaveAttribute('href', '/treinos/proximo?de=home')
   })
 
   it('sem plano, não mostra "Ver treino"', () => {

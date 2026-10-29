@@ -138,6 +138,27 @@ Nenhuma tarefa bloqueante compartilhada: US1 e US2 tocam arquivos diferentes e p
 
 ---
 
+## Phase 6: Correções da revisão do PR #20
+
+**Purpose**: corrigir os achados da revisão de código do PR #20 antes do merge. O contrato do `Stepper` mudou (ver `contracts/ui.md` e `research.md` R2): o valor válido passa a ser enviado a cada tecla, para que tocar no ✓ sem sair do campo não perca a carga digitada.
+
+### Tests (escrever primeiro, confirmar que falham)
+
+- [X] T025 [P] [US1] Testes em `apps/web/src/__tests__/components/ui/Stepper.test.tsx`: (a) valor válido digitado chama `onChange` sem blur, e desmontar com o campo focado não perde o valor; (b) "+" com rascunho aberto parte do valor digitado e o blur seguinte não sobrescreve; (c) focar e sair sem digitar não chama `onChange` (12,345 e 1000 continuam iguais); (d) prop `value` alterada de fora com o campo focado substitui o rascunho; (e) Escape volta ao valor de antes da edição; (f) a região `aria-live` não contém o campo e só anuncia mudanças dos botões
+- [X] T026 [P] [US2] Testes em `PlanExerciseList.test.tsx` e `proximo-treino.test.tsx`: o nome acessível do botão da linha inclui a prescrição (séries × reps, carga, descanso); "voltar" do preview vai para a origem (`/` com `?de=home`, senão `/treinos`) sem depender do histórico do navegador
+
+### Implementation
+
+- [X] T027 [US1] `Stepper.tsx`: enviar o valor válido a cada tecla, botões partindo do valor atual e encerrando o rascunho, rascunho iniciado com o número cru (sem agrupamento nem arredondamento) e sem `onChange` se o texto não mudou, ressincronizar o rascunho quando `value` muda de fora, Escape restaura o valor de antes da edição
+- [X] T028 [US1] `Stepper.tsx`: tirar o campo da região `aria-live`; um texto oculto (`.sr`) anuncia só as mudanças feitas pelos botões
+- [X] T029 [US2] `PlanExerciseList.tsx`: trocar o `aria-label` do botão por um prefixo oculto "ver execução de" para o nome acessível incluir a prescrição; remover o `borderTop` repetido
+- [X] T030 [US2] Preview: "voltar" com destino explícito (`?de=home` no link da Home → `/`, senão `/treinos`), sem `router.back()`
+- [X] T031 [US2] Extrair `getLatestPlan` para `apps/web/src/lib/server-api.ts` e usar em `/`, `/treinos` e `/treinos/proximo`
+- [X] T032 Registrar em `docs/backlog.md` a duplicação da ligação `TirednessDialog`/`useTirednessFlow` entre `HomeClient` e `ProximoTreinoClient` (achado da revisão, fora do escopo destas correções)
+- [X] T033 Rodar `pnpm --filter @helux/web test` e `typecheck` completos
+
+---
+
 ## Dependencies & Execution Order
 
 - **T001** → todo o resto.
@@ -181,3 +202,4 @@ T015 ExerciseSheet.tsx · T016 PlanExerciseList.tsx
   - kg digitado `10,25` + Enter → campo "10,25" e sessão com `weight: 10.25`; "+" → "12,75" / `12.75`.
   - Preview com a sessão ativa → "Treino em andamento" + "Continuar treino", com as séries intactas.
   - Não conferido manualmente: tema claro, teclado numérico de um celular real e o histórico após finalizar (cobertos só por testes/API, que já aceita duas casas).
+- **T025–T033 (revisão do PR #20)**: o `Stepper` passou a enviar o valor válido a cada tecla (contrato atualizado em `contracts/ui.md` e R2 em `research.md`); o teste do `CurrentSet` sobre FR-006 agora confere o último valor antes do ✓. A busca do plano foi para `getLatestPlan` em `lib/server-api.ts`, com o mesmo cache de antes. O `aria-label` do grupo do Stepper continua igual ao do campo, porque os testes e o leitor de tela o usam como nome do grupo. Suíte: 680 testes, 679 passando; a única falha (`mock-mutations` › nutrição) é preexistente, também falha sem estas mudanças e ficou registrada em `docs/backlog.md`. `typecheck` limpo.

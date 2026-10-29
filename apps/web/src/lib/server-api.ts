@@ -32,3 +32,14 @@ export async function serverFetch(path: string, init?: RequestInit): Promise<Res
   }
   return fetch(`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}${path}`, init)
 }
+
+/** Plano mais recente para as páginas de servidor (Home, Treinos, preview); null se falhar. */
+export async function getLatestPlan(token: string) {
+  try {
+    const res = await serverFetch(`/workout/latest-plan`, {
+      headers: { Authorization: `Bearer ${token}` },
+      next: { revalidate: 300 }
+    })
+    return res.ok ? res.json() : null
+  } catch { return null }
+}

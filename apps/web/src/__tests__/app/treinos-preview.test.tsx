@@ -33,7 +33,7 @@ describe('TreinosClient — preview (spec 026, FR-016)', () => {
   it('tocar num exercício da lista abre a execução só leitura', async () => {
     const user = userEvent.setup()
     render(<TreinosClient plan={null} recentSessions={[]} />)
-    await user.click(screen.getByRole('button', { name: 'ver execução de Supino Reto' }))
+    await user.click(screen.getByRole('button', { name: /^ver execução de Supino Reto/ }))
     expect(screen.getByRole('dialog', { name: 'Execução do exercício' })).toBeInTheDocument()
     await user.click(screen.getByRole('tab', { name: 'Variantes (2)' }))
     expect(screen.queryByRole('button', { name: /^Trocar/ })).not.toBeInTheDocument()

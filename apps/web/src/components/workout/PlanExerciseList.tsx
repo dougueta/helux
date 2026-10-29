@@ -14,21 +14,24 @@ const ROW_STYLE = {
   alignItems: 'baseline',
 } as const
 
-/** Linha da lista; com `onSelect` vira botão que abre o detalhe do exercício (spec 026, FR-016). */
-function Row({ name, onSelect, children }: { name: string; onSelect?: () => void; children: ReactNode }) {
+/**
+ * Linha da lista; com `onSelect` vira botão que abre o detalhe do exercício (spec 026, FR-016).
+ * O prefixo oculto mantém a prescrição no nome acessível do botão (revisão do PR #20).
+ */
+function Row({ onSelect, children }: { onSelect?: () => void; children: ReactNode }) {
   if (!onSelect) return <li style={ROW_STYLE}>{children}</li>
   return (
     <li>
       <button
         type="button"
-        aria-label={`ver execução de ${name}`}
         onClick={onSelect}
         style={{
+          // Zera a borda do botão antes de aplicar a linha divisória de ROW_STYLE.
+          border: 0,
           ...ROW_STYLE,
+          position: 'relative',
           width: '100%',
           minHeight: 44,
-          border: 0,
-          borderTop: ROW_STYLE.borderTop,
           background: 'none',
           color: 'inherit',
           font: 'inherit',
@@ -36,6 +39,7 @@ function Row({ name, onSelect, children }: { name: string; onSelect?: () => void
           cursor: 'pointer',
         }}
       >
+        <span className="sr">ver execução de </span>
         {children}
       </button>
     </li>
@@ -63,7 +67,7 @@ function MainRow({
 }) {
   const fit = resolveExerciseDisplay(exercise, undefined).fit
   return (
-    <Row name={exercise.name} onSelect={onSelect}>
+    <Row onSelect={onSelect}>
       <span className="t-body-m">{exercise.name}</span>
       <span className="n-sm" style={{ color: 'var(--text)', textAlign: 'right' }}>
         {exercise.sets} × {String(exercise.reps).replace('-', '–')}
@@ -108,7 +112,7 @@ function SimpleRow({ exercise, onSelect }: { exercise: PlannedExercise; onSelect
       ? `${exercise.reps} · ${exercise.region}`
       : exercise.reps
   return (
-    <Row name={exercise.name} onSelect={onSelect}>
+    <Row onSelect={onSelect}>
       <span className="t-body">{exercise.name}</span>
       <span className="t-secondary" style={{ textAlign: 'right' }}>
         {detail}
