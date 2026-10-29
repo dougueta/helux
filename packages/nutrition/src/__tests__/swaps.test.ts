@@ -67,3 +67,27 @@ describe('swapOptions (FR-010)', () => {
     expect(Math.abs(item.portions - first.portions)).toBeLessThanOrEqual(1)
   })
 })
+
+describe('troca escolhida pelo usuário (revisão do PR #20, 026 T034)', () => {
+  it('o ajuste de gordura não desfaz a troca, em nenhum dia nem refeição', () => {
+    const undone: string[] = []
+    for (let day = 1; day <= 28; day++) {
+      const date = `2026-10-${String(day).padStart(2, '0')}`
+      for (const dayType of ['treino', 'descanso'] as const) {
+        for (const flags of [LACTOSE, NONE]) {
+          const input = { date, dayType, base: BASE, weightKg: 80, flags, geneticsActive: true, tiredness: null }
+          const p = buildDayPlan({ ...input, swaps: [] })
+          for (const meal of p.meals) {
+            const from = meal.items[0]
+            const to = swapOptions(p, meal.id, from.foodId, flags)[0]
+            if (!to) continue
+            const swapped = buildDayPlan({ ...input, swaps: [{ mealId: meal.id, fromFoodId: from.foodId, toFoodId: to.food.id }] })
+            const items = swapped.meals.find(m => m.id === meal.id)!.items.map(i => i.foodId)
+            if (!items.includes(to.food.id)) undone.push(`${meal.id} ${dayType} ${from.foodId}→${to.food.id}`)
+          }
+        }
+      }
+    }
+    expect(undone).toEqual([])
+  })
+})
