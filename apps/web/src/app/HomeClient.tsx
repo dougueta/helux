@@ -98,7 +98,7 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
     today: today ?? undefined,
     refetch,
     onStart: (exercises) => {
-      startWorkout(exercises)
+      startWorkout(exercises, { deload: currentPlan?.week?.deload })
       router.push('/workout')
     },
   })

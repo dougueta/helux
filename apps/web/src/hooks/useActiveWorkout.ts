@@ -30,6 +30,8 @@ export interface ActiveWorkoutState {
   checkinIds?: string[]
   /** Spec 024: o check-in de antes já foi respondido ou pulado. */
   preCheckinDone?: boolean
+  /** Spec 027: sessão iniciada na semana de descarga; ausente em estados antigos. */
+  deload?: boolean
 }
 
 /** Sem relato, o histórico continua gravando 8 (tratado como moderado). */
@@ -88,7 +90,7 @@ export function useActiveWorkout() {
     setLoaded(true)
   }, [])
 
-  const startWorkout = useCallback((planExercises: PlannedExercise[]) => {
+  const startWorkout = useCallback((planExercises: PlannedExercise[], opts?: { deload?: boolean }) => {
     checkinIdsRef.current = []
     const state: ActiveWorkoutState = {
       planExercises,
@@ -98,6 +100,7 @@ export function useActiveWorkout() {
       variantByExerciseIndex: {},
       executedVariantByExerciseIndex: {},
       effortByExerciseIndex: {},
+      ...(opts?.deload ? { deload: true } : {}),
     }
     save(state)
     setSession(state)

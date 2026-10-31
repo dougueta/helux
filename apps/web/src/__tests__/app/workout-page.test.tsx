@@ -523,3 +523,158 @@ describe('WorkoutPage — esforço percebido (spec 014, US3, FR-014)', () => {
     expect(screen.queryByRole('group', { name: 'Esforço percebido' })).not.toBeInTheDocument()
   })
 })
+
+describe('WorkoutPage — esforço-alvo (spec 027, US1)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  const variants = [
+    { id: 'rec1', name: 'Supino Reto (Barra)', equip: 'Barra', level: 'Avançado', match: 96, rec: true, motion: 'press-flat', implement: 'barbell', why: '' },
+    { id: 'alt1', name: 'Supino com Halteres', equip: 'Halteres', level: 'Intermediário', match: 84, motion: 'press-flat', implement: 'dumbbell', why: '' },
+  ]
+  const plan = [
+    { name: 'Esteira leve', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento', rirTarget: 2 },
+    { name: 'Supino Reto (Barra)', sets: 2, reps: '8', weight: '60kg', phase: 'principal', rirTarget: 2, variants },
+    { name: 'Remada', sets: 2, reps: '8', weight: '50kg', phase: 'principal' },
+  ] as ActiveWorkoutState['planExercises']
+  const states = [
+    [{ weight: 0, reps: 5, done: false }],
+    [{ weight: 60, reps: 8, done: false }, { weight: 60, reps: 8, done: false }],
+    [{ weight: 50, reps: 8, done: false }, { weight: 50, reps: 8, done: false }],
+  ]
+  const TARGET = /Esforço-alvo: Moderado a difícil · sobrar 2 repetições/
+
+  it('mostra o alvo do exercício principal sem toque extra e explica em um toque', async () => {
+    seedState({ planExercises: plan, exerciseStates: states, currentExerciseIndex: 1 })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    const target = await screen.findByRole('button', { name: TARGET })
+    expect(screen.queryByText(/Semana de descarga/)).not.toBeInTheDocument()
+    await user.click(target)
+    expect(screen.getByText(/conseguiria fazer mais 2 com boa técnica/)).toBeInTheDocument()
+  })
+
+  it('na semana de descarga, indica a descarga', async () => {
+    seedState({ planExercises: plan, exerciseStates: states, currentExerciseIndex: 1, deload: true })
+    render(<WorkoutPage />)
+    expect(await screen.findByRole('button', { name: /^Semana de descarga · Esforço-alvo/ })).toBeInTheDocument()
+  })
+
+  it('aquecimento e exercício sem alvo não mostram esforço-alvo', async () => {
+    seedState({ planExercises: plan, exerciseStates: states, currentExerciseIndex: 0 })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await screen.findByRole('heading', { level: 1, name: 'Esteira leve' })
+    expect(screen.queryByText(/Esforço-alvo/)).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Exercício 3, 0 de 2 séries' }))
+    expect(screen.getByRole('heading', { level: 1, name: 'Remada' })).toBeInTheDocument()
+    expect(screen.queryByText(/Esforço-alvo/)).not.toBeInTheDocument()
+  })
+
+  it('a variante herda o alvo do exercício planejado', async () => {
+    seedState({ planExercises: plan, exerciseStates: states, currentExerciseIndex: 1, variantByExerciseIndex: { 1: 'alt1' } })
+    render(<WorkoutPage />)
+    expect(await screen.findByText(/variante de Supino Reto/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: TARGET })).toBeInTheDocument()
+  })
+})
+
+describe('WorkoutPage — comparação de esforço (spec 027, US2)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  const plan = [
+    { name: 'Supino', sets: 2, reps: '8', weight: '60kg', phase: 'principal', rirTarget: 2 },
+    { name: 'Remada', sets: 2, reps: '8', weight: '50kg', phase: 'principal' },
+  ] as ActiveWorkoutState['planExercises']
+  const oneDone = [
+    [{ weight: 60, reps: 8, done: true }, { weight: 60, reps: 8, done: false }],
+    [{ weight: 50, reps: 8, done: true }, { weight: 50, reps: 8, done: false }],
+  ]
+
+  it('compara na hora e a sugestão fala da próxima série', async () => {
+    seedState({ planExercises: plan, exerciseStates: oneDone })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    const picker = await screen.findByRole('group', { name: 'Esforço percebido' })
+    expect(screen.queryByText(/do alvo|No alvo/)).not.toBeInTheDocument()
+    await user.click(within(picker).getByRole('button', { name: 'Fácil' }))
+    expect(screen.getByText(/Abaixo do alvo/).closest('p')).toHaveTextContent('Aumente a carga na próxima série.')
+    await user.click(within(picker).getByRole('button', { name: 'Difícil' }))
+    expect(screen.getByText('No alvo')).toBeInTheDocument()
+    expect(screen.queryByText(/Abaixo do alvo/)).not.toBeInTheDocument()
+  })
+
+  it('sem série pendente, a sugestão fala do próximo treino', async () => {
+    seedState({
+      planExercises: plan,
+      exerciseStates: [[{ weight: 60, reps: 8, done: true }, { weight: 60, reps: 8, done: true }], oneDone[1]],
+    })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(within(await screen.findByRole('group', { name: 'Esforço percebido' })).getByRole('button', { name: 'Fácil' }))
+    expect(screen.getByText(/Abaixo do alvo/).closest('p')).toHaveTextContent('Aumente a carga no próximo treino.')
+  })
+
+  it('exercício sem alvo registra o esforço sem comparação', async () => {
+    seedState({ planExercises: plan, exerciseStates: oneDone, currentExerciseIndex: 1 })
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(within(await screen.findByRole('group', { name: 'Esforço percebido' })).getByRole('button', { name: 'Fácil' }))
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).effortByExerciseIndex).toEqual({ 1: 'facil' })
+    expect(screen.queryByText(/do alvo|No alvo/)).not.toBeInTheDocument()
+  })
+
+  it('sessão retomada mostra a comparação do esforço já registrado', async () => {
+    seedState({ planExercises: plan, exerciseStates: oneDone, effortByExerciseIndex: { 0: 'limite' } })
+    render(<WorkoutPage />)
+    expect((await screen.findByText(/Acima do alvo/)).closest('p')).toHaveTextContent('Reduza a carga ou pare antes da falha na próxima série.')
+  })
+})
+
+describe('WorkoutPage — resumo de esforço (spec 027, US3)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  const plan = [
+    { name: 'Supino', sets: 1, reps: '8', weight: '60kg', phase: 'principal', rirTarget: 2 },
+    { name: 'Remada', sets: 1, reps: '8', weight: '50kg', phase: 'principal', rirTarget: 1 },
+  ] as ActiveWorkoutState['planExercises']
+  const allDone = [[{ weight: 60, reps: 8, done: true }], [{ weight: 50, reps: 8, done: true }]]
+
+  async function finish() {
+    vi.mocked(apiFetch).mockResolvedValue({})
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+    await user.click(await screen.findByRole('button', { name: /Finalizar treino/ }))
+    await user.click(await screen.findByRole('button', { name: 'Pular e concluir' }))
+    await screen.findByText('Treino concluído')
+    await waitFor(() => expect(localStorage.getItem(STORAGE_KEY)).toBeNull())
+  }
+
+  it('mostra a contagem e lista o exercício fora do alvo, mesmo depois de limpar a sessão', async () => {
+    seedState({ planExercises: plan, exerciseStates: allDone, currentExerciseIndex: 1, effortByExerciseIndex: { 0: 'moderado', 1: 'facil' } })
+    await finish()
+    const section = screen.getByRole('region', { name: 'Esforço' })
+    expect(section).toHaveTextContent('1 de 2 exercícios no esforço-alvo')
+    expect(within(section).getByRole('listitem')).toHaveTextContent('Remada')
+    expect(within(section).getByRole('listitem')).toHaveTextContent('alvo Difícil · você marcou Fácil')
+  })
+
+  it('sem esforço marcado, não há seção de esforço', async () => {
+    seedState({ planExercises: plan, exerciseStates: allDone, currentExerciseIndex: 1 })
+    await finish()
+    expect(screen.queryByRole('region', { name: 'Esforço' })).not.toBeInTheDocument()
+  })
+})

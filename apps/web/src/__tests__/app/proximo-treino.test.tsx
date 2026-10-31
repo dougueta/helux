@@ -88,8 +88,15 @@ describe('ProximoTreinoClient (spec 026, US2)', () => {
     const args = hooks.tirednessArgs as { today: { exercises: unknown }; onStart: (e: unknown) => void }
     expect(args.today.exercises).toBe(EXERCISES)
     args.onStart(EXERCISES)
-    expect(hooks.startWorkout).toHaveBeenCalledWith(EXERCISES)
+    expect(hooks.startWorkout).toHaveBeenCalledWith(EXERCISES, { deload: undefined })
     expect(router.push).toHaveBeenCalledWith('/workout')
+  })
+
+  it('027: na semana de descarga, a sessão começa marcada como descarga', () => {
+    hooks.plan = { ...planWith(), week: { current: 4, total: 4, deload: true } }
+    render(<ProximoTreinoClient plan={null} />)
+    ;(hooks.tirednessArgs as { onStart: (e: unknown) => void }).onStart(EXERCISES)
+    expect(hooks.startWorkout).toHaveBeenCalledWith(EXERCISES, { deload: true })
   })
 
   it('com treino em andamento, oferece continuar sem iniciar outro', async () => {

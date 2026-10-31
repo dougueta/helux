@@ -110,7 +110,9 @@ describe('PlanExerciseList — esforço, cardio e mobilidade (spec 024, T082)', 
 
   it('mostra o esforço-alvo em linguagem simples', () => {
     render(<PlanExerciseList exercises={items} />)
-    expect(screen.getByText(/deixe 2 repetições na reserva/i)).toBeInTheDocument()
+    // Spec 027 (FR-006): o mesmo texto do treino, sem o botão de explicação.
+    expect(screen.getByText('Esforço-alvo: Moderado a difícil · sobrar 2 repetições')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Esforço-alvo/ })).not.toBeInTheDocument()
   })
 
   it('cardio com minutos e zona; mobilidade com a região; sem carga', () => {

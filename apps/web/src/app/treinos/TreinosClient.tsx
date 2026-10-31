@@ -45,7 +45,7 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
 
   function handleStart() {
     if (!today) return
-    startWorkout(today.exercises)
+    startWorkout(today.exercises, { deload: currentPlan?.week?.deload })
     router.push('/workout')
   }
 
