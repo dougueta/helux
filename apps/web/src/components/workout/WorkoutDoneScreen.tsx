@@ -1,5 +1,6 @@
 'use client'
 
+import { effortLevelLabel, type EffortSummary } from '@helux/workouts'
 import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { Helix } from '@/components/ui/Helix'
@@ -27,6 +28,7 @@ export function WorkoutDoneScreen({
   onGoHome,
   onRetry,
   onBackToWorkout,
+  effort,
 }: {
   status: WorkoutDoneStatus
   totalDone: number
@@ -37,6 +39,8 @@ export function WorkoutDoneScreen({
   onGoHome: () => void
   onRetry: () => void
   onBackToWorkout: () => void
+  /** Spec 027 (US3): esforço registrado × alvo; ausente/null = sem seção. */
+  effort?: EffortSummary | null
 }) {
   const summary: [string, string, string][] = [
     ['Volume', formatNumber(volumeKg), 'kg'],
@@ -83,6 +87,31 @@ export function WorkoutDoneScreen({
           </div>
         ))}
       </dl>
+
+      {effort && (
+        <section aria-labelledby="done-effort" style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--hairline)' }}>
+          <h2 id="done-effort" className="t-caption">
+            Esforço
+          </h2>
+          <p className="t-body" style={{ marginTop: 4 }}>
+            {effort.onTarget} de {effort.total} {effort.total === 1 ? 'exercício' : 'exercícios'} no esforço-alvo
+          </p>
+          {effort.offTarget.length > 0 && (
+            <ul style={{ listStyle: 'none', margin: '8px 0 0', padding: 0 }}>
+              {effort.offTarget.map(item => (
+                <li key={item.exerciseIndex} style={{ padding: '10px 0', borderTop: '1px solid var(--hairline)' }}>
+                  <span className="t-body-m">{item.name}</span>
+                  {' · '}
+                  <strong>{item.result === 'abaixo' ? 'Abaixo do alvo' : 'Acima do alvo'}</strong>
+                  <span className="t-secondary" style={{ display: 'block' }}>
+                    alvo {item.target.label} · você marcou {effortLevelLabel(item.level)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <div className="hx-dock">
         <div className="hx-cta-dock">

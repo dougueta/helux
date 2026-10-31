@@ -53,6 +53,35 @@ describe('useActiveWorkout', () => {
     expect(result.current.session?.exerciseStates[0][0].weight).toBe(80)
   })
 
+  it('027: startWorkout grava a semana de descarga só quando houver', async () => {
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const { result } = renderHook(() => useActiveWorkout())
+    act(() => { result.current.startWorkout(mockPlan as any, { deload: true }) })
+    expect(result.current.session?.deload).toBe(true)
+    expect(JSON.parse(localStorageMock.getItem('helux:active-workout')!).deload).toBe(true)
+
+    act(() => { result.current.startWorkout(mockPlan as any) })
+    expect(result.current.session).not.toHaveProperty('deload')
+    act(() => { result.current.startWorkout(mockPlan as any, { deload: false }) })
+    expect(result.current.session).not.toHaveProperty('deload')
+  })
+
+  it('027: estado salvo sem deload carrega normalmente', async () => {
+    localStorageMock.setItem('helux:active-workout', JSON.stringify({
+      planExercises: mockPlan,
+      exerciseStates: [[{ weight: 80, reps: 8, done: false }], [{ weight: 70, reps: 6, done: false }]],
+      currentExerciseIndex: 0,
+      startedAt: new Date().toISOString(),
+      variantByExerciseIndex: {},
+      executedVariantByExerciseIndex: {},
+      effortByExerciseIndex: {},
+    }))
+    const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
+    const { result } = renderHook(() => useActiveWorkout())
+    await vi.waitFor(() => expect(result.current.isActive).toBe(true))
+    expect(result.current.session?.deload).toBeUndefined()
+  })
+
   it('toggleSetDone marks set as done', async () => {
     const { useActiveWorkout } = await import('@/hooks/useActiveWorkout')
     const { result } = renderHook(() => useActiveWorkout())

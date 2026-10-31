@@ -22,13 +22,15 @@ import { SetRow } from '@/components/ui/SetRow'
 import { Tag } from '@/components/ui/Tag'
 import { Tips } from '@/components/ui/Tips'
 import { WorkoutProgress } from '@/components/ui/WorkoutProgress'
+import { EffortComparisonNote } from '@/components/workout/EffortComparisonNote'
 import { EffortPicker } from '@/components/workout/EffortPicker'
+import { EffortTargetLine } from '@/components/workout/EffortTargetLine'
 import { Sheet } from '@/components/ui/Sheet'
 import { PreWorkoutCheckin, type PreCheckinAdjustment, type PreCheckinValues } from '@/components/workout/PreWorkoutCheckin'
 import { PostWorkoutCheckin, type PostCheckinValues } from '@/components/workout/PostWorkoutCheckin'
 import { saveSessionCheckin } from '@/services/session-checkins.service'
 import { apiFetch } from '@/services/api-client'
-import { exercisePhase, isMainExercise, nextStepAfterSet, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
+import { exercisePhase, isMainExercise, nextStepAfterSet, restSecondsAfterSet, summarizeEffort, supersetPartnerIndex, type EffortSummary } from '@helux/workouts'
 import type { AdjustedWorkoutPlanView, ExercisePhase } from '@helux/types'
 
 /** Tag da fase no treino ativo (spec 014, FR-005). */
@@ -98,6 +100,7 @@ export default function WorkoutPage() {
     volumeKg: number
     exerciseCount: number
     elapsed: number
+    effort: EffortSummary | null
   } | null>(null)
   const { status: finishStatus, submit: submitFinish, reset: resetFinish } = useFinishWorkout(finishWorkout)
 
@@ -143,6 +146,7 @@ export default function WorkoutPage() {
         volumeKg={finishSummary.volumeKg}
         exerciseCount={finishSummary.exerciseCount}
         elapsed={finishSummary.elapsed}
+        effort={finishSummary.effort}
         onGoHome={() => router.replace('/')}
         onRetry={() => { void submitFinish() }}
         onBackToWorkout={() => {
@@ -282,6 +286,14 @@ export default function WorkoutPage() {
       volumeKg,
       exerciseCount: session!.planExercises.length,
       elapsed,
+      // Congelado aqui: a sessão é limpa depois de salvar (spec 027, US3).
+      effort: summarizeEffort(
+        session!.planExercises.map((exercise, i) => {
+          const variantId = session!.executedVariantByExerciseIndex[i]
+          const name = (variantId && exercise.variants?.find(v => v.id === variantId)?.name) || exercise.name
+          return { exercise, name, level: session!.effortByExerciseIndex?.[i] }
+        }),
+      ),
     })
     void submitFinish()
   }
@@ -367,6 +379,11 @@ export default function WorkoutPage() {
               'reps, sem descanso antes do par'
             )}
           </p>
+          )}
+          {isMain && (
+            <div style={{ marginTop: 4 }}>
+              <EffortTargetLine rir={currentEx.rirTarget} deload={session.deload} explainable />
+            </div>
           )}
 
           {display.tip && (
@@ -510,6 +527,11 @@ export default function WorkoutPage() {
                 <EffortPicker
                   value={session.effortByExerciseIndex?.[currentIdx] ?? null}
                   onChange={level => setEffort(currentIdx, level)}
+                />
+                <EffortComparisonNote
+                  rir={currentEx.rirTarget}
+                  level={session.effortByExerciseIndex?.[currentIdx] ?? null}
+                  hasPendingSets={currentSets.some(s => !s.done)}
                 />
               </div>
             )}

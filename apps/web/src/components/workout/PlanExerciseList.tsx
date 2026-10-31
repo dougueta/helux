@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { PlannedExercise } from '@helux/types'
 import { PHASE_LABELS, groupByPhase, isMainExercise, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
 import { Fit } from '@/components/ui/Fit'
+import { EffortTargetLine } from '@/components/workout/EffortTargetLine'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 
@@ -88,8 +89,8 @@ function MainRow({
         </span>
       )}
       {exercise.rirTarget !== undefined && (
-        <span className="t-secondary" style={{ gridColumn: '1 / -1' }}>
-          Deixe {exercise.rirTarget} {exercise.rirTarget === 1 ? 'repetição' : 'repetições'} na reserva
+        <span style={{ gridColumn: '1 / -1' }}>
+          <EffortTargetLine rir={exercise.rirTarget} />
         </span>
       )}
       {partner && (

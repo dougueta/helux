@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { effortTarget } from '@helux/workouts'
 import { WorkoutDoneScreen } from '@/components/workout/WorkoutDoneScreen'
 
 function renderScreen(status: 'saving' | 'saved' | 'error') {
@@ -73,5 +74,49 @@ describe('WorkoutDoneScreen (v2, spec 012 T056)', () => {
     await user.click(back)
     expect(onBackToWorkout).toHaveBeenCalledTimes(1)
     expect(onGoHome).not.toHaveBeenCalled()
+  })
+})
+
+describe('WorkoutDoneScreen — resumo de esforço (spec 027, US3)', () => {
+  const base = {
+    status: 'saved' as const,
+    totalDone: 6,
+    totalSets: 6,
+    volumeKg: 2000,
+    exerciseCount: 2,
+    elapsed: 30,
+    onGoHome: vi.fn(),
+    onRetry: vi.fn(),
+    onBackToWorkout: vi.fn(),
+  }
+
+  it('sem esforço registrado, não mostra a seção', () => {
+    const { rerender } = render(<WorkoutDoneScreen {...base} />)
+    expect(screen.queryByRole('region', { name: 'Esforço' })).not.toBeInTheDocument()
+    rerender(<WorkoutDoneScreen {...base} effort={null} />)
+    expect(screen.queryByRole('region', { name: 'Esforço' })).not.toBeInTheDocument()
+  })
+
+  it('todos no alvo: só a contagem', () => {
+    render(<WorkoutDoneScreen {...base} effort={{ onTarget: 3, total: 3, offTarget: [] }} />)
+    const section = screen.getByRole('region', { name: 'Esforço' })
+    expect(section).toHaveTextContent('3 de 3 exercícios no esforço-alvo')
+    expect(section.querySelector('ul')).toBeNull()
+  })
+
+  it('fora do alvo: lista com o alvo e o nível marcado', () => {
+    const target = effortTarget(1)!
+    render(
+      <WorkoutDoneScreen
+        {...base}
+        effort={{ onTarget: 1, total: 2, offTarget: [{ exerciseIndex: 1, name: 'Supino', target, level: 'facil', result: 'abaixo' }] }}
+      />,
+    )
+    const section = screen.getByRole('region', { name: 'Esforço' })
+    expect(section).toHaveTextContent('1 de 2 exercícios no esforço-alvo')
+    const item = screen.getByRole('listitem')
+    expect(item).toHaveTextContent('Supino')
+    expect(item).toHaveTextContent('Abaixo do alvo')
+    expect(item).toHaveTextContent('alvo Difícil · você marcou Fácil')
   })
 })

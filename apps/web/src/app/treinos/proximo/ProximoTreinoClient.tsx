@@ -35,7 +35,7 @@ export function ProximoTreinoClient({ plan: initialPlan, from }: { plan: Adjuste
     today: today ?? undefined,
     refetch,
     onStart: (exercises) => {
-      startWorkout(exercises)
+      startWorkout(exercises, { deload: currentPlan?.week?.deload })
       router.push('/workout')
     },
   })
