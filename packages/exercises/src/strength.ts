@@ -737,6 +737,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Deitado no banco, olhos sob a barra, escápulas juntas e pés firmes no chão'],
+      steps: [
+        'Tire a barra do suporte e posicione-a sobre os ombros, braços estendidos',
+        'Desça controlando até a barra tocar de leve o meio do peito',
+        'Empurre de volta até estender os braços, sem tirar as escápulas do banco',
+      ],
+      commonError: 'Soltar as escápulas e deixar os ombros subirem do banco',
+    },
+    muscles: { primary: ['peito'], secondary: ['triceps', 'ombro'] },
     cues: [
       'Escápulas retraídas e apoiadas no banco, pés firmes no chão',
       'Desça a barra controlada até tocar levemente o peito',
@@ -751,6 +761,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Deitado no banco, halteres sobre o peito, escápulas juntas e pés no chão'],
+      steps: [
+        'Desça os halteres ao lado do peito, cotovelos a uns 45 graus do tronco',
+        'Pare quando sentir o peito alongar, sem perder o controle',
+        'Empurre de volta até estender os braços, sem bater os halteres',
+      ],
+      commonError: 'Abrir demais os cotovelos e descer os halteres longe do peito',
+      context: 'Permite mais amplitude que a barra',
+    },
+    muscles: { primary: ['peito'], secondary: ['triceps', 'ombro'] },
     cues: [
       'Halteres alinhados ao peito, cotovelos a cerca de 45-75° do tronco',
       'Desça controlado até sentir alongamento confortável no peito',
@@ -765,6 +786,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Banco inclinado entre 30 e 45 graus, escápulas juntas e pés firmes no chão'],
+      steps: [
+        'Tire a barra do suporte e posicione-a sobre os ombros',
+        'Desça controlando até a barra tocar a parte de cima do peito',
+        'Empurre de volta na vertical até estender os braços',
+      ],
+      commonError: 'Inclinar o banco além de 45 graus, passando a carga para o ombro',
+    },
+    muscles: { primary: ['peito', 'ombro'], secondary: ['triceps'] },
     cues: [
       'Banco inclinado 30-45°, barra desce em direção à parte superior do peito',
       'Escápulas retraídas, pés firmes no chão',
@@ -779,6 +810,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Banco inclinado entre 30 e 45 graus, halteres sobre a parte de cima do peito'],
+      steps: [
+        'Desça os halteres ao lado da parte de cima do peito',
+        'Pare quando sentir o peito alongar, sem perder o controle',
+        'Empurre de volta aproximando os halteres no topo',
+      ],
+      commonError: 'Descer os halteres em direção à barriga em vez da parte de cima do peito',
+      context: 'Substitui a versão com barra quando ela não está disponível',
+    },
+    muscles: { primary: ['peito', 'ombro'], secondary: ['triceps'] },
     cues: [
       'Banco inclinado 30-45°, halteres alinhados à parte superior do peito',
       'Desça controlado sentindo alongamento no peitoral superior',
@@ -793,6 +835,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Banco declinado, pernas presas no rolo, escápulas juntas'],
+      steps: [
+        'Tire a barra do suporte e posicione-a sobre os ombros',
+        'Desça controlando até a barra tocar a parte de baixo do peito',
+        'Empurre de volta até estender os braços',
+      ],
+      commonError: 'Descer a barra em direção ao pescoço',
+      context: 'Use trava de segurança ou peça ajuda a alguém; a cabeça fica mais baixa que o quadril',
+    },
+    muscles: { primary: ['peito'], secondary: ['triceps', 'ombro'] },
     cues: [
       'Banco declinado, pernas travadas no suporte para estabilidade',
       'Barra desce em direção à porção inferior do peito',
@@ -863,6 +916,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Mãos no chão um pouco além da largura dos ombros, corpo reto da cabeça aos pés'],
+      steps: [
+        'Desça até o peito quase tocar o chão, cotovelos a uns 45 graus do tronco',
+        'Mantenha o quadril alinhado com o corpo, sem cair nem subir',
+        'Empurre o chão até estender os braços',
+      ],
+      commonError: 'Deixar o quadril cair durante a descida',
+      context: 'Para facilitar, apoie os joelhos no chão',
+    },
+    muscles: { primary: ['peito'], secondary: ['triceps', 'ombro', 'core'] },
     cues: [
       'Mãos um pouco mais abertas que os ombros, corpo alinhado da cabeça aos pés',
       'Desça até o peito quase tocar o chão, cotovelos a cerca de 45° do tronco',
@@ -877,6 +941,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Pés num banco ou caixa, mãos no chão na largura dos ombros, corpo reto'],
+      steps: [
+        'Desça controlando até o peito quase tocar o chão',
+        'Mantenha o corpo alinhado, sem deixar o quadril cair',
+        'Empurre o chão até estender os braços',
+      ],
+      commonError: 'Dobrar o quadril para cima e perder o alinhamento do corpo',
+      context: 'É mais difícil que a flexão no chão; aumente a altura dos pés aos poucos',
+    },
+    muscles: { primary: ['peito', 'ombro'], secondary: ['triceps', 'core'] },
     cues: [
       'Pés elevados em um banco ou caixa, mãos no chão na largura dos ombros',
       'Desça controlado mantendo o corpo alinhado',
@@ -891,6 +966,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Banco ajustado para as pegadas ficarem na altura do meio do peito, costas no encosto'],
+      steps: [
+        'Empurre as pegadas à frente até quase estender os cotovelos',
+        'Volte controlando até sentir o peito alongar',
+        'Mantenha as costas e os ombros no encosto o tempo todo',
+      ],
+      commonError: 'Tirar as costas do encosto para empurrar mais peso',
+      context: 'Permite treinar perto da falha com segurança, sem precisar de ajuda',
+    },
+    muscles: { primary: ['peito'], secondary: ['triceps', 'ombro'] },
     cues: [
       'Ajuste o banco para que os apoios fiquem na altura do meio do peito',
       'Empurre à frente sem travar os cotovelos completamente',
@@ -905,6 +991,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Mãos juntas sob o peito, polegares e indicadores formando um diamante'],
+      steps: [
+        'Desça com os cotovelos rentes ao corpo, apontando para trás',
+        'Leve o peito até perto das mãos, com o corpo reto',
+        'Empurre o chão até estender os braços',
+      ],
+      commonError: 'Abrir os cotovelos, o que passa o esforço para o peito',
+      context: 'Dá mais ênfase ao tríceps que a flexão com as mãos afastadas',
+    },
+    muscles: { primary: ['triceps'], secondary: ['peito', 'ombro', 'core'] },
     cues: [
       'Mãos próximas formando um "diamante" com os dedos abaixo do peito',
       'Cotovelos próximos ao tronco durante toda a descida',
@@ -1876,6 +1973,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Mãos na borda de um banco ou caixa, corpo reto dos ombros aos calcanhares'],
+      steps: [
+        'Desça o peito até perto da borda, cotovelos a uns 45 graus do tronco',
+        'Mantenha o core firme e o corpo alinhado',
+        'Empurre de volta até estender os braços',
+      ],
+      commonError: 'Deixar o quadril cair ou ficar para trás',
+      context: 'Prepara para a flexão no chão; quanto mais alto o apoio, mais fácil',
+    },
+    muscles: { primary: ['peito'], secondary: ['triceps', 'ombro', 'core'] },
     cues: [
       'Mãos apoiadas num banco ou caixa, corpo em linha reta dos ombros aos calcanhares',
       'Desça o peito até perto da borda do apoio, cotovelos a cerca de 45 graus',
@@ -1890,6 +1998,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'empurrar-horizontal',
+    guidance: {
+      setup: ['Deitado no banco, halteres sobre o peito com as palmas voltadas uma para a outra'],
+      steps: [
+        'Desça os halteres ao lado do peito, cotovelos junto ao tronco',
+        'Pare quando os halteres chegarem à altura do peito',
+        'Empurre de volta até estender os braços, sem bater os halteres',
+      ],
+      commonError: 'Abrir os cotovelos e perder a pegada neutra',
+      context: 'Costuma ser mais confortável para o ombro que a pegada com as palmas para a frente',
+    },
+    muscles: { primary: ['peito', 'triceps'], secondary: ['ombro'] },
     cues: [
       'Deitado no banco, halteres com as palmas voltadas uma para a outra',
       'Desça os halteres ao lado do peito com os cotovelos próximos ao tronco',

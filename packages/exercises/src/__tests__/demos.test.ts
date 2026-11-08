@@ -61,6 +61,12 @@ async function expectBatchComplete(family: { bases: import('../engine/types').Mo
     expect(guidanceIssues(item.guidance!, item.kind), id).toEqual([])
   }
   for (const base of family.bases) expect(validateBase(base)).toEqual([])
+  // FR-003: itens com a mesma demonstração resolvida precisam de legendas distintas, inclusive com o resto do catálogo.
+  const { checkCatalog } = await import('../review/check')
+  const captions = checkCatalog(CATALOG, { pending: new Set(), approvals: {}, bases: MOVEMENT_BASES }).filter(
+    (m) => m.endsWith('falta legenda') && ids.includes(m.split(':')[0]),
+  )
+  expect(captions).toEqual([])
 }
 
 describe('lotes de força: demonstração, base válida, equipamento e orientação completos', () => {
@@ -72,5 +78,10 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
   it('lote 2, Dobrar o quadril (T059)', async () => {
     const { DOBRAR_QUADRIL } = await import('../demos/dobrar-quadril')
     await expectBatchComplete(DOBRAR_QUADRIL, 15)
+  })
+
+  it('lote 3, Empurrar na horizontal (T060)', async () => {
+    const { EMPURRAR_HORIZONTAL } = await import('../demos/empurrar-horizontal')
+    await expectBatchComplete(EMPURRAR_HORIZONTAL, 11)
   })
 })

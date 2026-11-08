@@ -16,6 +16,10 @@
   "elevacao-pelvica-corporal": "221a3e5a0126aa49cdca57d5a031267936dba2853bb9bd7d4b021a3727ac8e0d",
   "elevacao-pelvica-maquina": "bd82b04f180b585156bd9ddc35e190c995e01ce9c37b1283132a1f30938fbdc7",
   "elevacao-pelvica-unilateral": "db53bd74f87d843ba32b934a288b49e6731abc098e398dbeddd5acb3c677e6a9",
+  "flexao-braco-corporal": "37bf0a96cb2a028d3efee6b81a41e52320fd00eff62ecfbbdc31470657821942",
+  "flexao-declinada-corporal": "e3408be01bd96f8d190b28cb0e13dd8a3313c61567e9dbdb9e510620f19b6a26",
+  "flexao-diamante-corporal": "502cfd04f2b712691bf2e8dc5c55eef5727ed838a02e6eda6dc23eb85fa939cd",
+  "flexao-maos-elevadas-corporal": "fe4879a7b7b4f2a94cf8a1e6f358318bbc33cefc54da6dc07d0ef95c06250712",
   "flexao-pike-corporal": "50a11c1c6c61a732585f0b861cb67fe670267725e491177877eaa720ab301d17",
   "good-morning-barra": "9298319eca0abc2a2b4a01cd4f5853a01572043563f5370406e5d48a37c73e8d",
   "hiperextensao-lombar-banco": "dfed32d7a57b33805873c928d6f936ad25f7564a846b29321460a230780e0232",
@@ -33,5 +37,12 @@
   "step-up-halteres": "aed865bebf2c6156b07f2739e4e6655509983c101b929dc9453f8de857efd529",
   "stiff-barra": "d41c61c0755e00cfa823f176b848003996fad1b484291c0b39dad32b0325f15b",
   "stiff-halteres": "94f159f49c8a94e1076f07aa556ef373cff60534bd77238faf2defd37fdea80a",
+  "supino-declinado-barra": "0bcc57e2d57a6a42435517c3c4f901bd9cb637bec0c616e1b69f85a7360d9365",
+  "supino-inclinado-barra": "8d733b8690f00c608a01e6d04fdcc61529cf48f61102380c29ef27c55b667b38",
+  "supino-inclinado-halteres": "844d407ca03dcba79926482a5d69994180cb433c2cc55820abf61b90abb29bf9",
+  "supino-maquina": "37bfb6ec1dd86353f63256a2f3998a06e7c8359668ef9d4999dda8db1ea51b17",
+  "supino-pegada-neutra-halteres": "34a0b6637bfef7f2b80d869bb62c97e255057cd49ec99b958eaff87f632e517b",
+  "supino-reto-barra": "6a4e1ce76588a26b21884662163ca9655effabb84e63ffd204b09e1f5695e8bf",
+  "supino-reto-halteres": "6fcb01e6eb7f2f26562312ca3159903465f1d7a091649d300c62de12af557511",
   "terra-halteres-unilateral": "290dcb5508e227330278c3fd02105b1ad26fd2a26b89a7a5aab75da4cb14b70c"
 }

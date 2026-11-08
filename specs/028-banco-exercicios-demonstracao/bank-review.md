@@ -60,3 +60,20 @@ Antes, os 15 itens tinham primário quadríceps e secundário core. O mapa antig
 | (lote 2) | guidance | recomendações nos passos de 5 itens ("Boa opção…", "Alternativa…", "Ótimo…", "Use carga…", "Pode segurar…") | movidas para `context` | FR-018 e FR-019. |
 
 Demonstração: nas variações de terra (convencional, romeno, stiff, sumô e unilateral) os braços da figura são um pouco mais longos (66 em vez de 58). Com o braço padrão, a barra no chão obrigaria o quadril a ficar abaixo do joelho, que é a técnica errada. A hiperextensão usa a cena nova `banco-romano`.
+
+## Lote 3: Empurrar na horizontal (T060)
+
+Antes, os supinos e as flexões tinham primário peito e secundário ombro e tríceps; a flexão diamante, primário tríceps e secundário ombro. A maior parte estava certa. `muscleGroup`, `pattern` e `stress` não mudam.
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| supino-reto-barra, supino-reto-halteres, supino-declinado-barra, supino-maquina | muscles | peito; ombro e tríceps | peito; tríceps e ombro | Conferido; só a ordem dos secundários muda (tríceps trabalha mais que o deltoide anterior). |
+| supino-inclinado-barra, supino-inclinado-halteres | muscles | peito; ombro e tríceps | peito e ombro; tríceps | Na inclinação de 30 a 45 graus, o deltoide anterior trabalha quase tanto quanto a parte de cima do peito. |
+| supino-pegada-neutra-halteres | muscles | peito; ombro e tríceps | peito e tríceps; ombro | Com os cotovelos junto ao tronco, o tríceps assume parte maior do trabalho. |
+| flexao-braco-corporal, flexao-maos-elevadas-corporal | muscles | peito; ombro e tríceps | peito; tríceps, ombro e core | O core segura o corpo em prancha durante todo o movimento. |
+| flexao-declinada-corporal | muscles | peito; ombro e tríceps | peito e ombro; tríceps e core | Com os pés elevados, o ombro recebe mais carga. |
+| flexao-diamante-corporal | muscles | tríceps; ombro | tríceps; peito, ombro e core | O peito continua trabalhando, e o core segura a prancha. |
+| (lote 3) | gear | — | conferido | Sem correção. |
+| (lote 3) | guidance | recomendações nos passos de 7 itens ("Boa opção…", "Permite…", "Use trava…", "Regule…") | movidas para `context` | FR-018 e FR-019. |
+
+Demonstração: o supino com pegada neutra usa a mesma base do supino com halteres, e a diferença (palmas voltadas uma para a outra) não aparece de perfil. Por isso ele tem legenda. O supino declinado usa a cena nova `banco-declinado`. No cartão de revisão, a legenda passa a aparecer uma vez, abaixo dos três quadros.

@@ -15,17 +15,26 @@ const FRAMES = [
 /** Três quadros fixos (início, meio e fim), para o cartão de revisão. */
 function ReviewFrames({ demo, name }: { demo: ResolvedDemo; name: string }) {
   const phases = keyPhases(demo)
+  // A legenda vai uma vez, abaixo dos quadros; dentro de cada quadro ela espremeria o desenho.
+  const { caption, ...frame } = demo
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 12 }}>
-      {FRAMES.map(([label, key]) => (
-        <figure key={key} style={{ margin: 0 }}>
-          <div className="hx-stage" style={{ height: 150 }}>
-            <ExerciseDemo demo={demo} playing={false} phase={phases[key]} label={`demonstração de ${name}, ${label}`} />
-          </div>
-          <figcaption className="t-caption" style={{ textAlign: 'center' }}>{label}</figcaption>
-        </figure>
-      ))}
-    </div>
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 12 }}>
+        {FRAMES.map(([label, key]) => (
+          <figure key={key} style={{ margin: 0 }}>
+            <div className="hx-stage" style={{ height: 150 }}>
+              <ExerciseDemo demo={frame} playing={false} phase={phases[key]} label={`demonstração de ${name}, ${label}`} />
+            </div>
+            <figcaption className="t-caption" style={{ textAlign: 'center' }}>{label}</figcaption>
+          </figure>
+        ))}
+      </div>
+      {caption && (
+        <p className="t-secondary" style={{ marginTop: 8, textAlign: 'center' }}>
+          {caption}
+        </p>
+      )}
+    </>
   )
 }
 

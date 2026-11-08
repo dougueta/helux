@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event'
 import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import type { PlannedExercise } from '@helux/types'
 
+vi.mock('@helux/exercises', async (importOriginal) => (await import('../../helpers/exercises-pending')).withTestPending(importOriginal))
+
 beforeEach(() => {
   vi.stubGlobal('requestAnimationFrame', vi.fn(() => 0))
   vi.stubGlobal('cancelAnimationFrame', vi.fn())
