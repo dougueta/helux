@@ -11,6 +11,16 @@ Hoje o check-in corporal é um formulário único por mês (peso, % de gordura d
 
 Esta feature separa **pesagem** (rápida e frequente) de **medidas com fita** (espaçadas), passa a usar a **tendência** do peso em vez de pontos isolados, torna a estimativa pela fita o padrão (salva, com origem) e mostra métricas derivadas.
 
+## Clarifications
+
+### Session 2026-11-08
+
+- Q: Quais medidas o check-in deve ter? → A: Opção D — as cinco atuais (pescoço, cintura, quadril, braço, coxa) mais ombros, peitoral e panturrilha, com braço, coxa e panturrilha medidos dos dois lados (esquerdo e direito).
+- Q: Como calcular o peso de tendência? → A: Média simples das pesagens dos últimos 7 dias corridos, exigindo pelo menos 3 pesagens (FR-003).
+- Q: Quando a dieta é recalibrada? → A: Só quando o usuário pede, por um botão "Recalibrar dieta" que mostra a proposta antes de aplicar (FR-021).
+- Q: Onde fica o registro de pesagem? → A: Só na aba Check-in, que passa a ter dois botões: "Registrar peso" e "Registrar medidas" (FR-001).
+- Q: Qual % de gordura a dieta usa quando há fita e aparelho? → A: O valor mais recente, de qualquer origem; em empate na data, a fita (FR-022).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Pesagem frequente com linha de tendência (Priority: P1)
@@ -23,7 +33,7 @@ O usuário se pesa de manhã (idealmente todo dia, no mínimo algumas vezes por 
 
 **Acceptance Scenarios**:
 
-1. **Given** um usuário logado, **When** ele abre o registro de pesagem e informa "82,4", **Then** a pesagem é salva com a data de hoje e aparece no histórico em menos de 15 segundos desde a abertura da tela.
+1. **Given** um usuário logado na aba Check-in, **When** ele toca em "Registrar peso" e informa "82,4", **Then** a pesagem é salva com a data de hoje e aparece no histórico em menos de 15 segundos desde a abertura da tela.
 2. **Given** o usuário já registrou uma pesagem hoje, **When** ele registra outra no mesmo dia, **Then** a nova substitui a anterior daquele dia (fica uma pesagem por dia) e o usuário é avisado da substituição.
 3. **Given** pesagens em pelo menos 3 dias dos últimos 7, **When** o usuário vê o histórico, **Then** ele vê o peso de tendência atual e a variação da tendência nos últimos 7 dias (kg e %).
 4. **Given** menos de 3 pesagens nos últimos 7 dias, **When** o usuário vê o histórico, **Then** o app mostra as pesagens, explica que a tendência precisa de mais pesagens e não mostra uma tendência inventada.
@@ -51,7 +61,7 @@ Quem não tem aparelho registra medidas com fita (cintura, pescoço e, para mulh
 
 ### User Story 3 - Calibração da dieta pela tendência do peso (Priority: P2)
 
-Com fase de dieta ativa, a recalibração das metas deixa de comparar duas pesagens isoladas e passa a comparar o **peso de tendência** no início do período com o peso de tendência atual. A cintura continua desempatando como hoje.
+Com fase de dieta ativa, a recalibração das metas deixa de comparar duas pesagens isoladas e passa a comparar o **peso de tendência** no início do período com o peso de tendência atual. A cintura continua desempatando como hoje. A recalibração deixa de ser automática: o usuário pede por um botão "Recalibrar dieta", vê a proposta (metas atuais → novas e o motivo) e decide se aplica.
 
 **Why this priority**: É o principal ganho de qualidade da decisão (menos ajustes de caloria por ruído), mas depende da US1.
 
@@ -59,10 +69,12 @@ Com fase de dieta ativa, a recalibração das metas deixa de comparar duas pesag
 
 **Acceptance Scenarios**:
 
-1. **Given** fase de dieta ativa há pelo menos 2 semanas desde a última calibração e tendência disponível nos dois extremos do período, **When** uma nova calibração é avaliada, **Then** a taxa semanal é calculada entre os pesos de tendência e a explicação mostrada cita "peso de tendência".
-2. **Given** pesagens que oscilam até 2 kg dia a dia sem mudança de tendência, **When** a calibração é avaliada, **Then** as metas são mantidas.
-3. **Given** pesagens insuficientes para a tendência em um dos extremos do período, **When** a calibração seria avaliada, **Then** as metas são mantidas e o app explica que faltam pesagens (pedindo pelo menos 3 por semana).
-4. **Given** menos de 2 semanas desde a última calibração, **When** o usuário registra pesagens, **Then** nenhuma recalibração acontece (regra atual de intervalo mínimo mantida).
+1. **Given** fase de dieta ativa há pelo menos 2 semanas desde a última calibração e tendência disponível nos dois extremos do período, **When** o usuário toca em "Recalibrar dieta", **Then** a taxa semanal é calculada entre os pesos de tendência e a explicação mostrada cita "peso de tendência".
+2. **Given** pesagens que oscilam até 2 kg dia a dia sem mudança de tendência, **When** o usuário pede a recalibração, **Then** a proposta é manter as metas.
+3. **Given** pesagens insuficientes para a tendência em um dos extremos do período, **When** o usuário pede a recalibração, **Then** nenhuma proposta é gerada e o app explica que faltam pesagens (pedindo pelo menos 3 por semana).
+4. **Given** menos de 2 semanas desde a última calibração, **When** o usuário pede a recalibração, **Then** nenhuma proposta é gerada e o app informa a partir de que data poderá recalibrar (regra atual de intervalo mínimo mantida).
+5. **Given** uma proposta de recalibração na tela, **When** o usuário toca em "Aplicar", **Then** as novas metas passam a valer e a calibração entra no histórico; **When** toca em "Descartar", **Then** as metas não mudam e nada é registrado como calibração.
+6. **Given** o usuário salva pesagens ou medidas, **When** a fase de dieta está ativa, **Then** as metas não mudam automaticamente.
 
 ---
 
@@ -77,8 +89,9 @@ Ao registrar medidas, o usuário vê um guia curto, com ilustração, de quando 
 **Acceptance Scenarios**:
 
 1. **Given** o formulário de medidas, **When** o usuário o abre, **Then** vê o protocolo geral: de manhã, em jejum, depois de ir ao banheiro, antes de treinar, fita justa sem apertar, mesmo horário sempre.
-2. **Given** um campo de medida (pescoço, cintura, quadril, braço, coxa), **When** o usuário pede ajuda nele, **Then** vê onde passar a fita: pescoço logo abaixo do pomo de Adão; cintura na altura do umbigo, barriga relaxada, no fim da expiração; quadril na parte mais larga dos glúteos; braço no ponto mais largo, relaxado; coxa no ponto médio entre virilha e joelho; braço e coxa sempre do lado direito.
-3. **Given** o registro de pesagem, **When** o usuário o abre, **Then** vê o lembrete curto de pesar de manhã, em jejum, depois do banheiro e com pouca ou nenhuma roupa.
+2. **Given** um campo de medida, **When** o usuário pede ajuda nele, **Then** vê onde passar a fita: pescoço logo abaixo do pomo de Adão; cintura na altura do umbigo, barriga relaxada, no fim da expiração; quadril na parte mais larga dos glúteos; ombros na volta completa pela parte mais larga dos ombros, braços relaxados ao lado do corpo; peitoral na linha dos mamilos, braços relaxados, no fim da expiração; braço no ponto mais largo, relaxado; coxa no ponto médio entre virilha e joelho; panturrilha no ponto mais largo, em pé com o peso distribuído.
+3. **Given** as medidas bilaterais (braço, coxa, panturrilha), **When** o usuário as registra, **Then** informa esquerdo e direito separadamente; pode preencher só um lado.
+4. **Given** o registro de pesagem, **When** o usuário o abre, **Then** vê o lembrete curto de pesar de manhã, em jejum, depois do banheiro e com pouca ou nenhuma roupa.
 
 ---
 
@@ -114,7 +127,7 @@ Em cada registro de medidas com % de gordura, o app mostra massa gorda e massa m
 
 **Pesagem**
 
-- **FR-001**: O usuário MUST poder registrar uma pesagem contendo apenas peso (kg, aceitando vírgula decimal) e data (padrão hoje; datas passadas permitidas; datas futuras recusadas).
+- **FR-001**: O usuário MUST poder registrar uma pesagem contendo apenas peso (kg, aceitando vírgula decimal) e data (padrão hoje; datas passadas permitidas; datas futuras recusadas). O registro fica na aba Check-in, que oferece dois botões: "Registrar peso" e "Registrar medidas". A Home não tem campo de pesagem; o cartão de check-in da Home só mostra os dados e leva à aba Check-in.
 - **FR-002**: O sistema MUST manter no máximo uma pesagem por usuário por dia; registrar de novo no mesmo dia substitui a anterior, avisando o usuário.
 - **FR-003**: O sistema MUST calcular o peso de tendência como a média das pesagens dos últimos 7 dias corridos até a data de referência, exigindo pelo menos 3 pesagens nesse intervalo; sem esse mínimo, não há tendência para aquela data.
 - **FR-004**: O histórico MUST mostrar as pesagens, a linha de tendência e a variação da tendência nos últimos 7 dias (kg e % por semana).
@@ -123,7 +136,7 @@ Em cada registro de medidas com % de gordura, o app mostra massa gorda e massa m
 
 **Medidas e % de gordura**
 
-- **FR-007**: O usuário MUST poder registrar medidas com fita (pescoço, cintura, quadril, braço, coxa), com data, independentemente da pesagem. As cargas de agachamento, supino e terra e as observações continuam disponíveis nesse registro, como hoje.
+- **FR-007**: O usuário MUST poder registrar medidas com fita, com data, independentemente da pesagem: pescoço, cintura, quadril, ombros, peitoral (uma medida cada) e braço, coxa e panturrilha (esquerdo e direito, cada lado opcional). Todas as medidas são opcionais; só as exigidas pela Marinha são necessárias para estimar o % de gordura. As cargas de agachamento, supino e terra e as observações continuam disponíveis nesse registro, como hoje.
 - **FR-008**: Quando o perfil tem altura e sexo e o registro tem as medidas exigidas pelo método da Marinha (cintura e pescoço; mulheres também quadril), o sistema MUST calcular e salvar o % de gordura com origem "fita (Marinha)".
 - **FR-009**: O sistema MUST rejeitar a estimativa (sem bloquear o salvamento das medidas) quando o resultado ficar fora de 3–60% ou as medidas forem incompatíveis com o cálculo, e explicar o motivo.
 - **FR-010**: O usuário MUST poder informar, opcionalmente, um % de gordura medido por aparelho, escolhendo a origem entre bioimpedância, adipômetro, DEXA ou outro; esse valor fica ao lado da estimativa pela fita, não a substitui.
@@ -146,20 +159,20 @@ Em cada registro de medidas com % de gordura, o app mostra massa gorda e massa m
 
 - **FR-019**: A recalibração da fase de dieta MUST usar o peso de tendência no início do período (data da última calibração ou início da fase) e o peso de tendência atual para calcular a taxa semanal, mantendo o intervalo mínimo de 2 semanas, as faixas por objetivo, o degrau de calorias e o desempate pela cintura (usando o registro de medidas mais recente em cada extremo).
 - **FR-020**: Sem tendência disponível em um dos extremos, a recalibração MUST manter as metas e explicar que faltam pesagens, pedindo pelo menos 3 por semana.
-- **FR-021**: A recalibração MUST ser avaliada quando o usuário salva uma pesagem ou um registro de medidas, respeitando o intervalo mínimo.
+- **FR-021**: A recalibração MUST acontecer só a pedido do usuário, por um botão "Recalibrar dieta" na tela da fase de dieta. O sistema mostra a proposta (metas atuais e novas, taxa semanal pela tendência, variação da cintura e o motivo) e só aplica se o usuário confirmar; descartar não registra calibração. Salvar pesagens ou medidas não altera as metas.
 - **FR-022**: O % de gordura usado pela dieta MUST ser o da origem com registro mais recente, preferindo "fita (Marinha)" quando houver empate na data.
 - **FR-023**: O Perfil Integrado usado pelos agentes de IA, o cartão de check-in da Home e as métricas que hoje leem o check-in mensal MUST passar a usar o peso de tendência (ou a última pesagem, sem tendência) e o registro de medidas mais recente, indicando a origem do % de gordura.
 
 **Migração**
 
-- **FR-024**: Cada check-in mensal existente MUST ser convertido em uma pesagem (se tiver peso) e um registro de medidas (se tiver medidas, % ou cargas) na data em que foi registrado; % de gordura digitado antigo recebe a origem "outro (informado)".
+- **FR-024**: Cada check-in mensal existente MUST ser convertido em uma pesagem (se tiver peso) e um registro de medidas (se tiver medidas, % ou cargas) na data em que foi registrado; % de gordura digitado antigo recebe a origem "outro (informado)"; braço e coxa antigos (sem lado) vão para o lado direito.
 - **FR-025**: Calibrações de dieta já registradas MUST permanecer válidas e visíveis após a migração.
 
 ### Key Entities
 
 - **Pesagem**: um peso de um usuário num dia (no máximo uma por dia). Atributos: data, peso em kg.
 - **Peso de tendência** (derivado, não digitado): média das pesagens dos 7 dias até uma data, quando há pelo menos 3.
-- **Registro de medidas**: medidas com fita de um usuário numa data. Atributos: pescoço, cintura, quadril, braço, coxa, cargas de agachamento/supino/terra, observações.
+- **Registro de medidas**: medidas com fita de um usuário numa data. Atributos: pescoço, cintura, quadril, ombros, peitoral, braço (esq./dir.), coxa (esq./dir.), panturrilha (esq./dir.), cargas de agachamento/supino/terra, observações.
 - **Medida de % de gordura**: valor de % ligado a um registro de medidas, com origem (fita/Marinha, bioimpedância, adipômetro, DEXA, outro). Um registro pode ter uma estimativa pela fita e um valor de aparelho.
 - **Calibração da dieta** (existente): passa a registrar os pesos de tendência usados nos extremos, em vez de dois check-ins.
 
@@ -168,7 +181,7 @@ Em cada registro de medidas com % de gordura, o app mostra massa gorda e massa m
 ### Measurable Outcomes
 
 - **SC-001**: Registrar uma pesagem leva menos de 15 segundos desde a abertura da tela até a confirmação.
-- **SC-002**: Com pesagens diárias que oscilam até ±2 kg em torno de um peso estável por 3 semanas, a recalibração da dieta mantém as metas em 100% dos casos de teste (hoje um único par de pesagens pode disparar ±150 kcal).
+- **SC-002**: Com pesagens diárias que oscilam até ±2 kg em torno de um peso estável por 3 semanas, a recalibração da dieta propõe manter as metas em 100% dos casos de teste (hoje um único par de pesagens pode disparar ±150 kcal).
 - **SC-003**: Um usuário sem aparelho, com altura e sexo no perfil, passa a ter % de gordura, massa gorda e massa magra no histórico em 100% dos registros com cintura e pescoço válidos.
 - **SC-004**: Nenhuma variação de % de gordura exibida compara valores de origens diferentes.
 - **SC-005**: 100% dos check-ins mensais existentes continuam visíveis no histórico após a migração, com os mesmos valores.
@@ -176,8 +189,6 @@ Em cada registro de medidas com % de gordura, o app mostra massa gorda e massa m
 
 ## Assumptions
 
-- Média simples de 7 dias com mínimo de 3 pesagens é suficiente como tendência; métodos mais sofisticados (média exponencial) ficam como possível ajuste no plano, desde que respeitem o mesmo mínimo de dados.
-- Braço e coxa são medidos sempre do lado direito; não há campo para escolher o lado.
 - A estimativa pela fita usa a fórmula da Marinha já existente no app (spec 018) e a altura e o sexo do perfil no momento do registro.
 - As cargas de agachamento/supino/terra continuam digitadas no registro de medidas; calculá-las a partir dos treinos está fora do escopo.
 - O ambiente de testes com dados simulados (spec 021) recebe fixtures de pesagens e medidas equivalentes às de check-in mensal de hoje.
