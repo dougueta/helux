@@ -14,6 +14,7 @@
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@helux/ai": "workspace:*",
+    "@helux/exercises": "workspace:*",
     "@helux/genetics": "workspace:*",
     "@helux/health": "workspace:*",
     "@helux/nutrition": "workspace:*",

@@ -18,10 +18,10 @@ function isActive(tab: (typeof TABS)[number], pathname: string) {
   return tab.match.some(m => pathname === m || pathname.startsWith(`${m}/`))
 }
 
-/** Menu inferior da v2 (`.hx-nav`, research V8). Oculto no login, auth e treino ativo/conclusão. */
+/** Menu inferior da v2 (`.hx-nav`, research V8). Oculto no login, auth, treino ativo/conclusão e telas de desenvolvimento (/dev). */
 export function NavBar() {
   const pathname = usePathname()
-  if (pathname === '/login' || pathname.startsWith('/auth') || pathname === '/workout') return null
+  if (pathname === '/login' || pathname.startsWith('/auth') || pathname === '/workout' || pathname.startsWith('/dev/')) return null
 
   return (
     <nav className="hx-nav" aria-label="principal">

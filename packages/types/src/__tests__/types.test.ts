@@ -261,3 +261,19 @@ describe('AdjustedSession', () => {
     expect(sessao.adjustmentReason).toBeUndefined()
   })
 })
+
+// Spec 028: vínculo opcional com o catálogo; planos antigos continuam válidos.
+describe('PlannedExercise — catalogId e approachOf (028)', () => {
+  it('plano antigo, sem os campos novos, continua válido', () => {
+    const antigo: PlannedExercise = { name: 'Gato-camelo', sets: 1, reps: '8', weight: '-', phase: 'aquecimento' }
+    expect(antigo.catalogId).toBeUndefined()
+    expect(antigo.approachOf).toBeUndefined()
+  })
+
+  it('aceita catalogId em preparação e approachOf em série de aproximação', () => {
+    const preparo: PlannedExercise = { name: 'Gato-camelo', sets: 1, reps: '8', weight: '-', phase: 'aquecimento', catalogId: 'gato-camelo' }
+    const aproximacao: PlannedExercise = { name: 'Supino Reto (Barra)', sets: 2, reps: '8', weight: '40kg', phase: 'aquecimento', approachOf: 'supino-reto-barra' }
+    expect(preparo.catalogId).toBe('gato-camelo')
+    expect(aproximacao.approachOf).toBe('supino-reto-barra')
+  })
+})

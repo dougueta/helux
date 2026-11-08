@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
+    "@helux/exercises": "workspace:*",
     "@helux/types": "workspace:*",
     "@helux/workouts": "workspace:*"
   },

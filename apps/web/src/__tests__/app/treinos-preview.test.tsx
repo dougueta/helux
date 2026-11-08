@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { EXERCISES, planWith } from './_planFixture'
 
@@ -40,6 +40,18 @@ describe('TreinosClient — preview (spec 026, FR-016)', () => {
     expect(screen.getByRole('dialog', { name: 'Execução do exercício' })).toBeInTheDocument()
     await user.click(screen.getByRole('tab', { name: 'Variantes (2)' }))
     expect(screen.queryByRole('button', { name: /^Trocar/ })).not.toBeInTheDocument()
+  })
+  it('ver uma variante no preview continua só leitura (028, T056)', async () => {
+    const user = userEvent.setup()
+    render(<TreinosClient plan={null} recentSessions={[]} />)
+    await user.click(screen.getByRole('button', { name: /^ver execução de Supino Reto/ }))
+    await user.click(screen.getByRole('tab', { name: 'Variantes (2)' }))
+    await user.click(screen.getByRole('button', { name: 'Ver execução de Supino com halteres' }))
+    const dialog = screen.getByRole('dialog', { name: 'Execução do exercício' })
+    expect(within(dialog).getByRole('heading', { level: 2 })).toHaveTextContent('Supino com halteres')
+    expect(screen.queryByRole('button', { name: /^Trocar/ })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Voltar às variantes' }))
+    expect(within(dialog).getByRole('heading', { level: 2 })).toHaveTextContent('Supino Reto')
   })
 })
 

@@ -4,12 +4,12 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { clearCachedPlan } from '@/hooks/useWorkoutPlan'
-import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
+import { ItemDemo } from '@/components/workout/ItemDemo'
 import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import { FinishWorkoutConfirmDialog } from '@/components/workout/FinishWorkoutConfirmDialog'
 import { WorkoutDoneScreen } from '@/components/workout/WorkoutDoneScreen'
 import { useFinishWorkout } from '@/hooks/useFinishWorkout'
-import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+import { activeVariant, recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Check } from '@/components/ui/Check'
 import { CurrentSet } from '@/components/ui/CurrentSet'
@@ -166,7 +166,8 @@ export default function WorkoutPage() {
   const variants = currentEx?.variants ?? []
   const recVariant = currentEx ? recommendedVariant(currentEx) : undefined
   const currentVariantId = session.variantByExerciseIndex?.[currentIdx]
-  const selectedVariant = variants.find(v => v.id === currentVariantId) ?? recVariant
+  // 028 (FR-035): a variante ativa fora da lista continua valendo.
+  const selectedVariant = currentEx ? activeVariant(currentEx, currentVariantId) : undefined
   const display = currentEx ? resolveExerciseDisplay(currentEx, currentVariantId) : null
   const phase: ExercisePhase = currentEx ? exercisePhase(currentEx) : 'principal'
   // Spec 024: cardio e mobilidade ficam no treino principal, mas são concluídos com um toque.
@@ -392,78 +393,80 @@ export default function WorkoutPage() {
             </section>
           )}
 
-          {isMain && variants.length > 0 && selectedVariant && (
-            <div className="hx-card" style={{ marginTop: 20, overflow: 'hidden' }}>
-              <button type="button" className="hx-row-btn" style={{ background: 'none' }} onClick={() => setSheetOpen(true)}>
-                <span className="hx-stage" style={{ width: 52, height: 52, borderRadius: 12, flexShrink: 0, display: 'block' }}>
-                  <ExerciseDemo
-                    motion={selectedVariant.motion}
-                    implement={selectedVariant.implement}
-                    playing={false}
-                    nonce={`${currentIdx}:${selectedVariant.id}`}
-                  />
+          {/* 028: todo item tem "Ver execução", inclusive preparação, cardio e sem variantes. */}
+          <div className="hx-card" style={{ marginTop: 20, overflow: 'hidden' }}>
+            <button type="button" className="hx-row-btn" style={{ background: 'none' }} onClick={() => setSheetOpen(true)}>
+              <span className="hx-stage" style={{ width: 52, height: 52, borderRadius: 12, flexShrink: 0, display: 'block' }}>
+                <ItemDemo
+                  resolved={display.resolved}
+                  variant={selectedVariant}
+                  playing={false}
+                  nonce={`${currentIdx}:${selectedVariant?.id ?? display.resolved.id}`}
+                  size="thumb"
+                />
+              </span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span className="t-body-m" style={{ display: 'block' }}>
+                  Ver execução
                 </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span className="t-body-m" style={{ display: 'block' }}>
-                    Ver execução
-                  </span>
-                  <span className="t-secondary">Técnica, músculos e {variants.length} variantes</span>
+                <span className="t-secondary">
+                  {variants.length > 0 ? `Técnica, músculos e ${variants.length} variantes` : 'Técnica e músculos'}
                 </span>
-                <span className="dim">
-                  <Icon name="chev" size={20} />
-                </span>
-              </button>
+              </span>
+              <span className="dim">
+                <Icon name="chev" size={20} />
+              </span>
+            </button>
 
-              {display.plannedName ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    minHeight: 52,
-                    padding: '6px 12px',
-                    borderTop: '1px solid var(--hairline)',
-                  }}
+            {selectedVariant && display.plannedName ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  minHeight: 52,
+                  padding: '6px 12px',
+                  borderTop: '1px solid var(--hairline)',
+                }}
+              >
+                <span style={{ width: 52, display: 'grid', placeItems: 'center', color: 'var(--text-dim)' }}>
+                  <Icon name="swap" size={20} />
+                </span>
+                <span className="t-secondary" style={{ flex: 1, minWidth: 0, color: 'var(--text)' }}>
+                  Variante ativa: {selectedVariant.equip}
+                </span>
+                {recVariant && (
+                  <Button
+                    kind="ghost"
+                    style={{ minHeight: 40, padding: '0 12px', fontSize: 14 }}
+                    onClick={() => selectVariant(currentIdx, recVariant.id)}
+                  >
+                    Voltar à recomendada
+                  </Button>
+                )}
+              </div>
+            ) : (
+              betterFit !== undefined && (
+                <button
+                  type="button"
+                  className="hx-row-btn"
+                  style={{ background: 'none', borderTop: '1px solid var(--hairline)', minHeight: 52 }}
+                  onClick={() => setSheetOpen(true)}
                 >
                   <span style={{ width: 52, display: 'grid', placeItems: 'center', color: 'var(--text-dim)' }}>
                     <Icon name="swap" size={20} />
                   </span>
                   <span className="t-secondary" style={{ flex: 1, minWidth: 0, color: 'var(--text)' }}>
-                    Variante ativa: {selectedVariant.equip}
+                    Variante com fit maior disponível
                   </span>
-                  {recVariant && (
-                    <Button
-                      kind="ghost"
-                      style={{ minHeight: 40, padding: '0 12px', fontSize: 14 }}
-                      onClick={() => selectVariant(currentIdx, recVariant.id)}
-                    >
-                      Voltar à recomendada
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                betterFit !== undefined && (
-                  <button
-                    type="button"
-                    className="hx-row-btn"
-                    style={{ background: 'none', borderTop: '1px solid var(--hairline)', minHeight: 52 }}
-                    onClick={() => setSheetOpen(true)}
-                  >
-                    <span style={{ width: 52, display: 'grid', placeItems: 'center', color: 'var(--text-dim)' }}>
-                      <Icon name="swap" size={20} />
-                    </span>
-                    <span className="t-secondary" style={{ flex: 1, minWidth: 0, color: 'var(--text)' }}>
-                      Variante com fit maior disponível
-                    </span>
-                    <Fit value={betterFit} />
-                    <span className="dim">
-                      <Icon name="chev" size={20} />
-                    </span>
-                  </button>
-                )
-              )}
-            </div>
-          )}
+                  <Fit value={betterFit} />
+                  <span className="dim">
+                    <Icon name="chev" size={20} />
+                  </span>
+                </button>
+              )
+            )}
+          </div>
 
           {!isMain && (
             <section style={{ marginTop: 28 }}>

@@ -1,5 +1,5 @@
 import type { ConstraintViolation, ExerciseAlternative, HardConstraints, MesocycleSession, PlannedExercise } from '@helux/types'
-import { EXERCISE_BANK, type ExerciseBankEntry } from '../exercise-bank'
+import { EXERCISE_BANK, findBankExercise, type ExerciseBankEntry } from '../exercise-bank'
 import { CARDIO_BANK, findCardio, type CardioBankEntry } from '../cardio-bank'
 
 const WARMUP_MIN = 5
@@ -9,13 +9,8 @@ const DEFAULT_REST_S = 90
 /** Catálogo enxuto do banco para a web (spec 022): id, nome, grupo, equipamento e padrão. */
 export const EXERCISE_CATALOG = EXERCISE_BANK.map(({ id, name, muscleGroup, equipment, pattern }) => ({ id, name, muscleGroup, equipment, pattern }))
 
-const BY_NAME = new Map(EXERCISE_BANK.map(e => [e.name, e]))
-const BY_ID = new Map(EXERCISE_BANK.map(e => [e.id, e]))
-
 /** Exercício do banco pelo id ou pelo nome. */
-export function findBankExercise(idOrName: string): ExerciseBankEntry | undefined {
-  return BY_ID.get(idOrName) ?? BY_NAME.get(idOrName)
-}
+export { findBankExercise }
 
 /** Aquecimento, volta à calma e mobilidade têm nome livre e ficam fora das regras (014/024); cardio tem regras próprias. */
 const isMainExercise = (e: PlannedExercise) => e.phase !== 'aquecimento' && e.phase !== 'volta-calma' && !e.cardio && !e.region
