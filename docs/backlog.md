@@ -36,6 +36,22 @@ Dependências: 018 (nutrição) define os campos de dieta e corporais; 008 (perf
 
 Descanso entre séries por exercício/genética/cansaço. Ponto de extensão pronto na 014: `restSecondsAfterSet` em `packages/workouts/src/workout-flow.ts` (ver notas em `specs/014-motor-treino-2/quickstart.md`).
 
+## Volume inicial no retorno de pausa para quem tem experiência
+
+**Origem:** relato do usuário após os primeiros treinos do mesociclo de 2026-10-28 (2026-10-29): "apenas duas séries para cada exercício", treino de 40–45 min parecendo curto.
+
+**Problema:** `prescribeMethod` (`packages/workouts/src/method.ts`) trata qualquer pausa de 3+ meses como retorno e começa a semana 1 com 60% do volume (`start = 0.6`) e RIR 3, sem olhar o tempo de treino (o Doug treina há 15 anos e ficou 6 meses parado). Além disso, o arredondamento em `scaleExercise` achata tudo: 3 × 0,6 = 1,8 e 4 × 0,6 = 2,4 viram 2, então na semana 1 todo exercício fica com 2 séries (≈ 8–12 séries por sessão; na semana 3 são 13–20).
+
+**Ideia:**
+- Fator inicial do retorno de pausa conforme a experiência (ex.: 0,75–0,8 para quem treina há muitos anos; 0,6 continua para iniciante ou pausa longa).
+- Arredondamento que preserve a diferença entre exercícios (o básico de 4 séries não deveria cair para o mesmo número do de 3).
+
+Perguntas em aberto:
+- Qual dado define "experiente": `training_time` (texto livre, precisaria de parse como `parseTimeOffMonths`), `level` ou os dois?
+- O fator deve depender também da duração da pausa (6 meses ≠ 2 anos)?
+- Condições como LCA reconstruído devem manter a rampa mais conservadora mesmo para experientes?
+- Piso de séries por exercício básico na semana 1 (ex.: mínimo 3)?
+
 ## Limpeza de pendências técnicas
 
 - Item B4 do roteiro de 2026-08-29.
