@@ -33,8 +33,9 @@ jobs:
       PR_TITLE: ${{ github.event.pull_request.title }}
       REPO: ${{ github.repository }}
       GH_TOKEN: ${{ github.token }}
-      EVIDENCE_DIR: ${{ runner.temp }}/demo-evidence
     steps:
+      # O contexto `runner` não existe no env do job; a pasta é definida aqui.
+      - run: echo "EVIDENCE_DIR=$RUNNER_TEMP/demo-evidence" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
