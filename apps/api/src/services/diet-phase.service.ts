@@ -1,9 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { BodyCheckin, DietCalibration, DietGoal, DietPhase, DietTargets } from '@helux/types'
-import { ageOn, navyBodyFat, phaseTargets, recalibrate } from '@helux/nutrition'
+import type { DietCalibration, DietGoal, DietPhase, DietTargets, RecalibrationEvaluation } from '@helux/types'
+import { ageOn, effectiveBodyFat, evaluateRecalibration as evaluateRecalibrationRule, phaseTargets } from '@helux/nutrition'
 import { toDietPhase, type DietPhaseRow, type MissingField, type NutritionContext } from './nutrition-context.service'
 
-// Spec 018 (US0) — fase de dieta: criar, encerrar e recalibrar a cada check-in.
+// Spec 018 (US0) — fase de dieta: criar e encerrar.
+// Spec 029 (US3) — recalibração sob demanda, pelos pesos de tendência.
 
 const GOAL_LABEL: Record<DietGoal, string> = {
   perder_gordura: 'perder gordura',
@@ -34,18 +35,9 @@ export function toCalibration(row: CalibrationRow): DietCalibration {
   }
 }
 
-/** % de gordura do check-in: o digitado prevalece; senão, Marinha (fita métrica). */
-export function checkinBodyFat(checkin: BodyCheckin, ctx: Pick<NutritionContext, 'profile'>): number | null {
-  if (checkin.body_fat_pct != null) return Number(checkin.body_fat_pct)
-  const { heightCm, sex } = ctx.profile
-  if (heightCm == null || !sex) return null
-  return navyBodyFat({
-    sex,
-    heightCm,
-    waistCm: checkin.waist_cm != null ? Number(checkin.waist_cm) : null,
-    neckCm: checkin.neck_cm != null ? Number(checkin.neck_cm) : null,
-    hipCm: checkin.hip_cm != null ? Number(checkin.hip_cm) : null,
-  })
+/** Spec 029 (FR-022): % de gordura mais recente, de qualquer origem (empate → fita). */
+export function currentBodyFat(ctx: Pick<NutritionContext, 'measurements'>): number | null {
+  return effectiveBodyFat(ctx.measurements)?.pct ?? null
 }
 
 export type CreatePhaseResult =
@@ -60,8 +52,8 @@ export async function createPhase(
   now: Date = new Date(),
 ): Promise<CreatePhaseResult> {
   if (ctx.missing.length > 0) return { error: 'needs-profile', missing: ctx.missing }
-  const checkin = ctx.checkins[0]
-  const weightKg = Number(checkin.weight_kg)
+  const weightKg = ctx.currentWeightKg as number
+  const latestMeasurement = ctx.measurements[0] ?? null
   const { heightCm, birthDate, sex } = ctx.profile as { heightCm: number; birthDate: string; sex: NonNullable<NutritionContext['profile']['sex']> }
 
   const targets = phaseTargets({ goal, weightKg, heightCm, age: ageOn(birthDate, ctx.today), sex, daysPerWeek: ctx.daysPerWeek })
@@ -79,19 +71,19 @@ export async function createPhase(
       duration_weeks: durationWeeks,
       status: 'ativa',
       base_targets: targets,
-      start_checkin_id: checkin.id,
+      start_checkin_id: latestMeasurement?.id ?? null,
     })
     .select('*')
     .single()
   if (phaseError) throw phaseError
 
-  const bodyFatPct = checkinBodyFat(checkin, ctx)
+  const bodyFatPct = currentBodyFat(ctx)
   const { data: calRow, error: calError } = await supabase
     .from('diet_phase_calibrations')
     .insert({
       phase_id: (phaseRow as DietPhaseRow).id,
       user_id: userId,
-      checkin_id: checkin.id,
+      checkin_id: latestMeasurement?.id ?? null,
       action: 'inicial',
       before: null,
       after: targets,
@@ -117,58 +109,52 @@ export async function endPhase(userId: string, supabase: SupabaseClient, now: Da
   return row ? toDietPhase(row) : null
 }
 
+/** Spec 029 (US3): avaliação de "Recalibrar dieta" sem gravar nada (regra em @helux/nutrition). */
+export function evaluateRecalibration(ctx: NutritionContext): RecalibrationEvaluation {
+  return evaluateRecalibrationRule({
+    today: ctx.today,
+    phase: ctx.phase,
+    profile: ctx.profile,
+    lastCalibrationAt: ctx.lastCalibration?.createdAt ?? null,
+    weights: ctx.weights,
+    measurements: ctx.measurements,
+    daysPerWeek: ctx.daysPerWeek,
+  })
+}
+
 /**
- * Recalibra a fase ativa com o check-in recém-gravado (FR-015): compara com o
- * check-in da última calibração, registra o resultado e, se mudou, atualiza
- * as metas-base. Sem fase, sem peso, sem perfil ou mesmo check-in → null.
+ * Spec 029 (FR-021): aplica a recalibração — recalcula no servidor (o cliente
+ * nunca manda metas), grava a calibração (inclusive "manter", que reinicia a
+ * janela de 2 semanas) e atualiza as metas-base.
  */
-export async function recalibrateOnCheckin(
+export async function applyRecalibration(
   userId: string,
   supabase: SupabaseClient,
-  checkin: BodyCheckin,
   ctx: NutritionContext,
-): Promise<DietCalibration | null> {
-  const phase = ctx.phase
-  const { heightCm, birthDate, sex } = ctx.profile
-  if (!phase || checkin.weight_kg == null || heightCm == null || !birthDate || !sex) return null
-
-  const fromId = ctx.lastCalibration?.checkinId
-  if (!fromId || fromId === checkin.id) return null
-  const { data: fromRow } = await supabase.from('body_checkins').select('*').eq('id', fromId).maybeSingle()
-  const from = fromRow as BodyCheckin | null
-  if (!from || from.weight_kg == null) return null
-
-  const result = recalibrate({
-    goal: phase.goal,
-    current: phase.baseTargets,
-    from: { weightKg: Number(from.weight_kg), waistCm: from.waist_cm != null ? Number(from.waist_cm) : null, at: from.created_at },
-    to: {
-      weightKg: Number(checkin.weight_kg),
-      waistCm: checkin.waist_cm != null ? Number(checkin.waist_cm) : null,
-      at: checkin.created_at,
-      bodyFatPct: checkinBodyFat(checkin, ctx),
-    },
-    profile: { heightCm, age: ageOn(birthDate, ctx.today), sex, daysPerWeek: ctx.daysPerWeek },
-  })
+): Promise<{ calibration: DietCalibration } | { evaluation: Exclude<RecalibrationEvaluation, { status: 'proposta' }> }> {
+  const evaluation = evaluateRecalibration(ctx)
+  if (evaluation.status !== 'proposta') return { evaluation }
+  const phase = ctx.phase as DietPhase
 
   const { data: calRow, error } = await supabase
     .from('diet_phase_calibrations')
     .insert({
       phase_id: phase.id,
       user_id: userId,
-      checkin_id: checkin.id,
-      action: result.action,
-      before: phase.baseTargets,
-      after: result.after,
-      reason: result.reason,
-      metrics: result.metrics,
+      checkin_id: ctx.measurements[0]?.id ?? null,
+      action: evaluation.action,
+      before: evaluation.before,
+      after: evaluation.after,
+      reason: evaluation.reason,
+      metrics: evaluation.metrics,
     })
     .select('*')
     .single()
   if (error) throw error
 
-  if (result.action !== 'intervalo-curto') {
-    await supabase.from('diet_phases').update({ base_targets: result.after }).eq('id', phase.id)
+  if (JSON.stringify(evaluation.after) !== JSON.stringify(evaluation.before)) {
+    const { error: updError } = await supabase.from('diet_phases').update({ base_targets: evaluation.after }).eq('id', phase.id)
+    if (updError) throw updError
   }
-  return toCalibration(calRow as CalibrationRow)
+  return { calibration: toCalibration(calRow as CalibrationRow) }
 }

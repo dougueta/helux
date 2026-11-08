@@ -1,7 +1,7 @@
 import type { GeneticProfile, WorkoutConstraints } from './genetic'
 import type { WorkoutSession, PlannedExercise, LoadProgression } from './workout'
 import type { RecoveryData } from './recovery'
-import type { BodyCheckin } from './checkin'
+import type { BodyMeasurement } from './checkin'
 
 export interface PlanInput {
   geneticProfile: GeneticProfile
@@ -11,7 +11,7 @@ export interface PlanInput {
   userGoals: string
   userLevel: 'iniciante' | 'intermediario' | 'avancado'
   availableDaysPerWeek: number
-  bodyCheckins?: BodyCheckin[]
+  bodyCheckins?: BodyMeasurement[]
   trainingTime?: string
   timeOff?: string
   currentInjury?: string

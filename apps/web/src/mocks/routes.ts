@@ -1,5 +1,7 @@
-import type { AdjustedWorkoutPlanView, BodyCheckin, CheckinInput, DayType, DietCalibration, DietGoal, DietPhase, MealSwap, TirednessLevel, UserTrainingProfileInput } from '@helux/types'
-import { ageOn, buildDayPlan, phaseTargets, swapOptions } from '@helux/nutrition'
+import type { AdjustedWorkoutPlanView, BodyMeasurement, BodyWeight, DayType, DietCalibration, DietGoal, DietPhase, MealSwap, TirednessLevel, UserTrainingProfileInput } from '@helux/types'
+import { addDays, ageOn, buildDayPlan, effectiveBodyFat, evaluateRecalibration, navyEstimate, phaseTargets, swapOptions } from '@helux/nutrition'
+import { currentWeight } from './body'
+import type { MeasurementInput } from '@helux/types'
 import { ApiError } from '@/services/api-client'
 import type { MockRouter } from './mock-router'
 import type { MockDataset } from './types'
@@ -29,7 +31,9 @@ function missingFields(d: MockDataset) {
   if (d.profile?.heightCm == null) missing.push('heightCm')
   if (!d.profile?.birthDate) missing.push('birthDate')
   if (!d.profile?.sex) missing.push('sex')
-  if (d.bodyCheckins[0]?.weight_kg == null) missing.push('checkinWeight')
+  const weights = d.bodyWeights ?? []
+  if (weights.length === 0) missing.push('checkinWeight')
+  else if (currentWeight(d) == null) missing.push('checkinStale')
   return missing
 }
 
@@ -44,7 +48,7 @@ export function nutritionToday(d: MockDataset) {
   const missing = missingFields(d)
   const n = d.nutrition
   if (!n.phase) return { status: 'no-phase' as const, missing }
-  const weight = d.bodyCheckins[0]?.weight_kg
+  const weight = currentWeight(d)
   if (weight == null) return { status: 'needs-profile' as const, missing }
   const trained = workoutToday(d)
   const dayType: DayType = trained ? 'treino' : n.dayTypeOverride === 'descanso' ? 'descanso' : d.latestPlan?.today ? 'treino' : 'descanso'
@@ -90,8 +94,16 @@ function registerReads(router: MockRouter) {
 
   router.register('GET', '/api/profile', ({ data }) => ({ profile: data.profile }))
 
-  router.register('GET', '/api/checkins', ({ data, query }) => ({
-    checkins: [...data.bodyCheckins].sort((a, b) => b.month.localeCompare(a.month)).slice(0, intParam(query, 'limit', 13)),
+  // Spec 029: pesagens e registros de medidas.
+  router.register('GET', '/api/weights', ({ data, query }) => {
+    const since = addDays(today(), -(intParam(query, 'days', 90) - 1))
+    return { weights: (data.bodyWeights ?? []).filter(w => w.date >= since && w.date <= today()).sort((a, b) => a.date.localeCompare(b.date)) }
+  })
+
+  router.register('GET', '/api/measurements', ({ data, query }) => ({
+    measurements: [...data.bodyCheckins]
+      .sort((a, b) => b.measured_on.localeCompare(a.measured_on) || b.created_at.localeCompare(a.created_at))
+      .slice(0, intParam(query, 'limit', 24)),
   }))
 
   router.register('GET', '/genetic-profile', ({ data }) => {
@@ -106,9 +118,45 @@ function registerReads(router: MockRouter) {
   router.register('GET', '/api/nutrition/phase', ({ data }) => ({
     phase: data.nutrition.phase,
     calibrations: data.nutrition.calibrations,
-    bodyFatPct: null,
+    bodyFatPct: effectiveBodyFat(data.bodyCheckins)?.pct ?? null,
     missing: missingFields(data),
   }))
+
+  // Spec 029 (US3): mesma regra da API (@helux/nutrition), sobre os dados da persona.
+  const recalibration = (data: MockDataset) =>
+    evaluateRecalibration({
+      today: today(),
+      phase: data.nutrition.phase,
+      profile: { heightCm: data.profile?.heightCm ?? null, birthDate: data.profile?.birthDate ?? null, sex: data.profile?.sex ?? null },
+      lastCalibrationAt: data.nutrition.calibrations.find(c => c.action !== 'intervalo-curto')?.createdAt ?? null,
+      weights: data.bodyWeights ?? [],
+      measurements: data.bodyCheckins,
+      daysPerWeek: 4,
+    })
+
+  router.register('POST', '/api/nutrition/phase/recalibration/preview', ({ data }) => recalibration(data))
+
+  router.register('POST', '/api/nutrition/phase/recalibration', ({ store, data }) => {
+    const ev = recalibration(data)
+    if (ev.status !== 'proposta') throw new ApiError(ev.status)
+    const calibration: DietCalibration = {
+      id: newId('mock-calibration'),
+      action: ev.action,
+      before: ev.before,
+      after: ev.after,
+      reason: ev.reason,
+      metrics: ev.metrics,
+      createdAt: new Date().toISOString(),
+    }
+    store.updateDataset(cur => ({
+      nutrition: {
+        ...cur.nutrition,
+        phase: cur.nutrition.phase ? { ...cur.nutrition.phase, baseTargets: ev.after } : null,
+        calibrations: [calibration, ...cur.nutrition.calibrations],
+      },
+    }))
+    return { calibration }
+  })
 
   router.register('GET', '/api/nutrition/today', ({ data }) => nutritionToday(data))
 
@@ -182,15 +230,58 @@ function registerWrites(router: MockRouter) {
     return { profile: d.profile }
   })
 
-  router.register('POST', '/api/checkins', ({ store, body }) => {
-    const input = body as CheckinInput
-    let saved!: BodyCheckin
+  router.register('PUT', '/api/weights/:date', ({ store, body, params }) => {
+    if (params.date > today()) throw new ApiError('future-date')
+    const { weight_kg } = body as { weight_kg: number }
+    let replaced = false
+    let saved!: BodyWeight
     store.updateDataset(cur => {
-      const existing = cur.bodyCheckins.find(c => c.month === input.month)
-      saved = { ...(existing ?? { id: newId('mock-checkin'), created_at: new Date().toISOString() }), ...input }
-      return { bodyCheckins: [saved, ...cur.bodyCheckins.filter(c => c.month !== input.month)].sort((a, b) => b.month.localeCompare(a.month)) }
+      const list = cur.bodyWeights ?? []
+      const existing = list.find(w => w.date === params.date)
+      replaced = existing != null
+      saved = { id: existing?.id ?? newId('mock-weight'), date: params.date, weight_kg }
+      return { bodyWeights: [...list.filter(w => w.date !== params.date), saved].sort((a, b) => a.date.localeCompare(b.date)) }
     })
-    return { ...saved, calibration: null }
+    return { weight: saved, replaced }
+  })
+
+  router.register('DELETE', '/api/weights/:date', ({ store, data, params }) => {
+    if (!(data.bodyWeights ?? []).some(w => w.date === params.date)) throw new ApiError('HTTP 404')
+    store.updateDataset(cur => ({ bodyWeights: (cur.bodyWeights ?? []).filter(w => w.date !== params.date) }))
+    return null
+  })
+
+  /** Mesma regra da API: o % pela fita sai do perfil no momento do registro. */
+  const withNavy = (data: MockDataset, input: MeasurementInput) => {
+    const { pct, status } = navyEstimate(
+      { heightCm: data.profile?.heightCm, sex: data.profile?.sex },
+      { waistCm: input.waist_cm, neckCm: input.neck_cm, hipCm: input.hip_cm },
+    )
+    return { values: { ...input, body_fat_navy_pct: pct }, navy_status: status }
+  }
+
+  router.register('POST', '/api/measurements', ({ store, data, body }) => {
+    const input = body as MeasurementInput
+    if (input.measured_on > today()) throw new ApiError('future-date')
+    const { values, navy_status } = withNavy(data, input)
+    const measurement: BodyMeasurement = { ...values, id: newId('mock-checkin'), created_at: new Date().toISOString() }
+    store.updateDataset(cur => ({ bodyCheckins: [measurement, ...cur.bodyCheckins] }))
+    return { measurement, navy_status }
+  })
+
+  router.register('PUT', '/api/measurements/:id', ({ store, data, body, params }) => {
+    const existing = data.bodyCheckins.find(m => m.id === params.id)
+    if (!existing) throw new ApiError('HTTP 404')
+    const { values, navy_status } = withNavy(data, body as MeasurementInput)
+    const measurement: BodyMeasurement = { ...values, id: existing.id, created_at: existing.created_at }
+    store.updateDataset(cur => ({ bodyCheckins: cur.bodyCheckins.map(m => (m.id === params.id ? measurement : m)) }))
+    return { measurement, navy_status }
+  })
+
+  router.register('DELETE', '/api/measurements/:id', ({ store, data, params }) => {
+    if (!data.bodyCheckins.some(m => m.id === params.id)) throw new ApiError('HTTP 404')
+    store.updateDataset(cur => ({ bodyCheckins: cur.bodyCheckins.filter(m => m.id !== params.id) }))
+    return null
   })
 
   // Spec 024: o botão Gerar novo plano pede um novo mesociclo; no mock, o plano da persona continua.
@@ -200,7 +291,7 @@ function registerWrites(router: MockRouter) {
   router.register('POST', '/api/nutrition/phase', ({ store, data, body }) => {
     const { goal, durationWeeks } = body as { goal: DietGoal; durationWeeks: number }
     const p = data.profile
-    const weightKg = data.bodyCheckins[0]?.weight_kg
+    const weightKg = currentWeight(data)
     if (missingFields(data).length > 0 || !p?.heightCm || !p.birthDate || !p.sex || weightKg == null) throw new ApiError('needs-profile')
     const baseTargets = phaseTargets({ goal, weightKg, heightCm: p.heightCm, age: ageOn(p.birthDate, today()), sex: p.sex, daysPerWeek: 4 })
     const phase: DietPhase = { id: newId('mock-phase'), goal, startedOn: today(), durationWeeks, status: 'ativa', baseTargets }

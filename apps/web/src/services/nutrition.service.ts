@@ -1,5 +1,5 @@
 import { apiFetch } from '@/services/api-client'
-import type { DayPlan, DayType, DietCalibration, DietGoal, DietPhase, DietTargets, FoodItem, MealSwap, NutriMarker, TirednessLevel } from '@helux/types'
+import type { DayPlan, DayType, DietCalibration, DietGoal, DietPhase, DietTargets, FoodItem, MealSwap, NutriMarker, RecalibrationEvaluation, TirednessLevel } from '@helux/types'
 
 // Spec 018 — cliente das rotas de nutrição (contracts/nutrition-api.md).
 
@@ -25,6 +25,18 @@ export async function startPhase(goal: DietGoal, durationWeeks: number): Promise
 
 export async function endPhase(): Promise<{ phase: DietPhase }> {
   return (await apiFetch('/api/nutrition/phase/end', { method: 'POST' })) as { phase: DietPhase }
+}
+
+// ---- spec 029 (US3): recalibração sob demanda ----
+
+/** Só calcula a proposta; nada é gravado. */
+export async function previewRecalibration(): Promise<RecalibrationEvaluation> {
+  return (await apiFetch('/api/nutrition/phase/recalibration/preview', { method: 'POST' })) as RecalibrationEvaluation
+}
+
+/** Recalcula no servidor e aplica (o cliente nunca manda metas). */
+export async function applyRecalibration(): Promise<{ calibration: DietCalibration }> {
+  return (await apiFetch('/api/nutrition/phase/recalibration', { method: 'POST' })) as { calibration: DietCalibration }
 }
 
 // ---- o dia (US1) ----

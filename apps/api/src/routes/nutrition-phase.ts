@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { loadNutritionContext } from '../services/nutrition-context.service'
-import { checkinBodyFat, createPhase, endPhase, toCalibration } from '../services/diet-phase.service'
+import { applyRecalibration, createPhase, currentBodyFat, endPhase, evaluateRecalibration, toCalibration } from '../services/diet-phase.service'
 import { authenticate } from './nutrition-auth'
 
 const CreateBodySchema = z.object({
@@ -9,7 +9,7 @@ const CreateBodySchema = z.object({
   durationWeeks: z.number().int().min(4).max(52),
 })
 
-/** Fase de dieta (spec 018, US0): consultar, iniciar e encerrar. */
+/** Fase de dieta (spec 018, US0): consultar, iniciar e encerrar; recalibrar sob demanda (spec 029, US3). */
 export async function nutritionPhaseRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/nutrition/phase', async (request, reply) => {
     const auth = await authenticate(request, reply)
@@ -26,11 +26,10 @@ export async function nutritionPhaseRoutes(app: FastifyInstance): Promise<void> 
         if (error) throw error
         calibrations = ((data ?? []) as Parameters<typeof toCalibration>[0][]).map(toCalibration)
       }
-      const latest = ctx.checkins[0]
       return reply.send({
         phase: ctx.phase,
         calibrations,
-        bodyFatPct: latest ? checkinBodyFat(latest, ctx) : null,
+        bodyFatPct: currentBodyFat(ctx),
         missing: ctx.missing,
       })
     } catch (error) {
@@ -66,6 +65,34 @@ export async function nutritionPhaseRoutes(app: FastifyInstance): Promise<void> 
       return reply.send({ phase })
     } catch (error) {
       app.log.error(error, 'nutrition phase: failed to end')
+      return reply.code(500).send({ error: 'Internal Server Error' })
+    }
+  })
+
+  // Spec 029 (FR-021): só calcula — nada é gravado.
+  app.post('/api/nutrition/phase/recalibration/preview', async (request, reply) => {
+    const auth = await authenticate(request, reply)
+    if (!auth) return
+    try {
+      const ctx = await loadNutritionContext(auth.user.id, auth.supabase)
+      return reply.send(evaluateRecalibration(ctx))
+    } catch (error) {
+      app.log.error(error, 'nutrition phase: recalibration preview failed')
+      return reply.code(500).send({ error: 'Internal Server Error' })
+    }
+  })
+
+  // Spec 029 (FR-021): recalcula no servidor e aplica; o cliente nunca manda metas.
+  app.post('/api/nutrition/phase/recalibration', async (request, reply) => {
+    const auth = await authenticate(request, reply)
+    if (!auth) return
+    try {
+      const ctx = await loadNutritionContext(auth.user.id, auth.supabase)
+      const result = await applyRecalibration(auth.user.id, auth.supabase, ctx)
+      if ('evaluation' in result) return reply.code(409).send({ error: result.evaluation.status, ...result.evaluation })
+      return reply.send(result)
+    } catch (error) {
+      app.log.error(error, 'nutrition phase: recalibration failed')
       return reply.code(500).send({ error: 'Internal Server Error' })
     }
   })

@@ -1,5 +1,5 @@
 import type { MockDataset } from '../types'
-import { checkinsFixture } from './checkins.fixture'
+import { checkinsFixture, weightsFixture } from './checkins.fixture'
 import { geneticsFixture, NO_NUTRITION_GENETICS, nutritionGeneticsFixture } from './genetics.fixture'
 import { nutritionFixture } from './nutrition.fixture'
 import { profileFixture } from './profile.fixture'
@@ -16,6 +16,7 @@ export interface TestPersona {
 function standard(): MockDataset {
   const profile = profileFixture()
   const bodyCheckins = checkinsFixture()
+  const bodyWeights = weightsFixture()
   const workoutHistory = workoutHistoryFixture()
   const tirednessToday = tirednessFixture(null, 62)
   return {
@@ -26,8 +27,9 @@ function standard(): MockDataset {
     tirednessToday,
     recovery: recoveryFixture(62, 7.5),
     bodyCheckins,
+    bodyWeights,
     genetics: geneticsFixture(),
-    nutrition: nutritionFixture({ profile, weightKg: bodyCheckins[0].weight_kg!, genetics: nutritionGeneticsFixture() }),
+    nutrition: nutritionFixture({ profile, weightKg: bodyWeights[bodyWeights.length - 1].weight_kg, genetics: nutritionGeneticsFixture() }),
   }
 }
 
@@ -75,6 +77,7 @@ export const PERSONAS: TestPersona[] = [
       tirednessToday: tirednessFixture(null, null),
       recovery: null,
       bodyCheckins: [],
+      bodyWeights: [],
       genetics: null,
       nutrition: { phase: null, calibrations: [], dayTypeOverride: null, swaps: [], history: [], genetics: NO_NUTRITION_GENETICS },
     }),

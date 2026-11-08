@@ -46,17 +46,26 @@ describe('escritas do modo mock (021 T014)', () => {
     expect(plan.today.adjusted).toBe(true)
   })
 
-  it('perfil e check-in (upsert por mês)', async () => {
+  it('perfil, pesagem (uma por dia) e medidas com % pela fita (spec 029)', async () => {
     const { router } = runtime()
     await router.dispatch('/api/profile', post({ goal: 'força', heightCm: 181 }))
     expect(((await router.dispatch('/api/profile')) as { profile: { goal: string; heightCm: number } }).profile).toMatchObject({ goal: 'força', heightCm: 181 })
 
-    const month = today().slice(0, 7)
-    await router.dispatch('/api/checkins', post({ month, weight_kg: 80.5 }))
-    await router.dispatch('/api/checkins', post({ month, weight_kg: 80.1 }))
-    const { checkins } = (await router.dispatch('/api/checkins')) as { checkins: { month: string; weight_kg: number }[] }
-    expect(checkins.filter(c => c.month === month)).toHaveLength(1)
-    expect(checkins[0]).toMatchObject({ month, weight_kg: 80.1 })
+    const day = today()
+    const first = (await router.dispatch(`/api/weights/${day}`, put({ weight_kg: 80.5 }))) as { replaced: boolean }
+    const second = (await router.dispatch(`/api/weights/${day}`, put({ weight_kg: 80.1 }))) as { replaced: boolean }
+    expect(second.replaced).toBe(true)
+    expect(first.replaced).toBe(true) // a persona já tem pesagem hoje
+    const { weights } = (await router.dispatch('/api/weights?days=7')) as { weights: { date: string; weight_kg: number }[] }
+    expect(weights.filter(w => w.date === day)).toEqual([expect.objectContaining({ weight_kg: 80.1 })])
+
+    const saved = (await router.dispatch('/api/measurements', post({ measured_on: day, waist_cm: 90, neck_cm: 40 }))) as {
+      measurement: { id: string; body_fat_navy_pct: number }
+      navy_status: string
+    }
+    expect(saved).toMatchObject({ navy_status: 'ok', measurement: { body_fat_navy_pct: expect.any(Number) } })
+    const { measurements } = (await router.dispatch('/api/measurements?limit=1')) as { measurements: { id: string }[] }
+    expect(measurements[0].id).toBe(saved.measurement.id)
   })
 
   it('nutrição: tipo do dia, troca e fase', async () => {
@@ -106,5 +115,23 @@ describe('escritas do modo mock (021 T014)', () => {
     await router.dispatch('/api/profile', post({ goal: 'mudou' }))
     store.reset()
     expect(((await router.dispatch('/api/profile')) as { profile: { goal: string } }).profile.goal).toBe('hipertrofia')
+  })
+})
+
+describe('recalibração sob demanda no mock (spec 029, US3)', () => {
+  it('preview não grava; aplicar grava a calibração e muda as metas; logo depois → intervalo curto', async () => {
+    const { router } = runtime()
+    const before = (await router.dispatch('/api/nutrition/phase')) as { calibrations: unknown[] }
+    const preview = (await router.dispatch('/api/nutrition/phase/recalibration/preview', post({}))) as { status: string; reason?: string }
+    expect(preview.status).toBe('proposta')
+    expect(preview.reason).toMatch(/^Peso de tendência/)
+    expect(((await router.dispatch('/api/nutrition/phase')) as { calibrations: unknown[] }).calibrations).toHaveLength(before.calibrations.length)
+
+    const applied = (await router.dispatch('/api/nutrition/phase/recalibration', post({}))) as { calibration: { id: string } }
+    const after = (await router.dispatch('/api/nutrition/phase')) as { calibrations: { id: string }[] }
+    expect(after.calibrations[0].id).toBe(applied.calibration.id)
+
+    const again = (await router.dispatch('/api/nutrition/phase/recalibration/preview', post({}))) as { status: string }
+    expect(again.status).toBe('intervalo-curto')
   })
 })

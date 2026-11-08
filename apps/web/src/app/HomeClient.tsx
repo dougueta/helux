@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { AdjustedWorkoutPlanView, BodyCheckin, PlannedExercise } from '@helux/types'
+import type { AdjustedWorkoutPlanView, BodyMeasurement, BodyWeight, PlannedExercise } from '@helux/types'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
 import { useTirednessFlow } from '@/hooks/useTirednessFlow'
@@ -28,7 +28,9 @@ import { todayHighlight } from '@/lib/todayHighlight'
 interface HomeClientProps {
   plan: AdjustedWorkoutPlanView | null
   firstName: string
-  checkins: BodyCheckin[]
+  /** Spec 029: pesagens recentes e últimos registros de medidas. */
+  weights: BodyWeight[]
+  measurements: BodyMeasurement[]
   analytics: { thisWeekSessions: number; currentStreakWeeks: number } | null
 }
 
@@ -85,7 +87,7 @@ function HomeSkeleton() {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }: HomeClientProps) {
+export function HomeClient({ plan: initialPlan, firstName, weights, measurements, analytics }: HomeClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
   const { plan, loading, generating, generationError, generatePlan, repeatWeek, refetch } = useWorkoutPlan()
@@ -282,10 +284,10 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
         </section>
       )}
 
-      {checkins.length > 0 ? (
-        <CheckinCard checkins={checkins}>
+      {weights.length > 0 || measurements.length > 0 ? (
+        <CheckinCard weights={weights} measurements={measurements}>
           <Button kind="secondary" onClick={() => router.push('/checkin')}>
-            Novo check-in
+            Check-in
           </Button>
           {today && (
             <Button kind="ghost" loading={generating} onClick={generatePlan}>
@@ -296,7 +298,7 @@ export function HomeClient({ plan: initialPlan, firstName, checkins, analytics }
       ) : (
         <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
           <SectionHeader title="Check-in" />
-          <p className="t-secondary">Registre peso e cargas do mês para o Helux ajustar seu plano.</p>
+          <p className="t-secondary">Registre seu peso (de manhã, algumas vezes por semana) e suas medidas para o Helux ajustar treino e dieta.</p>
           <div style={{ display: 'flex', gap: 8, marginTop: 18, flexWrap: 'wrap' }}>
             <Button kind="secondary" onClick={() => router.push('/checkin')}>
               Fazer check-in

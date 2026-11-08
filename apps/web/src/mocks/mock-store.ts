@@ -1,5 +1,8 @@
 import type { MockDataset, MockLocalStorageState } from './types'
 
+/** Spec 029: 2 = pesagens diárias + registros de medidas. */
+export const MOCK_STATE_VERSION = 2
+
 export const MOCK_STATE_KEY = 'helux_mock_state_v1'
 
 export interface MockStore {
@@ -37,7 +40,7 @@ export function createMockStore({
   let state: MockLocalStorageState
 
   function fresh(personaId: string): MockLocalStorageState {
-    return { version: 1, personaId, dataset: factory(personaId), updatedAt: new Date().toISOString() }
+    return { version: MOCK_STATE_VERSION, personaId, dataset: factory(personaId), updatedAt: new Date().toISOString() }
   }
 
   function save() {
@@ -54,7 +57,9 @@ export function createMockStore({
     if (raw) {
       try {
         const parsed = JSON.parse(raw) as MockLocalStorageState
-        if (parsed?.version === 1 && parsed.dataset && typeof parsed.dataset === 'object') {
+        // Spec 029: formato de dados mudou (pesagens + medidas) → versão antiga recomeça da persona, sem aviso.
+        if (typeof parsed?.version === 'number' && parsed.version < MOCK_STATE_VERSION) return fresh(personaId)
+        if (parsed?.version === MOCK_STATE_VERSION && parsed.dataset && typeof parsed.dataset === 'object') {
           if (parsed.personaId === personaId) return parsed
           return fresh(personaId)
         }

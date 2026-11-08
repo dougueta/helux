@@ -135,22 +135,22 @@ export function recalibrate({
   let reason: string
   if (weeklyRatePct > hi) {
     if (goal !== 'ganhar_massa' && waistDown) {
-      reason = `Peso ${rate}, mas a cintura caiu ${String(Math.abs(waistDeltaCm!)).replace('.', ',')} cm: recomposição em curso, metas mantidas.`
+      reason = `Peso de tendência ${rate}, mas a cintura caiu ${String(Math.abs(waistDeltaCm!)).replace('.', ',')} cm: recomposição em curso, metas mantidas.`
     } else {
       delta = -STEP_KCAL
-      reason = `Peso ${rate}, acima do esperado (${expected}): −${STEP_KCAL} kcal no carboidrato.`
+      reason = `Peso de tendência ${rate}, acima do esperado (${expected}): −${STEP_KCAL} kcal no carboidrato.`
     }
   } else if (weeklyRatePct < lo) {
     if (goal === 'ganhar_massa' && waistUp) {
-      reason = `Peso ${rate}, abaixo do esperado (${expected}), mas a cintura subiu ${String(waistDeltaCm).replace('.', ',')} cm: metas mantidas.`
+      reason = `Peso de tendência ${rate}, abaixo do esperado (${expected}), mas a cintura subiu ${String(waistDeltaCm).replace('.', ',')} cm: metas mantidas.`
     } else {
       delta = STEP_KCAL
-      reason = `Peso ${rate}, abaixo do esperado (${expected}): +${STEP_KCAL} kcal no carboidrato.`
+      reason = `Peso de tendência ${rate}, abaixo do esperado (${expected}): +${STEP_KCAL} kcal no carboidrato.`
     }
   } else {
     reason = waistDown
-      ? `Peso ${rate}, dentro do esperado (${expected}), e cintura menor: recomposição em curso, metas mantidas.`
-      : `Peso ${rate}, dentro do esperado (${expected}): metas mantidas.`
+      ? `Peso de tendência ${rate}, dentro do esperado (${expected}), e cintura menor: recomposição em curso, metas mantidas.`
+      : `Peso de tendência ${rate}, dentro do esperado (${expected}): metas mantidas.`
   }
 
   const body: BodyProfile = { ...profile, weightKg: to.weightKg }

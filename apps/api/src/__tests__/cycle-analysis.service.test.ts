@@ -26,9 +26,17 @@ function db() {
     ],
     session_checkins: [{ id: 'c1', user_id: 'u1', date: '2026-09-09', phase: 'depois', rpe: 9, pains: [] }],
     daily_tiredness_signals: [{ user_id: 'u1', date: '2026-09-05', level: 'exausto' }],
+    // Spec 029: dois registros de medidas + pesagens em volta de cada um.
     body_checkins: [
-      { id: 'b1', user_id: 'u1', month: '2026-08', weight_kg: 90, waist_cm: 100, created_at: '2026-08-01' },
-      { id: 'b2', user_id: 'u1', month: '2026-09', weight_kg: 90, waist_cm: 100, created_at: '2026-09-01' },
+      { id: 'b1', user_id: 'u1', measured_on: '2026-08-01', waist_cm: 100, created_at: '2026-08-01T09:00:00Z' },
+      { id: 'b2', user_id: 'u1', measured_on: '2026-09-01', waist_cm: 100, created_at: '2026-09-01T09:00:00Z' },
+      { id: 'bx', user_id: 'u2', measured_on: '2026-09-05', waist_cm: 70, created_at: '2026-09-05T09:00:00Z' },
+    ],
+    body_weights: [
+      { id: 'p1', user_id: 'u1', date: '2026-07-30', weight_kg: 90 },
+      { id: 'p2', user_id: 'u1', date: '2026-07-31', weight_kg: 90 },
+      { id: 'p3', user_id: 'u1', date: '2026-08-01', weight_kg: 90 },
+      { id: 'p4', user_id: 'u1', date: '2026-08-31', weight_kg: '90.1' },
     ],
     cycle_analyses: [],
   })
@@ -44,6 +52,8 @@ describe('cycle-analysis.service (024)', () => {
     expect(summary.findings.map(f => f.kind)).toEqual(expect.arrayContaining(['estagnacao', 'baixa-aderencia', 'cansaco-alto']))
     expect(trend?.methodModifiers.map(m => m.cardioSessionsDelta)).toEqual([1])
     expect(summary.checkinTrend).not.toHaveProperty('methodModifiers')
+    // compara os dois registros por data, com o peso de referência de cada lado
+    expect(trend).toMatchObject({ from: '2026-08-01', to: '2026-09-01', deltas: { weight_kg: 0.1, waist_cm: 0 } })
     expect(fake.db.cycle_analyses).toEqual([expect.objectContaining({ user_id: 'u1', mesocycle_id: 'm1', next_mesocycle_id: null })])
   })
 

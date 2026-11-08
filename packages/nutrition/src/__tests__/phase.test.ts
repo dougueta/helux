@@ -59,6 +59,8 @@ describe('recalibrate (R4)', () => {
     expect(r.after).toEqual({ kcal: 2030, proteinG: 175, carbsG: 189, fatG: 64 })
     expect(r.metrics).toEqual({ weeks: 4.3, weightFromKg: 80, weightToKg: 79.6, weeklyRatePct: -0.12, waistDeltaCm: 0 })
     expect(r.reason).toMatch(/−150 kcal/)
+    // Spec 029: a comparação é entre pesos de tendência.
+    expect(r.reason).toMatch(/^Peso de tendência −0,12%\/sem/)
   })
 
   it('peso parado mas cintura ≥ 1 cm menor → mantém (recomposição em curso)', () => {
@@ -66,6 +68,7 @@ describe('recalibrate (R4)', () => {
     expect(r.action).toBe('manter')
     expect(r.after.kcal).toBe(2180)
     expect(r.reason).toMatch(/recomposição/i)
+    expect(r.reason).toMatch(/^Peso de tendência/)
   })
 
   it('perdendo rápido demais (−1,17%/sem) → aumenta 150 kcal', () => {

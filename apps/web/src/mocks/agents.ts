@@ -13,6 +13,7 @@ import {
 import { ApiError } from '@/services/api-client'
 import type { MockRouter } from './mock-router'
 import type { MockDataset } from './types'
+import { currentWeight } from './body'
 
 // Spec 022 no modo mock (021, R12): Perfil Integrado, preferências, propostas,
 // edição manual e conversas guardados no mesmo dataset local da persona.
@@ -85,7 +86,8 @@ export function mockIntegratedProfile(d: MockDataset): IntegratedProfile & { bud
     historico: source(d.workoutHistory.length ? 'ativa' : 'vazia', `${d.workoutHistory.length} sessões recentes`, d.workoutHistory, d.workoutHistory[0]?.created_at ?? null),
     mesociclo: source(d.latestPlan?.today ? 'ativa' : 'vazia', `Sessão pendente: ${d.latestPlan?.today?.letter ?? '—'}`, d.latestPlan, d.latestPlan?.generatedAt ?? null),
     cansaco: source(d.tirednessToday.effectiveLevel ? 'ativa' : 'vazia', `Cansaço de hoje: ${d.tirednessToday.effectiveLevel}`, d.tirednessToday, d.tirednessToday.date),
-    checkins: source(d.bodyCheckins.length ? 'ativa' : 'vazia', `Peso ${d.bodyCheckins[0]?.weight_kg ?? '—'} kg`, d.bodyCheckins, d.bodyCheckins[0]?.created_at ?? null),
+    // Spec 029: peso das pesagens (tendência) + registros de medidas.
+    checkins: source(d.bodyCheckins.length || d.bodyWeights?.length ? 'ativa' : 'vazia', `Peso ${currentWeight(d) ?? '—'} kg`, { weights: d.bodyWeights ?? [], measurements: d.bodyCheckins }, d.bodyCheckins[0]?.created_at ?? null),
     genetica: source(d.genetics ? 'ativa' : 'vazia', `${d.genetics?.traits.length ?? 0} marcadores`, d.genetics),
     exames: source('vazia', '', null),
     nutricao: source(d.nutrition.phase ? 'ativa' : 'vazia', `Fase: ${d.nutrition.phase?.goal ?? '—'}`, d.nutrition.phase, d.nutrition.phase?.startedOn ?? null),

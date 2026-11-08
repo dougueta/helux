@@ -17,7 +17,7 @@ describe('mock-store (T003)', () => {
   it('sem estado salvo: dataset inicial da persona do cookie, persistido', () => {
     const s = store()
     expect(s.getDataset()).toEqual(base('standard-athlete'))
-    expect(JSON.parse(localStorage.getItem(MOCK_STATE_KEY)!)).toMatchObject({ version: 1, personaId: 'standard-athlete' })
+    expect(JSON.parse(localStorage.getItem(MOCK_STATE_KEY)!)).toMatchObject({ version: 2, personaId: 'standard-athlete' })
     expect(s.wasCorrupted()).toBe(false)
   })
 
@@ -53,6 +53,13 @@ describe('mock-store (T003)', () => {
 
     localStorage.setItem(MOCK_STATE_KEY, JSON.stringify({ version: 99, personaId: 'standard-athlete', dataset: {} }))
     expect(store().wasCorrupted()).toBe(true)
+  })
+
+  it('versão anterior (spec 029: v1 sem pesagens) recomeça da persona sem aviso', () => {
+    localStorage.setItem(MOCK_STATE_KEY, JSON.stringify({ version: 1, personaId: 'standard-athlete', dataset: { bodyCheckins: [{ month: '2026-10' }] } }))
+    const s = store()
+    expect(s.getDataset()).toEqual(base('standard-athlete'))
+    expect(s.wasCorrupted()).toBe(false)
   })
 
   it('a fábrica é chamada a cada reset (fixtures imutáveis não vazam mutações)', () => {

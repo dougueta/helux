@@ -44,6 +44,15 @@ Descanso entre séries por exercício/genética/cansaço. Ponto de extensão pro
 - A ligação do `TirednessDialog` com o `useTirednessFlow` (16 props) e o fluxo de iniciar o treino estão duplicados entre `HomeClient` e `ProximoTreinoClient`; extrair um adaptador `<TirednessDialog flow={...} />` (revisão do PR #20, 2026-10-29).
 - `pnpm --filter @helux/web lint` abre o assistente de configuração do ESLint do Next: o lint da web nunca foi configurado (observado na 026, 2026-10-28).
 
+## Check-in (pós-029)
+
+**Origem:** fora do escopo da spec 029 (check-in de peso e medidas), 2026-11-08.
+
+- **Importar peso e medidas do Apple Health** pelo mesmo Atalho que já envia HRV, sono e passos (balança inteligente → `body_weights`). Pergunta: o que fazer quando a pesagem manual e a importada caem no mesmo dia?
+- **Carga máxima estimada (1RM) calculada dos treinos**, no lugar de agachamento/supino/terra digitados no registro de medidas.
+- **Fotos de progresso** (frente, lado e costas) ligadas ao registro de medidas. Dado sensível: depende da seção de LGPD abaixo.
+- **Aviso de que já dá para recalibrar a dieta** (2 semanas desde a última calibração e tendência disponível), descartado no clarify da 029; reavaliar se o botão "Recalibrar dieta" ficar esquecido.
+
 ## LGPD — políticas de armazenamento de dados
 
 Para quando sair do MVP: consentimento, retenção, exportação e exclusão de dados (genéticos e de saúde são dados sensíveis).

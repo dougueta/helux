@@ -79,6 +79,22 @@ Aplicar em ordem, antes do deploy da API da 024 (todas aditivas):
 Depois das migrations, o dono envia o laudo genético pela tela Perfil (upload do JSON). A API não lê mais
 `data/genetics/genera.json` do disco, e o arquivo saiu do repositório.
 
+### Migration da 029 (pesagens e medidas)
+
+`20261108000000_029_body_weights_measurements.sql` **não é aditiva**: cria `body_weights`, copia os pesos dos
+check-ins mensais para lá e transforma `body_checkins` no registro de medidas datado (sai `month` e `weight_kg`).
+A API antiga (`/api/checkins`) deixa de funcionar depois dela. Ordem:
+
+1. Backup do banco (seção 7).
+2. Antes de aplicar, anotar: `select count(*) from body_checkins where weight_kg is not null;`
+3. Aplicar a migration.
+4. Conferir:
+   - `select count(*) from body_weights;` igual ao número do passo 2 (a menos de dois check-ins no mesmo dia);
+   - `select count(*) from body_checkins where body_fat_device_pct is not null and body_fat_device_source is null;` = 0;
+   - `select count(*) from body_checkins where measured_on is null;` = 0;
+   - as calibrações antigas continuam em `diet_phase_calibrations`.
+5. Deploy da API (Render) e, logo depois, do web (Vercel). Entre os dois, a tela de check-in antiga fica quebrada.
+
 ### Ações do dono (privacidade)
 
 - Tornar o repositório privado: o laudo genético esteve versionado num repositório público.

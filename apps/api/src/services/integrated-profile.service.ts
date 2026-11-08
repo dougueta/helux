@@ -1,10 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { parseGeneraJson, parseGeneraTraits } from '@helux/genetics'
-import { buildDayPlan, dayTargets, type NutritionFlags } from '@helux/nutrition'
+import { BODY_FAT_SOURCE_LABEL, buildDayPlan, dayTargets, effectiveBodyFat, trendAt, weeklyChange, type NutritionFlags } from '@helux/nutrition'
 import { preferenceSignalsFromEdits, sourcesUsedOf } from '@helux/ai'
 import {
   SOURCE_KEYS,
-  type BodyCheckin,
+  type BodyMeasurement,
+  type BodyWeight,
   type Goal,
   type HealthCondition,
   type HardConstraints,
@@ -180,22 +181,35 @@ function tirednessSummary(t: TirednessAssessment | null): IntegratedSource {
   return active(`Cansaço de hoje: ${t.effectiveLevel} (fonte: ${t.source}${hrv}). Vale só para hoje.`, t, t.date)
 }
 
-function checkinsSummary(list: BodyCheckin[]): IntegratedSource {
-  if (list.length === 0) return empty()
-  const lines = list.map(c =>
-    [
-      `${c.month}:`,
-      c.weight_kg != null && `peso ${c.weight_kg} kg`,
-      c.body_fat_pct != null && `gordura ${c.body_fat_pct}%`,
-      c.waist_cm != null && `cintura ${c.waist_cm} cm`,
-      c.squat_kg != null && `agachamento ${c.squat_kg} kg`,
-      c.bench_kg != null && `supino ${c.bench_kg} kg`,
-      c.deadlift_kg != null && `terra ${c.deadlift_kg} kg`,
-    ]
-      .filter(Boolean)
-      .join(' '),
-  )
-  return active(lines.join('\n'), list, list[0].created_at)
+const pt = (n: number) => String(Math.round(n * 10) / 10).replace('.', ',')
+const signedPt = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${pt(Math.abs(n))}`
+
+/** Spec 029: peso de tendência (ou última pesagem) e os 2 últimos registros de medidas, com a origem do %. */
+function checkinsSummary(weights: BodyWeight[], measurements: BodyMeasurement[], today: string): IntegratedSource {
+  if (weights.length === 0 && measurements.length === 0) return empty()
+  const lines: string[] = []
+  const trend = trendAt(weights, today)
+  const last = weights[weights.length - 1]
+  if (trend != null) {
+    const change = weeklyChange(weights, today)
+    lines.push(`Peso de tendência: ${pt(trend)} kg${change ? ` (${signedPt(change.kg)} kg em 7 dias)` : ''}`)
+  } else if (last) {
+    lines.push(`Última pesagem: ${pt(Number(last.weight_kg))} kg em ${last.date} (sem pesagens suficientes para a tendência)`)
+  }
+  for (const m of measurements.slice(0, 2)) {
+    const fat = effectiveBodyFat([m])
+    const n = (v: number | null | undefined) => (v != null ? pt(Number(v)) : null)
+    const parts = [
+      n(m.waist_cm) && `cintura ${n(m.waist_cm)} cm`,
+      fat && `gordura ${pt(fat.pct)}% (${BODY_FAT_SOURCE_LABEL[fat.source]})`,
+      n(m.squat_kg) && `agachamento ${n(m.squat_kg)} kg`,
+      n(m.bench_kg) && `supino ${n(m.bench_kg)} kg`,
+      n(m.deadlift_kg) && `terra ${n(m.deadlift_kg)} kg`,
+    ].filter(Boolean)
+    if (parts.length > 0) lines.push(`${m.measured_on}: ${parts.join(', ')}`)
+  }
+  const updatedAt = [last?.date, measurements[0]?.created_at].filter(Boolean).sort().pop() as string
+  return active(lines.join('\n'), { weights: weights.slice(-14), measurements: measurements.slice(0, 2) }, updatedAt)
 }
 
 /**
@@ -218,13 +232,12 @@ function geneticsSummary(raw: unknown | null): IntegratedSource {
 /** Monta o Perfil Integrado (FR-001, R6) e as restrições rígidas (R7). */
 export async function buildIntegratedProfile(userId: string, supabase: SupabaseClient, now: Date = new Date()): Promise<ProfileBuild> {
   const nowIso = now.toISOString()
-  const [settingsRes, profileRes, prefsRes, historyRes, checkinsRes, factsRes, guidanceRes, editsRes, mesocycle, tiredness, nutrition, geneticRaw, conditions] = await Promise.all([
+  const [settingsRes, profileRes, prefsRes, historyRes, factsRes, guidanceRes, editsRes, mesocycle, tiredness, nutrition, geneticRaw, conditions] = await Promise.all([
     supabase.from('agent_source_settings').select('source, enabled').eq('user_id', userId),
     supabase.from('user_training_profile').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('training_preferences').select('*').eq('user_id', userId).maybeSingle(),
     // Spec 024: busca mais para sobrar o bastante depois de tirar as sessões suspeitas.
     supabase.from('workout_sessions').select('id, date, duration_s, exercises, created_at, review_status').eq('user_id', userId).order('date', { ascending: false }).limit(HISTORY_SESSIONS * 2),
-    supabase.from('body_checkins').select('*').eq('user_id', userId).order('month', { ascending: false }).limit(2),
     supabase.from('conversation_facts').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
     supabase.from('shared_guidance').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
     supabase.from('session_edits').select('*').eq('user_id', userId).gte('created_at', new Date(now.getTime() - EDIT_WINDOW_DAYS * DAY_MS).toISOString()),
@@ -266,7 +279,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
 
   let nutritionSource = empty()
   if (nutrition?.phase) {
-    const weight = nutrition.checkins[0]?.weight_kg
+    const weight = nutrition.currentWeightKg
     const dayType = resolveDayType(nutrition, null)
     const targets = weight != null ? dayTargets(nutrition.phase.baseTargets, { dayType, weightKg: Number(weight), flags: nutrition.genetics.flags, tiredness: nutrition.tiredness }).targets : null
     // Refeições do dia pela regra determinística da 018 (sem as trocas do usuário).
@@ -307,7 +320,8 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     historico: historySummary(((historyRes.data ?? []) as (WorkoutSession & { duration_s?: number | null; review_status?: string | null })[]).filter(isValidSession).slice(0, HISTORY_SESSIONS)),
     mesociclo: mesocycleSummary(mesocycle),
     cansaco: tirednessSummary(tiredness),
-    checkins: checkinsSummary((checkinsRes.data ?? []) as BodyCheckin[]),
+    // Spec 029: pesagens e medidas vêm do contexto de nutrição (já carregado acima).
+    checkins: nutrition ? checkinsSummary(nutrition.weights, nutrition.measurements, nutrition.today) : empty(),
     genetica: geneticsSummary(geneticRaw),
     // Spec 019 (exames) ainda não existe: fonte declarada, sempre vazia (R6).
     exames: empty(),

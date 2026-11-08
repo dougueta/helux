@@ -14,7 +14,8 @@ import { recoveryLatestRoutes } from './routes/recovery-latest'
 import { workoutSessionsRoutes } from './routes/workout-sessions'
 import { workoutHistoryRoutes } from './routes/workout-history'
 import { workoutAnalyticsRoutes } from './routes/workout-analytics'
-import { checkinsRoutes } from './routes/checkins'
+import { measurementsRoutes } from './routes/measurements'
+import { weightsRoutes } from './routes/weights'
 import { profileRoutes } from './routes/profile'
 import { tirednessTodayRoutes } from './routes/tiredness-today'
 import { nutritionPhaseRoutes } from './routes/nutrition-phase'
@@ -54,7 +55,8 @@ export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): Fasti
   app.register(workoutSessionsRoutes)
   app.register(workoutHistoryRoutes)
   app.register(workoutAnalyticsRoutes)
-  app.register(checkinsRoutes)
+  app.register(measurementsRoutes)
+  app.register(weightsRoutes)
   app.register(profileRoutes)
   app.register(tirednessTodayRoutes)
   app.register(nutritionPhaseRoutes)

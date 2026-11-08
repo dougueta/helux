@@ -53,3 +53,19 @@ export function activityFactor(daysPerWeek: number | null): number {
   if (daysPerWeek <= 4) return 1.55
   return 1.725
 }
+
+export type NavyEstimateStatus = 'ok' | 'sem-perfil' | 'sem-medidas' | 'inconsistente'
+
+/**
+ * Spec 029 (FR-008/FR-009): estimativa pela fita com o motivo quando não sai —
+ * perfil incompleto, medida faltando ou medidas que não fecham o cálculo.
+ */
+export function navyEstimate(
+  profile: { heightCm: number | null | undefined; sex: Sex | null | undefined },
+  m: { waistCm?: number | null; neckCm?: number | null; hipCm?: number | null },
+): { pct: number | null; status: NavyEstimateStatus } {
+  if (!profile.heightCm || !profile.sex) return { pct: null, status: 'sem-perfil' }
+  if (!m.waistCm || !m.neckCm || (profile.sex === 'feminino' && !m.hipCm)) return { pct: null, status: 'sem-medidas' }
+  const pct = navyBodyFat({ sex: profile.sex, heightCm: profile.heightCm, waistCm: m.waistCm, neckCm: m.neckCm, hipCm: m.hipCm })
+  return pct == null ? { pct: null, status: 'inconsistente' } : { pct, status: 'ok' }
+}

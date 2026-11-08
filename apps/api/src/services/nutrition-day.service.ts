@@ -40,7 +40,7 @@ export async function computeToday(
   changes: { override?: 'descanso' | null; swaps?: MealSwap[] } = {},
 ): Promise<TodayResult> {
   if (!ctx.phase) return { status: 'no-phase', missing: ctx.missing }
-  const weight = ctx.checkins[0]?.weight_kg
+  const weight = ctx.currentWeightKg
   if (weight == null) return { status: 'needs-profile', missing: ctx.missing }
 
   const { data } = await supabase

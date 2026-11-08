@@ -5,7 +5,7 @@
 | Rota | Conteúdo |
 |:---|:---|
 | `/checkin` | Resumo: peso de tendência + variação semanal, último registro de medidas, lembrete de medidas (FR-018) e os botões **Registrar peso** e **Registrar medidas**; link Histórico. O subtítulo "Mensal" sai. |
-| `/checkin/peso` | `WeightForm`: campo de peso (vírgula decimal), data (padrão hoje, sem futuro), lembrete do protocolo de pesagem (FR-015). Confirmação via `Dialog` se `needsConfirmation` (FR-005). Ao salvar com `replaced: true`, toast "Pesagem de hoje substituída". Volta para `/checkin`. |
+| `/checkin/peso` | `WeightForm`: campo de peso (vírgula decimal), data (padrão hoje, sem futuro), lembrete do protocolo de pesagem (FR-015). Confirmação via `Dialog` se `needsConfirmation` (FR-005). Se já há pesagem na data escolhida, avisa antes de salvar ("Já há uma pesagem neste dia (x kg). Salvar vai substituí-la."). Volta para `/checkin` (ou para a Nutrição com `?voltar=nutricao`). `?data=YYYY-MM-DD` abre a pesagem daquele dia para corrigir. |
 | `/checkin/medidas` | `MeasurementForm` novo registro. Aceita `?voltar=nutricao` como hoje. |
 | `/checkin/medidas/[id]` | `MeasurementForm` edição + botão Apagar (FR-013). |
 | `/checkin/history` | Abas **Peso** e **Medidas**. Peso: `TrendChart` (pontos + linha de tendência, sem ligar gaps), lista de pesagens com editar/apagar (FR-006), aviso quando não há tendência (US1-4). Medidas: lista de registros com massa gorda/magra, cintura/altura e origem do %; gráfico de % com uma série por origem (FR-012). |

@@ -48,7 +48,16 @@ function db(over: Record<string, Record<string, unknown>[]> = {}) {
     // Spec 024: laudo genético no banco (antes vinha do arquivo do repositório).
     genetic_reports: [{ user_id: 'u1', raw: GENERA_FAKE }],
     daily_tiredness_signals: [{ user_id: 'u1', date: '2026-10-20', level: 'cansado', override_automatic: false }],
-    body_checkins: [{ user_id: 'u1', id: 'c1', month: '2026-10', weight_kg: 81, waist_cm: 86, neck_cm: 39, created_at: '2026-10-05T10:00:00Z' }],
+    // Spec 029: pesagens + registro de medidas (com % pela fita).
+    body_checkins: [{ user_id: 'u1', id: 'c1', measured_on: '2026-10-05', waist_cm: 86, neck_cm: 39, body_fat_navy_pct: 15.6, squat_kg: 120, created_at: '2026-10-05T10:00:00Z' }],
+    body_weights: [
+      { user_id: 'u1', id: 'p1', date: '2026-10-11', weight_kg: 81.4 },
+      { user_id: 'u1', id: 'p2', date: '2026-10-12', weight_kg: 81.4 },
+      { user_id: 'u1', id: 'p3', date: '2026-10-13', weight_kg: 81.4 },
+      { user_id: 'u1', id: 'p4', date: '2026-10-18', weight_kg: 81 },
+      { user_id: 'u1', id: 'p5', date: '2026-10-19', weight_kg: 81 },
+      { user_id: 'u1', id: 'p6', date: '2026-10-20', weight_kg: 81 },
+    ],
     diet_phases: [],
     conversation_facts: [
       { user_id: 'u1', id: 'f1', category: 'sintoma', text: 'dor no ombro direito ao supinar', origin_agent: 'medicina', created_at: '2026-10-19T10:00:00Z', updated_at: '2026-10-19T10:00:00Z', deleted_at: null },
@@ -111,6 +120,9 @@ describe('buildIntegratedProfile (022 T008)', () => {
     expect(profile.sources.relatos.summary).toMatch(/dor no ombro direito/)
     expect(profile.sources.relatos.summary).not.toMatch(/fato apagado/)
     expect(profile.sources.edicoes.summary).toMatch(/Supino Reto \(Barra\)/)
+    // Spec 029: peso de tendência com a variação e o registro de medidas com a origem do %.
+    expect(profile.sources.checkins.summary).toMatch(/Peso de tendência: 81 kg \(−0,4 kg em 7 dias\)/)
+    expect(profile.sources.checkins.summary).toMatch(/2026-10-05: cintura 86 cm, gordura 15,6% \(fita\), agachamento 120 kg/)
   })
 
   it('restrições rígidas: preferências + restrições de segurança ativas; expirada sai e vira aviso', async () => {

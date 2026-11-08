@@ -78,7 +78,7 @@ describe('apiFetch', () => {
 
     const { apiFetch, ApiError } = await import('@/services/api-client')
     try {
-      await apiFetch('/api/checkins', { method: 'POST', body: '{}' })
+      await apiFetch('/api/measurements', { method: 'POST', body: '{}' })
       expect.fail('should have thrown')
     } catch (err) {
       expect(err).toBeInstanceOf(ApiError)
