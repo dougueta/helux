@@ -4,4 +4,4 @@
  */
 export { CATALOG, findCatalogItem, type CatalogEntry } from './catalog'
 export { resolveDemo, DEMO_SPECS, MOVEMENT_BASES } from './demos'
-export { PENDING_IDS } from './resolve'
+export { PENDING_IDS } from './pending'

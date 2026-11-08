@@ -113,7 +113,7 @@ description: "Tarefas de implementação da 028: banco de exercícios coerente c
 - [X] T040 [US1] Conferir os 5 itens em `/dev/demos` e rodar `pnpm demos:evidence --ids pullover-halteres,russian-twist-halteres,cadeira-adutora,flexao-pike-corporal,mesa-flexora --out <dir-no-scratchpad>`, revisando os quadros e o GIF antes de enviar ao dono
 - [X] T041 [US1] ⛔ Portão do dono: pedir autorização para abrir o PR do piloto, confirmar que `.github/workflows/demo-evidence.yml` publicou o comentário e aguardar a aprovação por item. **Nada da Phase 7 em diante começa antes da aprovação.** Ajustes pedidos voltam para T036–T039 ou para o motor (T016, T019, T020)
 - [X] T042 [US1] Rodar `pnpm demos:approve` só com os ids aprovados, o que atualiza `packages/exercises/src/review/approvals.json` e `packages/exercises/src/review/pending.json`
-- [ ] T043 [US1] Atualizar em `specs/028-banco-exercicios-demonstracao/plan.md` a estimativa de movimentos base e a divisão dos lotes da Phase 7 com o aprendido no piloto
+- [X] T043 [US1] Atualizar em `specs/028-banco-exercicios-demonstracao/plan.md` a estimativa de movimentos base e a divisão dos lotes da Phase 7 com o aprendido no piloto
 
 ---
 
@@ -125,29 +125,29 @@ description: "Tarefas de implementação da 028: banco de exercícios coerente c
 
 ### Resolução e tela de treino (US1)
 
-- [ ] T044 [US1] Escrever `packages/exercises/src/__tests__/resolve.test.ts` com a ordem de `data-model.md` (`approachOf`, variante ativa, `catalogId`, `cardio.modality`, nome exato, nome normalizado ou `knownNames`, sem correspondência), `demoState` `nova`, `legada` e `indisponivel`, e item pendente preservando o conteúdo atual. Confirmar que falha
-- [ ] T045 [US1] Implementar `resolvePlannedItem` em `packages/exercises/src/resolve.ts` e exportar em `packages/exercises/src/index.ts` (FR-004, FR-005, R7)
-- [ ] T046 [US1] Ampliar `apps/web/src/__tests__/lib/exerciseDisplay.test.ts` e fazer `apps/web/src/lib/exerciseDisplay.ts` ler de `resolvePlannedItem`, mantendo `notes` do plano (FR-020)
-- [ ] T047 [P] [US1] Escrever `apps/web/src/__tests__/components/workout/DemoUnavailable.test.tsx` e implementar `apps/web/src/components/workout/DemoUnavailable.tsx`, com o texto "Demonstração indisponível para este item", o nome e `notes` (FR-006)
-- [ ] T048 [US1] Ampliar `apps/web/src/__tests__/app/workout-page.test.tsx` (todo item com "Ver execução", inclusive aquecimento, volta à calma, mobilidade, cardio e sem variantes; subtítulo sem variantes quando N = 0; ícone neutro na miniatura sem demonstração; linhas de séries, carga e esforço inalteradas) e implementar em `apps/web/src/app/workout/page.tsx`
-- [ ] T049 [US1] Ampliar `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx` e implementar em `apps/web/src/components/workout/ExerciseSheet.tsx`: demonstração por `demoState`, `DemoUnavailable`, sem aba "Variantes" quando não há variantes, e cardio com passos, zona prescrita e sem mapa obrigatório
+- [X] T044 [US1] Escrever `packages/exercises/src/__tests__/resolve.test.ts` com a ordem de `data-model.md` (`approachOf`, variante ativa, `catalogId`, `cardio.modality`, nome exato, nome normalizado ou `knownNames`, sem correspondência), `demoState` `nova`, `legada` e `indisponivel`, e item pendente preservando o conteúdo atual. Confirmar que falha
+- [X] T045 [US1] Implementar `resolvePlannedItem` em `packages/exercises/src/resolve.ts` e exportar em `packages/exercises/src/index.ts` (FR-004, FR-005, R7)
+- [X] T046 [US1] Ampliar `apps/web/src/__tests__/lib/exerciseDisplay.test.ts` e fazer `apps/web/src/lib/exerciseDisplay.ts` ler de `resolvePlannedItem`, mantendo `notes` do plano (FR-020)
+- [X] T047 [P] [US1] Escrever `apps/web/src/__tests__/components/workout/DemoUnavailable.test.tsx` e implementar `apps/web/src/components/workout/DemoUnavailable.tsx`, com o texto "Demonstração indisponível para este item", o nome e `notes` (FR-006)
+- [X] T048 [US1] Ampliar `apps/web/src/__tests__/app/workout-page.test.tsx` (todo item com "Ver execução", inclusive aquecimento, volta à calma, mobilidade, cardio e sem variantes; subtítulo sem variantes quando N = 0; ícone neutro na miniatura sem demonstração; linhas de séries, carga e esforço inalteradas) e implementar em `apps/web/src/app/workout/page.tsx`
+- [X] T049 [US1] Ampliar `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx` e implementar em `apps/web/src/components/workout/ExerciseSheet.tsx`: demonstração por `demoState`, `DemoUnavailable`, sem aba "Variantes" quando não há variantes, e cardio com passos, zona prescrita e sem mapa obrigatório
 
 ### Orientações (US4)
 
-- [ ] T050 [US4] Escrever em `packages/exercises/src/__tests__/catalog.test.ts` os invariantes de orientação para itens fora de pendentes: `setup` e `steps` com ao menos 1 item, `commonError` em força, frases com até 110 caracteres e passos sem "Boa opção", "Bom para", "Excelente", "Ótimo" e "Alternativa" (FR-018, FR-019, SC-004)
-- [ ] T051 [US4] Exibir em `apps/web/src/components/workout/ExerciseSheet.tsx`, com testes em `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx`, `setup` + `steps`, `commonError` em âmbar, `context` separado e `notes` como complemento
+- [X] T050 [US4] Escrever em `packages/exercises/src/__tests__/catalog.test.ts` os invariantes de orientação para itens fora de pendentes: `setup` e `steps` com ao menos 1 item, `commonError` em força, frases com até 110 caracteres e passos sem "Boa opção", "Bom para", "Excelente", "Ótimo" e "Alternativa" (FR-018, FR-019, SC-004)
+- [X] T051 [US4] Exibir em `apps/web/src/components/workout/ExerciseSheet.tsx`, com testes em `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx`, `setup` + `steps`, `commonError` em âmbar, `context` separado e `notes` como complemento
 
 ### Mapa muscular (US3)
 
-- [ ] T052 [P] [US3] Ampliar `apps/web/src/__tests__/components/workout/MuscleMap.test.tsx` e implementar em `apps/web/src/components/workout/MuscleMap.tsx`: vista de costas para `dorsal`, `trapezio`, `lombar`, `gluteo`, `posterior`, `panturrilha` e `triceps`; rótulos das novas chaves; chave desconhecida como texto bruto; `mesa-flexora` destacando posterior de coxa (FR-015)
+- [X] T052 [P] [US3] Ampliar `apps/web/src/__tests__/components/workout/MuscleMap.test.tsx` e implementar em `apps/web/src/components/workout/MuscleMap.tsx`: vista de costas para `dorsal`, `trapezio`, `lombar`, `gluteo`, `posterior`, `panturrilha` e `triceps`; rótulos das novas chaves; chave desconhecida como texto bruto; `mesa-flexora` destacando posterior de coxa (FR-015)
 
 ### Conhecer a variante antes de trocar (US2)
 
-- [ ] T053 [US2] Ampliar `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx`: botão "Ver" com `aria-label`, abertura na mesma folha, "Voltar às variantes" e fechar a folha sem chamar `onApply`, "Trocar" chamando `onApply`, sem "Trocar" no modo só leitura e "Equivalente" com o mesmo conteúdo. Confirmar que falha (FR-010)
-- [ ] T054 [US2] Implementar a pré-visualização em `apps/web/src/components/workout/ExerciseSheet.tsx`
-- [ ] T055 [US2] Escrever os testes e implementar em `apps/web/src/components/workout/ExerciseSheet.tsx` a variante ativa com título, demonstração, passos, músculos, cadência e etiquetas da própria variante (FR-011), e a variante ativa fora da lista com a etiqueta "Atual" (FR-035)
-- [ ] T056 [US2] Conferir o fluxo em `apps/web/src/__tests__/app/workout-page.test.tsx` e `apps/web/src/__tests__/app/treinos-preview.test.tsx` (a pré-visualização não altera o treino; o preview da 026 continua só leitura)
-- [ ] T057 Rodar `pnpm typecheck && pnpm test`, incluindo `apps/web/src/__tests__/design-system-guard.test.ts`, e os passos 1 a 4, 7 e 8 do roteiro em `quickstart.md`
+- [X] T053 [US2] Ampliar `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx`: botão "Ver" com `aria-label`, abertura na mesma folha, "Voltar às variantes" e fechar a folha sem chamar `onApply`, "Trocar" chamando `onApply`, sem "Trocar" no modo só leitura e "Equivalente" com o mesmo conteúdo. Confirmar que falha (FR-010)
+- [X] T054 [US2] Implementar a pré-visualização em `apps/web/src/components/workout/ExerciseSheet.tsx`
+- [X] T055 [US2] Escrever os testes e implementar em `apps/web/src/components/workout/ExerciseSheet.tsx` a variante ativa com título, demonstração, passos, músculos, cadência e etiquetas da própria variante (FR-011), e a variante ativa fora da lista com a etiqueta "Atual" (FR-035)
+- [X] T056 [US2] Conferir o fluxo em `apps/web/src/__tests__/app/workout-page.test.tsx` e `apps/web/src/__tests__/app/treinos-preview.test.tsx` (a pré-visualização não altera o treino; o preview da 026 continua só leitura)
+- [X] T057 Rodar `pnpm typecheck && pnpm test`, incluindo `apps/web/src/__tests__/design-system-guard.test.ts`, e os passos 1 a 4, 7 e 8 do roteiro em `quickstart.md`
 
 **Checkpoint**: Telas prontas; cada aprovação seguinte aparece sozinha.
 
@@ -178,7 +178,7 @@ Alterar uma base já aprovada exige nova aprovação dos itens que a usam, no me
 - [ ] T061 [US1] Lote 4, Empurrar na vertical (8), em `packages/exercises/src/demos/empurrar-vertical.ts`: `desenvolvimento-militar-barra`, `desenvolvimento-halteres`, `desenvolvimento-arnold`, `desenvolvimento-maquina`, `handstand-pushup-assistido`, `desenvolvimento-landmine-barra`, `desenvolvimento-unilateral-halteres`, `desenvolvimento-smith-maquina`
 - [ ] T062 [US1] Lote 5, Puxar na vertical (9), em `packages/exercises/src/demos/puxar-vertical.ts`: `barra-fixa-corporal`, `barra-fixa-supinada-corporal`, `puxada-alta-cabo`, `puxada-alta-fechada-cabo`, `puxada-alta-neutra-cabo`, `pulldown-assistido-maquina`, `pullover-barra`, `barra-fixa-neutra-corporal`, `puxada-unilateral-cabo`
 - [ ] T063 [US1] Lote 6, Puxar na horizontal (11), em `packages/exercises/src/demos/puxar-horizontal.ts`: `remada-curvada-barra`, `remada-curvada-halteres`, `remada-unilateral-halteres`, `remada-cavalinho-barra`, `remada-baixa-cabo`, `remada-maquina`, `remada-invertida-corporal`, `remada-t-barra`, `remada-pendlay-barra`, `face-pull-cabo`, `remada-alta-barra`
-- [ ] T064 [US1] Lote 7, Core (15), em `packages/exercises/src/demos/core.ts`: `prancha-abdominal-corporal`, `prancha-lateral-corporal`, `abdominal-supra-corporal`, `abdominal-infra-corporal`, `elevacao-pernas-barra`, `roda-abdominal`, `prancha-rotacao`, `abdominal-polia-cabo`, `rotacao-tronco-cabo`, `dead-bug-corporal`, `pallof-press-cabo`, `prancha-toque-ombro-corporal`, `hollow-hold-corporal`, `abdominal-bicicleta-corporal`, `rollout-barra`
+- [ ] T064 [US1] Lote 7, Core (15) (dividido em 7a e 7b com um PR cada, ver `plan.md`, T043), em `packages/exercises/src/demos/core.ts`: `prancha-abdominal-corporal`, `prancha-lateral-corporal`, `abdominal-supra-corporal`, `abdominal-infra-corporal`, `elevacao-pernas-barra`, `roda-abdominal`, `prancha-rotacao`, `abdominal-polia-cabo`, `rotacao-tronco-cabo`, `dead-bug-corporal`, `pallof-press-cabo`, `prancha-toque-ombro-corporal`, `hollow-hold-corporal`, `abdominal-bicicleta-corporal`, `rollout-barra`
 - [ ] T065 [US1] Lote 8, Bíceps e tríceps (14), em `packages/exercises/src/demos/isolamento-bracos.ts`: `rosca-direta-barra`, `rosca-direta-halteres`, `rosca-alternada-halteres`, `rosca-martelo-halteres`, `rosca-scott-barra`, `rosca-cabo`, `rosca-21-barra`, `rosca-concentrada-halteres`, `triceps-testa-barra`, `triceps-testa-halteres`, `triceps-corda-cabo`, `triceps-frances-halteres`, `mergulho-banco-corporal`, `paralelas-corporal`
 - [ ] T066 [US1] Lote 9, Ombro, trapézio e peito (11), em `packages/exercises/src/demos/isolamento-tronco.ts`: `elevacao-lateral-halteres`, `elevacao-frontal-halteres`, `elevacao-posterior-halteres`, `elevacao-lateral-cabo`, `crucifixo-invertido-maquina`, `encolhimento-ombros-halteres`, `encolhimento-barra`, `crucifixo-halteres`, `crucifixo-inclinado-halteres`, `crossover-cabo`, `peck-deck-maquina`
 - [ ] T067 [US1] Lote 10, Isolamento de pernas (8), em `packages/exercises/src/demos/isolamento-pernas.ts`: `cadeira-abdutora`, `cadeira-extensora`, `cadeira-flexora`, `elevacao-panturrilha-pe-maquina`, `elevacao-panturrilha-sentado-maquina`, `elevacao-panturrilha-corporal`, `elevacao-panturrilha-halteres`, `panturrilha-leg-press`

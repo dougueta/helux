@@ -44,3 +44,57 @@ describe('MuscleMap', () => {
     expect(screen.queryByText('Primário')).not.toBeInTheDocument()
   })
 })
+
+describe('MuscleMap — chaves novas e vista de costas (028, T052)', () => {
+  it('sem músculo de costas, mostra só a vista de frente', () => {
+    render(<MuscleMap primary={['peito']} secondary={['ombro']} />)
+    expect(screen.getByLabelText('músculos trabalhados')).toBeInTheDocument()
+    expect(screen.queryByLabelText('músculos trabalhados, costas')).toBeNull()
+  })
+
+  it.each(['dorsal', 'trapezio', 'lombar', 'gluteo', 'posterior', 'panturrilha', 'triceps'])(
+    'com %s, acrescenta a vista de costas com a região destacada',
+    (key) => {
+      render(<MuscleMap primary={[key]} />)
+      const back = screen.getByLabelText('músculos trabalhados, costas')
+      const shapes = back.querySelectorAll(`[data-muscle="${key}"]`)
+      expect(shapes.length).toBeGreaterThan(0)
+      shapes.forEach((el) => expect(el).toHaveAttribute('fill', 'var(--accent)'))
+    },
+  )
+
+  it.each(['antebraco', 'adutores', 'abdutores'])('desenha %s na vista de frente', (key) => {
+    render(<MuscleMap primary={[key]} />)
+    const front = screen.getByLabelText('músculos trabalhados')
+    expect(front.querySelectorAll(`[data-muscle="${key}"]`).length).toBeGreaterThan(0)
+  })
+
+  it.each([
+    ['antebraco', 'Antebraço'],
+    ['trapezio', 'Trapézio'],
+    ['lombar', 'Lombar'],
+    ['posterior', 'Posterior de coxa'],
+    ['gluteo', 'Glúteo'],
+    ['adutores', 'Adutores'],
+    ['abdutores', 'Abdutores'],
+    ['panturrilha', 'Panturrilha'],
+  ])('rótulo de %s', (key, label) => {
+    render(<MuscleMap primary={[key]} />)
+    expect(screen.getByText(label)).toBeInTheDocument()
+  })
+
+  it('chave desconhecida aparece como texto bruto na legenda', () => {
+    render(<MuscleMap primary={['xpto']} />)
+    expect(screen.getByText('xpto')).toBeInTheDocument()
+  })
+
+  it('mesa flexora destaca o posterior de coxa (FR-015)', async () => {
+    const { resolvePlannedItem } = await import('@helux/exercises')
+    const r = resolvePlannedItem({ name: 'Mesa Flexora', sets: 3, reps: '10', weight: '' })
+    expect(r.muscles?.primary).toContain('posterior')
+    render(<MuscleMap primary={r.muscles!.primary} secondary={r.muscles!.secondary} />)
+    const back = screen.getByLabelText('músculos trabalhados, costas')
+    back.querySelectorAll('[data-muscle="posterior"]').forEach((el) => expect(el).toHaveAttribute('fill', 'var(--accent)'))
+    expect(screen.getByText('Posterior de coxa')).toBeInTheDocument()
+  })
+})

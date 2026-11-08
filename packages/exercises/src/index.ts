@@ -1,7 +1,7 @@
 export * from './types'
 export type { Point, Pose, MovementBase, DemoSpec, Scene, ResolvedDemo, Keyframe, LoopMode } from './engine/types'
 export { STRENGTH_EXERCISES, MUSCLE_GROUP_LABEL, STRESS_OVERRIDES, findStrengthExercise } from './strength'
-export { isDemoReady, PENDING_IDS } from './resolve'
+export { isDemoReady, PENDING_IDS, createResolver, resolvePlannedItem, GEAR_LABEL, type ResolverSources } from './resolve'
 export { loadDemo } from './load-demo'
 export { poseAt, centralPhase, keyPhases } from './engine/pose-at'
 export * as SceneGeometry from './engine/scene-geometry'

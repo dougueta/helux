@@ -678,3 +678,111 @@ describe('WorkoutPage — resumo de esforço (spec 027, US3)', () => {
     expect(screen.queryByRole('region', { name: 'Esforço' })).not.toBeInTheDocument()
   })
 })
+
+describe('WorkoutPage — "Ver execução" em todo item (028, T048)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  function seedItems(planExercises: ActiveWorkoutState['planExercises'], current = 0) {
+    const state: ActiveWorkoutState = {
+      planExercises,
+      exerciseStates: planExercises.map(e => Array.from({ length: e.sets }, () => ({ weight: 0, reps: 8, done: false }))),
+      currentExerciseIndex: current,
+      startedAt: new Date().toISOString(),
+      variantByExerciseIndex: {},
+      executedVariantByExerciseIndex: {},
+      effortByExerciseIndex: {},
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  }
+
+  const ITEMS = [
+    { name: 'Pullover (Halteres)', sets: 3, reps: '10', weight: '12kg' },
+    { name: 'Polichinelo leve', sets: 1, reps: '2 min', weight: '', phase: 'aquecimento' },
+    { name: 'Bike ergométrica', sets: 1, reps: '20 min', weight: '', cardio: { modality: 'bike', minutes: 20, zone: 'Z2' } },
+    { name: 'Alongamento de peitoral', sets: 1, reps: '30 s', weight: '', phase: 'volta-calma' },
+  ] as ActiveWorkoutState['planExercises']
+
+  it.each([0, 1, 2, 3])('item %i tem o acesso "Ver execução"', async (i) => {
+    seedItems(ITEMS, i)
+    render(<WorkoutPage />)
+    expect(await screen.findByText('Ver execução')).toBeInTheDocument()
+  })
+
+  it('sem variantes, o subtítulo omite as variantes', async () => {
+    seedItems(ITEMS, 0)
+    render(<WorkoutPage />)
+    expect(await screen.findByText('Técnica e músculos')).toBeInTheDocument()
+    expect(screen.queryByText(/variantes/)).toBeNull()
+  })
+
+  it('com variantes, o subtítulo mostra N variantes', async () => {
+    seedItems([
+      {
+        name: 'Supino Reto (Barra)', sets: 3, reps: '8', weight: '60kg',
+        variants: [
+          { id: 'supino-reto-barra', rec: true, name: 'Supino Reto (Barra)', equip: 'Barra', level: 'Avançado', match: 90, motion: 'press-flat', implement: 'barbell', why: '' },
+          { id: 'supino-reto-halteres', name: 'Supino Reto (Halteres)', equip: 'Halteres', level: 'Intermediário', match: 85, motion: 'press-flat', implement: 'dumbbell', why: '' },
+        ],
+      },
+    ] as ActiveWorkoutState['planExercises'])
+    render(<WorkoutPage />)
+    expect(await screen.findByText('Técnica, músculos e 2 variantes')).toBeInTheDocument()
+  })
+
+  it('item sem demonstração mostra o ícone neutro na miniatura', async () => {
+    seedItems(ITEMS, 3)
+    const { container } = render(<WorkoutPage />)
+    await screen.findByText('Ver execução')
+    expect(container.querySelector('[data-demo-unavailable-icon]')).not.toBeNull()
+    expect(container.querySelector('[data-motion]')).toBeNull()
+  })
+
+  it('linhas de séries e esforço continuam no principal', async () => {
+    seedItems(ITEMS, 0)
+    render(<WorkoutPage />)
+    expect(await screen.findByText(/3 × 10/)).toBeInTheDocument()
+  })
+})
+
+describe('WorkoutPage — ver variante antes de trocar (028, T056)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.clearAllMocks()
+  })
+
+  it('a pré-visualização não altera o treino', async () => {
+    const state: ActiveWorkoutState = {
+      planExercises: [
+        {
+          name: 'Supino Reto (Barra)', sets: 2, reps: '8', weight: '60kg',
+          variants: [
+            { id: 'supino-reto-barra', rec: true, name: 'Supino Reto (Barra)', equip: 'Barra', level: 'Avançado', match: 90, motion: 'press-flat', implement: 'barbell', why: '' },
+            { id: 'supino-reto-halteres', name: 'Supino Reto (Halteres)', equip: 'Halteres', level: 'Intermediário', match: 85, motion: 'press-flat', implement: 'dumbbell', why: '' },
+          ],
+        },
+      ] as ActiveWorkoutState['planExercises'],
+      exerciseStates: [[{ weight: 60, reps: 8, done: false }, { weight: 60, reps: 8, done: false }]],
+      currentExerciseIndex: 0,
+      startedAt: new Date().toISOString(),
+      variantByExerciseIndex: {},
+      executedVariantByExerciseIndex: {},
+      effortByExerciseIndex: {},
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    const user = userEvent.setup()
+    render(<WorkoutPage />)
+
+    await user.click(await screen.findByText('Ver execução'))
+    await user.click(screen.getByRole('tab', { name: /Variantes/ }))
+    await user.click(screen.getByRole('button', { name: 'Ver execução de Supino Reto (Halteres)' }))
+    await user.click(screen.getByRole('button', { name: 'Voltar às variantes' }))
+    await user.click(screen.getByRole('button', { name: 'Fechar' }))
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Supino Reto (Barra)')
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
+    expect(saved.variantByExerciseIndex).toEqual({})
+  })
+})

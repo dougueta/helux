@@ -5,7 +5,7 @@
 import type { CatalogEntry } from '../catalog'
 import { resolveDemoSpec } from '../engine/resolve-demo'
 import type { MovementBase, ResolvedDemo } from '../engine/types'
-import type { CatalogKind } from '../types'
+import type { CatalogKind, Guidance } from '../types'
 import { canonicalJson, contentHash } from './hash'
 
 export interface CheckContext {
@@ -22,6 +22,30 @@ export function resolvedDemoOf(item: CatalogEntry, bases: Record<string, Movemen
 /** Hash do conteúdo revisado do item: demonstração resolvida (com a base) + orientação. */
 export function itemHash(item: CatalogEntry, bases: Record<string, MovementBase>): string {
   return contentHash({ demo: resolvedDemoOf(item, bases), guidance: item.guidance ?? null })
+}
+
+/** Limite de cada frase da orientação (data-model.md). */
+export const MAX_PHRASE = 110
+
+/** Aberturas de recomendação, que vão para `context` e nunca abrem um passo. */
+const FORBIDDEN_OPENINGS = ['Boa opção', 'Bom para', 'Excelente', 'Ótimo', 'Alternativa']
+
+function fold(text: string): string {
+  return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+}
+
+/** Regras de escrita da orientação (FR-018, FR-019). Vazio = dentro das regras. */
+export function guidanceIssues(g: Guidance, _kind: CatalogKind): string[] {
+  const issues: string[] = []
+  const phrases = [...(g.setup ?? []), ...(g.steps ?? []), ...(g.commonError ? [g.commonError] : [])]
+  for (const p of phrases) {
+    if (p.length > MAX_PHRASE) issues.push(`frase com ${p.length} caracteres`)
+  }
+  for (const step of g.steps ?? []) {
+    const opening = FORBIDDEN_OPENINGS.find((o) => fold(step.trim()).startsWith(fold(o)))
+    if (opening) issues.push(`passo começa com "${opening}"`)
+  }
+  return issues
 }
 
 /** O que falta no conteúdo do item (demo, base, orientação), sem olhar a aprovação. */
@@ -52,6 +76,11 @@ export function checkCatalog(items: CatalogEntry[], ctx: CheckContext): string[]
     const missing = missingContent(item, ctx.bases)
     if (missing.length) {
       for (const m of missing) problems.push(`${item.id}: falta ${m}`)
+      continue
+    }
+    const issues = guidanceIssues(item.guidance!, item.kind)
+    if (issues.length) {
+      for (const m of issues) problems.push(`${item.id}: ${m}`)
       continue
     }
     complete.push(item)

@@ -3,7 +3,7 @@ import { CATALOG, type CatalogEntry } from '../catalog'
 import { DEMO_SPECS, MOVEMENT_BASES } from '../demos'
 import { validateBase } from '../engine/kinematics'
 import { PENDING_IDS } from '../resolve'
-import { checkCatalog, coverageByKind, itemHash } from '../review/check'
+import { checkCatalog, coverageByKind, guidanceIssues, itemHash } from '../review/check'
 import approvals from '../review/approvals.json'
 import snapshot from './fixtures/strength-snapshot.json'
 import type { MovementBase } from '../engine/types'
@@ -120,5 +120,47 @@ describe('coverageByKind', () => {
     expect(lines.some((l) => /^forca: \d+\/122$/.test(l))).toBe(true)
     expect(lines.some((l) => /^cardio: \d+\/11$/.test(l))).toBe(true)
     expect(lines.some((l) => /^preparacao: \d+\/\d+$/.test(l))).toBe(true)
+  })
+})
+
+describe('orientação — regras de escrita (FR-018, FR-019, SC-004)', () => {
+  const ok = { setup: ['Deite no banco com os pés no chão.'], steps: ['Desça o halter atrás da cabeça.'], commonError: 'Arquear a lombar.' }
+
+  it('aceita uma orientação dentro das regras', () => {
+    expect(guidanceIssues(ok, 'forca')).toEqual([])
+  })
+
+  it('recusa frase com mais de 110 caracteres, em qualquer campo', () => {
+    const long = 'a'.repeat(111)
+    expect(guidanceIssues({ ...ok, setup: [long] }, 'forca')).toEqual(['frase com 111 caracteres'])
+    expect(guidanceIssues({ ...ok, steps: [long] }, 'forca')).toEqual(['frase com 111 caracteres'])
+    expect(guidanceIssues({ ...ok, commonError: long }, 'forca')).toEqual(['frase com 111 caracteres'])
+    expect(guidanceIssues({ ...ok, steps: ['a'.repeat(110)] }, 'forca')).toEqual([])
+  })
+
+  it.each(['Boa opção quando não há barra.', 'Bom para iniciantes.', 'Excelente para o glúteo.', 'Ótimo exercício.', 'Alternativa ao supino.', 'boa opcao para casa.'])(
+    'recusa passo que abre com recomendação: %s',
+    (step) => {
+      expect(guidanceIssues({ ...ok, steps: [step] }, 'forca')).toHaveLength(1)
+      expect(guidanceIssues({ ...ok, steps: [step] }, 'forca')[0]).toMatch(/^passo começa com/)
+    },
+  )
+
+  it('recomendação em context é permitida', () => {
+    expect(guidanceIssues({ ...ok, context: 'Boa opção quando não há barra.' }, 'forca')).toEqual([])
+  })
+
+  it('todo item fora de pendentes cumpre as regras', () => {
+    const problems = CATALOG.filter((i) => !PENDING_IDS.has(i.id) && i.guidance).flatMap((i) =>
+      guidanceIssues(i.guidance!, i.kind).map((m) => `${i.id}: ${m}`),
+    )
+    expect(problems).toEqual([])
+  })
+
+  it('checkCatalog aponta a orientação fora das regras', () => {
+    const item = CATALOG.find((i) => i.id === 'pullover-halteres')!
+    const bad = { ...item, guidance: { ...item.guidance!, steps: ['Boa opção para o peito.'] } }
+    const msgs = checkCatalog([bad], { pending: new Set(), approvals: {}, bases: MOVEMENT_BASES })
+    expect(msgs).toContain('pullover-halteres: passo começa com "Boa opção"')
   })
 })

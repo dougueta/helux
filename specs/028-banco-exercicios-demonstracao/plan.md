@@ -27,7 +27,7 @@ Decisões em [research.md](./research.md) (R1–R12), entidades em [data-model.m
 **Project Type**: Monorepo; novo `packages/exercises`; toca `packages/ai`, `packages/types`, `apps/web`, `apps/api` e `.github/workflows`
 **Performance Goals**: A demonstração aparece em até 1 s (SC-007), sem chamada de rede depois de carregado o código da tela de treino
 **Constraints**: Nenhum nome de exercício é removido ou alterado (R3). `equipment` e `muscleGroup` mantêm o significado usado nas restrições e no volume por grupo (R4). Regras de segurança e progressão inalteradas (FR-017). Nada em produção depende de GIF. O repositório é público, então nenhum dado pessoal entra em commit, backup ou evidência
-**Scale/Scope**: Cerca de 178 itens e cerca de 45 novos; estimativa de 60 a 80 movimentos base, a confirmar depois do piloto
+**Scale/Scope**: Cerca de 178 itens e cerca de 45 novos; estimativa revista depois do piloto (T043): 110 a 130 movimentos base, cerca de 75 de força
 
 ## Constitution Check
 
@@ -130,6 +130,17 @@ Cada etapa pode ir para produção sozinha (FR-032, FR-034).
 | 7. Preparação e cardio | Catálogo novo, 11 modalidades, geração da IA, correspondência de nomes antigos | Avaliação da IA sem regressão |
 | 8. Encerramento | Lista de pendências vazia; remoção de `motions.ts`, do caminho antigo e do supino como último recurso | SC-001 a SC-010 |
 
+### Aprendizados do piloto (T043, 2026-11-08)
+
+O dono aprovou os 5 itens no PR #23. O que muda no plano:
+
+- **Base por item incomum**: os 5 itens precisaram de 5 bases próprias, e a abdução saiu de graça com `reverseBase`. Itens fora do padrão quase não reaproveitam base; o reaproveitamento vem de variantes de carga da mesma família (barra, halteres, máquina), que mudam só `gear` e `scene`.
+- **Mudança de ângulo é base nova**: inclinação do banco, pés elevados ou tronco inclinado mudam a geometria e pedem base própria. Só equipamento e cena não.
+- **Estimativa de bases por lote de força** (contando reaproveitamento dentro do lote): Agachar ~9, Dobrar o quadril ~8, Empurrar na horizontal ~6, Empurrar na vertical ~5, Puxar na vertical ~4 (`pullover-barra` usa a base do piloto), Puxar na horizontal ~6, Core ~12, Bíceps e tríceps ~8, Ombro, trapézio e peito ~8, Isolamento de pernas ~5 (`cadeira-abdutora` usa a base do piloto). Total ~71, mais as 6 do piloto. Preparação (48 itens) tende a ~40 bases e cardio (11) a ~8. Por isso a faixa subiu de 60–80 para 110–130.
+- **Divisão dos lotes**: o limite de 15 itens por PR continua. O Lote 7 (Core) tem 15 itens e ~12 bases novas, então é dividido em 7a (pranchas e anti-rotação) e 7b (flexão e rotação de tronco), cada um com seu PR. Os demais lotes ficam como estão em `tasks.md`.
+- **Vista frontal**: serve para adução, abdução e rotação, mas encurta a coxa e não mostra a rotação dos ombros. Usar só quando o movimento é lateral; nos demais, perfil.
+- **Evidência**: cerca de 40 s por item na captura local e GIFs de 450 a 580 KB, bem abaixo do limite de 2 MB. Um lote de 15 leva cerca de 10 min no workflow.
+
 ## Riscos
 
 - **Qualidade visual depende de revisão humana**: testes garantem física e cobertura, não se o movimento é reconhecível. O piloto valida o método antes do volume, e o SC-006 mede o resultado.
@@ -138,6 +149,7 @@ Cada etapa pode ir para produção sozinha (FR-032, FR-034).
 - **Dados de produção**: o script de variantes grava em `mesocycle_plans`. Ele simula por padrão, guarda o backup fora do repositório, ignora sessões concluídas e só é aplicado com confirmação.
 - **Bundle da web**: o catálogo pode pesar. As demonstrações entram em um chunk carregado sob demanda, com o tamanho medido na etapa 2.
   - **Medição da etapa 2 (T021, 2026-11-08, `pnpm --filter @helux/web build`)**: First Load JS de `/workout` foi de 179 kB para 182 kB, e o de `/treinos` de 191 kB para 195 kB (motor + partes do desenho). Sem `"sideEffects": false` em `@helux/exercises`, o banco de força inteiro (~97 kB brutos) entrava no bundle pelo `index.ts` e elevava os números para 195 kB e 208 kB. O chunk do registro de demonstrações ainda não aparece porque nada chama `loadDemo` antes da etapa 4; medir de novo em T057.
+  - **Medição da etapa 4 (T057, 2026-11-08)**: `/workout` foi de 182 kB para 199 kB, `/treinos` de 195 kB para 211 kB e `/treinos/proximo` ficou em 194 kB. O aumento vem do catálogo de força (~90 kB brutos, ~24 kB gzip, num chunk compartilhado), que a tela agora lê para resolver orientação, músculos e equipamento. O registro de demonstrações continua num chunk sob demanda (~4 kB, carregado por `loadDemo`). Se o peso incomodar, o próximo passo é carregar também o catálogo sob demanda, ao abrir a folha.
 - **Fidelidade em cenas complexas**: itens como natação e o circuito são difíceis de representar. Se a revisão recusar um deles, o caminho é melhorar a cena ou usar legenda; a lista só fecha quando o item for aprovado.
 - **Comentários no PR**: o workflow precisa de permissão de escrita, então não roda em PRs de fork. Hoje o repositório só recebe PRs internos.
 

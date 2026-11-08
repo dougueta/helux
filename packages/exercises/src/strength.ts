@@ -1,4 +1,4 @@
-import { PENDING_IDS } from './resolve'
+import { PENDING_IDS } from './pending'
 import type { Guidance, JointStress, MuscleKey, Muscles, StressLevel, StrengthExercise } from './types'
 
 /**

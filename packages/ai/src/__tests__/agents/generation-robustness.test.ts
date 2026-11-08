@@ -7,6 +7,7 @@ import { fitPlanToMethod } from '../../agents/method-repair'
 import { validateAgainstMethod } from '../../agents/method-validation'
 import { buildExerciseItemSchema, buildMesocycleSchema } from '../../agents/mesocycle-schema'
 import { EXERCISE_BANK } from '../../exercise-bank'
+import { withRealSources } from '../../mesocycle-planner'
 import { EVAL_PROFILES } from '../../agents/__evals__/treino-profiles'
 
 // Spec 024 (R17, T113–T116, T119): zerar as falhas de geração.
@@ -186,7 +187,6 @@ describe('R17b: viabilidade não desce abaixo do útil; fontes reais', () => {
   })
 
   it('withRealSources tira das decisões as fontes sem dados', async () => {
-    const { withRealSources } = await import('../../mesocycle-planner')
     const profile = { generatedAt: '', sources: { perfil: { status: 'ativa' }, restricoes: { status: 'vazia' } } } as never
     const out = withRealSources([{ topic: 'condicao', choice: 'x', sources: ['perfil', 'restricoes'], reason: 'y' }] as never, profile)
     expect(out[0].sources).toEqual(['perfil'])
