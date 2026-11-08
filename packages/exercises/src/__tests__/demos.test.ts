@@ -47,3 +47,21 @@ describe('loadDemo', () => {
     await expect(loadDemo('item-inexistente')).resolves.toBeNull()
   })
 })
+
+describe('lote 1, Agachar (T058)', () => {
+  it('os 15 itens têm demonstração, base válida, equipamento e orientação completos', async () => {
+    const { AGACHAR } = await import('../demos/agachar')
+    const { CATALOG } = await import('../catalog')
+    const { MOVEMENT_BASES } = await import('../demos')
+    const { missingContent, guidanceIssues } = await import('../review/check')
+    const { validateBase } = await import('../engine/kinematics')
+    const ids = Object.keys(AGACHAR.demos)
+    expect(ids).toHaveLength(15)
+    for (const id of ids) {
+      const item = CATALOG.find((i) => i.id === id)!
+      expect(missingContent(item, MOVEMENT_BASES), id).toEqual([])
+      expect(guidanceIssues(item.guidance!, item.kind), id).toEqual([])
+    }
+    for (const base of AGACHAR.bases) expect(validateBase(base)).toEqual([])
+  })
+})
