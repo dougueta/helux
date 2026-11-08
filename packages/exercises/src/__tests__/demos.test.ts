@@ -84,4 +84,10 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
     const { EMPURRAR_HORIZONTAL } = await import('../demos/empurrar-horizontal')
     await expectBatchComplete(EMPURRAR_HORIZONTAL, 11)
   })
+
+  it('lote 4, Empurrar na vertical (T061)', async () => {
+    const { EMPURRAR_VERTICAL } = await import('../demos/empurrar-vertical')
+    // a família também tem a flexão pike, aprovada no piloto
+    await expectBatchComplete(EMPURRAR_VERTICAL, 9)
+  })
 })

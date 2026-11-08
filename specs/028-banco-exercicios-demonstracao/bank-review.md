@@ -77,3 +77,20 @@ Antes, os supinos e as flexões tinham primário peito e secundário ombro e tr�
 | (lote 3) | guidance | recomendações nos passos de 7 itens ("Boa opção…", "Permite…", "Use trava…", "Regule…") | movidas para `context` | FR-018 e FR-019. |
 
 Demonstração: o supino com pegada neutra usa a mesma base do supino com halteres, e a diferença (palmas voltadas uma para a outra) não aparece de perfil. Por isso ele tem legenda. O supino declinado usa a cena nova `banco-declinado`. No cartão de revisão, a legenda passa a aparecer uma vez, abaixo dos três quadros.
+
+## Lote 4: Empurrar na vertical (T061)
+
+Antes, os 8 itens tinham primário ombro e secundário tríceps. `muscleGroup`, `pattern` e `stress` não mudam.
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| desenvolvimento-militar-barra | muscles | ombro; tríceps | ombro; tríceps, trapézio e core | Em pé, o core segura o tronco e o trapézio sobe as escápulas no topo. |
+| desenvolvimento-unilateral-halteres | muscles | ombro; tríceps | ombro; tríceps e core | Com carga de um lado só, o core evita a inclinação lateral. |
+| desenvolvimento-halteres | muscles | ombro; tríceps | ombro; tríceps e trapézio | O trapézio sobe as escápulas no topo. |
+| desenvolvimento-landmine-barra | muscles | ombro; tríceps | ombro e peito; tríceps e core | O trajeto inclinado para a frente recruta a parte de cima do peito. |
+| handstand-pushup-assistido | muscles | ombro; tríceps | ombro e tríceps; trapézio e core | O peso do corpo inteiro exige tríceps como primário, e o core mantém o corpo alinhado. |
+| desenvolvimento-arnold, desenvolvimento-maquina, desenvolvimento-smith-maquina | muscles | ombro; tríceps | igual | Conferido. |
+| (lote 4) | gear | — | conferido | Sem correção. |
+| (lote 4) | guidance | recomendações nos passos de 4 itens ("Pode ser feito…", "Recruta…", "Boa opção…", "Exercício avançado…") | movidas para `context` | FR-018 e FR-019. |
+
+Demonstração: o desenvolvimento unilateral usa a base do desenvolvimento em pé com halter; de perfil, só aparece o braço que trabalha. Halteres, máquina e Smith sentados dividem a base, e o implemento diferencia cada um. O landmine desenha a barra do apoio no chão até a mão (`anchor`).

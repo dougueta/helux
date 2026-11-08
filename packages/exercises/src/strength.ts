@@ -1018,6 +1018,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'empurrar-vertical',
+    guidance: {
+      setup: ['Em pé, barra na altura da clavícula, pegada um pouco além dos ombros, core firme'],
+      steps: [
+        'Empurre a barra para cima em linha reta, afastando a cabeça para ela passar',
+        'Termine com os braços estendidos e a barra sobre o meio do pé',
+        'Desça controlando até a altura da clavícula',
+      ],
+      commonError: 'Arquear a lombar para terminar a repetição',
+    },
+    muscles: { primary: ['ombro'], secondary: ['triceps', 'trapezio', 'core'] },
     cues: [
       'Barra na altura da clavícula, pés na largura dos ombros, core contraído',
       'Empurre a barra para cima em linha reta, cabeça se afasta levemente no caminho',
@@ -1032,6 +1042,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'empurrar-vertical',
+    guidance: {
+      setup: ['Sentado com as costas no encosto, halteres na altura dos ombros, cotovelos um pouco à frente'],
+      steps: [
+        'Empurre os halteres para cima até quase estender os cotovelos',
+        'Aproxime os halteres no topo, sem bater um no outro',
+        'Desça controlando até a altura dos ombros',
+      ],
+      commonError: 'Deixar os halteres caírem rápido na descida',
+    },
+    muscles: { primary: ['ombro'], secondary: ['triceps', 'trapezio'] },
     cues: [
       'Halteres na altura dos ombros, cotovelos levemente à frente do corpo',
       'Empurre para cima até quase estender os cotovelos',
@@ -1046,6 +1066,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'empurrar-vertical',
+    guidance: {
+      setup: ['Sentado com as costas no encosto, halteres na frente do rosto, palmas para você'],
+      steps: [
+        'Abra os cotovelos para os lados enquanto gira os punhos',
+        'Empurre para cima e termine com as palmas para a frente',
+        'Desça fazendo o caminho inverso, até as palmas voltarem para você',
+      ],
+      commonError: 'Girar os punhos rápido demais e perder o controle do halter',
+      context: 'O giro trabalha as três porções do deltoide; use carga menor que no desenvolvimento comum',
+    },
+    muscles: { primary: ['ombro'], secondary: ['triceps'] },
     cues: [
       'Inicie com halteres à frente do corpo, palmas voltadas para você',
       'Rotacione os punhos enquanto empurra para cima, terminando com palmas para frente',
@@ -1102,6 +1133,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'empurrar-vertical',
+    guidance: {
+      setup: ['Banco ajustado para as pegadas ficarem na altura dos ombros, costas no encosto'],
+      steps: [
+        'Empurre as pegadas para cima até quase estender os cotovelos',
+        'Volte controlando até a altura dos ombros',
+        'Mantenha as costas no encosto o tempo todo',
+      ],
+      commonError: 'Travar os cotovelos com força no topo',
+      context: 'O trajeto guiado permite treinar ombro perto da falha com segurança',
+    },
+    muscles: { primary: ['ombro'], secondary: ['triceps'] },
     cues: [
       'Ajuste o banco para que os apoios fiquem na altura dos ombros',
       'Empurre para cima sem travar os cotovelos com força',
@@ -1183,6 +1225,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'empurrar-vertical',
+    guidance: {
+      setup: ['De cabeça para baixo, mãos no chão perto da parede e calcanhares apoiados nela'],
+      steps: [
+        'Dobre os cotovelos e desça a cabeça em direção ao chão, devagar',
+        'Pare antes de a cabeça tocar o chão',
+        'Empurre de volta até quase estender os cotovelos',
+      ],
+      commonError: 'Descer sem controle e bater a cabeça no chão',
+      context: 'Exercício avançado; domine a flexão pike antes de tentar',
+    },
+    muscles: { primary: ['ombro', 'triceps'], secondary: ['trapezio', 'core'] },
     cues: [
       'Pés apoiados na parede, corpo em posição invertida, mãos no chão',
       'Desça a cabeça em direção ao chão controlando o movimento',
@@ -1864,6 +1917,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'empurrar-vertical',
+    guidance: {
+      setup: ['Em pé, uma ponta da barra presa no apoio e a outra na mão, na altura do ombro'],
+      steps: [
+        'Empurre a barra para cima e para a frente, seguindo o arco',
+        'Termine com o braço quase estendido, sem travar o cotovelo',
+        'Desça controlando até a altura do ombro, com o core firme',
+      ],
+      commonError: 'Inclinar o tronco para trás para terminar a repetição',
+      context: 'O trajeto inclinado costuma ser mais confortável para quem sente o ombro acima da cabeça',
+    },
+    muscles: { primary: ['ombro', 'peito'], secondary: ['triceps', 'core'] },
     cues: [
       'Ponta da barra presa no canto ou no suporte landmine, a outra ponta na altura do ombro',
       'Empurre a barra para cima e à frente em arco, sem travar o cotovelo',
@@ -1878,6 +1942,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'empurrar-vertical',
+    guidance: {
+      setup: ['Em pé, um halter na altura do ombro, a mão livre na cintura'],
+      steps: [
+        'Empurre o halter acima da cabeça, com o tronco reto',
+        'Termine com o braço estendido, sem travar o cotovelo com força',
+        'Desça controlando até a altura da orelha',
+      ],
+      commonError: 'Inclinar o tronco para o lado oposto para compensar',
+    },
+    muscles: { primary: ['ombro'], secondary: ['triceps', 'core'] },
     cues: [
       'Um halter na altura do ombro, a mão livre na cintura para equilibrar',
       'Empurre o halter acima da cabeça mantendo o tronco reto',
@@ -1892,6 +1966,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'smith',
     pattern: 'empurrar-vertical',
+    guidance: {
+      setup: ['Banco com encosto vertical sob a barra guiada, pegada um pouco além dos ombros'],
+      steps: [
+        'Destrave a barra e desça até a altura do queixo',
+        'Empurre para cima até quase estender os cotovelos',
+        'Mantenha as costas apoiadas no banco',
+      ],
+      commonError: 'Descer a barra atrás da nuca, sobrecarregando o ombro',
+    },
+    muscles: { primary: ['ombro'], secondary: ['triceps'] },
     cues: [
       'Banco com encosto vertical sob a barra guiada, pegada um pouco mais larga que os ombros',
       'Destrave a barra e desça até a altura do queixo',
