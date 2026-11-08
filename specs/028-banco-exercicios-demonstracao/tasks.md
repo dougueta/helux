@@ -33,9 +33,9 @@ description: "Tarefas de implementação da 028: banco de exercícios coerente c
 
 **Purpose**: Criar o pacote e ligá-lo aos consumidores.
 
-- [ ] T001 Criar `@helux/exercises` nos moldes de `packages/workouts`: `packages/exercises/package.json` (dependência só de `@helux/types`), `packages/exercises/tsconfig.json`, `packages/exercises/vitest.config.ts` e `packages/exercises/src/index.ts` vazio
-- [ ] T002 Declarar a dependência `workspace:*` em `packages/ai/package.json`, `apps/web/package.json` e `apps/api/package.json`, acrescentar `@helux/exercises` a `transpilePackages` em `apps/web/next.config.mjs` e rodar `pnpm install` para atualizar `pnpm-lock.yaml`
-- [ ] T003 [P] Criar `specs/028-banco-exercicios-demonstracao/bank-review.md` com a tabela `id | campo | antes | depois | justificativa` (FR-016)
+- [X] T001 Criar `@helux/exercises` nos moldes de `packages/workouts`: `packages/exercises/package.json` (dependência só de `@helux/types`), `packages/exercises/tsconfig.json`, `packages/exercises/vitest.config.ts` e `packages/exercises/src/index.ts` vazio
+- [X] T002 Declarar a dependência `workspace:*` em `packages/ai/package.json`, `apps/web/package.json` e `apps/api/package.json`, acrescentar `@helux/exercises` a `transpilePackages` em `apps/web/next.config.mjs` e rodar `pnpm install` para atualizar `pnpm-lock.yaml`. Também copiar o pacote no `apps/api/Dockerfile`, que lista cada pacote do workspace
+- [X] T003 [P] Criar `specs/028-banco-exercicios-demonstracao/bank-review.md` com a tabela `id | campo | antes | depois | justificativa` (FR-016)
 
 ---
 
@@ -45,16 +45,16 @@ description: "Tarefas de implementação da 028: banco de exercícios coerente c
 
 **Checkpoint**: Suíte atual verde e nenhuma diferença em `EXERCISE_BANK` para os consumidores.
 
-- [ ] T004 Gerar, a partir do banco atual, `packages/exercises/src/__tests__/fixtures/strength-snapshot.json` (os 122 itens com `id`, `name`, `muscleGroup`, `equipment`, `pattern` e `stress`) e escrever em `packages/exercises/src/__tests__/strength.test.ts` o teste que congela os nomes e compara esses campos (R3, R4). Confirmar que falha
-- [ ] T005 Criar `packages/exercises/src/types.ts` com `CatalogKind`, `CatalogItem`, `Gear`, `MuscleKey`, `Guidance`, `StrengthExercise`, `PreparationItem`, `CardioContent` e `ResolvedItem`, conforme `data-model.md` e `contracts/catalog.md`
-- [ ] T006 Mover `RAW_ENTRIES`, `deriveMuscles` e `STRESS_OVERRIDES` de `packages/ai/src/exercise-bank.ts` para `packages/exercises/src/strength.ts`, exportando `STRENGTH_EXERCISES`, com `cues` e `muscles` iguais aos atuais enquanto o item estiver pendente
-- [ ] T007 Trocar `packages/ai/src/exercise-bank.ts` por reexportações de `EXERCISE_BANK`, `MUSCLE_GROUP_LABEL`, `STRESS_OVERRIDES`, `findBankExercise` e dos tipos, e confirmar que `packages/ai/src/__tests__/exercise-bank.test.ts` continua verde sem alteração
-- [ ] T008 Escrever o teste de `gear` em `packages/exercises/src/__tests__/strength.test.ts` (todo item tem `gear`; `leg-press-45` e `peck-deck-maquina` são `maquina`; `crossover-cabo` e `rosca-cabo` são `cabo`; `kettlebell-swing` é `kettlebell`; `triceps-corda-cabo` é `corda`) e preencher `gear` nos 122 itens em `packages/exercises/src/strength.ts`, sem alterar `equipment` (FR-014)
-- [ ] T009 Escrever `packages/exercises/src/__tests__/review.test.ts`, criar `packages/exercises/src/review/pending.json` com os ids dos 122 exercícios e das 11 modalidades, `packages/exercises/src/review/approvals.json` vazio e `isDemoReady(id)` em `packages/exercises/src/resolve.ts` (FR-032)
-- [ ] T010 Escrever em `packages/exercises/src/__tests__/review.test.ts` os testes de hash (determinístico, independente da ordem das chaves, muda com alteração na base ou na orientação) e implementar `packages/exercises/src/review/hash.ts`, usado só por testes e scripts, fora de `packages/exercises/src/index.ts`, para `node:crypto` não entrar no bundle da web (FR-025, R12)
-- [ ] T011 Escrever `packages/exercises/src/__tests__/catalog.test.ts` com os invariantes 1 a 5 de `contracts/catalog.md`, a mensagem `"<id>: falta <item>"`, a legenda obrigatória quando dois itens têm a mesma demonstração resolvida (FR-003) e o log `aprovados/total` por catálogo, que substitui a medição por categoria (FR-022, FR-023). Para validar a mensagem, retirar temporariamente um id da lista de pendências, confirmar a falha e restaurar
-- [ ] T012 [P] Escrever o teste de compatibilidade e acrescentar `catalogId?` e `approachOf?` a `PlannedExercise` em `packages/types/src/workout.ts` (planos antigos continuam válidos)
-- [ ] T013 Rodar `pnpm typecheck && pnpm test` e registrar o resultado. Etapa concluída somente com tudo verde
+- [X] T004 Gerar, a partir do banco atual, `packages/exercises/src/__tests__/fixtures/strength-snapshot.json` (os 122 itens com `id`, `name`, `muscleGroup`, `equipment`, `pattern` e `stress`) e escrever em `packages/exercises/src/__tests__/strength.test.ts` o teste que congela os nomes e compara esses campos (R3, R4). Confirmar que falha
+- [X] T005 Criar `packages/exercises/src/types.ts` com `CatalogKind`, `CatalogItem`, `Gear`, `MuscleKey`, `Guidance`, `StrengthExercise`, `PreparationItem`, `CardioContent` e `ResolvedItem`, conforme `data-model.md` e `contracts/catalog.md`
+- [X] T006 Mover `RAW_ENTRIES`, `deriveMuscles` e `STRESS_OVERRIDES` de `packages/ai/src/exercise-bank.ts` para `packages/exercises/src/strength.ts`, exportando `STRENGTH_EXERCISES`, com `cues` e `muscles` iguais aos atuais enquanto o item estiver pendente
+- [X] T007 Trocar `packages/ai/src/exercise-bank.ts` por reexportações de `EXERCISE_BANK`, `MUSCLE_GROUP_LABEL`, `STRESS_OVERRIDES`, `findBankExercise` e dos tipos, e confirmar que `packages/ai/src/__tests__/exercise-bank.test.ts` continua verde sem alteração
+- [X] T008 Escrever o teste de `gear` em `packages/exercises/src/__tests__/strength.test.ts` (todo item tem `gear`; `leg-press-45` e `peck-deck-maquina` são `maquina`; `crossover-cabo` e `rosca-cabo` são `cabo`; `kettlebell-swing` é `kettlebell`; `triceps-corda-cabo` é `corda`) e preencher `gear` nos 122 itens em `packages/exercises/src/strength.ts`, sem alterar `equipment` (FR-014)
+- [X] T009 Escrever `packages/exercises/src/__tests__/review.test.ts`, criar `packages/exercises/src/review/pending.json` com os ids dos 122 exercícios e das 11 modalidades, `packages/exercises/src/review/approvals.json` vazio e `isDemoReady(id)` em `packages/exercises/src/resolve.ts` (FR-032)
+- [X] T010 Escrever em `packages/exercises/src/__tests__/review.test.ts` os testes de hash (determinístico, independente da ordem das chaves, muda com alteração na base ou na orientação) e implementar `packages/exercises/src/review/hash.ts`, usado só por testes e scripts, fora de `packages/exercises/src/index.ts`, para `node:crypto` não entrar no bundle da web (FR-025, R12)
+- [X] T011 Escrever `packages/exercises/src/__tests__/catalog.test.ts` com os invariantes 1 a 5 de `contracts/catalog.md`, a mensagem `"<id>: falta <item>"`, a legenda obrigatória quando dois itens têm a mesma demonstração resolvida (FR-003) e o log `aprovados/total` por catálogo, que substitui a medição por categoria (FR-022, FR-023). Para validar a mensagem, retirar temporariamente um id da lista de pendências, confirmar a falha e restaurar
+- [X] T012 [P] Escrever o teste de compatibilidade e acrescentar `catalogId?` e `approachOf?` a `PlannedExercise` em `packages/types/src/workout.ts` (planos antigos continuam válidos)
+- [X] T013 Rodar `pnpm typecheck && pnpm test` e registrar o resultado. Etapa concluída somente com tudo verde
 
 ---
 
@@ -64,14 +64,14 @@ description: "Tarefas de implementação da 028: banco de exercícios coerente c
 
 **Checkpoint**: Testes de física verdes; os itens existentes continuam com a renderização atual.
 
-- [ ] T014 Escrever `packages/exercises/src/__tests__/engine.test.ts` com poses sintéticas: `at` crescente, ao menos 2 keyframes, variação do comprimento dos ossos abaixo de 3%, pontos de `fixed` deslocando no máximo 1 unidade e os modos `reps`, `hold`, `alternate` e `cycle`. Confirmar que falha
-- [ ] T015 Criar `packages/exercises/src/engine/types.ts` com `Point`, `Pose`, `MovementBase`, `DemoSpec`, `Scene` e `ResolvedDemo`
-- [ ] T016 Implementar a interpolação por ângulo a partir de `root` em `packages/exercises/src/engine/kinematics.ts` e `poseAt` em `packages/exercises/src/engine/pose-at.ts`, até `engine.test.ts` passar
-- [ ] T017 Escrever os testes e criar `packages/exercises/src/demos/index.ts`, com o registro de bases e demonstrações, e `loadDemo(id)` com importação dinâmica, exportando em `packages/exercises/src/index.ts` (R7). Incluir nos invariantes de `catalog.test.ts` a validação física de toda base registrada
-- [ ] T018 Ampliar `apps/web/src/__tests__/components/workout/ExerciseDemo.test.tsx`: `phase` fixa o quadro, `playing`, `nonce`, pose central em movimento reduzido, `hold` sem repetição, `alternate` com um lado por vez, `cycle` contínuo, `caption` como texto, `aria-label` e acento só no implemento. Manter os testes atuais. Confirmar que falha
-- [ ] T019 Implementar em `apps/web/src/components/workout/ExerciseDemo.tsx` o caminho com `demo: ResolvedDemo` de `contracts/ui.md`, mantendo o viewBox 220 × 250, os tokens e o caminho antigo intacto (FR-007, FR-008)
-- [ ] T020 Acrescentar as cenas (banco reto e inclinado, máquina, barra, parede, degrau, solo) e os implementos (kettlebell, cabo, máquina, Smith, corda, elástico, roda) em `apps/web/src/components/workout/ExerciseDemo.tsx`, com testes de que `gear` sem carga não desenha implemento. Se o arquivo ficar grande demais, separar em `apps/web/src/components/workout/demo-parts.tsx`
-- [ ] T021 Medir o tamanho do chunk das demonstrações com `pnpm --filter @helux/web build` e registrar o resultado na seção de riscos de `specs/028-banco-exercicios-demonstracao/plan.md`
+- [X] T014 Escrever `packages/exercises/src/__tests__/engine.test.ts` com poses sintéticas: `at` crescente, ao menos 2 keyframes, variação do comprimento dos ossos abaixo de 3%, pontos de `fixed` deslocando no máximo 1 unidade e os modos `reps`, `hold`, `alternate` e `cycle`. Confirmar que falha
+- [X] T015 Criar `packages/exercises/src/engine/types.ts` com `Point`, `Pose`, `MovementBase`, `DemoSpec`, `Scene` e `ResolvedDemo`
+- [X] T016 Implementar a interpolação por ângulo a partir de `root` em `packages/exercises/src/engine/kinematics.ts` e `poseAt` em `packages/exercises/src/engine/pose-at.ts`, até `engine.test.ts` passar
+- [X] T017 Escrever os testes e criar `packages/exercises/src/demos/index.ts`, com o registro de bases e demonstrações, e `loadDemo(id)` com importação dinâmica, exportando em `packages/exercises/src/index.ts` (R7). Incluir nos invariantes de `catalog.test.ts` a validação física de toda base registrada
+- [X] T018 Ampliar `apps/web/src/__tests__/components/workout/ExerciseDemo.test.tsx`: `phase` fixa o quadro, `playing`, `nonce`, pose central em movimento reduzido, `hold` sem repetição, `alternate` com um lado por vez, `cycle` contínuo, `caption` como texto, `aria-label` e acento só no implemento. Manter os testes atuais. Confirmar que falha
+- [X] T019 Implementar em `apps/web/src/components/workout/ExerciseDemo.tsx` o caminho com `demo: ResolvedDemo` de `contracts/ui.md`, mantendo o viewBox 220 × 250, os tokens e o caminho antigo intacto (FR-007, FR-008)
+- [X] T020 Acrescentar as cenas (banco reto e inclinado, máquina, barra, parede, degrau, solo) e os implementos (kettlebell, cabo, máquina, Smith, corda, elástico, roda) em `apps/web/src/components/workout/ExerciseDemo.tsx`, com testes de que `gear` sem carga não desenha implemento. Se o arquivo ficar grande demais, separar em `apps/web/src/components/workout/demo-parts.tsx`
+- [X] T021 Medir o tamanho do chunk das demonstrações com `pnpm --filter @helux/web build` e registrar o resultado na seção de riscos de `specs/028-banco-exercicios-demonstracao/plan.md`
 
 ---
 
@@ -81,19 +81,19 @@ description: "Tarefas de implementação da 028: banco de exercícios coerente c
 
 **Independent Test**: Adicionar um item de teste sem demonstração e ver a verificação falhar apontando o que falta; completar e ver passar; abrir um PR de teste e receber o comentário com a evidência.
 
-- [ ] T022 [US5] Adicionar `playwright@1.64.1`, `gifenc@1.0.3`, `pngjs@7.0.0` e `tsx` a `devDependencies` em `apps/web/package.json`, e os scripts `demos:evidence`, `demos:approve` e `demos:check-pending` em `package.json` e `apps/web/package.json`
-- [ ] T023 [P] [US5] Escrever `apps/web/src/__tests__/app/dev-demos.test.tsx`: `notFound()` em produção, listagem de todos os catálogos com situação e orientações, filtros por catálogo e pendentes, e parâmetros `ids`, `phase` e `frame=1` (FR-024)
-- [ ] T024 [US5] Implementar `apps/web/src/app/dev/demos/page.tsx`, sem link em nenhum menu, e acrescentar a rota a `apps/web/src/__tests__/mocks/production-guard.test.ts`
-- [ ] T025 [P] [US5] Escrever `apps/web/src/__tests__/scripts/check-pending.test.ts`: id adicionado falha, id removido passa, lista igual passa, base sem o arquivo passa
-- [ ] T026 [US5] Implementar `apps/web/scripts/demos-check-pending.ts` conforme `contracts/review-flow.md`, com a comparação em função exportada e testável
-- [ ] T027 [P] [US5] Escrever `apps/web/src/__tests__/scripts/approve.test.ts`: grava o hash e tira o id de `pending.json`, falha para id inexistente ou sem demonstração, `--all-in-pr` só cobre itens alterados, itens não citados continuam pendentes
-- [ ] T028 [US5] Implementar `apps/web/scripts/demos-approve.ts`
-- [ ] T029 [P] [US5] Escrever `apps/web/src/__tests__/scripts/evidence.test.ts`: seleção dos itens alterados (hash difere e tem `demo`; pendente sem `demo` é ignorado), corpo do comentário com o marcador `<!-- demo-evidence -->`, links `blob/<sha>/...?raw=true`, aviso acima de 15 itens e mensagem quando não há alterações
-- [ ] T030 [US5] Implementar `apps/web/scripts/demo-evidence.ts` conforme `contracts/review-flow.md`: `start.png`, `mid.png`, `end.png`, `card.png` e `demo.gif` em 390 × 844, com `deviceScaleFactor` 2, `phase` fixa, 12 quadros por segundo e no máximo 2 MB, e falha em erro de captura
-- [ ] T031 [US5] Em `.github/workflows/ci.yml`, usar `fetch-depth: 0` no job `checks` e acrescentar o passo `pnpm demos:check-pending --base origin/${{ github.base_ref }}` só em `pull_request`
-- [ ] T032 [US5] Criar `.github/workflows/demo-evidence.yml` conforme `contracts/review-flow.md`: gatilhos e caminhos, sem PR de fork, permissões só neste workflow, branch órfã `demo-evidence/pr-<n>`, comentário único e remoção da branch em `closed`, com job próprio de limpeza
-- [ ] T033 [P] [US5] Escrever `packages/exercises/README.md` com o caminho único para adicionar item e a regra sobre `pending.json` (FR-021)
-- [ ] T034 [US5] Validar localmente a história: item de teste sem demonstração falha com `"<id>: falta demo"`; com demonstração e sem aprovação falha; depois de aprovado passa; alterado volta a falhar; adicionado a `pending.json` falha em `demos:check-pending`. Reverter o item de teste e confirmar que não sobrou nada no diff
+- [X] T022 [US5] Adicionar `playwright@1.64.1`, `gifenc@1.0.3`, `pngjs@7.0.0` e `tsx` a `devDependencies` em `apps/web/package.json`, e os scripts `demos:evidence`, `demos:approve` e `demos:check-pending` em `package.json` e `apps/web/package.json`
+- [X] T023 [P] [US5] Escrever `apps/web/src/__tests__/app/dev-demos.test.tsx`: `notFound()` em produção, listagem de todos os catálogos com situação e orientações, filtros por catálogo e pendentes, e parâmetros `ids`, `phase` e `frame=1` (FR-024)
+- [X] T024 [US5] Implementar `apps/web/src/app/dev/demos/page.tsx`, sem link em nenhum menu, e acrescentar a rota a `apps/web/src/__tests__/mocks/production-guard.test.ts`
+- [X] T025 [P] [US5] Escrever `apps/web/src/__tests__/scripts/check-pending.test.ts`: id adicionado falha, id removido passa, lista igual passa, base sem o arquivo passa
+- [X] T026 [US5] Implementar `apps/web/scripts/demos-check-pending.ts` conforme `contracts/review-flow.md`, com a comparação em função exportada e testável
+- [X] T027 [P] [US5] Escrever `apps/web/src/__tests__/scripts/approve.test.ts`: grava o hash e tira o id de `pending.json`, falha para id inexistente ou sem demonstração, `--all-in-pr` só cobre itens alterados, itens não citados continuam pendentes
+- [X] T028 [US5] Implementar `apps/web/scripts/demos-approve.ts`
+- [X] T029 [P] [US5] Escrever `apps/web/src/__tests__/scripts/evidence.test.ts`: seleção dos itens alterados (hash difere e tem `demo`; pendente sem `demo` é ignorado), corpo do comentário com o marcador `<!-- demo-evidence -->`, links `blob/<sha>/...?raw=true`, aviso acima de 15 itens e mensagem quando não há alterações
+- [X] T030 [US5] Implementar `apps/web/scripts/demo-evidence.ts` conforme `contracts/review-flow.md`: `start.png`, `mid.png`, `end.png`, `card.png` e `demo.gif` em 390 × 844, com `deviceScaleFactor` 2, `phase` fixa, 12 quadros por segundo e no máximo 2 MB, e falha em erro de captura
+- [X] T031 [US5] Em `.github/workflows/ci.yml`, usar `fetch-depth: 0` no job `checks` e acrescentar o passo `pnpm demos:check-pending --base origin/${{ github.base_ref }}` só em `pull_request`
+- [X] T032 [US5] Criar `.github/workflows/demo-evidence.yml` conforme `contracts/review-flow.md`: gatilhos e caminhos, sem PR de fork, permissões só neste workflow, branch órfã `demo-evidence/pr-<n>`, comentário único e remoção da branch em `closed`, com job próprio de limpeza
+- [X] T033 [P] [US5] Escrever `packages/exercises/README.md` com o caminho único para adicionar item e a regra sobre `pending.json` (FR-021)
+- [X] T034 [US5] Validar localmente a história: item de teste sem demonstração falha com `"<id>: falta demo"`; com demonstração e sem aprovação falha; depois de aprovado passa; alterado volta a falhar; adicionado a `pending.json` falha em `demos:check-pending`. Reverter o item de teste e confirmar que não sobrou nada no diff
 
 **Checkpoint**: Trava ativa. A geração do comentário só é comprovada no PR do piloto (T041).
 
@@ -105,12 +105,12 @@ description: "Tarefas de implementação da 028: banco de exercícios coerente c
 
 **Independent Test**: O dono identifica cada exercício pela evidência no PR e aprova o método.
 
-- [ ] T035 [US1] Em `packages/exercises/src/strength.ts`, escrever `guidance`, `muscles` explícitos e revisar `gear` de `pullover-halteres`, `russian-twist-halteres`, `cadeira-adutora`, `flexao-pike-corporal` e `mesa-flexora`, sem tirá-los de `pending.json`. Registrar as correções em `specs/028-banco-exercicios-demonstracao/bank-review.md`
-- [ ] T036 [P] [US1] Criar a base e a demonstração de `pullover-halteres` em `packages/exercises/src/demos/puxar-vertical.ts`, com teste de que difere da base de puxada
-- [ ] T037 [P] [US1] Criar a base e a demonstração de `russian-twist-halteres` em `packages/exercises/src/demos/core.ts`, com a pessoa sentada no solo, sem cabo
-- [ ] T038 [P] [US1] Criar as bases e demonstrações de `cadeira-adutora` e `mesa-flexora` em `packages/exercises/src/demos/isolamento-pernas.ts`, com teste de que a adução é o movimento oposto da abdução e de que a mesa é deitada
-- [ ] T039 [P] [US1] Criar a base e a demonstração de `flexao-pike-corporal` em `packages/exercises/src/demos/empurrar-vertical.ts`, com apoio de mãos e pés fixos
-- [ ] T040 [US1] Conferir os 5 itens em `/dev/demos` e rodar `pnpm demos:evidence --ids pullover-halteres,russian-twist-halteres,cadeira-adutora,flexao-pike-corporal,mesa-flexora --out <dir-no-scratchpad>`, revisando os quadros e o GIF antes de enviar ao dono
+- [X] T035 [US1] Em `packages/exercises/src/strength.ts`, escrever `guidance`, `muscles` explícitos e revisar `gear` de `pullover-halteres`, `russian-twist-halteres`, `cadeira-adutora`, `flexao-pike-corporal` e `mesa-flexora`, sem tirá-los de `pending.json`. Registrar as correções em `specs/028-banco-exercicios-demonstracao/bank-review.md`
+- [X] T036 [P] [US1] Criar a base e a demonstração de `pullover-halteres` em `packages/exercises/src/demos/puxar-vertical.ts`, com teste de que difere da base de puxada
+- [X] T037 [P] [US1] Criar a base e a demonstração de `russian-twist-halteres` em `packages/exercises/src/demos/core.ts`, com a pessoa sentada no solo, sem cabo
+- [X] T038 [P] [US1] Criar as bases e demonstrações de `cadeira-adutora` e `mesa-flexora` em `packages/exercises/src/demos/isolamento-pernas.ts`, com teste de que a adução é o movimento oposto da abdução e de que a mesa é deitada
+- [X] T039 [P] [US1] Criar a base e a demonstração de `flexao-pike-corporal` em `packages/exercises/src/demos/empurrar-vertical.ts`, com apoio de mãos e pés fixos
+- [X] T040 [US1] Conferir os 5 itens em `/dev/demos` e rodar `pnpm demos:evidence --ids pullover-halteres,russian-twist-halteres,cadeira-adutora,flexao-pike-corporal,mesa-flexora --out <dir-no-scratchpad>`, revisando os quadros e o GIF antes de enviar ao dono
 - [ ] T041 [US1] ⛔ Portão do dono: pedir autorização para abrir o PR do piloto, confirmar que `.github/workflows/demo-evidence.yml` publicou o comentário e aguardar a aprovação por item. **Nada da Phase 7 em diante começa antes da aprovação.** Ajustes pedidos voltam para T036–T039 ou para o motor (T016, T019, T020)
 - [ ] T042 [US1] Rodar `pnpm demos:approve` só com os ids aprovados, o que atualiza `packages/exercises/src/review/approvals.json` e `packages/exercises/src/review/pending.json`
 - [ ] T043 [US1] Atualizar em `specs/028-banco-exercicios-demonstracao/plan.md` a estimativa de movimentos base e a divisão dos lotes da Phase 7 com o aprendido no piloto

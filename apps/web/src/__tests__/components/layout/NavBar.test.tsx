@@ -55,4 +55,10 @@ describe('NavBar (v2)', () => {
     const { container } = render(<NavBar />)
     expect(container).toBeEmptyDOMElement()
   })
+
+  it('fica oculto na galeria de desenvolvimento /dev/demos (028)', () => {
+    pathname = '/dev/demos'
+    const { container } = render(<NavBar />)
+    expect(container.firstChild).toBeNull()
+  })
 })

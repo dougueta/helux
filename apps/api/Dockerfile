@@ -14,6 +14,7 @@ COPY tsconfig.base.json ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY packages/types/package.json ./packages/types/package.json
 COPY packages/ai/package.json ./packages/ai/package.json
+COPY packages/exercises/package.json ./packages/exercises/package.json
 COPY packages/genetics/package.json ./packages/genetics/package.json
 COPY packages/health/package.json ./packages/health/package.json
 COPY packages/nutrition/package.json ./packages/nutrition/package.json
@@ -28,6 +29,7 @@ RUN pnpm install --frozen-lockfile
 COPY apps/api/ ./apps/api/
 COPY packages/types/ ./packages/types/
 COPY packages/ai/ ./packages/ai/
+COPY packages/exercises/ ./packages/exercises/
 COPY packages/genetics/ ./packages/genetics/
 COPY packages/health/ ./packages/health/
 COPY packages/nutrition/ ./packages/nutrition/

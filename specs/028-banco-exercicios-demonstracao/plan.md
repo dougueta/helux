@@ -137,6 +137,7 @@ Cada etapa pode ir para produção sozinha (FR-032, FR-034).
 - **Geração de planos**: restringir itens altera o esquema enviado à IA. As avaliações usam a API paga, então só rodam com a autorização do dono. Até lá, a validação usa a IA simulada e o teste de esquema.
 - **Dados de produção**: o script de variantes grava em `mesocycle_plans`. Ele simula por padrão, guarda o backup fora do repositório, ignora sessões concluídas e só é aplicado com confirmação.
 - **Bundle da web**: o catálogo pode pesar. As demonstrações entram em um chunk carregado sob demanda, com o tamanho medido na etapa 2.
+  - **Medição da etapa 2 (T021, 2026-11-08, `pnpm --filter @helux/web build`)**: First Load JS de `/workout` foi de 179 kB para 182 kB, e o de `/treinos` de 191 kB para 195 kB (motor + partes do desenho). Sem `"sideEffects": false` em `@helux/exercises`, o banco de força inteiro (~97 kB brutos) entrava no bundle pelo `index.ts` e elevava os números para 195 kB e 208 kB. O chunk do registro de demonstrações ainda não aparece porque nada chama `loadDemo` antes da etapa 4; medir de novo em T057.
 - **Fidelidade em cenas complexas**: itens como natação e o circuito são difíceis de representar. Se a revisão recusar um deles, o caminho é melhorar a cena ou usar legenda; a lista só fecha quando o item for aprovado.
 - **Comentários no PR**: o workflow precisa de permissão de escrita, então não roda em PRs de fork. Hoje o repositório só recebe PRs internos.
 

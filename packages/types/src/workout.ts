@@ -65,4 +65,8 @@ export interface PlannedExercise {
   cardio?: { modality: string; minutes: number; zone: string }
   /** Spec 024: região trabalhada (mobilidade). */
   region?: Region
+  /** Spec 028: id do item de preparação no catálogo (planos novos). */
+  catalogId?: string
+  /** Spec 028: id do exercício de força, em séries de aproximação. */
+  approachOf?: string
 }
