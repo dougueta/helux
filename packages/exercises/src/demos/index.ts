@@ -5,6 +5,7 @@
  */
 import { resolveDemoSpec } from '../engine/resolve-demo'
 import type { DemoSpec, MovementBase, ResolvedDemo } from '../engine/types'
+import { AGACHAR } from './agachar'
 import { CORE } from './core'
 import { EMPURRAR_VERTICAL } from './empurrar-vertical'
 import { ISOLAMENTO_PERNAS } from './isolamento-pernas'
@@ -42,7 +43,7 @@ export function createRegistry(families: DemoFamily[]): DemoRegistry {
 }
 
 /** Famílias registradas. Cada lote acrescenta a sua aqui. */
-const FAMILIES: DemoFamily[] = [PUXAR_VERTICAL, CORE, ISOLAMENTO_PERNAS, EMPURRAR_VERTICAL]
+const FAMILIES: DemoFamily[] = [AGACHAR, PUXAR_VERTICAL, CORE, ISOLAMENTO_PERNAS, EMPURRAR_VERTICAL]
 
 const REGISTRY = createRegistry(FAMILIES)
 

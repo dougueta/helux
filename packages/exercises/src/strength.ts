@@ -18,6 +18,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Barra apoiada no alto das costas, pés na largura dos ombros e pontas levemente para fora'],
+      steps: [
+        'Leve o quadril para trás e para baixo até a coxa ficar paralela ao chão',
+        'Mantenha o peito erguido e os joelhos na direção dos pés',
+        'Suba empurrando o chão com o pé inteiro, com a barra sobre o meio do pé',
+      ],
+      commonError: 'Deixar os joelhos caírem para dentro na subida',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['adutores', 'posterior', 'lombar', 'core'] },
     cues: [
       'Barra apoiada no trapézio, pés na largura dos ombros, ponta dos pés levemente para fora',
       'Desça controlando o quadril para trás e para baixo até a coxa ficar paralela ao chão',
@@ -32,6 +42,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Barra apoiada na frente dos ombros, cotovelos altos e apontados para a frente'],
+      steps: [
+        'Desça com o tronco mais ereto que no agachamento com a barra nas costas',
+        'Deixe os joelhos irem à frente, mantendo os cotovelos altos',
+        'Suba com o core firme, sem deixar o tronco cair para a frente',
+      ],
+      commonError: 'Deixar os cotovelos caírem, o que joga a barra para a frente',
+    },
+    muscles: { primary: ['quadriceps'], secondary: ['gluteo', 'adutores', 'core'] },
     cues: [
       'Barra apoiada nos deltoides anteriores, cotovelos altos e apontados para frente',
       'Tronco mais ereto que no agachamento tradicional, core bem contraído',
@@ -46,6 +66,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Peito do pé de trás apoiado num banco baixo, halteres ao lado do corpo'],
+      steps: [
+        'Desça na perna da frente até o joelho de trás quase tocar o chão',
+        'Mantenha o peso na perna da frente, com o tronco levemente inclinado',
+        'Suba empurrando pelo pé da frente inteiro',
+      ],
+      commonError: 'Dar um passo curto demais e sobrecarregar o joelho da frente',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['adutores', 'core'] },
     cues: [
       'Pé de trás apoiado em um banco, tronco levemente inclinado à frente',
       'Desça na perna da frente até o joelho de trás quase tocar o chão',
@@ -60,6 +90,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Um pé à frente e outro atrás, calcanhar de trás elevado, halteres ao lado do corpo'],
+      steps: [
+        'Desça o quadril em linha reta até os dois joelhos ficarem perto de 90 graus',
+        'Mantenha o tronco ereto e o joelho da frente na direção do pé',
+        'Suba empurrando pelo calcanhar da frente, sem mudar os pés de lugar',
+      ],
+      commonError: 'Inclinar o tronco à frente e jogar o peso na ponta do pé da frente',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['adutores', 'core'] },
     cues: [
       'Passo à frente controlado, tronco ereto, halteres ao lado do corpo',
       'Desça até os dois joelhos formarem aproximadamente 90 graus',
@@ -74,6 +114,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Halter seguro na vertical junto ao peito, cotovelos para baixo, pés um pouco abertos'],
+      steps: [
+        'Desça entre as pernas mantendo o tronco ereto',
+        'Leve os cotovelos por dentro dos joelhos no fundo do movimento',
+        'Suba empurrando o chão, sem afastar o halter do peito',
+      ],
+      commonError: 'Deixar o halter descer e arredondar as costas',
+      context: 'Ajuda a aprender o padrão do agachamento antes de cargas maiores',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['adutores', 'core'] },
     cues: [
       'Segure um halter verticalmente junto ao peito, cotovelos apontando para baixo',
       'Pés um pouco mais abertos que a largura dos ombros',
@@ -88,6 +139,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Costas e lombar no encosto, pés na plataforma na largura dos ombros'],
+      steps: [
+        'Destrave a plataforma e dobre os joelhos trazendo-a em direção ao peito',
+        'Desça até cerca de 90 graus no joelho, sem tirar a lombar do encosto',
+        'Empurre com o pé inteiro, sem travar os joelhos no topo',
+      ],
+      commonError: 'Descer demais e tirar a lombar do encosto para ganhar amplitude',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['adutores', 'posterior'] },
     cues: [
       'Pés na plataforma na largura dos ombros, região lombar apoiada no encosto',
       'Desça até formar cerca de 90 graus no joelho, sem tirar a lombar do encosto',
@@ -116,6 +177,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Pés bem afastados e virados para fora, halter seguro com as duas mãos entre as pernas'],
+      steps: [
+        'Desça com o tronco ereto, abrindo os joelhos na direção dos pés',
+        'Deixe o halter descer reto, sem encostar no chão',
+        'Suba empurrando o chão e apertando o glúteo no topo',
+      ],
+      commonError: 'Deixar os joelhos fecharem para dentro durante a descida',
+      context: 'Trabalha mais adutores e glúteo que o agachamento com os pés na largura dos ombros',
+    },
+    muscles: { primary: ['quadriceps', 'adutores', 'gluteo'], secondary: ['posterior'] },
     cues: [
       'Pés bem afastados, pontas viradas para fora, halter segurado entre as pernas',
       'Desça mantendo o tronco ereto e os joelhos na direção dos pés',
@@ -130,6 +202,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Pés na largura dos ombros, braços estendidos à frente para equilibrar'],
+      steps: [
+        'Leve o quadril para trás e para baixo, o mais fundo que a lombar neutra permitir',
+        'Mantenha os calcanhares no chão e os joelhos na direção dos pés',
+        'Suba no mesmo ritmo, sem embalo',
+      ],
+      commonError: 'Tirar os calcanhares do chão no fundo do movimento',
+      context: 'Serve para aquecer ou para treinar sem equipamento',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['core'] },
     cues: [
       'Braços à frente para equilíbrio, pés na largura dos ombros',
       'Desça o mais fundo possível mantendo a lombar neutra',
@@ -144,6 +227,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Em pé, pés juntos, tronco ereto'],
+      steps: [
+        'Dê um passo longo para trás, apoiando a ponta do pé',
+        'Desça até o joelho de trás quase tocar o chão',
+        'Volte empurrando pelo pé da frente até juntar os pés',
+      ],
+      commonError: 'Dar um passo curto e perder o equilíbrio',
+      context: 'Costuma ser mais confortável para o joelho da frente que o afundo à frente',
+    },
+    muscles: { primary: ['gluteo', 'quadriceps'], secondary: ['adutores', 'core'] },
     cues: [
       'Dê um passo para trás em vez de para frente, tronco ereto',
       'Desça até o joelho de trás quase tocar o chão',
@@ -158,6 +252,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Barra travada acima da cabeça, braços estendidos e pegada aberta'],
+      steps: [
+        'Desça com o tronco ereto, mantendo a barra sobre o meio do pé',
+        'Empurre a barra para cima o tempo todo, com os cotovelos travados',
+        'Suba sem deixar a barra ir para a frente',
+      ],
+      commonError: 'Deixar a barra derivar para a frente durante a descida',
+      context: 'Exige mobilidade de ombro e tornozelo; comece com carga leve',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['ombro', 'trapezio', 'core'] },
     cues: [
       'Barra travada acima da cabeça com os braços estendidos antes de iniciar',
       'Desça mantendo a barra alinhada acima do meio do pé',
@@ -172,6 +277,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Um pé inteiro sobre o degrau, outro no chão, halteres ao lado do corpo'],
+      steps: [
+        'Suba empurrando pelo calcanhar do pé que está no degrau',
+        'Termine em pé sobre o degrau, com os dois pés apoiados',
+        'Desça devagar, colocando primeiro o pé de trás no chão',
+      ],
+      commonError: 'Dar impulso com o pé de baixo para ajudar a subida',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['posterior', 'core'] },
     cues: [
       'Suba em um banco ou caixa com uma perna, halteres ao lado do corpo',
       'Empurre pelo calcanhar da perna de cima, evite impulsionar com a perna de baixo',
@@ -186,6 +301,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Costas e ombros apoiados na máquina, pés à frente na plataforma'],
+      steps: [
+        'Destrave e desça controlando até a coxa ficar paralela à plataforma',
+        'Mantenha as costas no apoio e os joelhos na direção dos pés',
+        'Suba empurrando com os dois pés por igual',
+      ],
+      commonError: 'Pôr os pés baixos demais na plataforma, sobrecarregando o joelho',
+    },
+    muscles: { primary: ['quadriceps'], secondary: ['gluteo', 'adutores'] },
     cues: [
       'Costas e ombros apoiados na máquina, pés à frente do corpo na plataforma',
       'Desça controlado até a coxa ficar paralela, sem tirar as costas do apoio',
@@ -200,6 +325,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Em pé numa perna, segurando um apoio (TRX ou batente), a outra perna à frente'],
+      steps: [
+        'Desça na perna de apoio, levando a outra perna estendida à frente',
+        'Use o apoio só o necessário para não perder o equilíbrio',
+        'Suba empurrando pelo calcanhar da perna de apoio',
+      ],
+      commonError: 'Tirar o calcanhar de apoio do chão ou deixar o joelho cair para dentro',
+      context: 'Progressão avançada; reduza o apoio aos poucos',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['adutores', 'core'] },
     cues: [
       'Apoie-se em um suporte (TRX, batente de porta) para ajudar o equilíbrio',
       'Uma perna estendida à frente, desça na outra perna o mais fundo possível',
@@ -1644,6 +1780,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'smith',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Barra guiada no alto das costas, pés um pouco à frente da linha da barra'],
+      steps: [
+        'Destrave a barra e desça até a coxa ficar paralela ao chão',
+        'Mantenha o tronco firme, com a barra subindo e descendo na mesma linha',
+        'Suba empurrando o chão pelos calcanhares',
+      ],
+      commonError: 'Pôr os pés para trás da barra, jogando o joelho à frente',
+    },
+    muscles: { primary: ['quadriceps', 'gluteo'], secondary: ['adutores'] },
     cues: [
       'Barra guiada apoiada no trapézio, pés ligeiramente à frente da linha da barra',
       'Desça até a coxa ficar paralela ao chão, tronco firme',
@@ -1658,6 +1804,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'agachar',
+    guidance: {
+      setup: ['Barra no alto das costas, caixa ou banco atrás, na altura da coxa paralela ao chão'],
+      steps: [
+        'Leve o quadril para trás até sentar de leve na caixa, com a canela quase vertical',
+        'Pare um instante sem relaxar o tronco',
+        'Suba empurrando o chão, com o peito erguido',
+      ],
+      commonError: 'Sentar e soltar o corpo sobre a caixa',
+    },
+    muscles: { primary: ['gluteo', 'quadriceps'], secondary: ['posterior', 'lombar'] },
     cues: [
       'Caixa ou banco atrás de você na altura em que a coxa fica paralela ao chão',
       'Desça levando o quadril para trás até tocar a caixa sem relaxar',
