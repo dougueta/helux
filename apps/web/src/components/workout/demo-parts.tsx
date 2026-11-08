@@ -113,6 +113,19 @@ export function DemoScene({ scene }: { scene: Scene }) {
           {post(G.ROMAN_CHAIR.x1 - 16, G.ROMAN_CHAIR.top + 10, G.FLOOR_Y - 2)}
         </g>
       )
+    case 'banco-declinado': {
+      const [low, high] = G.DECLINE_BENCH.back
+      return (
+        <g data-scene={scene}>
+          <Floor />
+          <line x1={low[0]} y1={low[1]} x2={high[0]} y2={high[1]} stroke={BENCH_FILL} strokeWidth="12" strokeLinecap="round" />
+          <circle cx={G.DECLINE_BENCH.hook[0]} cy={G.DECLINE_BENCH.hook[1]} r={6} fill={BENCH_FILL} />
+          {post(low[0] + 16, low[1] + 6, G.FLOOR_Y - 2)}
+          {post(high[0] - 10, high[1] + 6, G.FLOOR_Y - 2)}
+          {post(G.DECLINE_BENCH.hook[0], G.DECLINE_BENCH.hook[1] + 6, G.FLOOR_Y - 2, 3)}
+        </g>
+      )
+    }
     case 'solo':
     default:
       return (

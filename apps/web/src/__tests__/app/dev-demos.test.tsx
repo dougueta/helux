@@ -112,4 +112,11 @@ describe('/dev/demos (028, FR-024)', () => {
     expect(requestAnimationFrame).not.toHaveBeenCalled()
     expect(container.querySelector('[data-frame]')).toHaveStyle({ width: '390px', height: '844px' })
   })
+
+  it('no cartão de revisão, a legenda aparece uma vez, abaixo dos três quadros', () => {
+    ITEMS[0] = { ...ITEMS[0], demo: { ...demo('pullover-halteres'), caption: 'Palmas voltadas uma para a outra' } }
+    renderPage({ ids: 'pullover-halteres', frame: '1', card: '1' })
+    expect(screen.getAllByText('Palmas voltadas uma para a outra')).toHaveLength(1)
+    ITEMS[0] = { ...ITEMS[0], demo: demo('pullover-halteres') }
+  })
 })

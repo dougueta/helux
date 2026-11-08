@@ -261,7 +261,7 @@ describe('ExerciseDemo — demonstração do catálogo (028)', () => {
 })
 
 describe('ExerciseDemo — cenas e implementos (028)', () => {
-  it.each(['solo', 'banco-reto', 'banco-inclinado', 'banco-baixo', 'assento', 'assento-reclinado', 'maquina', 'barra-fixa', 'paralelas', 'parede', 'degrau', 'colchonete', 'banco-romano'] as const)(
+  it.each(['solo', 'banco-reto', 'banco-inclinado', 'banco-baixo', 'assento', 'assento-reclinado', 'maquina', 'barra-fixa', 'paralelas', 'parede', 'degrau', 'colchonete', 'banco-romano', 'banco-declinado'] as const)(
     'desenha a cena %s',
     (scene) => {
       const { container } = render(<ExerciseDemo demo={demoOf({ scene })} playing={false} label="x" />)

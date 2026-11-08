@@ -73,4 +73,9 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
     const { DOBRAR_QUADRIL } = await import('../demos/dobrar-quadril')
     await expectBatchComplete(DOBRAR_QUADRIL, 15)
   })
+
+  it('lote 3, Empurrar na horizontal (T060)', async () => {
+    const { EMPURRAR_HORIZONTAL } = await import('../demos/empurrar-horizontal')
+    await expectBatchComplete(EMPURRAR_HORIZONTAL, 11)
+  })
 })
