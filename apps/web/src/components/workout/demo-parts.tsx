@@ -103,6 +103,16 @@ export function DemoScene({ scene }: { scene: Scene }) {
           <rect x={G.STEP.x0} y={G.STEP.top} width={G.STEP.x1 - G.STEP.x0} height={G.FLOOR_Y - G.STEP.top} rx={3} fill={BENCH_FILL} stroke="var(--hairline)" />
         </g>
       )
+    case 'banco-romano':
+      return (
+        <g data-scene={scene}>
+          <Floor />
+          <rect x={G.ROMAN_CHAIR.x0} y={G.ROMAN_CHAIR.top} width={G.ROMAN_CHAIR.x1 - G.ROMAN_CHAIR.x0} height={10} rx={5} fill={BENCH_FILL} stroke="var(--hairline)" />
+          <circle cx={G.ROMAN_CHAIR.ankle[0]} cy={G.ROMAN_CHAIR.ankle[1]} r={5} fill={BENCH_FILL} />
+          {post(G.ROMAN_CHAIR.x0 + 20, G.ROMAN_CHAIR.top + 10, G.FLOOR_Y - 2)}
+          {post(G.ROMAN_CHAIR.x1 - 16, G.ROMAN_CHAIR.top + 10, G.FLOOR_Y - 2)}
+        </g>
+      )
     case 'solo':
     default:
       return (
