@@ -377,6 +377,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Pés na largura do quadril, barra sobre o meio do pé, pegada logo fora das pernas'],
+      steps: [
+        'Dobre quadril e joelhos até pegar a barra, com a lombar neutra e o quadril acima do joelho',
+        'Empurre o chão e estenda quadril e joelhos juntos, com a barra rente às pernas',
+        'Termine em pé, sem jogar o tronco para trás, e desça pelo mesmo caminho',
+      ],
+      commonError: 'Arredondar a lombar para tirar a barra do chão',
+    },
+    muscles: { primary: ['posterior', 'gluteo'], secondary: ['lombar', 'quadriceps', 'trapezio', 'antebraco'] },
     cues: [
       'Barra próxima às canelas, pegada na largura dos ombros, costas retas',
       'Empurre o chão com os pés e estenda quadril e joelhos ao mesmo tempo',
@@ -391,6 +401,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Em pé, barra na frente das coxas, pegada na largura dos ombros, joelhos levemente dobrados'],
+      steps: [
+        'Leve o quadril para trás deslizando a barra rente às coxas',
+        'Desça até a barra chegar perto do joelho, sentindo o posterior de coxa alongar',
+        'Volte empurrando o quadril à frente, sem dobrar mais os joelhos',
+      ],
+      commonError: 'Dobrar demais os joelhos e transformar o movimento num agachamento',
+    },
+    muscles: { primary: ['posterior', 'gluteo'], secondary: ['lombar', 'antebraco'] },
     cues: [
       'Comece em pé, barra à frente das coxas, joelhos levemente flexionados',
       'Empurre o quadril para trás mantendo a barra colada às pernas',
@@ -405,6 +425,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Em pé, halteres na frente das coxas, joelhos levemente dobrados'],
+      steps: [
+        'Leve o quadril para trás deslizando os halteres rente às pernas',
+        'Desça até sentir o posterior de coxa alongar, com a lombar neutra',
+        'Volte empurrando o quadril à frente até ficar ereto',
+      ],
+      commonError: 'Afastar os halteres das pernas e arredondar as costas',
+      context: 'Substitui a versão com barra quando ela não está disponível',
+    },
+    muscles: { primary: ['posterior', 'gluteo'], secondary: ['lombar', 'antebraco'] },
     cues: [
       'Halteres à frente das coxas, joelhos levemente flexionados, tronco ereto',
       'Empurre o quadril para trás, descendo os halteres rente às pernas',
@@ -419,6 +450,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Pés bem afastados e virados para fora, pegada na barra por dentro dos joelhos'],
+      steps: [
+        'Agache até pegar a barra, com o tronco mais ereto que no terra convencional',
+        'Empurre os joelhos para fora e estenda quadril e joelhos juntos',
+        'Termine em pé apertando o glúteo e desça controlando',
+      ],
+      commonError: 'Deixar os joelhos fecharem para dentro na saída do chão',
+      context: 'Recruta mais adutores e quadríceps que o terra convencional',
+    },
+    muscles: { primary: ['gluteo', 'posterior', 'adutores'], secondary: ['quadriceps', 'lombar', 'trapezio'] },
     cues: [
       'Pés bem afastados, pontas para fora, pegada entre as pernas',
       'Tronco mais ereto que no terra convencional devido à postura das pernas',
@@ -433,6 +475,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Em pé, barra na frente das coxas, joelhos quase estendidos sem travar'],
+      steps: [
+        'Incline o tronco à frente levando o quadril para trás, com a barra rente às pernas',
+        'Desça até o limite do alongamento do posterior, com a lombar neutra',
+        'Suba estendendo o quadril, sem jogar o tronco para trás no topo',
+      ],
+      commonError: 'Perder a curvatura natural da lombar na descida',
+    },
+    muscles: { primary: ['posterior'], secondary: ['gluteo', 'lombar'] },
     cues: [
       'Joelhos quase estendidos (não travados), barra rente às pernas',
       'Desça flexionando o quadril, mantendo a coluna neutra',
@@ -447,6 +499,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Em pé, halteres na frente das coxas, joelhos quase estendidos sem travar'],
+      steps: [
+        'Incline o tronco à frente levando o quadril para trás, halteres rente às pernas',
+        'Desça até o limite do alongamento do posterior, com a lombar neutra',
+        'Suba estendendo o quadril até ficar ereto',
+      ],
+      commonError: 'Dobrar os joelhos na descida e tirar o trabalho do posterior',
+      context: 'Substitui a versão com barra quando ela não está disponível',
+    },
+    muscles: { primary: ['posterior'], secondary: ['gluteo', 'lombar'] },
     cues: [
       'Halteres à frente do corpo, joelhos quase estendidos',
       'Desça flexionando o quadril, mantendo a coluna neutra',
@@ -461,6 +524,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Parte de cima das costas apoiada no banco, barra com almofada sobre o quadril, pés no chão'],
+      steps: [
+        'Suba o quadril até o tronco ficar alinhado com as coxas',
+        'Aperte o glúteo no topo, com o queixo levemente recolhido',
+        'Desça controlando até perto do chão',
+      ],
+      commonError: 'Arquear a lombar no topo em vez de apertar o glúteo',
+    },
+    muscles: { primary: ['gluteo'], secondary: ['posterior', 'adutores', 'core'] },
     cues: [
       'Costas superiores apoiadas em um banco, barra sobre o quadril com almofada',
       'Empurre o quadril para cima contraindo o glúteo no topo',
@@ -475,6 +548,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Deitado de costas, joelhos dobrados, pés no chão e braços ao lado do corpo'],
+      steps: [
+        'Suba o quadril até alinhar ombros, quadril e joelhos',
+        'Segure 1 a 2 segundos apertando o glúteo',
+        'Desça devagar até encostar o quadril no chão',
+      ],
+      commonError: 'Empurrar com a lombar em vez de apertar o glúteo',
+      context: 'Serve para ativar o glúteo antes do treino de pernas',
+    },
+    muscles: { primary: ['gluteo'], secondary: ['posterior', 'core'] },
     cues: [
       'Deitado, joelhos flexionados, pés apoiados no chão',
       'Suba o quadril contraindo o glúteo, formando uma linha reta dos ombros aos joelhos',
@@ -489,6 +573,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Deitado de costas, um pé no chão e a outra perna estendida no ar'],
+      steps: [
+        'Suba o quadril empurrando só com o pé de apoio',
+        'Mantenha o quadril nivelado, sem deixar o lado livre cair',
+        'Desça devagar e repita antes de trocar de lado',
+      ],
+      commonError: 'Deixar o quadril do lado da perna livre cair',
+      context: 'Progressão para quem já domina a versão com os dois pés',
+    },
+    muscles: { primary: ['gluteo'], secondary: ['posterior', 'abdutores', 'core'] },
     cues: [
       'Mesma posição da elevação pélvica, mas uma perna estendida no ar',
       'Suba o quadril apoiando o peso em apenas uma perna',
@@ -541,6 +636,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Barra apoiada no alto das costas, pés na largura do quadril, joelhos levemente dobrados'],
+      steps: [
+        'Incline o tronco à frente levando o quadril para trás, com a coluna neutra',
+        'Desça até perto da horizontal ou até o limite do alongamento do posterior',
+        'Volte estendendo o quadril, no mesmo ritmo da descida',
+      ],
+      commonError: 'Arredondar as costas para descer mais',
+      context: 'Use carga bem menor que no agachamento; o movimento é técnico',
+    },
+    muscles: { primary: ['posterior', 'lombar'], secondary: ['gluteo', 'core'] },
     cues: [
       'Barra apoiada no trapézio como no agachamento, joelhos levemente flexionados',
       'Incline o tronco à frente flexionando o quadril, mantendo a coluna neutra',
@@ -555,6 +661,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'kettlebell',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Pés um pouco além da largura dos ombros, kettlebell seguro com as duas mãos à frente'],
+      steps: [
+        'Leve o quadril para trás e deixe o kettlebell passar entre as pernas',
+        'Estenda o quadril com força, de uma vez, apertando o glúteo',
+        'Deixe o kettlebell subir até a altura do peito pelo impulso, com os braços soltos',
+      ],
+      commonError: 'Agachar em vez de dobrar o quadril, tirando o trabalho do glúteo e do posterior',
+    },
+    muscles: { primary: ['gluteo', 'posterior'], secondary: ['lombar', 'core', 'ombro'] },
     cues: [
       'Pés na largura dos ombros, kettlebell à frente do corpo com os dois braços',
       'Gere a força pela extensão explosiva do quadril, não pelos braços',
@@ -569,6 +685,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'banco',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Quadril no apoio do banco romano, tornozelos presos, braços cruzados no peito'],
+      steps: [
+        'Desça o tronco dobrando o quadril, com a coluna neutra',
+        'Suba até o corpo formar uma linha reta',
+        'Pare na linha reta, sem estender a lombar além dela',
+      ],
+      commonError: 'Subir além da linha do corpo e forçar a lombar',
+      context: 'Para progredir, segure uma anilha junto ao peito',
+    },
+    muscles: { primary: ['lombar', 'gluteo'], secondary: ['posterior'] },
     cues: [
       'Quadril apoiado no banco romano, tornozelos travados no suporte',
       'Desça o tronco flexionando o quadril, mantendo a coluna neutra',
@@ -583,6 +710,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Em pé numa perna, joelho levemente dobrado, halter na mão do lado oposto'],
+      steps: [
+        'Incline o tronco à frente enquanto a perna livre sobe estendida atrás',
+        'Desça até o tronco ficar perto da horizontal, com o quadril nivelado',
+        'Volte à posição em pé usando a perna de apoio',
+      ],
+      commonError: 'Girar o quadril e abrir o lado da perna livre',
+      context: 'Também treina equilíbrio e a estabilidade do quadril',
+    },
+    muscles: { primary: ['posterior', 'gluteo'], secondary: ['abdutores', 'core'] },
     cues: [
       'Apoiado em uma perna, halter na mão oposta à perna de apoio',
       'Incline o tronco à frente enquanto a perna livre se estende para trás',
@@ -1828,6 +1966,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['De costas para a polia baixa, corda entre as pernas, pés afastados'],
+      steps: [
+        'Leve o quadril para trás inclinando o tronco, com a coluna neutra',
+        'Deixe a corda passar entre as pernas, com os braços soltos',
+        'Volte estendendo o quadril e apertando o glúteo no final',
+      ],
+      commonError: 'Puxar com os braços em vez de estender o quadril',
+    },
+    muscles: { primary: ['gluteo', 'posterior'], secondary: ['lombar'] },
     cues: [
       'De costas para a polia baixa, corda entre as pernas, pés afastados',
       'Leve o quadril para trás inclinando o tronco com a coluna neutra',
@@ -1842,6 +1990,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'dobrar-quadril',
+    guidance: {
+      setup: ['Costas apoiadas no encosto, almofada sobre o quadril, pés firmes na plataforma'],
+      steps: [
+        'Suba o quadril até o tronco ficar alinhado com as coxas',
+        'Segure um segundo apertando o glúteo',
+        'Desça controlando, sem soltar o peso',
+      ],
+      commonError: 'Arquear a lombar no topo',
+    },
+    muscles: { primary: ['gluteo'], secondary: ['posterior', 'adutores'] },
     cues: [
       'Costas apoiadas no encosto, almofada sobre o quadril, pés firmes na plataforma',
       'Eleve o quadril até o tronco ficar alinhado às coxas',

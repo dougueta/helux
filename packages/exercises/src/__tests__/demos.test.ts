@@ -48,20 +48,29 @@ describe('loadDemo', () => {
   })
 })
 
-describe('lote 1, Agachar (T058)', () => {
-  it('os 15 itens têm demonstração, base válida, equipamento e orientação completos', async () => {
+async function expectBatchComplete(family: { bases: import('../engine/types').MovementBase[]; demos: Record<string, unknown> }, size: number) {
+  const { CATALOG } = await import('../catalog')
+  const { MOVEMENT_BASES } = await import('../demos')
+  const { missingContent, guidanceIssues } = await import('../review/check')
+  const { validateBase } = await import('../engine/kinematics')
+  const ids = Object.keys(family.demos)
+  expect(ids).toHaveLength(size)
+  for (const id of ids) {
+    const item = CATALOG.find((i) => i.id === id)!
+    expect(missingContent(item, MOVEMENT_BASES), id).toEqual([])
+    expect(guidanceIssues(item.guidance!, item.kind), id).toEqual([])
+  }
+  for (const base of family.bases) expect(validateBase(base)).toEqual([])
+}
+
+describe('lotes de força: demonstração, base válida, equipamento e orientação completos', () => {
+  it('lote 1, Agachar (T058)', async () => {
     const { AGACHAR } = await import('../demos/agachar')
-    const { CATALOG } = await import('../catalog')
-    const { MOVEMENT_BASES } = await import('../demos')
-    const { missingContent, guidanceIssues } = await import('../review/check')
-    const { validateBase } = await import('../engine/kinematics')
-    const ids = Object.keys(AGACHAR.demos)
-    expect(ids).toHaveLength(15)
-    for (const id of ids) {
-      const item = CATALOG.find((i) => i.id === id)!
-      expect(missingContent(item, MOVEMENT_BASES), id).toEqual([])
-      expect(guidanceIssues(item.guidance!, item.kind), id).toEqual([])
-    }
-    for (const base of AGACHAR.bases) expect(validateBase(base)).toEqual([])
+    await expectBatchComplete(AGACHAR, 15)
+  })
+
+  it('lote 2, Dobrar o quadril (T059)', async () => {
+    const { DOBRAR_QUADRIL } = await import('../demos/dobrar-quadril')
+    await expectBatchComplete(DOBRAR_QUADRIL, 15)
   })
 })

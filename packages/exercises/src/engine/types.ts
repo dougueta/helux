@@ -60,6 +60,7 @@ export type Scene =
   | 'parede'
   | 'degrau'
   | 'colchonete'
+  | 'banco-romano'
 
 export interface DemoSpec {
   /** MovementBase.key */
