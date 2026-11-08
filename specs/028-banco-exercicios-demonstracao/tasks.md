@@ -111,8 +111,8 @@ description: "Tarefas de implementação da 028: banco de exercícios coerente c
 - [X] T038 [P] [US1] Criar as bases e demonstrações de `cadeira-adutora` e `mesa-flexora` em `packages/exercises/src/demos/isolamento-pernas.ts`, com teste de que a adução é o movimento oposto da abdução e de que a mesa é deitada
 - [X] T039 [P] [US1] Criar a base e a demonstração de `flexao-pike-corporal` em `packages/exercises/src/demos/empurrar-vertical.ts`, com apoio de mãos e pés fixos
 - [X] T040 [US1] Conferir os 5 itens em `/dev/demos` e rodar `pnpm demos:evidence --ids pullover-halteres,russian-twist-halteres,cadeira-adutora,flexao-pike-corporal,mesa-flexora --out <dir-no-scratchpad>`, revisando os quadros e o GIF antes de enviar ao dono
-- [ ] T041 [US1] ⛔ Portão do dono: pedir autorização para abrir o PR do piloto, confirmar que `.github/workflows/demo-evidence.yml` publicou o comentário e aguardar a aprovação por item. **Nada da Phase 7 em diante começa antes da aprovação.** Ajustes pedidos voltam para T036–T039 ou para o motor (T016, T019, T020)
-- [ ] T042 [US1] Rodar `pnpm demos:approve` só com os ids aprovados, o que atualiza `packages/exercises/src/review/approvals.json` e `packages/exercises/src/review/pending.json`
+- [X] T041 [US1] ⛔ Portão do dono: pedir autorização para abrir o PR do piloto, confirmar que `.github/workflows/demo-evidence.yml` publicou o comentário e aguardar a aprovação por item. **Nada da Phase 7 em diante começa antes da aprovação.** Ajustes pedidos voltam para T036–T039 ou para o motor (T016, T019, T020)
+- [X] T042 [US1] Rodar `pnpm demos:approve` só com os ids aprovados, o que atualiza `packages/exercises/src/review/approvals.json` e `packages/exercises/src/review/pending.json`
 - [ ] T043 [US1] Atualizar em `specs/028-banco-exercicios-demonstracao/plan.md` a estimativa de movimentos base e a divisão dos lotes da Phase 7 com o aprendido no piloto
 
 ---
