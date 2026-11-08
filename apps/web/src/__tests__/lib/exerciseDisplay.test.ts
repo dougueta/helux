@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import type { PlannedExercise } from '@helux/types'
 import { activeVariant, recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+
+vi.mock('@helux/exercises', async (importOriginal) => (await import('../helpers/exercises-pending')).withTestPending(importOriginal))
 
 const EXERCISE: PlannedExercise = {
   name: 'Supino reto com barra',

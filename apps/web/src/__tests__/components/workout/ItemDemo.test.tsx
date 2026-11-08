@@ -1,7 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { resolvePlannedItem } from '@helux/exercises'
 import { ItemDemo } from '@/components/workout/ItemDemo'
+
+vi.mock('@helux/exercises', async (importOriginal) => (await import('../../helpers/exercises-pending')).withTestPending(importOriginal))
 
 const base = { sets: 3, reps: '10', weight: '' }
 const legacyVariant = { id: 'supino-reto-barra', rec: true, name: 'Supino Reto (Barra)', equip: 'Barra', level: 'Avançado', match: 90, motion: 'press-flat', implement: 'barbell', why: '' }

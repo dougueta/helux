@@ -134,7 +134,13 @@ export const EMPURRAR_HORIZONTAL: DemoFamily = {
   bases: [FLAT, INCLINE, DECLINE, MACHINE, PUSH_UP, CLOSE_PUSH_UP, DECLINE_PUSH_UP, INCLINE_PUSH_UP],
   demos: {
     'supino-reto-barra': { base: 'supino-reto', gear: 'barra', scene: 'banco-reto', implementAt: 'ha' },
-    'supino-reto-halteres': { base: 'supino-reto', gear: 'halteres', scene: 'banco-reto', implementAt: 'ha' },
+    'supino-reto-halteres': {
+      base: 'supino-reto',
+      gear: 'halteres',
+      scene: 'banco-reto',
+      implementAt: 'ha',
+      caption: 'Palmas para a frente, cotovelos a uns 45 graus do tronco',
+    },
     'supino-pegada-neutra-halteres': {
       base: 'supino-reto',
       gear: 'halteres',
