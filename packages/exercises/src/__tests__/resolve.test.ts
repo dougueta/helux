@@ -3,6 +3,9 @@ import type { PlannedExercise, Variant } from '@helux/types'
 import { createResolver, resolvePlannedItem, STRENGTH_EXERCISES } from '../index'
 import type { PreparationItem } from '../types'
 
+/** Itens tratados como pendentes nos testes, independentes do andamento real da revisão. */
+const withPending = createResolver({ pending: new Set(['supino-reto-barra', 'supino-reto-halteres', 'levantamento-terra-barra', 'bike']) })
+
 const base = { sets: 3, reps: '10', weight: '20 kg' }
 
 function variant(id: string, name: string, extra: Partial<Variant> = {}): Variant {
@@ -89,7 +92,7 @@ describe('resolvePlannedItem — demoState e conteúdo', () => {
       tempo: '3 · 1 · 1',
       variants: [variant('supino-reto-barra', 'Supino Reto (Barra)', { rec: true, motion: 'press-flat' })],
     }
-    const r = resolvePlannedItem(ex)
+    const r = withPending(ex)
     expect(r.id).toBe('supino-reto-barra')
     expect(r.demoState).toBe('legada')
     expect(r.guidance).toBeNull()
@@ -99,13 +102,13 @@ describe('resolvePlannedItem — demoState e conteúdo', () => {
   })
 
   it('pendente sem animação salva: indisponível', () => {
-    const r = resolvePlannedItem({ ...base, name: 'Supino Reto (Barra)' })
+    const r = withPending({ ...base, name: 'Supino Reto (Barra)' })
     expect(r.id).toBe('supino-reto-barra')
     expect(r.demoState).toBe('indisponivel')
   })
 
   it('cardio pendente nunca cai na animação salva', () => {
-    const r = resolvePlannedItem({ ...base, name: 'Bike', cardio: { modality: 'bike', minutes: 20, zone: 'Z2' } })
+    const r = withPending({ ...base, name: 'Bike', cardio: { modality: 'bike', minutes: 20, zone: 'Z2' } })
     expect(r.demoState).toBe('indisponivel')
   })
 
@@ -130,7 +133,7 @@ describe('resolvePlannedItem — variante ativa (FR-011, FR-035)', () => {
 
   it('variante pendente usa músculos e cadência da própria variante, não os do planejado', () => {
     const own = STRENGTH_EXERCISES.find((e) => e.id === 'supino-reto-halteres')!
-    const r = resolvePlannedItem({ ...planned, muscles: { primary: ['quadriceps'], secondary: [] }, tempo: '9 · 9 · 9' }, 'supino-reto-halteres')
+    const r = withPending({ ...planned, muscles: { primary: ['quadriceps'], secondary: [] }, tempo: '9 · 9 · 9' }, 'supino-reto-halteres')
     expect(r.demoState).toBe('legada')
     expect(r.muscles).toEqual(own.muscles)
     expect(r.tempo).toBe(own.tempo)
@@ -140,8 +143,8 @@ describe('resolvePlannedItem — variante ativa (FR-011, FR-035)', () => {
     const r = resolvePlannedItem(planned, 'mesa-flexora')
     expect(r.id).toBe('mesa-flexora')
     expect(r.demoState).toBe('nova')
-    const pendingOff = resolvePlannedItem(planned, 'agachamento-livre-barra')
-    expect(pendingOff.id).toBe('agachamento-livre-barra')
+    const pendingOff = withPending(planned, 'levantamento-terra-barra')
+    expect(pendingOff.id).toBe('levantamento-terra-barra')
     expect(pendingOff.demoState).toBe('indisponivel')
   })
 

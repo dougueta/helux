@@ -36,6 +36,9 @@ export const WALL_X = 204
 /** Degrau: caixa de `x0` a `x1`, topo em `top`. */
 export const STEP = { x0: 120, x1: 182, top: 204 } as const
 
+/** Banco romano (hiperextensão): apoio do quadril de `x0` a `x1` em `top`; o rolo dos tornozelos fica em `ankle`. */
+export const ROMAN_CHAIR = { x0: 22, x1: 118, top: 150, ankle: [30, 136] as Point } as const
+
 /** Colchonete sobre o solo. */
 export const MAT = { x0: 18, x1: 202, top: 235 } as const
 

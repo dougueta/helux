@@ -34,3 +34,29 @@ Antes, todos os 15 itens tinham o mesmo mapa derivado do padrão `agachar`: prim
 | agachamento-box-barra | muscles | quadríceps; core | glúteo e quadríceps; posterior e lombar | Canela quase vertical e quadril para trás até a caixa: mais quadril e posterior, com a lombar segurando o tronco inclinado. |
 | (lote 1) | gear | — | barra, barra, halteres, halteres, halteres, maquina, halteres, peso-corporal, peso-corporal, barra, halteres, maquina, peso-corporal, smith, barra | Conferido; sem correção. |
 | (lote 1) | guidance | dicas com "Bom para…" no goblet e no peso corporal | recomendação movida para `context` | FR-018 e FR-019: passos só com instruções de execução. |
+
+## Lote 2: Dobrar o quadril (T059)
+
+Antes, os 15 itens tinham primário quadríceps e secundário core. O mapa antigo convertia `gluteo` e `posterior` em quadríceps, então nenhum deles mostrava glúteo nem posterior de coxa. `muscleGroup` (`gluteo` ou `posterior`), `pattern` e `stress` não mudam (R4).
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| levantamento-terra-barra | muscles | quadríceps; core | posterior e glúteo; lombar, quadríceps, trapézio e antebraço | Extensão de quadril com a barra do chão; o quadríceps ajuda na saída, e a pegada e o trapézio seguram a carga. |
+| levantamento-terra-romeno-barra | muscles | quadríceps; core | posterior e glúteo; lombar e antebraço | Joelhos quase fixos: o trabalho é do quadril. |
+| levantamento-terra-romeno-halteres | muscles | quadríceps; core | posterior e glúteo; lombar e antebraço | Igual à versão com barra. |
+| levantamento-terra-sumo-barra | muscles | quadríceps; core | glúteo, posterior e adutores; quadríceps, lombar e trapézio | Base larga recruta adutores e deixa o tronco mais ereto. |
+| stiff-barra | muscles | quadríceps; core | posterior; glúteo e lombar | Joelhos quase estendidos alongam mais o posterior de coxa. |
+| stiff-halteres | muscles | quadríceps; core | posterior; glúteo e lombar | Igual à versão com barra. |
+| good-morning-barra | muscles | quadríceps; core | posterior e lombar; glúteo e core | A barra nas costas e o tronco perto da horizontal exigem muito dos eretores. |
+| terra-halteres-unilateral | muscles | quadríceps; core | posterior e glúteo; abdutores e core | Os abdutores do quadril de apoio mantêm a pelve nivelada. |
+| kettlebell-swing | muscles | quadríceps; core | glúteo e posterior; lombar, core e ombro | Extensão explosiva do quadril; o ombro só conduz o peso. |
+| pull-through-cabo | muscles | quadríceps; core | glúteo e posterior; lombar | Dobradiça com resistência horizontal, sem trabalho de joelho. |
+| elevacao-pelvica-barra | muscles | quadríceps; core | glúteo; posterior, adutores e core | Extensão de quadril com joelho dobrado concentra o trabalho no glúteo. |
+| elevacao-pelvica-maquina | muscles | quadríceps; core | glúteo; posterior e adutores | Igual à versão com barra, com o encosto estabilizando o tronco. |
+| elevacao-pelvica-corporal | muscles | quadríceps; core | glúteo; posterior e core | Ponte no solo. |
+| elevacao-pelvica-unilateral | muscles | quadríceps; core | glúteo; posterior, abdutores e core | Numa perna só, os abdutores seguram a pelve nivelada. |
+| hiperextensao-lombar-banco | muscles | quadríceps; core | lombar e glúteo; posterior | Extensão do tronco no banco romano. |
+| (lote 2) | gear | — | conferido | Sem correção: kettlebell, cabo, máquina e banco já estavam certos. |
+| (lote 2) | guidance | recomendações nos passos de 5 itens ("Boa opção…", "Alternativa…", "Ótimo…", "Use carga…", "Pode segurar…") | movidas para `context` | FR-018 e FR-019. |
+
+Demonstração: nas variações de terra (convencional, romeno, stiff, sumô e unilateral) os braços da figura são um pouco mais longos (66 em vez de 58). Com o braço padrão, a barra no chão obrigaria o quadril a ficar abaixo do joelho, que é a técnica errada. A hiperextensão usa a cena nova `banco-romano`.
