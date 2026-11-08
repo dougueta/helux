@@ -59,10 +59,10 @@ describe('EXERCISE_BANK — músculos e tempo derivados', () => {
     }
   })
 
-  it('Agachamento Livre (Barra): quadriceps primário, core secundário, tempo 2·0·1', () => {
+  it('Agachamento Livre (Barra): músculos revisados no lote 1 (028), tempo 2·0·1', () => {
     const entry = EXERCISE_BANK.find((e) => e.name === 'Agachamento Livre (Barra)')!
-    expect(entry.muscles.primary).toEqual(['quadriceps'])
-    expect(entry.muscles.secondary).toEqual(['core'])
+    expect(entry.muscles.primary).toEqual(['quadriceps', 'gluteo'])
+    expect(entry.muscles.secondary).toEqual(['adutores', 'posterior', 'lombar', 'core'])
     expect(entry.tempo).toBe('2 · 0 · 1')
   })
 

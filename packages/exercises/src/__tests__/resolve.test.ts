@@ -140,8 +140,8 @@ describe('resolvePlannedItem — variante ativa (FR-011, FR-035)', () => {
     const r = resolvePlannedItem(planned, 'mesa-flexora')
     expect(r.id).toBe('mesa-flexora')
     expect(r.demoState).toBe('nova')
-    const pendingOff = resolvePlannedItem(planned, 'agachamento-livre-barra')
-    expect(pendingOff.id).toBe('agachamento-livre-barra')
+    const pendingOff = resolvePlannedItem(planned, 'levantamento-terra-barra')
+    expect(pendingOff.id).toBe('levantamento-terra-barra')
     expect(pendingOff.demoState).toBe('indisponivel')
   })
 
