@@ -1,6 +1,7 @@
 import type {
   AdjustedWorkoutPlanView,
-  BodyCheckin,
+  BodyMeasurement,
+  BodyWeight,
   DayType,
   DietCalibration,
   DietPhase,
@@ -46,7 +47,10 @@ export interface MockDataset {
   workoutAnalytics: WorkoutAnalytics
   tirednessToday: TirednessAssessment
   recovery: RecoveryData | null
-  bodyCheckins: BodyCheckin[]
+  /** Spec 029: registros de medidas (mais recentes primeiro). */
+  bodyCheckins: BodyMeasurement[]
+  /** Spec 029: pesagens diárias (ordem crescente). */
+  bodyWeights?: BodyWeight[]
   genetics: GeneticProfileView | null
   nutrition: MockNutrition
   /** Spec 022: preferências, Perfil Integrado, conversas e propostas (ausente em datasets antigos). */
@@ -58,7 +62,7 @@ export interface MockDataset {
 }
 
 export interface MockLocalStorageState {
-  version: 1
+  version: number
   personaId: string
   dataset: MockDataset
   updatedAt: string

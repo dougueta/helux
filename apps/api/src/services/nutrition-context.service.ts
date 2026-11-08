@@ -1,16 +1,16 @@
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { BodyCheckin, DietPhase, DietTargets, NutriMarker, Sex, TirednessLevel } from '@helux/types'
+import type { BodyMeasurement, BodyWeight, DietPhase, DietTargets, NutriMarker, Sex, TirednessLevel } from '@helux/types'
 import { parseGeneraNutrition } from '@helux/genetics'
-import { classifyMarkers, nutritionFlags, type NutritionFlags } from '@helux/nutrition'
+import { addDays, classifyMarkers, daysBetween, nutritionFlags, trendAt, type NutritionFlags } from '@helux/nutrition'
 import { getTodayTirednessAssessment, todaySlug } from './tiredness.service'
 import { getActiveMesocycle } from './mesocycle.service'
 import { getGeneticRaw } from './genetics.service'
 
 export type MissingField = 'heightCm' | 'birthDate' | 'sex' | 'checkinWeight' | 'checkinStale'
 
-/** As metas partem do peso atual: check-in com mais de 35 dias não serve para iniciar a fase. */
+/** As metas partem do peso atual: pesagem com mais de 35 dias não serve para iniciar a fase. */
 export const CHECKIN_MAX_AGE_DAYS = 35
 
 export interface DietPhaseRow {
@@ -28,8 +28,12 @@ export interface DietPhaseRow {
 export interface NutritionContext {
   today: string
   profile: { heightCm: number | null; birthDate: string | null; sex: Sex | null }
-  /** Mais recentes primeiro (no máximo 2). */
-  checkins: BodyCheckin[]
+  /** Spec 029: pesagens do último ano (fase de até 52 semanas), ordem crescente. */
+  weights: BodyWeight[]
+  /** Spec 029: registros de medidas, mais recentes primeiro. */
+  measurements: BodyMeasurement[]
+  /** Peso de tendência de hoje ou, sem tendência, a última pesagem (até 35 dias). */
+  currentWeightKg: number | null
   phase: DietPhase | null
   /** Última calibração efetiva (ignora `intervalo-curto`): base da próxima recalibração. */
   lastCalibration: { checkinId: string | null; createdAt: string } | null
@@ -66,9 +70,10 @@ export function loadNutritionGenetics(raw: unknown | null): NutritionContext['ge
 export async function loadNutritionContext(userId: string, supabase: SupabaseClient, now: Date = new Date()): Promise<NutritionContext> {
   const today = todaySlug(now)
 
-  const [profileRes, checkinsRes, phaseRes, workoutRes, tiredness, mesocycle, geneticRaw] = await Promise.all([
+  const [profileRes, weightsRes, measurementsRes, phaseRes, workoutRes, tiredness, mesocycle, geneticRaw] = await Promise.all([
     supabase.from('user_training_profile').select('height_cm, birth_date, sex').eq('user_id', userId).maybeSingle(),
-    supabase.from('body_checkins').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(2),
+    supabase.from('body_weights').select('id, date, weight_kg').eq('user_id', userId).gte('date', addDays(today, -371)).order('date', { ascending: true }),
+    supabase.from('body_checkins').select('*').eq('user_id', userId).order('measured_on', { ascending: false }).limit(24),
     supabase.from('diet_phases').select('*').eq('user_id', userId).eq('status', 'ativa').maybeSingle(),
     supabase.from('workout_sessions').select('created_at').eq('user_id', userId).eq('date', today).order('created_at', { ascending: false }).limit(1),
     getTodayTirednessAssessment(userId, supabase, now).then(a => a.effectiveLevel, () => null),
@@ -82,7 +87,11 @@ export async function loadNutritionContext(userId: string, supabase: SupabaseCli
     birthDate: p?.birth_date ?? null,
     sex: p?.sex ?? null,
   }
-  const checkins = (checkinsRes.data ?? []) as BodyCheckin[]
+  const weights = ((weightsRes.data ?? []) as BodyWeight[]).map(w => ({ ...w, weight_kg: Number(w.weight_kg) }))
+  const measurements = (measurementsRes.data ?? []) as BodyMeasurement[]
+  const lastWeight = weights[weights.length - 1]
+  const currentWeightKg =
+    trendAt(weights, today) ?? (lastWeight && daysBetween(lastWeight.date, today) <= CHECKIN_MAX_AGE_DAYS ? lastWeight.weight_kg : null)
   const phaseRow = phaseRes.data as DietPhaseRow | null
 
   let lastCalibration: NutritionContext['lastCalibration'] = null
@@ -104,14 +113,15 @@ export async function loadNutritionContext(userId: string, supabase: SupabaseCli
   if (profile.heightCm == null) missing.push('heightCm')
   if (!profile.birthDate) missing.push('birthDate')
   if (!profile.sex) missing.push('sex')
-  const latest = checkins[0]
-  if (latest?.weight_kg == null) missing.push('checkinWeight')
-  else if (now.getTime() - Date.parse(latest.created_at) > CHECKIN_MAX_AGE_DAYS * 24 * 60 * 60 * 1000) missing.push('checkinStale')
+  if (!lastWeight) missing.push('checkinWeight')
+  else if (currentWeightKg == null) missing.push('checkinStale')
 
   return {
     today,
     profile,
-    checkins,
+    weights,
+    measurements,
+    currentWeightKg,
     phase: phaseRow ? toDietPhase(phaseRow) : null,
     lastCalibration,
     tiredness: tiredness ?? null,

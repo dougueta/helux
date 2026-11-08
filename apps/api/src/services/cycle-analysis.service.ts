@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { BodyCheckin, CycleSummary, Goal, MesocycleSession, PainReport, TirednessLevel } from '@helux/types'
+import type { BodyMeasurement, BodyWeight, CycleSummary, Goal, MesocycleSession, PainReport, TirednessLevel } from '@helux/types'
 import { analyzeCycle, checkinTrend, parseGoalTarget, type CheckinTrendResult } from '@helux/workouts'
+import { addDays, bodySnapshot } from '@helux/nutrition'
 
 // Spec 024 (R11): ao concluir um ciclo, a análise é calculada em código, gravada
 // em `cycle_analyses` e ligada ao próximo mesociclo.
@@ -23,12 +24,24 @@ export async function runCycleAnalysis(
     supabase.from('workout_sessions').select('id, date, duration_s, review_status, exercises').eq('user_id', userId).gte('date', since),
     supabase.from('session_checkins').select('phase, date, rpe, pains').eq('user_id', userId).gte('date', since),
     supabase.from('daily_tiredness_signals').select('level').eq('user_id', userId).gte('date', since),
-    supabase.from('body_checkins').select('*').eq('user_id', userId).order('month', { ascending: false }).limit(2),
+    supabase.from('body_checkins').select('*').eq('user_id', userId).order('measured_on', { ascending: false }).limit(2),
   ])
   for (const r of [workouts, checkins, tiredness, body]) if (r.error) throw r.error
 
-  const [curr, prev] = (body.data ?? []) as BodyCheckin[]
-  const trend = curr && prev ? checkinTrend(prev, curr, goal, parseGoalTarget(goalTarget)) : null
+  // Spec 029: os dois últimos registros de medidas, cada um com o peso de referência da sua data.
+  const [curr, prev] = (body.data ?? []) as BodyMeasurement[]
+  let trend: CheckinTrendResult | null = null
+  if (curr && prev) {
+    const weightsRes = await supabase
+      .from('body_weights')
+      .select('date, weight_kg')
+      .eq('user_id', userId)
+      .gte('date', addDays(prev.measured_on, -7))
+      .lte('date', addDays(curr.measured_on, 3))
+    if (weightsRes.error) throw weightsRes.error
+    const weights = (weightsRes.data ?? []) as BodyWeight[]
+    trend = checkinTrend(bodySnapshot(prev, weights), bodySnapshot(curr, weights), goal, parseGoalTarget(goalTarget))
+  }
   // O resumo guarda a tendência sem os modificadores internos do método.
   const storedTrend = trend ? { from: trend.from, to: trend.to, deltas: trend.deltas, implausible: trend.implausible, modifiers: trend.modifiers, suggestGoalChange: trend.suggestGoalChange } : null
 

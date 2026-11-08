@@ -1,52 +1,53 @@
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { CheckinCard } from '@/components/checkin/CheckinCard'
-import type { BodyCheckin } from '@helux/types'
 
-const checkin1: BodyCheckin = {
-  id: '1', month: '2026-06-01', weight_kg: 82.2, body_fat_pct: 18.1,
-  squat_kg: 120, bench_kg: 90, created_at: '2026-06-01T00:00:00Z',
-}
-const checkin2: BodyCheckin = {
-  id: '2', month: '2026-05-01', weight_kg: 83.4, body_fat_pct: 19.0,
-  squat_kg: 115, bench_kg: 90, created_at: '2026-05-01T00:00:00Z',
-}
+// Spec 029 (US5): cartão da Home — peso de tendência, variação, % efetivo com
+// origem, cargas do último registro e lembrete de medidas.
 
-describe('CheckinCard (v2: "Último check-in", spec 012 T053)', () => {
-  it('renders nothing when no checkins', () => {
-    const { container } = render(<CheckinCard checkins={[]} />)
+vi.mock('@/lib/dates', async importOriginal => {
+  const actual = await importOriginal<typeof import('@/lib/dates')>()
+  return { ...actual, todayLocal: () => '2026-11-08' }
+})
+
+const w = (date: string, weight_kg: number) => ({ id: date, date, weight_kg })
+const WEIGHTS = [
+  w('2026-10-30', 82), w('2026-10-31', 82), w('2026-11-01', 82),
+  w('2026-11-06', 81), w('2026-11-07', 81), w('2026-11-08', 81),
+]
+const RECENT = { id: 'm1', measured_on: '2026-11-01', created_at: 'x', body_fat_navy_pct: 18.1, squat_kg: 120, bench_kg: 90 }
+const value = (term: string) => screen.getByText(term).nextElementSibling!
+
+describe('CheckinCard (spec 029)', () => {
+  it('sem pesagens nem medidas não renderiza nada', () => {
+    const { container } = render(<CheckinCard weights={[]} measurements={[]} />)
     expect(container.firstChild).toBeNull()
   })
 
-  it('shows the section header with the latest month in pt-BR', () => {
-    render(<CheckinCard checkins={[checkin1, checkin2]} />)
-    expect(screen.getByRole('heading', { name: 'Último check-in' })).toBeInTheDocument()
-    expect(screen.getByText('jun. 2026')).toBeInTheDocument()
-  })
-
-  it('shows the 2x2 grid with mono numbers in pt-BR and units', () => {
-    render(<CheckinCard checkins={[checkin1]} />)
-    const value = (term: string) => screen.getByText(term).nextElementSibling!
-    expect(value('Peso')).toHaveTextContent('82,2kg')
-    expect(value('Peso')).toHaveClass('n-md')
-    expect(value('Gordura')).toHaveTextContent('18,1%')
+  it('mostra peso de tendência, variação de 7 dias, % com origem e cargas', () => {
+    render(<CheckinCard weights={WEIGHTS} measurements={[RECENT]} />)
+    expect(screen.getByRole('heading', { name: 'Peso e medidas' })).toBeInTheDocument()
+    expect(value('Peso (tendência)')).toHaveTextContent('81,0kg')
+    expect(value('Peso (tendência)')).toHaveClass('n-md')
+    expect(value('7 dias')).toHaveTextContent('−1,0kg')
+    expect(value('Gordura (fita)')).toHaveTextContent('18,1%')
     expect(value('Agachamento')).toHaveTextContent('120kg')
     expect(value('Supino')).toHaveTextContent('90kg')
   })
 
-  it('hides the fields that are not filled (no invented data)', () => {
-    const withNulls = {
-      id: '3', month: '2026-06-01', weight_kg: 82.2, body_fat_pct: null,
-      squat_kg: null, bench_kg: null, created_at: '2026-06-01T00:00:00Z',
-    } as unknown as BodyCheckin
-    render(<CheckinCard checkins={[withNulls]} />)
-    expect(screen.getByText('Peso')).toBeInTheDocument()
-    expect(screen.queryByText('Gordura')).not.toBeInTheDocument()
-    expect(screen.queryByText('Supino')).not.toBeInTheDocument()
+  it('sem tendência mostra a última pesagem com a data', () => {
+    render(<CheckinCard weights={[w('2026-11-07', 81.4)]} measurements={[]} />)
+    expect(value('Peso (07/11)')).toHaveTextContent('81,4kg')
+    expect(screen.queryByText('7 dias')).not.toBeInTheDocument()
   })
 
-  it('renders the actions passed as children', () => {
-    render(<CheckinCard checkins={[checkin1]}><button>Novo check-in</button></CheckinCard>)
-    expect(screen.getByRole('button', { name: 'Novo check-in' })).toBeInTheDocument()
+  it('lembra de refazer as medidas quando o último registro tem mais de 28 dias (FR-018)', () => {
+    render(<CheckinCard weights={WEIGHTS} measurements={[{ ...RECENT, measured_on: '2026-10-01' }]} />)
+    expect(screen.getByText(/hora de refazer as medidas/i)).toBeInTheDocument()
+  })
+
+  it('com medidas recentes não mostra o lembrete', () => {
+    render(<CheckinCard weights={WEIGHTS} measurements={[RECENT]} />)
+    expect(screen.queryByText(/hora de refazer as medidas/i)).not.toBeInTheDocument()
   })
 })

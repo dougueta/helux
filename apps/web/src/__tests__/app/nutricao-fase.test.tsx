@@ -9,6 +9,8 @@ vi.mock('@/services/nutrition.service', () => ({
   getPhase: () => getPhaseMock(),
   startPhase: (...a: unknown[]) => startPhaseMock(...a),
   endPhase: () => endPhaseMock(),
+  previewRecalibration: vi.fn(),
+  applyRecalibration: vi.fn(),
   getToday: vi.fn().mockResolvedValue({ status: 'no-phase', missing: [] }),
   getHistory: vi.fn().mockResolvedValue([]),
 }))
@@ -106,34 +108,40 @@ describe('Nutrição › Fase (spec 018, US0)', () => {
     expect(await screen.findByRole('button', { name: /iniciar fase/i })).toBeInTheDocument()
   })
 
-  it('sem check-in com peso: leva ao check-in', async () => {
+  it('sem pesagem: leva ao registro de peso (spec 029)', async () => {
     getPhaseMock.mockResolvedValue({ phase: null, calibrations: [], bodyFatPct: null, missing: ['checkinWeight'] })
     await openFase()
-    expect(await screen.findByRole('link', { name: /fazer check-in/i })).toHaveAttribute('href', '/checkin?voltar=nutricao')
+    expect(await screen.findByRole('link', { name: /registrar peso/i })).toHaveAttribute('href', '/checkin/peso?voltar=nutricao')
     expect(screen.queryByRole('button', { name: /iniciar fase/i })).not.toBeInTheDocument()
   })
 
-  it('check-in com mais de 35 dias: pede um check-in atual antes de iniciar a fase (validação do usuário)', async () => {
+  it('última pesagem com mais de 35 dias: pede uma pesagem atual antes de iniciar a fase (validação do usuário)', async () => {
     getPhaseMock.mockResolvedValue({ phase: null, calibrations: [], bodyFatPct: null, missing: ['checkinStale'] })
     await openFase()
-    expect(await screen.findByText(/check-in mais recente tem mais de um mês/i)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /fazer check-in/i })).toHaveAttribute('href', '/checkin?voltar=nutricao')
+    expect(await screen.findByText(/última pesagem tem mais de um mês/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /registrar peso/i })).toHaveAttribute('href', '/checkin/peso?voltar=nutricao')
     expect(screen.queryByRole('button', { name: /iniciar fase/i })).not.toBeInTheDocument()
   })
 
-  it('perfil e check-in faltando: depois de salvar o perfil, pede o check-in', async () => {
+  it('perfil e pesagem faltando: depois de salvar o perfil, pede a pesagem', async () => {
     getPhaseMock.mockResolvedValueOnce({ phase: null, calibrations: [], bodyFatPct: null, missing: ['heightCm', 'birthDate', 'sex', 'checkinStale'] })
     getPhaseMock.mockResolvedValueOnce({ phase: null, calibrations: [], bodyFatPct: null, missing: ['checkinStale'] })
     upsertProfileMock.mockResolvedValue({})
     const user = await openFase()
-    expect(await screen.findByText(/depois, um check-in/i)).toBeInTheDocument()
+    expect(await screen.findByText(/depois, registre o peso de hoje/i)).toBeInTheDocument()
 
     await user.type(screen.getByLabelText(/altura/i), '180')
     await user.type(screen.getByLabelText(/data de nascimento/i), '1991-01-10')
     await user.click(screen.getByRole('button', { name: 'Masculino' }))
     await user.click(screen.getByRole('button', { name: /salvar dados/i }))
 
-    expect(await screen.findByRole('link', { name: /fazer check-in/i })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: /registrar peso/i })).toBeInTheDocument()
+  })
+
+  it('fase ativa tem o botão Recalibrar dieta (spec 029, US3)', async () => {
+    getPhaseMock.mockResolvedValue({ phase: PHASE, calibrations: CALIBRATIONS, bodyFatPct: 18.4, missing: [] })
+    await openFase()
+    expect(await screen.findByRole('button', { name: 'Recalibrar dieta' })).toBeInTheDocument()
   })
 
   it('fase que passou da duração avisa para iniciar a próxima', async () => {

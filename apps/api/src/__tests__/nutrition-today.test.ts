@@ -26,7 +26,9 @@ function ctx(over: Record<string, unknown> = {}) {
   return {
     today: '2026-10-14',
     profile: { heightCm: 180, birthDate: '1991-01-10', sex: 'masculino' },
-    checkins: [{ id: 'c2', weight_kg: 80, created_at: '2026-10-10T09:00:00Z' }],
+    weights: [],
+    measurements: [],
+    currentWeightKg: 80,
     phase: PHASE,
     lastCalibration: null,
     tiredness: null,
@@ -92,7 +94,7 @@ describe('rotas do dia (spec 018, US1)', () => {
     loadNutritionContextMock.mockResolvedValue(ctx({ phase: null, missing: ['checkinStale'] }))
     expect((await app.inject({ method: 'GET', url: '/api/nutrition/today', headers: auth })).json()).toEqual({ status: 'no-phase', missing: ['checkinStale'] })
 
-    loadNutritionContextMock.mockResolvedValue(ctx({ checkins: [], missing: ['checkinWeight'] }))
+    loadNutritionContextMock.mockResolvedValue(ctx({ currentWeightKg: null, missing: ['checkinWeight'] }))
     expect((await app.inject({ method: 'GET', url: '/api/nutrition/today', headers: auth })).json()).toEqual({ status: 'needs-profile', missing: ['checkinWeight'] })
   })
 

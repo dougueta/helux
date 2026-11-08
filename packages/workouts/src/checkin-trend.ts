@@ -1,8 +1,10 @@
-import type { BodyCheckin, CheckinTrend, Goal } from '@helux/types'
+import type { BodySnapshot, CheckinTrend, Goal } from '@helux/types'
 import type { MethodModifier } from './method'
 
 // Spec 024 (R10): a evolução entre check-ins corporais muda o método de forma
 // previsível; variações implausíveis (erro de medida) não mudam nada.
+// Spec 029: compara fotos do corpo datadas (registro de medidas + peso de
+// referência); % de gordura só é comparado quando a origem é a mesma.
 
 type Metric = 'weight_kg' | 'body_fat_pct' | 'waist_cm' | 'squat_kg' | 'bench_kg' | 'deadlift_kg'
 const METRICS: Metric[] = ['weight_kg', 'body_fat_pct', 'waist_cm', 'squat_kg', 'bench_kg', 'deadlift_kg']
@@ -33,19 +35,23 @@ export function parseGoalTarget(text: string | null | undefined): GoalTarget | n
   return Object.keys(target).length > 0 ? target : null
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000
+const DAYS_PER_MONTH = 30.4
+
 function monthsBetween(from: string, to: string): number {
-  const [fy, fm] = from.split('-').map(Number)
-  const [ty, tm] = to.split('-').map(Number)
-  return Math.max(1, (ty - fy) * 12 + (tm - fm))
+  const days = (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS
+  return Math.max(1, days / DAYS_PER_MONTH)
 }
 
 const round1 = (n: number) => Math.round(n * 10) / 10
 
-export function checkinTrend(prev: BodyCheckin, curr: BodyCheckin, goal: Goal, target: GoalTarget | null = null): CheckinTrendResult {
-  const months = monthsBetween(prev.month, curr.month)
+export function checkinTrend(prev: BodySnapshot, curr: BodySnapshot, goal: Goal, target: GoalTarget | null = null): CheckinTrendResult {
+  const months = monthsBetween(prev.date, curr.date)
+  const sameFatSource = (prev.body_fat_source ?? null) === (curr.body_fat_source ?? null)
   const deltas: Record<string, number> = {}
   const implausible: string[] = []
   for (const m of METRICS) {
+    if (m === 'body_fat_pct' && !sameFatSource) continue
     const a = prev[m]
     const b = curr[m]
     if (typeof a !== 'number' || typeof b !== 'number') continue
@@ -80,5 +86,5 @@ export function checkinTrend(prev: BodyCheckin, curr: BodyCheckin, goal: Goal, t
     }
   }
 
-  return { from: prev.month, to: curr.month, deltas, implausible, modifiers: methodModifiers.map(m => m.description), suggestGoalChange, methodModifiers }
+  return { from: prev.date, to: curr.date, deltas, implausible, modifiers: methodModifiers.map(m => m.description), suggestGoalChange, methodModifiers }
 }

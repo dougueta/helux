@@ -4,16 +4,20 @@ import { getServerSession } from '@/lib/server-session'
 import { HomeClient } from './HomeClient'
 
 
-async function getLatestCheckins(token: string) {
-  try {
-    const res = await serverFetch(`/api/checkins?limit=2`, {
-      headers: { Authorization: `Bearer ${token}` },
-      next: { revalidate: 3600 }
-    })
-    if (!res.ok) return []
-    const data = await res.json()
-    return data.checkins ?? []
-  } catch { return [] }
+/** Spec 029: pesagens dos últimos 30 dias e os 2 últimos registros de medidas. */
+async function getBody(token: string) {
+  const get = async (path: string, key: string) => {
+    try {
+      const res = await serverFetch(path, { headers: { Authorization: `Bearer ${token}` }, next: { revalidate: 300 } })
+      if (!res.ok) return []
+      const data = await res.json()
+      return data[key] ?? []
+    } catch {
+      return []
+    }
+  }
+  const [weights, measurements] = await Promise.all([get('/api/weights?days=30', 'weights'), get('/api/measurements?limit=2', 'measurements')])
+  return { weights, measurements }
 }
 
 async function getAnalytics(token: string) {
@@ -30,13 +34,11 @@ export default async function HomePage() {
   const session = await getServerSession()
   if (!session) redirect('/login')
 
-  const [plan, checkinsRaw, analytics] = await Promise.all([
+  const [plan, body, analytics] = await Promise.all([
     getLatestPlan(session.access_token),
-    getLatestCheckins(session.access_token),
+    getBody(session.access_token),
     getAnalytics(session.access_token),
   ])
-
-  const checkins = checkinsRaw.sort((a: { month: string }, b: { month: string }) => b.month.localeCompare(a.month))
 
   const firstName = session.user.email?.split('@')[0] ?? 'atleta'
 
@@ -44,7 +46,8 @@ export default async function HomePage() {
     <HomeClient
       plan={plan}
       firstName={firstName}
-      checkins={checkins}
+      weights={body.weights}
+      measurements={body.measurements}
       analytics={analytics}
     />
   )

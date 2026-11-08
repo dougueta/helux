@@ -11,6 +11,7 @@ import { endPhase, getPhase, startPhase, type PhaseResponse } from '@/services/n
 import { CalibrationList } from './CalibrationList'
 import { GOAL_LABEL, PhaseCard } from './PhaseCard'
 import { ProfileGate } from './ProfileGate'
+import { RecalibrateButton } from './RecalibrationDialog'
 
 const GOALS = (Object.keys(GOAL_LABEL) as DietGoal[]).map(value => ({ value, label: GOAL_LABEL[value] }))
 
@@ -44,7 +45,7 @@ function StartPhaseForm({ onStarted }: { onStarted: () => void }) {
       <div>
         <h2 className="t-section">Iniciar uma fase de dieta</h2>
         <p className="t-secondary" style={{ marginTop: 6 }}>
-          As metas saem do seu último check-in e são recalibradas a cada novo check-in.
+          As metas saem do seu peso de tendência. Depois de 2 semanas, use “Recalibrar dieta” para ajustá-las.
         </p>
       </div>
       <div className="hx-field">
@@ -97,7 +98,10 @@ export function PhaseSection() {
   return (
     <>
       {data.phase ? (
-        <PhaseCard phase={data.phase} bodyFatPct={data.bodyFatPct} ending={ending} onEnd={end} />
+        <>
+          <PhaseCard phase={data.phase} bodyFatPct={data.bodyFatPct} ending={ending} onEnd={end} />
+          <RecalibrateButton onApplied={load} />
+        </>
       ) : (
         <StartPhaseForm onStarted={load} />
       )}

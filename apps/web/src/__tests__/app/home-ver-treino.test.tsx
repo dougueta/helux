@@ -30,14 +30,14 @@ beforeEach(() => {
 
 describe('HomeClient — "Ver treino" (spec 026, FR-009)', () => {
   it('com próximo treino, mostra "Ver treino" para o preview junto de "Iniciar treino"', () => {
-    render(<HomeClient plan={null} firstName="Doug" checkins={[]} analytics={null} />)
+    render(<HomeClient plan={null} firstName="Doug" weights={[]} measurements={[]} analytics={null} />)
     expect(screen.getByRole('button', { name: 'Iniciar treino' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver treino' })).toHaveAttribute('href', '/treinos/proximo?de=home')
   })
 
   it('sem plano, não mostra "Ver treino"', () => {
     hooks.plan = null
-    render(<HomeClient plan={null} firstName="Doug" checkins={[]} analytics={null} />)
+    render(<HomeClient plan={null} firstName="Doug" weights={[]} measurements={[]} analytics={null} />)
     expect(screen.getByRole('button', { name: 'Gerar meu plano' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Ver treino' })).not.toBeInTheDocument()
   })
@@ -46,7 +46,7 @@ describe('HomeClient — "Ver treino" (spec 026, FR-009)', () => {
 describe('HomeClient — semana de descarga (spec 027, R5)', () => {
   it('iniciar o treino passa a descarga da semana para a sessão', () => {
     hooks.plan = { ...planWith(), week: { current: 4, total: 4, deload: true } }
-    render(<HomeClient plan={null} firstName="Doug" checkins={[]} analytics={null} />)
+    render(<HomeClient plan={null} firstName="Doug" weights={[]} measurements={[]} analytics={null} />)
     ;(hooks.tirednessArgs as { onStart: (e: unknown) => void }).onStart(EXERCISES)
     expect(hooks.startWorkout).toHaveBeenCalledWith(EXERCISES, { deload: true })
   })

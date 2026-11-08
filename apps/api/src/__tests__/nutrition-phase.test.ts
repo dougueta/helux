@@ -20,16 +20,20 @@ vi.mock('../services/nutrition-context.service', () => ({ loadNutritionContext: 
 
 const createPhaseMock = vi.fn()
 const endPhaseMock = vi.fn()
+const evaluateMock = vi.fn()
+const applyMock = vi.fn()
 vi.mock('../services/diet-phase.service', async () => {
   const actual = await vi.importActual<typeof import('../services/diet-phase.service')>('../services/diet-phase.service')
-  return { ...actual, createPhase: createPhaseMock, endPhase: endPhaseMock }
+  return { ...actual, createPhase: createPhaseMock, endPhase: endPhaseMock, evaluateRecalibration: evaluateMock, applyRecalibration: applyMock }
 })
 
 const PHASE = { id: 'phase-1', goal: 'perder_gordura', startedOn: '2026-09-01', durationWeeks: 8, status: 'ativa', baseTargets: { kcal: 2180, proteinG: 176, carbsG: 225, fatG: 64 } }
 const CTX = {
   today: '2026-10-13',
   profile: { heightCm: 180, birthDate: '1991-01-10', sex: 'masculino' },
-  checkins: [{ id: 'c2', weight_kg: 79.6, waist_cm: 90, neck_cm: 40, created_at: '2026-10-01T09:00:00Z' }],
+  weights: [],
+  measurements: [{ id: 'c2', measured_on: '2026-10-01', waist_cm: 90, neck_cm: 40, body_fat_navy_pct: 18.4, created_at: '2026-10-01T09:00:00Z' }],
+  currentWeightKg: 79.6,
   phase: PHASE,
   lastCalibration: null,
   missing: [],
@@ -78,7 +82,7 @@ describe('rotas da fase de dieta (spec 018, US0)', () => {
   })
 
   it('GET sem fase → phase null e lista vazia', async () => {
-    loadNutritionContextMock.mockResolvedValue({ ...CTX, phase: null, checkins: [], missing: ['checkinWeight'] })
+    loadNutritionContextMock.mockResolvedValue({ ...CTX, phase: null, measurements: [], currentWeightKg: null, missing: ['checkinWeight'] })
     const body = (await app.inject({ method: 'GET', url: '/api/nutrition/phase', headers: auth })).json()
     expect(body).toEqual({ phase: null, calibrations: [], bodyFatPct: null, missing: ['checkinWeight'] })
   })
@@ -115,5 +119,38 @@ describe('rotas da fase de dieta (spec 018, US0)', () => {
 
     endPhaseMock.mockResolvedValueOnce(null)
     expect((await app.inject({ method: 'POST', url: '/api/nutrition/phase/end', headers: auth })).statusCode).toBe(404)
+  })
+
+  // Spec 029 (US3): recalibração sob demanda.
+  const PROPOSAL = { status: 'proposta', action: 'reduzir', before: PHASE.baseTargets, after: { ...PHASE.baseTargets, kcal: 2030 }, reason: 'Peso de tendência…', metrics: {} }
+
+  it('POST /recalibration/preview devolve a avaliação sem gravar', async () => {
+    evaluateMock.mockReturnValue(PROPOSAL)
+    const res = await app.inject({ method: 'POST', url: '/api/nutrition/phase/recalibration/preview', headers: auth })
+    expect(res.statusCode).toBe(200)
+    expect(res.json()).toEqual(PROPOSAL)
+    expect(evaluateMock).toHaveBeenCalledWith(CTX)
+    expect(applyMock).not.toHaveBeenCalled()
+    expect(fake.calls).toHaveLength(0)
+  })
+
+  it('POST /recalibration aplica → 200 com a calibração', async () => {
+    applyMock.mockResolvedValue({ calibration: { id: 'k3', action: 'reduzir' } })
+    const res = await app.inject({ method: 'POST', url: '/api/nutrition/phase/recalibration', headers: auth })
+    expect(res.statusCode).toBe(200)
+    expect(res.json()).toEqual({ calibration: { id: 'k3', action: 'reduzir' } })
+    expect(applyMock).toHaveBeenCalledWith('u1', expect.anything(), CTX)
+  })
+
+  it('POST /recalibration fora de proposta → 409 com o status', async () => {
+    applyMock.mockResolvedValue({ evaluation: { status: 'intervalo-curto', availableOn: '2026-10-15' } })
+    const res = await app.inject({ method: 'POST', url: '/api/nutrition/phase/recalibration', headers: auth })
+    expect(res.statusCode).toBe(409)
+    expect(res.json()).toEqual({ error: 'intervalo-curto', status: 'intervalo-curto', availableOn: '2026-10-15' })
+  })
+
+  it('401 sem token nas rotas de recalibração', async () => {
+    expect((await app.inject({ method: 'POST', url: '/api/nutrition/phase/recalibration/preview' })).statusCode).toBe(401)
+    expect((await app.inject({ method: 'POST', url: '/api/nutrition/phase/recalibration' })).statusCode).toBe(401)
   })
 })

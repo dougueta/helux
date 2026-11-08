@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { activityFactor, ageOn, bmrMifflin, navyBodyFat } from '../biometrics'
+import { activityFactor, ageOn, bmrMifflin, navyBodyFat, navyEstimate } from '../biometrics'
 
 describe('ageOn', () => {
   it('idade completa na data', () => {
@@ -52,5 +52,25 @@ describe('activityFactor (R2)', () => {
     expect(activityFactor(5)).toBe(1.725)
     expect(activityFactor(6)).toBe(1.725)
     expect(activityFactor(null)).toBe(1.375)
+  })
+})
+
+describe('navyEstimate (spec 029, FR-008/FR-009)', () => {
+  it('com perfil e medidas → ok e o %', () => {
+    expect(navyEstimate({ heightCm: 180, sex: 'masculino' }, { waistCm: 90, neckCm: 40 })).toEqual({ pct: 18.4, status: 'ok' })
+  })
+
+  it('sem altura ou sexo → sem-perfil', () => {
+    expect(navyEstimate({ heightCm: null, sex: 'masculino' }, { waistCm: 90, neckCm: 40 })).toEqual({ pct: null, status: 'sem-perfil' })
+    expect(navyEstimate({ heightCm: 180, sex: null }, { waistCm: 90, neckCm: 40 })).toEqual({ pct: null, status: 'sem-perfil' })
+  })
+
+  it('sem cintura ou pescoço (mulher: sem quadril) → sem-medidas', () => {
+    expect(navyEstimate({ heightCm: 180, sex: 'masculino' }, { waistCm: 90 })).toEqual({ pct: null, status: 'sem-medidas' })
+    expect(navyEstimate({ heightCm: 165, sex: 'feminino' }, { waistCm: 75, neckCm: 33 })).toEqual({ pct: null, status: 'sem-medidas' })
+  })
+
+  it('medidas que não fecham o cálculo → inconsistente', () => {
+    expect(navyEstimate({ heightCm: 180, sex: 'masculino' }, { waistCm: 40, neckCm: 41 })).toEqual({ pct: null, status: 'inconsistente' })
   })
 })

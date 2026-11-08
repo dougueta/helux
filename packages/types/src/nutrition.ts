@@ -28,7 +28,24 @@ export interface DietCalibrationMetrics {
   weeklyRatePct: number
   waistDeltaCm?: number
   bodyFatPct?: number
+  /** Spec 029: pesos de tendência usados nas duas pontas. */
+  trendFrom?: { date: string; weightKg: number }
+  trendTo?: { date: string; weightKg: number }
 }
+
+/** Spec 029: avaliação de "Recalibrar dieta" (preview e apply). */
+export type RecalibrationEvaluation =
+  | { status: 'indisponivel'; missing: string[] }
+  | { status: 'intervalo-curto'; availableOn: string }
+  | { status: 'faltam-pesagens'; at: ('inicio' | 'atual')[] }
+  | {
+      status: 'proposta'
+      action: CalibrationAction
+      before: DietTargets
+      after: DietTargets
+      reason: string
+      metrics: DietCalibrationMetrics
+    }
 
 export interface DietCalibration {
   id: string
