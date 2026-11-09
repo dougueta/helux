@@ -72,9 +72,9 @@ describe('EXERCISE_BANK — músculos e tempo derivados', () => {
     expect(entry.tempo).toBe('3 · 1 · 1')
   })
 
-  it('Cadeira Abdutora (gluteo): mapeia para a região quadriceps do MuscleMap', () => {
+  it('Cadeira Abdutora (gluteo): revisada para abdutores e glúteo (028, lote 10)', () => {
     const entry = EXERCISE_BANK.find((e) => e.name === 'Cadeira Abdutora')!
-    expect(entry.muscles.primary).toEqual(['quadriceps'])
+    expect(entry.muscles.primary).toEqual(['abdutores', 'gluteo'])
   })
 })
 
