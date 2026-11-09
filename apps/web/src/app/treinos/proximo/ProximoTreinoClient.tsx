@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { AdjustedWorkoutPlanView } from '@helux/types'
+import type { AdjustedWorkoutPlanView, ComplementaryCategory } from '@helux/types'
 import { isMainExercise } from '@helux/workouts'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
@@ -21,7 +21,7 @@ import { WeekBadge } from '@/components/workout/WeekBadge'
  * Preview do próximo treino (spec 026, US2): o treino de hoje completo, só
  * leitura. Não cria sessão nem pede check-in; "Iniciar treino" segue o fluxo da Home.
  */
-export function ProximoTreinoClient({ plan: initialPlan, from }: { plan: AdjustedWorkoutPlanView | null; from?: string }) {
+export function ProximoTreinoClient({ plan: initialPlan, from, completedToday }: { plan: AdjustedWorkoutPlanView | null; from?: string; completedToday?: readonly ComplementaryCategory[] }) {
   const router = useRouter()
   const { isActive, startWorkout } = useActiveWorkout()
   const { plan, loading, refetch } = useWorkoutPlan()
@@ -69,7 +69,7 @@ export function ProximoTreinoClient({ plan: initialPlan, from }: { plan: Adjuste
             {changes.length > 0 && <AdjustmentChangesList changes={changes} />}
           </div>
         )}
-        <PlanExerciseList exercises={today.exercises} onSelect={setViewing} />
+        <PlanExerciseList exercises={today.exercises} onSelect={setViewing} completedToday={completedToday} />
       </section>
 
       <div style={{ marginTop: 20 }}>

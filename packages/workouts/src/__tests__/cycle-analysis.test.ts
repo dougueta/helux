@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { MesocycleSession } from '@helux/types'
 import { analyzeCycle, type CycleAnalysisInput } from '../cycle-analysis'
 
-// Spec 024 T100 — análise do ciclo concluído (R11): números e achados reproduzíveis.
+// Spec 024 T100 + Spec 030 (FR-016) — análise do ciclo concluído (R11) com aderência complementar.
 
 const strength = (week: number, done = true): MesocycleSession => ({ letter: 'A', focus: 'Pernas', week, kind: 'forca', completedAt: done ? `2026-09-0${week}T20:00:00Z` : null, exercises: [] })
 const cardio = (week: number, done: boolean): MesocycleSession => ({ letter: 'B', focus: 'Cardio', week, kind: 'cardio', completedAt: done ? `2026-09-0${week}T20:00:00Z` : null, exercises: [] })
@@ -78,5 +78,29 @@ describe('analyzeCycle', () => {
     const s = analyzeCycle(input({ checkins: [], tiredness: [] }))
     expect(s.missingData).toEqual(expect.arrayContaining(['check-ins de depois do treino', 'cansaço do dia', 'check-in corporal do mês']))
     expect(s.tirednessAvg).toBeNull()
+  })
+
+  it('inclui aderência das 3 rotinas complementares quando informada (FR-016)', () => {
+    const s = analyzeCycle(
+      input({
+        sessions: [strength(1), strength(2), strength(3), strength(4)],
+        complementaryLogs: [
+          { category: 'alongamento-mobilidade', performed_on: '2026-09-02' },
+          { category: 'alongamento-mobilidade', performed_on: '2026-09-04' },
+          { category: 'core-abdominal', performed_on: '2026-09-03' },
+          { category: 'cardio', performed_on: '2026-09-05' },
+        ],
+        complementaryWeeklyTargets: {
+          'alongamento-mobilidade': 5,
+          'core-abdominal': 3,
+          cardio: 2,
+        },
+      }),
+    )
+    expect(s.complementaryAdherence).toEqual({
+      'alongamento-mobilidade': { done: 2, target: 20 },
+      'core-abdominal': { done: 1, target: 12 },
+      cardio: { done: 1, target: 8 },
+    })
   })
 })

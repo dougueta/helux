@@ -20,6 +20,7 @@ import { PlanGenerationState } from '@/components/workout/PlanGenerationState'
 import { FlareNotice } from '@/components/conditions/FlareNotice'
 import { CycleSummaryCard } from '@/components/cycle/CycleSummaryCard'
 import { WeekBadge } from '@/components/workout/WeekBadge'
+import { DailyRoutinesSection } from '@/components/routines/DailyRoutinesSection'
 import { resolveExerciseDisplay } from '@/lib/exerciseDisplay'
 import { todayHighlight } from '@/lib/todayHighlight'
 
@@ -246,6 +247,7 @@ export function HomeClient({ plan: initialPlan, firstName, weights, measurements
 
       {/* Spec 024: crise de gota além do prazo → procurar o médico. */}
       <FlareNotice onChange={() => void refetch()} />
+      <DailyRoutinesSection />
       {/* Spec 024: no começo de um ciclo novo, o resumo do anterior e o que mudou. */}
       {currentPlan?.mesocycleId && currentPlan.progress?.completed === 0 && <CycleSummaryCard mesocycleId={currentPlan.mesocycleId} />}
 

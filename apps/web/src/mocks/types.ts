@@ -57,6 +57,9 @@ export interface MockDataset {
   agents?: import('./agents').MockAgents
   /** Spec 024: condições de saúde (ausente em datasets antigos). */
   conditions?: import('@helux/types').HealthCondition[]
+  /** Spec 030: histórico e preferências das rotinas complementares. */
+  complementaryLogs?: import('@helux/types').ComplementaryRoutineLog[]
+  complementaryPreferences?: import('@helux/types').ComplementaryPreferences
   /** Persona `network-error` (R-H): toda leitura falha. */
   failReads?: boolean
 }

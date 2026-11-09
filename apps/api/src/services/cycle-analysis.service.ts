@@ -1,10 +1,20 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { BodyMeasurement, BodyWeight, CycleSummary, Goal, MesocycleSession, PainReport, TirednessLevel } from '@helux/types'
+import type {
+  BodyMeasurement,
+  BodyWeight,
+  ComplementaryCategory,
+  ComplementaryPreferences,
+  CycleSummary,
+  Goal,
+  MesocycleSession,
+  PainReport,
+  TirednessLevel,
+} from '@helux/types'
 import { analyzeCycle, checkinTrend, parseGoalTarget, type CheckinTrendResult } from '@helux/workouts'
 import { addDays, bodySnapshot } from '@helux/nutrition'
 
-// Spec 024 (R11): ao concluir um ciclo, a análise é calculada em código, gravada
-// em `cycle_analyses` e ligada ao próximo mesociclo.
+// Spec 024 (R11) + Spec 030 (FR-016): ao concluir um ciclo, a análise é calculada em código,
+// gravada em `cycle_analyses` e ligada ao próximo mesociclo, incluindo rotinas complementares.
 
 export interface CompletedMesocycle {
   id: string
@@ -20,13 +30,15 @@ export async function runCycleAnalysis(
   goalTarget: string | null,
 ): Promise<{ summary: CycleSummary; trend: CheckinTrendResult | null }> {
   const since = previous.generated_at.slice(0, 10)
-  const [workouts, checkins, tiredness, body] = await Promise.all([
+  const [workouts, checkins, tiredness, body, complementaryRes, profileRes] = await Promise.all([
     supabase.from('workout_sessions').select('id, date, duration_s, review_status, exercises').eq('user_id', userId).gte('date', since),
     supabase.from('session_checkins').select('phase, date, rpe, pains').eq('user_id', userId).gte('date', since),
     supabase.from('daily_tiredness_signals').select('level').eq('user_id', userId).gte('date', since),
     supabase.from('body_checkins').select('*').eq('user_id', userId).order('measured_on', { ascending: false }).limit(2),
+    supabase.from('complementary_routine_logs').select('category, performed_on').eq('user_id', userId).gte('performed_on', since),
+    supabase.from('user_training_profile').select('complementary_preferences').eq('user_id', userId).maybeSingle(),
   ])
-  for (const r of [workouts, checkins, tiredness, body]) if (r.error) throw r.error
+  for (const r of [workouts, checkins, tiredness, body, complementaryRes, profileRes]) if (r.error) throw r.error
 
   // Spec 029: os dois últimos registros de medidas, cada um com o peso de referência da sua data.
   const [curr, prev] = (body.data ?? []) as BodyMeasurement[]
@@ -45,6 +57,13 @@ export async function runCycleAnalysis(
   // O resumo guarda a tendência sem os modificadores internos do método.
   const storedTrend = trend ? { from: trend.from, to: trend.to, deltas: trend.deltas, implausible: trend.implausible, modifiers: trend.modifiers, suggestGoalChange: trend.suggestGoalChange } : null
 
+  const prefs = ((profileRes.data as { complementary_preferences?: ComplementaryPreferences | null } | null)?.complementary_preferences ?? {})
+  const complementaryWeeklyTargets: Partial<Record<ComplementaryCategory, number>> = {
+    ...(prefs['alongamento-mobilidade']?.daysPerWeek ? { 'alongamento-mobilidade': prefs['alongamento-mobilidade'].daysPerWeek } : {}),
+    ...(prefs['core-abdominal']?.daysPerWeek ? { 'core-abdominal': prefs['core-abdominal'].daysPerWeek } : {}),
+    ...(prefs.cardio?.daysPerWeek ? { cardio: prefs.cardio.daysPerWeek } : {}),
+  }
+
   const summary = analyzeCycle({
     mesocycleId: previous.id,
     startDate: since,
@@ -53,6 +72,8 @@ export async function runCycleAnalysis(
     checkins: ((checkins.data ?? []) as { phase: 'antes' | 'depois'; date: string; rpe: number | null; pains: PainReport[] | null }[]).map(c => ({ ...c, pains: c.pains ?? [] })),
     tiredness: ((tiredness.data ?? []) as { level: TirednessLevel | null }[]).flatMap(t => (t.level ? [t.level] : [])),
     trend: storedTrend,
+    complementaryLogs: ((complementaryRes.data ?? []) as { category: ComplementaryCategory; performed_on: string }[]),
+    complementaryWeeklyTargets,
   })
 
   const { error } = await supabase

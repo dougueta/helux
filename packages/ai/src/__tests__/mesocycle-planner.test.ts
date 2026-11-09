@@ -168,12 +168,12 @@ describe('generateMesocyclePlan — resultado', () => {
     expect(usages).toHaveLength(4)
   })
 
-  it('violação do método (falta cardio) também volta para correção', async () => {
-    const noCardio = body()
-    noCardio.weekTemplate[0].exercises = noCardio.weekTemplate[0].exercises.filter(e => e.phase !== 'cardio')
-    mockStream.mockReturnValueOnce(reply(noCardio)).mockReturnValueOnce(reply(body()))
+  it('violação do método (sessão avulsa de cardio no weekTemplate) também volta para correção', async () => {
+    const withStandaloneCardio = body()
+    withStandaloneCardio.weekTemplate.push({ ...withStandaloneCardio.weekTemplate[0], letter: 'C', kind: 'cardio' })
+    mockStream.mockReturnValueOnce(reply(withStandaloneCardio)).mockReturnValueOnce(reply(body()))
     await generateMesocyclePlan(input())
-    expect(mockStream.mock.calls[1][0].messages[2].content).toMatch(/sessões com cardio na semana/)
+    expect(mockStream.mock.calls[1][0].messages[2].content).toMatch(/apenas sessões de força/)
   })
 
   it('violação de novo → ConstraintsUnsatisfiableError com as violações e o uso', async () => {

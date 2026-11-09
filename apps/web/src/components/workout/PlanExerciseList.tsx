@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import type { PlannedExercise } from '@helux/types'
-import { PHASE_LABELS, groupByPhase, isMainExercise, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
+import type { ComplementaryCategory, PlannedExercise } from '@helux/types'
+import { PHASE_LABELS, groupByPhase, isCooldownSatisfiedByRoutines, isMainExercise, restSecondsAfterSet, supersetPartnerIndex } from '@helux/workouts'
 import { Fit } from '@/components/ui/Fit'
 import { EffortTargetLine } from '@/components/workout/EffortTargetLine'
 import { SectionHeader } from '@/components/ui/SectionHeader'
@@ -106,7 +106,8 @@ function MainRow({
 }
 
 /** Aquecimento, volta à calma, cardio e mobilidade: nome e a prescrição descritiva, sem carga nem fit. */
-function SimpleRow({ exercise, onSelect }: { exercise: PlannedExercise; onSelect?: () => void }) {
+function SimpleRow({ exercise, onSelect, completedToday }: { exercise: PlannedExercise; onSelect?: () => void; completedToday?: readonly ComplementaryCategory[] }) {
+  const synergy = isCooldownSatisfiedByRoutines(exercise, completedToday ?? [])
   const detail = exercise.cardio
     ? `${exercise.cardio.minutes} min · zona ${exercise.cardio.zone}`
     : exercise.region
@@ -118,6 +119,11 @@ function SimpleRow({ exercise, onSelect }: { exercise: PlannedExercise; onSelect
       <span className="t-secondary" style={{ textAlign: 'right' }}>
         {detail}
       </span>
+      {synergy.satisfied && synergy.label && (
+        <span className="hx-tag" style={{ gridColumn: '1 / -1', color: 'var(--accent)', justifySelf: 'start', marginTop: 4 }}>
+          {synergy.label}
+        </span>
+      )}
     </Row>
   )
 }
@@ -135,9 +141,11 @@ function partnerOf(exercises: PlannedExercise[], index: number): PlannedExercise
 export function PlanExerciseList({
   exercises,
   onSelect,
+  completedToday,
 }: {
   exercises: PlannedExercise[]
   onSelect?: (index: number) => void
+  completedToday?: readonly ComplementaryCategory[]
 }) {
   const groups = groupByPhase(exercises)
   // Descanso como na sessão antes da 1ª série (spec 026): todos com séries pendentes.
@@ -163,7 +171,7 @@ export function PlanExerciseList({
                   onSelect={onSelect && (() => onSelect(index))}
                 />
               ) : (
-                <SimpleRow key={index} exercise={exercise} onSelect={onSelect && (() => onSelect(index))} />
+                <SimpleRow key={index} exercise={exercise} completedToday={completedToday} onSelect={onSelect && (() => onSelect(index))} />
               ),
             )}
           </ol>

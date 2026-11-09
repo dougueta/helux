@@ -1,22 +1,21 @@
 import type { ConstraintViolation, MesocycleSession, MethodPrescription, PlannedExercise } from '@helux/types'
 import { findBankExercise } from './constraints'
 
-// Spec 024 (R5): confere a semana-modelo gerada pela IA contra a prescrição de
-// método (estrutura, frequência e volume por grupo, cardio e mobilidade).
+// Spec 024 (R5) + Spec 030 (FR-002a): confere a semana-modelo gerada pela IA contra a
+// prescrição de método. A fila weekTemplate contém exclusivamente as sessões de força
+// (academia), enquanto cardio e mobilidade dedicados vivem nas Rotinas Complementares.
 
 /** Grupos musculares principais (FR-013). */
 export const MAIN_MUSCLE_GROUPS = ['peito', 'costas', 'ombro', 'quadriceps', 'posterior', 'gluteo'] as const
 
 /** Exercício de força do treino principal (conta séries e frequência). */
 export const isStrength = (e: PlannedExercise) => (e.phase ?? 'principal') === 'principal' && !e.cardio && !e.region
-const hasMobility = (s: MesocycleSession) => s.kind === 'mobilidade' || s.exercises.some(e => !!e.region && (e.phase ?? 'principal') === 'principal')
 
 const MESSAGES = {
   estrutura: (found: number, wanted: number) => `a semana tem ${found} dias de força, o método pede ${wanted}`,
+  apenasForca: () => 'a fila do mesociclo deve conter apenas sessões de força (cardio e mobilidade dedicados ficam nas Rotinas Complementares)',
   frequencia: (g: string, n: number, min: number) => `${g} é treinado ${n}× na semana; o mínimo é ${min}×`,
   volume: (g: string, n: number, min: number, max: number) => `${g} tem ${n} séries na semana; a faixa é ${min}–${max}`,
-  cardio: (n: number, min: number) => `${n} sessões com cardio na semana; o método pede ${min}`,
-  mobilidade: (n: number, min: number) => `${n} sessões com mobilidade na semana; o método pede ${min}`,
 }
 
 export function validateAgainstMethod(template: MesocycleSession[], method: MethodPrescription): ConstraintViolation[] {
@@ -24,6 +23,8 @@ export function validateAgainstMethod(template: MesocycleSession[], method: Meth
   const strength = template.filter(s => (s.kind ?? 'forca') === 'forca')
   if (strength.length !== method.strengthDays) {
     out.push({ sessionIndex: 0, exercise: null, rule: 'metodo-estrutura', message: MESSAGES.estrutura(strength.length, method.strengthDays) })
+  } else if (template.length !== strength.length) {
+    out.push({ sessionIndex: 0, exercise: null, rule: 'metodo-estrutura', message: MESSAGES.apenasForca() })
   }
 
   const frequency: Record<string, number> = {}
@@ -45,9 +46,5 @@ export function validateAgainstMethod(template: MesocycleSession[], method: Meth
     else if ((sets[g] ?? 0) < min || (sets[g] ?? 0) > max) out.push({ sessionIndex: 0, exercise: g, rule: 'metodo-volume', message: MESSAGES.volume(g, sets[g] ?? 0, min, max) })
   }
 
-  const cardio = template.filter(s => s.kind === 'cardio' || s.exercises.some(e => !!e.cardio)).length
-  if (cardio < method.cardioSessions) out.push({ sessionIndex: 0, exercise: null, rule: 'metodo-cardio', message: MESSAGES.cardio(cardio, method.cardioSessions) })
-  const mobility = template.filter(hasMobility).length
-  if (mobility < method.mobilitySessions) out.push({ sessionIndex: 0, exercise: null, rule: 'metodo-mobilidade', message: MESSAGES.mobilidade(mobility, method.mobilitySessions) })
   return out
 }

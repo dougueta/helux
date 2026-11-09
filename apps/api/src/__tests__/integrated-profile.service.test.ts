@@ -269,4 +269,16 @@ describe('buildIntegratedProfile (022 T008)', () => {
     const { profile } = await buildIntegratedProfile('u1', fake.client as never, NOW)
     expect(profile.sources.restricoes.summary).toMatch(/Treinar perna pesado.*EM CONFLITO com "Evitar empurrar acima da cabeça".*restrição prevalece/)
   })
+
+  it('030 (FR-016): inclui aderência das rotinas complementares no histórico do perfil', async () => {
+    const fake = db({
+      complementary_routine_logs: [
+        { id: 'r1', user_id: 'u1', category: 'alongamento-mobilidade', performed_on: '2026-10-19', duration_minutes: 10, items: [] },
+        { id: 'r2', user_id: 'u1', category: 'cardio', performed_on: '2026-10-20', duration_minutes: 25, modality: 'bike', items: [] },
+      ],
+    })
+    const { profile } = await buildIntegratedProfile('u1', fake.client as never, NOW)
+    expect(profile.sources.historico.summary).toMatch(/Rotinas complementares/)
+    expect(profile.sources.historico.summary).toMatch(/alongamento-mobilidade/)
+  })
 })

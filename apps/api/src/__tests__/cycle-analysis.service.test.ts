@@ -39,6 +39,10 @@ function db() {
       { id: 'p4', user_id: 'u1', date: '2026-08-31', weight_kg: '90.1' },
     ],
     cycle_analyses: [],
+    complementary_routine_logs: [
+      { id: 'r1', user_id: 'u1', category: 'alongamento-mobilidade', performed_on: '2026-09-02', duration_minutes: 10, items: [] },
+      { id: 'r2', user_id: 'u1', category: 'cardio', performed_on: '2026-09-03', duration_minutes: 25, items: [] },
+    ],
   })
 }
 
@@ -48,6 +52,8 @@ describe('cycle-analysis.service (024)', () => {
     const { summary, trend } = await runCycleAnalysis('u1', fake.client as never, PREVIOUS, 'emagrecimento', null)
     expect(summary.mesocycleId).toBe('m1')
     expect(summary.adherence.cardio).toEqual({ done: 0, planned: 2 })
+    expect(summary.complementaryAdherence?.['alongamento-mobilidade'].done).toBe(1)
+    expect(summary.complementaryAdherence?.cardio.done).toBe(1)
     expect(summary.exercises.map(e => e.name)).toEqual(['Agachamento Livre (Barra)'])
     expect(summary.findings.map(f => f.kind)).toEqual(expect.arrayContaining(['estagnacao', 'baixa-aderencia', 'cansaco-alto']))
     expect(trend?.methodModifiers.map(m => m.cardioSessionsDelta)).toEqual([1])

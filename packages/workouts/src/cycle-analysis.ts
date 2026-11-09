@@ -1,8 +1,21 @@
-import type { CheckinTrend, CycleExerciseSummary, CycleFinding, CycleSummary, ExerciseSet, MesocycleSession, PainReport, Region, SessionKind, TirednessLevel } from '@helux/types'
+import {
+  COMPLEMENTARY_CATEGORIES,
+  type CheckinTrend,
+  type ComplementaryCategory,
+  type CycleExerciseSummary,
+  type CycleFinding,
+  type CycleSummary,
+  type ExerciseSet,
+  type MesocycleSession,
+  type PainReport,
+  type Region,
+  type SessionKind,
+  type TirednessLevel,
+} from '@helux/types'
 import { isValidSession } from './session-validity'
 
-// Spec 024 (R11): análise do ciclo concluído em código — números reproduzíveis
-// que a IA recebe prontos, em vez de interpretar o histórico cru.
+// Spec 024 (R11) + Spec 030 (FR-016): análise do ciclo concluído em código — números
+// reproduzíveis que a IA recebe prontos, incluindo a aderência às rotinas complementares.
 
 export interface CycleAnalysisInput {
   mesocycleId: string
@@ -13,6 +26,10 @@ export interface CycleAnalysisInput {
   checkins: Array<{ phase: 'antes' | 'depois'; date: string; rpe?: number | null; pains: PainReport[] }>
   tiredness: TirednessLevel[]
   trend: CheckinTrend | null
+  /** Spec 030: execuções das rotinas complementares no período do ciclo. */
+  complementaryLogs?: Array<{ category: ComplementaryCategory; performed_on: string }>
+  /** Spec 030: metas semanais (dias/semana) das rotinas complementares. */
+  complementaryWeeklyTargets?: Partial<Record<ComplementaryCategory, number>>
 }
 
 const KINDS: SessionKind[] = ['forca', 'cardio', 'mobilidade']
@@ -22,6 +39,12 @@ const STALL_RPE = 8
 const PROGRESS_GAIN = 0.05
 const LOW_ADHERENCE = 0.6
 const HIGH_TIREDNESS = 3
+
+const DEFAULT_COMPLEMENTARY_TARGETS: Record<ComplementaryCategory, number> = {
+  'alongamento-mobilidade': 5,
+  'core-abdominal': 3,
+  cardio: 2,
+}
 
 const round1 = (n: number) => Math.round(n * 10) / 10
 const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null)
@@ -104,6 +127,17 @@ export function analyzeCycle(input: CycleAnalysisInput): CycleSummary {
   }
   if (tirednessAvg !== null && tirednessAvg >= HIGH_TIREDNESS) findings.push({ kind: 'cansaco-alto', subject: 'cansaço', evidence: `cansaço médio ${tirednessAvg} (1 = ótimo, 4 = exausto)` })
 
+  let complementaryAdherence: CycleSummary['complementaryAdherence'] | undefined
+  if (input.complementaryLogs) {
+    complementaryAdherence = Object.fromEntries(
+      COMPLEMENTARY_CATEGORIES.map(cat => {
+        const done = input.complementaryLogs!.filter(l => l.category === cat).length
+        const perWeek = input.complementaryWeeklyTargets?.[cat] ?? DEFAULT_COMPLEMENTARY_TARGETS[cat]
+        return [cat, { done, target: weeks * perWeek }]
+      }),
+    ) as Record<ComplementaryCategory, { done: number; target: number }>
+  }
+
   const missingData: string[] = []
   if (!input.checkins.some(c => c.phase === 'depois')) missingData.push('check-ins de depois do treino')
   if (input.tiredness.length === 0) missingData.push('cansaço do dia')
@@ -120,5 +154,6 @@ export function analyzeCycle(input: CycleAnalysisInput): CycleSummary {
     checkinTrend: input.trend,
     findings,
     missingData,
+    ...(complementaryAdherence ? { complementaryAdherence } : {}),
   }
 }

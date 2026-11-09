@@ -1,5 +1,6 @@
 import type { Goal, Region } from './conditions'
 import type { SessionKind } from './method'
+import type { ComplementaryCategory } from './routines'
 
 // Spec 024 — sensações, análise do ciclo, tendência de check-ins e estado de geração.
 
@@ -60,6 +61,8 @@ export interface CycleSummary {
   checkinTrend: CheckinTrend | null
   findings: CycleFinding[]
   missingData: string[]
+  /** Spec 030 (FR-016): aderência às 3 rotinas complementares no período do ciclo. */
+  complementaryAdherence?: Record<ComplementaryCategory, { done: number; target: number }>
 }
 
 export type GenerationErrorCode = 'constraints-unsatisfiable' | 'incomplete-response' | 'budget-exceeded' | 'refusal' | 'unknown'
