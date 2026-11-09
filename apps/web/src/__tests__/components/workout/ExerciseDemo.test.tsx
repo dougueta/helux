@@ -261,7 +261,7 @@ describe('ExerciseDemo — demonstração do catálogo (028)', () => {
 })
 
 describe('ExerciseDemo — cenas e implementos (028)', () => {
-  it.each(['solo', 'banco-reto', 'banco-inclinado', 'banco-baixo', 'assento', 'assento-reclinado', 'maquina', 'barra-fixa', 'paralelas', 'parede', 'degrau', 'colchonete', 'banco-romano', 'banco-declinado', 'banco-scott'] as const)(
+  it.each(['solo', 'banco-reto', 'banco-inclinado', 'banco-baixo', 'assento', 'assento-reclinado', 'maquina', 'barra-fixa', 'paralelas', 'parede', 'degrau', 'colchonete', 'banco-romano', 'banco-declinado', 'banco-scott', 'bicicleta', 'remo'] as const)(
     'desenha a cena %s',
     (scene) => {
       const { container } = render(<ExerciseDemo demo={demoOf({ scene })} playing={false} label="x" />)
@@ -269,7 +269,7 @@ describe('ExerciseDemo — cenas e implementos (028)', () => {
     },
   )
 
-  it.each(['barra', 'halteres', 'kettlebell', 'maquina', 'smith', 'cabo', 'corda', 'elastico', 'roda'] as const)(
+  it.each(['barra', 'halteres', 'kettlebell', 'maquina', 'smith', 'cabo', 'corda', 'elastico', 'roda', 'remo'] as const)(
     'implemento com carga %s é desenhado, com acento só nele',
     (gear) => {
       const { container } = render(<ExerciseDemo demo={demoOf({ gear })} playing={false} label="x" />)
@@ -280,6 +280,12 @@ describe('ExerciseDemo — cenas e implementos (028)', () => {
       accentish.forEach(el => expect(el.closest('[data-part="implement"]')).not.toBeNull())
     },
   )
+
+  it('elástico sem ponto de fixação fica só nas mãos, sem linha até a polia', () => {
+    const { container } = render(<ExerciseDemo demo={demoOf({ gear: 'elastico' })} playing={false} label="x" />)
+    expect(container.querySelector('[data-part="implement"] line')).toBeNull()
+    expect(container.querySelector('[data-part="implement"] circle')).not.toBeNull()
+  })
 
   it('barra com ponto de apoio (landmine) desenha a barra do apoio até as mãos', () => {
     const { container } = render(<ExerciseDemo demo={demoOf({ gear: 'barra', anchor: [204, 238] })} playing={false} label="x" />)
@@ -294,7 +300,7 @@ describe('ExerciseDemo — cenas e implementos (028)', () => {
     expect(container.querySelector('[data-landmine]')).toBeNull()
   })
 
-  it.each(['peso-corporal', 'banco', 'barra-fixa', 'nenhum'] as const)('gear sem carga (%s) não desenha implemento', (gear) => {
+  it.each(['peso-corporal', 'banco', 'barra-fixa', 'bicicleta', 'nenhum'] as const)('gear sem carga (%s) não desenha implemento', (gear) => {
     const { container } = render(<ExerciseDemo demo={demoOf({ gear })} playing={false} label="x" />)
     expect(container.querySelector('[data-part="implement"] *')).toBeNull()
   })

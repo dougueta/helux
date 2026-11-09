@@ -138,6 +138,36 @@ export function DemoScene({ scene }: { scene: Scene }) {
         </g>
       )
     }
+    case 'bicicleta': {
+      const { seat, bar, crank, crankR } = G.BIKE
+      const frame = 'var(--text-faint)'
+      return (
+        <g data-scene={scene}>
+          <Floor />
+          <line x1={seat[0] + 6} y1={seat[1] + 4} x2={crank[0]} y2={crank[1]} stroke={frame} strokeWidth="6" strokeLinecap="round" />
+          <line x1={crank[0]} y1={crank[1]} x2={bar[0] - 6} y2={bar[1] + 8} stroke={frame} strokeWidth="6" strokeLinecap="round" />
+          <line x1={bar[0] - 12} y1={bar[1]} x2={bar[0] + 4} y2={bar[1]} stroke={frame} strokeWidth="5" strokeLinecap="round" />
+          <line x1={seat[0] - 10} y1={seat[1]} x2={seat[0] + 10} y2={seat[1]} stroke={frame} strokeWidth="7" strokeLinecap="round" />
+          <circle cx={crank[0]} cy={crank[1]} r={crankR} fill="none" stroke="var(--hairline)" strokeWidth="2" />
+          <line x1={crank[0] - 34} y1={G.FLOOR_Y - 3} x2={crank[0] + 46} y2={G.FLOOR_Y - 3} stroke={frame} strokeWidth="6" strokeLinecap="round" />
+          <line x1={crank[0]} y1={crank[1]} x2={crank[0]} y2={G.FLOOR_Y - 3} stroke={frame} strokeWidth="6" strokeLinecap="round" />
+        </g>
+      )
+    }
+    case 'remo': {
+      const { railY, x0, x1, foot, flywheel, flywheelR } = G.ROWER
+      return (
+        <g data-scene={scene}>
+          <Floor />
+          <line x1={x0} y1={railY + 6} x2={flywheel[0]} y2={railY + 6} stroke="var(--surface-3)" strokeWidth="5" strokeLinecap="round" />
+          {post(x0 + 4, railY + 6, G.FLOOR_Y - 2, 4)}
+          {post(flywheel[0], flywheel[1], G.FLOOR_Y - 2, 6)}
+          <line x1={foot[0] - 4} y1={foot[1] + 8} x2={foot[0] + 8} y2={foot[1] - 14} stroke={BENCH_FILL} strokeWidth="6" strokeLinecap="round" />
+          <line x1={x0 + 30} y1={railY} x2={x1 - 30} y2={railY} stroke="var(--hairline)" strokeWidth="1.5" strokeDasharray="2 4" />
+          <circle cx={flywheel[0]} cy={flywheel[1]} r={flywheelR} fill={BENCH_FILL} stroke="var(--hairline)" />
+        </g>
+      )
+    }
     case 'solo':
     default:
       return (
@@ -197,7 +227,7 @@ export function DemoFigure({ pose, mirror }: { pose: Pose; mirror: boolean }) {
 
 const ACC = 'var(--accent)'
 
-function Single({ gear, at, anchor }: { gear: Gear; at: Point; anchor: Point }) {
+function Single({ gear, at, anchor, anchored = true }: { gear: Gear; at: Point; anchor: Point; anchored?: boolean }) {
   switch (gear) {
     case 'halteres':
       return (
@@ -246,7 +276,16 @@ function Single({ gear, at, anchor }: { gear: Gear; at: Point; anchor: Point }) 
         </g>
       )
     }
+    case 'remo':
+      return (
+        <g>
+          <line x1={anchor[0]} y1={anchor[1]} x2={at[0]} y2={at[1]} stroke="var(--text-faint)" strokeWidth="1.6" />
+          <line x1={at[0]} y1={at[1] - 6} x2={at[0]} y2={at[1] + 6} stroke={ACC} strokeWidth="4" strokeLinecap="round" />
+        </g>
+      )
     case 'elastico':
+      // Sem ponto de fixação, o elástico fica entre as mãos; de perfil, aparece só na mão.
+      if (!anchored) return <circle cx={at[0]} cy={at[1]} r="4" fill={ACC} />
       return <line x1={anchor[0]} y1={anchor[1]} x2={at[0]} y2={at[1]} stroke={ACC} strokeWidth="2.5" strokeLinecap="round" />
     case 'roda':
       return (
@@ -303,8 +342,8 @@ export function DemoImplement({ demo, pose }: { demo: ResolvedDemo; pose: Pose }
   const secondAnchor = demo.mirror ? mir(anchor) : anchor
   return (
     <g>
-      <Single gear={demo.gear} at={at} anchor={anchor} />
-      {second && <Single gear={demo.gear} at={second} anchor={secondAnchor} />}
+      <Single gear={demo.gear} at={at} anchor={anchor} anchored={!!demo.anchor} />
+      {second && <Single gear={demo.gear} at={second} anchor={secondAnchor} anchored={!!demo.anchor} />}
     </g>
   )
 }
