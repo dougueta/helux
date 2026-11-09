@@ -1,0 +1,1466 @@
+[
+  {
+    "id": "agachamento-livre-barra",
+    "name": "Agachamento Livre (Barra)",
+    "muscleGroup": "quadriceps",
+    "equipment": "barra",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 2,
+      "ombro": 0,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "agachamento-frontal-barra",
+    "name": "Agachamento Frontal (Barra)",
+    "muscleGroup": "quadriceps",
+    "equipment": "barra",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 2,
+      "ombro": 1,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "agachamento-bulgaro-halteres",
+    "name": "Agachamento Búlgaro (Halteres)",
+    "muscleGroup": "quadriceps",
+    "equipment": "halteres",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 2,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "afundo-halteres",
+    "name": "Afundo (Halteres)",
+    "muscleGroup": "quadriceps",
+    "equipment": "halteres",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 2,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "agachamento-goblet-halteres",
+    "name": "Agachamento Goblet (Halteres)",
+    "muscleGroup": "quadriceps",
+    "equipment": "halteres",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 2,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "leg-press-45",
+    "name": "Leg Press 45°",
+    "muscleGroup": "quadriceps",
+    "equipment": "maquina-cabo",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "cadeira-extensora",
+    "name": "Cadeira Extensora",
+    "muscleGroup": "quadriceps",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 2,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "agachamento-sumo-halteres",
+    "name": "Agachamento Sumô (Halteres)",
+    "muscleGroup": "quadriceps",
+    "equipment": "halteres",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 2,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "agachamento-livre-corporal",
+    "name": "Agachamento Livre (Peso Corporal)",
+    "muscleGroup": "quadriceps",
+    "equipment": "peso-corporal",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "afundo-reverso-corporal",
+    "name": "Afundo Reverso (Peso Corporal)",
+    "muscleGroup": "quadriceps",
+    "equipment": "peso-corporal",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "agachamento-overhead-barra",
+    "name": "Agachamento Overhead (Barra)",
+    "muscleGroup": "quadriceps",
+    "equipment": "barra",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 2,
+      "ombro": 2,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "step-up-halteres",
+    "name": "Step-up (Halteres)",
+    "muscleGroup": "quadriceps",
+    "equipment": "halteres",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "agachamento-hack-maquina",
+    "name": "Agachamento Hack (Máquina)",
+    "muscleGroup": "quadriceps",
+    "equipment": "maquina-cabo",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "pistol-squat-assistido",
+    "name": "Pistol Squat Assistido",
+    "muscleGroup": "quadriceps",
+    "equipment": "peso-corporal",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 2,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "cadeira-adutora",
+    "name": "Cadeira Adutora",
+    "muscleGroup": "quadriceps",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "levantamento-terra-barra",
+    "name": "Levantamento Terra (Barra)",
+    "muscleGroup": "posterior",
+    "equipment": "barra",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "levantamento-terra-romeno-barra",
+    "name": "Levantamento Terra Romeno (Barra)",
+    "muscleGroup": "posterior",
+    "equipment": "barra",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "levantamento-terra-romeno-halteres",
+    "name": "Levantamento Terra Romeno (Halteres)",
+    "muscleGroup": "posterior",
+    "equipment": "halteres",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "levantamento-terra-sumo-barra",
+    "name": "Levantamento Terra Sumô (Barra)",
+    "muscleGroup": "posterior",
+    "equipment": "barra",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "stiff-barra",
+    "name": "Stiff (Barra)",
+    "muscleGroup": "posterior",
+    "equipment": "barra",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "stiff-halteres",
+    "name": "Stiff (Halteres)",
+    "muscleGroup": "posterior",
+    "equipment": "halteres",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "elevacao-pelvica-barra",
+    "name": "Elevação Pélvica (Barra)",
+    "muscleGroup": "gluteo",
+    "equipment": "barra",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "elevacao-pelvica-corporal",
+    "name": "Elevação Pélvica (Peso Corporal)",
+    "muscleGroup": "gluteo",
+    "equipment": "peso-corporal",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "elevacao-pelvica-unilateral",
+    "name": "Elevação Pélvica Unilateral (Peso Corporal)",
+    "muscleGroup": "gluteo",
+    "equipment": "peso-corporal",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "mesa-flexora",
+    "name": "Mesa Flexora",
+    "muscleGroup": "posterior",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "cadeira-flexora",
+    "name": "Cadeira Flexora",
+    "muscleGroup": "posterior",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "good-morning-barra",
+    "name": "Good Morning (Barra)",
+    "muscleGroup": "posterior",
+    "equipment": "barra",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "kettlebell-swing",
+    "name": "Kettlebell Swing",
+    "muscleGroup": "gluteo",
+    "equipment": "halteres",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "hiperextensao-lombar-banco",
+    "name": "Hiperextensão Lombar (Banco)",
+    "muscleGroup": "posterior",
+    "equipment": "peso-corporal",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "terra-halteres-unilateral",
+    "name": "Levantamento Terra com Halter Unilateral",
+    "muscleGroup": "posterior",
+    "equipment": "halteres",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "supino-reto-barra",
+    "name": "Supino Reto (Barra)",
+    "muscleGroup": "peito",
+    "equipment": "barra",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "supino-reto-halteres",
+    "name": "Supino Reto (Halteres)",
+    "muscleGroup": "peito",
+    "equipment": "halteres",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "supino-inclinado-barra",
+    "name": "Supino Inclinado (Barra)",
+    "muscleGroup": "peito",
+    "equipment": "barra",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "supino-inclinado-halteres",
+    "name": "Supino Inclinado (Halteres)",
+    "muscleGroup": "peito",
+    "equipment": "halteres",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "supino-declinado-barra",
+    "name": "Supino Declinado (Barra)",
+    "muscleGroup": "peito",
+    "equipment": "barra",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "crucifixo-halteres",
+    "name": "Crucifixo (Halteres)",
+    "muscleGroup": "peito",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "crucifixo-inclinado-halteres",
+    "name": "Crucifixo Inclinado (Halteres)",
+    "muscleGroup": "peito",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "crossover-cabo",
+    "name": "Crossover no Cabo",
+    "muscleGroup": "peito",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "peck-deck-maquina",
+    "name": "Peck Deck (Máquina)",
+    "muscleGroup": "peito",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "flexao-braco-corporal",
+    "name": "Flexão de Braço (Peso Corporal)",
+    "muscleGroup": "peito",
+    "equipment": "peso-corporal",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "flexao-declinada-corporal",
+    "name": "Flexão Declinada (Peso Corporal)",
+    "muscleGroup": "peito",
+    "equipment": "peso-corporal",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "supino-maquina",
+    "name": "Supino Máquina",
+    "muscleGroup": "peito",
+    "equipment": "maquina-cabo",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "flexao-diamante-corporal",
+    "name": "Flexão Diamante (Peso Corporal)",
+    "muscleGroup": "triceps",
+    "equipment": "peso-corporal",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "desenvolvimento-militar-barra",
+    "name": "Desenvolvimento Militar (Barra)",
+    "muscleGroup": "ombro",
+    "equipment": "barra",
+    "pattern": "empurrar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "desenvolvimento-halteres",
+    "name": "Desenvolvimento com Halteres",
+    "muscleGroup": "ombro",
+    "equipment": "halteres",
+    "pattern": "empurrar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "desenvolvimento-arnold",
+    "name": "Desenvolvimento Arnold",
+    "muscleGroup": "ombro",
+    "equipment": "halteres",
+    "pattern": "empurrar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "elevacao-lateral-halteres",
+    "name": "Elevação Lateral (Halteres)",
+    "muscleGroup": "ombro",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "elevacao-frontal-halteres",
+    "name": "Elevação Frontal (Halteres)",
+    "muscleGroup": "ombro",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "elevacao-posterior-halteres",
+    "name": "Elevação Posterior (Halteres)",
+    "muscleGroup": "ombro",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "desenvolvimento-maquina",
+    "name": "Desenvolvimento Máquina",
+    "muscleGroup": "ombro",
+    "equipment": "maquina-cabo",
+    "pattern": "empurrar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "elevacao-lateral-cabo",
+    "name": "Elevação Lateral no Cabo",
+    "muscleGroup": "ombro",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "face-pull-cabo",
+    "name": "Face Pull (Cabo)",
+    "muscleGroup": "ombro",
+    "equipment": "maquina-cabo",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "flexao-pike-corporal",
+    "name": "Flexão Pike (Peso Corporal)",
+    "muscleGroup": "ombro",
+    "equipment": "peso-corporal",
+    "pattern": "empurrar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "encolhimento-ombros-halteres",
+    "name": "Encolhimento de Ombros (Halteres)",
+    "muscleGroup": "costas",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "handstand-pushup-assistido",
+    "name": "Handstand Push-up Assistido",
+    "muscleGroup": "ombro",
+    "equipment": "peso-corporal",
+    "pattern": "empurrar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "encolhimento-barra",
+    "name": "Encolhimento com Barra",
+    "muscleGroup": "costas",
+    "equipment": "barra",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "remada-curvada-barra",
+    "name": "Remada Curvada (Barra)",
+    "muscleGroup": "costas",
+    "equipment": "barra",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "remada-curvada-halteres",
+    "name": "Remada Curvada (Halteres)",
+    "muscleGroup": "costas",
+    "equipment": "halteres",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "remada-unilateral-halteres",
+    "name": "Remada Unilateral (Halteres)",
+    "muscleGroup": "costas",
+    "equipment": "halteres",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "remada-cavalinho-barra",
+    "name": "Remada Cavalinho (Barra)",
+    "muscleGroup": "costas",
+    "equipment": "barra",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "remada-baixa-cabo",
+    "name": "Remada Baixa (Cabo)",
+    "muscleGroup": "costas",
+    "equipment": "maquina-cabo",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "remada-maquina",
+    "name": "Remada Máquina",
+    "muscleGroup": "costas",
+    "equipment": "maquina-cabo",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "remada-invertida-corporal",
+    "name": "Remada Invertida (Peso Corporal)",
+    "muscleGroup": "costas",
+    "equipment": "peso-corporal",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "remada-t-barra",
+    "name": "Remada em T (Barra)",
+    "muscleGroup": "costas",
+    "equipment": "barra",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "remada-alta-barra",
+    "name": "Remada Alta (Barra)",
+    "muscleGroup": "ombro",
+    "equipment": "barra",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "barra-fixa-corporal",
+    "name": "Barra Fixa (Peso Corporal)",
+    "muscleGroup": "costas",
+    "equipment": "peso-corporal",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "barra-fixa-supinada-corporal",
+    "name": "Barra Fixa Supinada (Peso Corporal)",
+    "muscleGroup": "costas",
+    "equipment": "peso-corporal",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "puxada-alta-cabo",
+    "name": "Puxada Alta (Cabo)",
+    "muscleGroup": "costas",
+    "equipment": "maquina-cabo",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "puxada-alta-fechada-cabo",
+    "name": "Puxada Alta Pegada Fechada (Cabo)",
+    "muscleGroup": "costas",
+    "equipment": "maquina-cabo",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "puxada-alta-neutra-cabo",
+    "name": "Puxada Alta Neutra (Cabo)",
+    "muscleGroup": "costas",
+    "equipment": "maquina-cabo",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "pulldown-assistido-maquina",
+    "name": "Pulldown Assistido (Máquina)",
+    "muscleGroup": "costas",
+    "equipment": "maquina-cabo",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "prancha-abdominal-corporal",
+    "name": "Prancha Abdominal (Peso Corporal)",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "prancha-lateral-corporal",
+    "name": "Prancha Lateral (Peso Corporal)",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "abdominal-supra-corporal",
+    "name": "Abdominal Supra (Peso Corporal)",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "abdominal-infra-corporal",
+    "name": "Abdominal Infra (Peso Corporal)",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "elevacao-pernas-barra",
+    "name": "Elevação de Pernas na Barra",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "roda-abdominal",
+    "name": "Roda Abdominal (Ab Wheel)",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "prancha-rotacao",
+    "name": "Prancha com Rotação",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "abdominal-polia-cabo",
+    "name": "Abdominal na Polia (Cabo)",
+    "muscleGroup": "core",
+    "equipment": "maquina-cabo",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "rotacao-tronco-cabo",
+    "name": "Rotação de Tronco no Cabo",
+    "muscleGroup": "core",
+    "equipment": "maquina-cabo",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "dead-bug-corporal",
+    "name": "Dead Bug (Peso Corporal)",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "pallof-press-cabo",
+    "name": "Pallof Press (Cabo)",
+    "muscleGroup": "core",
+    "equipment": "maquina-cabo",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "prancha-toque-ombro-corporal",
+    "name": "Prancha Alta com Toque no Ombro",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "rosca-direta-barra",
+    "name": "Rosca Direta (Barra)",
+    "muscleGroup": "biceps",
+    "equipment": "barra",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "rosca-direta-halteres",
+    "name": "Rosca Direta (Halteres)",
+    "muscleGroup": "biceps",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "rosca-alternada-halteres",
+    "name": "Rosca Alternada (Halteres)",
+    "muscleGroup": "biceps",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "rosca-martelo-halteres",
+    "name": "Rosca Martelo (Halteres)",
+    "muscleGroup": "biceps",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "rosca-scott-barra",
+    "name": "Rosca Scott (Barra)",
+    "muscleGroup": "biceps",
+    "equipment": "barra",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "rosca-cabo",
+    "name": "Rosca no Cabo",
+    "muscleGroup": "biceps",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "rosca-21-barra",
+    "name": "Rosca 21 (Barra)",
+    "muscleGroup": "biceps",
+    "equipment": "barra",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "triceps-testa-barra",
+    "name": "Tríceps Testa (Barra)",
+    "muscleGroup": "triceps",
+    "equipment": "barra",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "triceps-testa-halteres",
+    "name": "Tríceps Testa (Halteres)",
+    "muscleGroup": "triceps",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "triceps-corda-cabo",
+    "name": "Tríceps Corda (Cabo)",
+    "muscleGroup": "triceps",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "triceps-frances-halteres",
+    "name": "Tríceps Francês (Halteres)",
+    "muscleGroup": "triceps",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "mergulho-banco-corporal",
+    "name": "Mergulho no Banco (Peso Corporal)",
+    "muscleGroup": "triceps",
+    "equipment": "peso-corporal",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "paralelas-corporal",
+    "name": "Paralelas (Peso Corporal)",
+    "muscleGroup": "triceps",
+    "equipment": "peso-corporal",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "elevacao-panturrilha-pe-maquina",
+    "name": "Elevação de Panturrilha em Pé (Máquina)",
+    "muscleGroup": "panturrilha",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "elevacao-panturrilha-sentado-maquina",
+    "name": "Elevação de Panturrilha Sentado (Máquina)",
+    "muscleGroup": "panturrilha",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "elevacao-panturrilha-corporal",
+    "name": "Elevação de Panturrilha (Peso Corporal)",
+    "muscleGroup": "panturrilha",
+    "equipment": "peso-corporal",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "elevacao-panturrilha-halteres",
+    "name": "Elevação de Panturrilha (Halteres)",
+    "muscleGroup": "panturrilha",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "panturrilha-leg-press",
+    "name": "Panturrilha no Leg Press",
+    "muscleGroup": "panturrilha",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "cadeira-abdutora",
+    "name": "Cadeira Abdutora",
+    "muscleGroup": "gluteo",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "desenvolvimento-landmine-barra",
+    "name": "Desenvolvimento Landmine (Barra)",
+    "muscleGroup": "ombro",
+    "equipment": "barra",
+    "pattern": "empurrar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "desenvolvimento-unilateral-halteres",
+    "name": "Desenvolvimento Unilateral (Halteres)",
+    "muscleGroup": "ombro",
+    "equipment": "halteres",
+    "pattern": "empurrar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "desenvolvimento-smith-maquina",
+    "name": "Desenvolvimento no Smith (Máquina)",
+    "muscleGroup": "ombro",
+    "equipment": "maquina-cabo",
+    "pattern": "empurrar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "pullover-halteres",
+    "name": "Pullover (Halteres)",
+    "muscleGroup": "costas",
+    "equipment": "halteres",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "pullover-barra",
+    "name": "Pullover com Barra",
+    "muscleGroup": "costas",
+    "equipment": "barra",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "barra-fixa-neutra-corporal",
+    "name": "Barra Fixa Pegada Neutra (Peso Corporal)",
+    "muscleGroup": "costas",
+    "equipment": "peso-corporal",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "puxada-unilateral-cabo",
+    "name": "Puxada Unilateral (Cabo)",
+    "muscleGroup": "costas",
+    "equipment": "maquina-cabo",
+    "pattern": "puxar-vertical",
+    "stress": {
+      "joelho": 0,
+      "ombro": 2,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "flexao-maos-elevadas-corporal",
+    "name": "Flexão com Mãos Elevadas (Peso Corporal)",
+    "muscleGroup": "peito",
+    "equipment": "peso-corporal",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "supino-pegada-neutra-halteres",
+    "name": "Supino com Pegada Neutra (Halteres)",
+    "muscleGroup": "peito",
+    "equipment": "halteres",
+    "pattern": "empurrar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "remada-pendlay-barra",
+    "name": "Remada Pendlay (Barra)",
+    "muscleGroup": "costas",
+    "equipment": "barra",
+    "pattern": "puxar-horizontal",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "agachamento-smith-maquina",
+    "name": "Agachamento no Smith (Máquina)",
+    "muscleGroup": "quadriceps",
+    "equipment": "maquina-cabo",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "agachamento-box-barra",
+    "name": "Agachamento Box (Barra)",
+    "muscleGroup": "quadriceps",
+    "equipment": "barra",
+    "pattern": "agachar",
+    "stress": {
+      "joelho": 1,
+      "ombro": 0,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "pull-through-cabo",
+    "name": "Pull-through no Cabo",
+    "muscleGroup": "gluteo",
+    "equipment": "maquina-cabo",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "elevacao-pelvica-maquina",
+    "name": "Elevação Pélvica na Máquina",
+    "muscleGroup": "gluteo",
+    "equipment": "maquina-cabo",
+    "pattern": "dobrar-quadril",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "hollow-hold-corporal",
+    "name": "Hollow Hold (Peso Corporal)",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "abdominal-bicicleta-corporal",
+    "name": "Abdominal Bicicleta (Peso Corporal)",
+    "muscleGroup": "core",
+    "equipment": "peso-corporal",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "russian-twist-halteres",
+    "name": "Russian Twist (Halteres)",
+    "muscleGroup": "core",
+    "equipment": "halteres",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 1
+    }
+  },
+  {
+    "id": "rollout-barra",
+    "name": "Rollout com Barra",
+    "muscleGroup": "core",
+    "equipment": "barra",
+    "pattern": "core",
+    "stress": {
+      "joelho": 0,
+      "ombro": 1,
+      "lombar": 2
+    }
+  },
+  {
+    "id": "rosca-concentrada-halteres",
+    "name": "Rosca Concentrada (Halteres)",
+    "muscleGroup": "biceps",
+    "equipment": "halteres",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  },
+  {
+    "id": "crucifixo-invertido-maquina",
+    "name": "Crucifixo Invertido na Máquina",
+    "muscleGroup": "ombro",
+    "equipment": "maquina-cabo",
+    "pattern": "isolamento",
+    "stress": {
+      "joelho": 0,
+      "ombro": 0,
+      "lombar": 0
+    }
+  }
+]

@@ -1,0 +1,102 @@
+# 028 (R11, contracts/review-flow.md): evidência das demonstrações no próprio PR.
+# Gera quadros e GIF na resolução de celular, publica numa branch órfã (fora do histórico do código)
+# e mantém um único comentário no PR. Ao fechar o PR, apaga a branch.
+name: Evidência das demonstrações
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - 'packages/exercises/**'
+      - 'apps/web/src/components/workout/ExerciseDemo.tsx'
+      - 'apps/web/src/components/workout/demo-parts.tsx'
+
+concurrency:
+  group: demo-evidence-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# Permissões de escrita só neste workflow.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  evidence:
+    name: Gerar e publicar evidência
+    # Não roda em PR de fork, nem ao fechar.
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      # O contexto `runner` não existe no env do job; a pasta é definida aqui.
+      - run: echo "EVIDENCE_DIR=$RUNNER_TEMP/demo-evidence" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @helux/web exec playwright install --with-deps chromium
+
+      - name: Subir a web em modo mock
+        run: |
+          NEXT_PUBLIC_DATA_SOURCE=mock pnpm --filter @helux/web dev > "$RUNNER_TEMP/web.log" 2>&1 &
+          for i in $(seq 1 90); do
+            if curl -sf -o /dev/null http://localhost:3000/dev/demos?frame=1; then exit 0; fi
+            sleep 2
+          done
+          echo "A web não subiu a tempo"; tail -50 "$RUNNER_TEMP/web.log"; exit 1
+
+      - name: Gerar evidência
+        run: pnpm demos:evidence --out "$EVIDENCE_DIR" --url http://localhost:3000
+
+      - name: Publicar na branch órfã
+        id: publish
+        run: |
+          if [ "$(jq length "$EVIDENCE_DIR/manifest.json")" = "0" ]; then
+            echo "sha=none" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cd "$EVIDENCE_DIR"
+          git init -q
+          git checkout -q --orphan "demo-evidence/pr-$PR_NUMBER"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Evidência das demonstrações do PR #$PR_NUMBER ($PR_SHA)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" "HEAD:refs/heads/demo-evidence/pr-$PR_NUMBER"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Criar ou atualizar o comentário
+        working-directory: apps/web
+        env:
+          EVIDENCE_SHA: ${{ steps.publish.outputs.sha }}
+        run: |
+          npx tsx scripts/demo-evidence.ts --comment --manifest "$EVIDENCE_DIR" \
+            --repo "$REPO" --evidence-sha "$EVIDENCE_SHA" --pr-sha "$PR_SHA" --batch "$PR_TITLE" > "$RUNNER_TEMP/comment.md"
+          id=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate \
+            --jq '.[] | select(.body | startswith("<!-- demo-evidence -->")) | .id' | head -n 1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@"$RUNNER_TEMP/comment.md" > /dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -F body=@"$RUNNER_TEMP/comment.md" > /dev/null
+          fi
+
+  cleanup:
+    name: Apagar a branch de evidências
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - run: gh api -X DELETE "repos/$REPO/git/refs/heads/demo-evidence/pr-$PR_NUMBER" || echo "Branch já não existe."

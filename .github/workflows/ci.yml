@@ -19,6 +19,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 028: demos:check-pending compara pending.json com a branch base
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -27,6 +30,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      # 028 (FR-032): a lista de pendências só pode diminuir
+      - run: pnpm demos:check-pending --base origin/${{ github.base_ref }}
+        if: github.event_name == 'pull_request'
 
   e2e:
     name: E2E (Supabase local + API + IA simulada)

@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import type { PlannedExercise } from '@helux/types'
-import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+import { activeVariant, recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
+
+vi.mock('@helux/exercises', async (importOriginal) => (await import('../helpers/exercises-pending')).withTestPending(importOriginal))
 
 const EXERCISE: PlannedExercise = {
   name: 'Supino reto com barra',
@@ -28,15 +30,15 @@ const PLANNED_DISPLAY = {
 
 describe('resolveExerciseDisplay', () => {
   it('shows the planned exercise with the recommended variant fit when no variant was chosen', () => {
-    expect(resolveExerciseDisplay(EXERCISE, undefined)).toEqual(PLANNED_DISPLAY)
+    expect(resolveExerciseDisplay(EXERCISE, undefined)).toMatchObject(PLANNED_DISPLAY)
   })
 
   it('treats the recommended variant as the planned exercise', () => {
-    expect(resolveExerciseDisplay(EXERCISE, 'e1')).toEqual(PLANNED_DISPLAY)
+    expect(resolveExerciseDisplay(EXERCISE, 'e1')).toMatchObject(PLANNED_DISPLAY)
   })
 
   it('shows the alternative variant with the planned exercise as secondary reference and its genetic reason as tip', () => {
-    expect(resolveExerciseDisplay(EXERCISE, 'e1b')).toEqual({
+    expect(resolveExerciseDisplay(EXERCISE, 'e1b')).toMatchObject({
       title: 'Supino reto com halteres',
       plannedName: 'Supino reto com barra',
       fit: 90,
@@ -47,12 +49,12 @@ describe('resolveExerciseDisplay', () => {
   })
 
   it('falls back to the planned exercise when the variant id no longer exists', () => {
-    expect(resolveExerciseDisplay(EXERCISE, 'gone')).toEqual(PLANNED_DISPLAY)
+    expect(resolveExerciseDisplay(EXERCISE, 'gone')).toMatchObject(PLANNED_DISPLAY)
   })
 
   it('uses the exercise own match and notes when it has no variants', () => {
     const { variants: _v, ...noVariants } = EXERCISE
-    expect(resolveExerciseDisplay(noVariants, undefined)).toEqual({
+    expect(resolveExerciseDisplay(noVariants, undefined)).toMatchObject({
       title: 'Supino reto com barra',
       plannedName: null,
       fit: 70,
@@ -114,5 +116,71 @@ describe('resolveExerciseDisplay', () => {
     it('returns undefined when the exercise has no variants', () => {
       expect(recommendedVariant({ ...EXERCISE, variants: [] })).toBeUndefined()
     })
+  })
+})
+
+describe('resolveExerciseDisplay — catálogo (028)', () => {
+  const approved: PlannedExercise = {
+    name: 'Pullover (Halteres)',
+    sets: 3,
+    reps: '10',
+    weight: '12 kg',
+    notes: 'Respire fundo na descida',
+    variants: [
+      { id: 'pullover-halteres', rec: true, name: 'Pullover (Halteres)', equip: 'Halteres', level: 'Intermediário', match: 88, motion: 'pullover', implement: 'dumbbell', why: '' },
+      { id: 'supino-reto-barra', name: 'Supino Reto (Barra)', equip: 'Barra', level: 'Avançado', match: 80, motion: 'press-flat', implement: 'barbell', why: 'Outro estímulo' },
+    ],
+  }
+
+  it('item aprovado resolve com demonstração nova e mantém as notas do plano', () => {
+    const d = resolveExerciseDisplay(approved, undefined)
+    expect(d.resolved.id).toBe('pullover-halteres')
+    expect(d.resolved.demoState).toBe('nova')
+    expect(d.resolved.guidance?.steps.length).toBeGreaterThan(0)
+    expect(d.tip).toBe('Respire fundo na descida')
+  })
+
+  it('variante alternativa resolve pela própria variante', () => {
+    const d = resolveExerciseDisplay(approved, 'supino-reto-barra')
+    expect(d.resolved.id).toBe('supino-reto-barra')
+    expect(d.resolved.demoState).toBe('legada')
+  })
+
+  it('item sem correspondência fica indisponível', () => {
+    const d = resolveExerciseDisplay({ name: 'Inventado', sets: 1, reps: '1', weight: '' }, undefined)
+    expect(d.resolved.id).toBeNull()
+    expect(d.resolved.demoState).toBe('indisponivel')
+  })
+})
+
+describe('variante ativa fora da lista (028, FR-035)', () => {
+  const planned: PlannedExercise = {
+    name: 'Supino Reto (Barra)',
+    sets: 3,
+    reps: '8',
+    weight: '60kg',
+    variants: [
+      { id: 'supino-reto-barra', rec: true, name: 'Supino Reto (Barra)', equip: 'Barra', level: 'Avançado', match: 90, motion: 'press-flat', implement: 'barbell', why: '' },
+    ],
+  }
+
+  it('activeVariant monta a variante a partir do catálogo e marca que está fora da lista', () => {
+    const v = activeVariant(planned, 'pullover-halteres')!
+    expect(v.id).toBe('pullover-halteres')
+    expect(v.name).toBe('Pullover (Halteres)')
+    expect(v.equip).toBe('Halteres')
+    expect(v.offList).toBe(true)
+  })
+
+  it('a tela mostra a variante fora da lista como ativa, sem fit', () => {
+    const d = resolveExerciseDisplay(planned, 'pullover-halteres')
+    expect(d.title).toBe('Pullover (Halteres)')
+    expect(d.plannedName).toBe('Supino Reto (Barra)')
+    expect(d.fit).toBeUndefined()
+    expect(d.resolved.id).toBe('pullover-halteres')
+  })
+
+  it('id desconhecido continua caindo na recomendada', () => {
+    expect(activeVariant(planned, 'gone')?.id).toBe('supino-reto-barra')
   })
 })

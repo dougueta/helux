@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { MUSCLE_KEYS } from '@helux/exercises'
 import { EXERCISE_BANK, MUSCLE_GROUP_LABEL, STRESS_OVERRIDES } from '../exercise-bank'
 
 describe('EXERCISE_BANK', () => {
@@ -43,7 +44,8 @@ describe('EXERCISE_BANK', () => {
 
 describe('EXERCISE_BANK — músculos e tempo derivados', () => {
   it('toda entrada tem muscles.primary com pelo menos 1 chave válida do MuscleMap', () => {
-    const validKeys = ['peito', 'ombro', 'triceps', 'biceps', 'core', 'dorsal', 'quadriceps']
+    // Itens aprovados usam os músculos revisados, com qualquer MuscleKey (028).
+    const validKeys: readonly string[] = MUSCLE_KEYS
     for (const entry of EXERCISE_BANK) {
       expect(entry.muscles.primary.length).toBeGreaterThanOrEqual(1)
       for (const key of entry.muscles.primary) expect(validKeys).toContain(key)
@@ -57,10 +59,10 @@ describe('EXERCISE_BANK — músculos e tempo derivados', () => {
     }
   })
 
-  it('Agachamento Livre (Barra): quadriceps primário, core secundário, tempo 2·0·1', () => {
+  it('Agachamento Livre (Barra): músculos revisados no lote 1 (028), tempo 2·0·1', () => {
     const entry = EXERCISE_BANK.find((e) => e.name === 'Agachamento Livre (Barra)')!
-    expect(entry.muscles.primary).toEqual(['quadriceps'])
-    expect(entry.muscles.secondary).toEqual(['core'])
+    expect(entry.muscles.primary).toEqual(['quadriceps', 'gluteo'])
+    expect(entry.muscles.secondary).toEqual(['adutores', 'posterior', 'lombar', 'core'])
     expect(entry.tempo).toBe('2 · 0 · 1')
   })
 

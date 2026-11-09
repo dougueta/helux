@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { findStrengthExercise, type Guidance } from '@helux/exercises'
 import type { PlannedExercise } from '@helux/types'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Fit } from '@/components/ui/Fit'
@@ -9,8 +10,8 @@ import { Sheet } from '@/components/ui/Sheet'
 import { Steps } from '@/components/ui/Steps'
 import { Tag } from '@/components/ui/Tag'
 import { Tips } from '@/components/ui/Tips'
-import { recommendedVariant, resolveExerciseDisplay } from '@/lib/exerciseDisplay'
-import { ExerciseDemo } from './ExerciseDemo'
+import { activeVariant, resolveExerciseDisplay, type ActiveVariant } from '@/lib/exerciseDisplay'
+import { ItemDemo } from './ItemDemo'
 import { MuscleMap } from './MuscleMap'
 
 type Tab = 'execucao' | 'variantes'
@@ -20,6 +21,15 @@ const WARN_PREFIX = /^erro comum:\s*/i
 /** Passos a partir das orientações do plano; a última "Erro comum: …" vira o passo âmbar. */
 function toSteps(cues: string[]) {
   return cues.map(c => (WARN_PREFIX.test(c) ? { text: c.replace(WARN_PREFIX, ''), warn: true } : { text: c }))
+}
+
+/** Posição inicial e passos numerados, com o erro comum por último, em âmbar. */
+function guidanceSteps(g: Guidance) {
+  return [
+    ...g.setup.map(text => ({ text })),
+    ...g.steps.map(text => ({ text })),
+    ...(g.commonError ? [{ text: g.commonError, warn: true }] : []),
+  ]
 }
 
 /** "2 · 0 · 1" → "2·0·1" (cadência compacta do palco). */
@@ -42,16 +52,42 @@ export function ExerciseSheet({
   onApply?: (variantId: string) => void
   onClose: () => void
 }) {
-  const variants = exercise.variants ?? []
-  const recVariant = recommendedVariant(exercise)
-  const active = variants.find(v => v.id === currentVariantId) ?? recVariant
-  const display = resolveExerciseDisplay(exercise, active?.id)
-  const cues = display.showPlannedCues ? exercise.cues ?? [] : []
-  const muscles = exercise.muscles ?? { primary: [], secondary: [] }
-
   const [tab, setTab] = useState<Tab>('execucao')
   const [playing, setPlaying] = useState(true)
   const [nonce, setNonce] = useState(0)
+  // 028 (FR-010): variante aberta pelo "Ver", sem alterar o treino.
+  const [previewId, setPreviewId] = useState<string | null>(null)
+
+  const active = activeVariant(exercise, currentVariantId)
+  // A variante ativa fora da lista continua visível como atual (FR-035).
+  const variants: ActiveVariant[] = active?.offList ? [active, ...(exercise.variants ?? [])] : exercise.variants ?? []
+  const preview = previewId ? variants.find(v => v.id === previewId) : undefined
+  const shown = preview ?? active
+  const display = resolveExerciseDisplay(exercise, shown?.id)
+  const resolved = display.resolved
+  // A variante usa as próprias dicas (FR-011); o planejado, as do plano.
+  const cues = display.showPlannedCues
+    ? exercise.cues ?? []
+    : resolved.id
+      ? findStrengthExercise(resolved.id)?.cues ?? []
+      : []
+  const muscles = resolved.muscles ?? { primary: [], secondary: [] }
+  // 028: cardio e item sem músculos dispensam o mapa; item sem demonstração não tem controles de reprodução.
+  const isCardio = Boolean(exercise.cardio) || resolved.kind === 'cardio'
+  const hasDemo = resolved.demoState !== 'indisponivel'
+  // 028 (T051): item aprovado usa a orientação do catálogo; pendente segue com as dicas do plano.
+  const guidance = resolved.guidance
+  const steps = guidance ? guidanceSteps(guidance) : toSteps(cues)
+
+  function openPreview(id: string) {
+    setPreviewId(id)
+    setPlaying(true)
+  }
+
+  function backToVariants() {
+    setPreviewId(null)
+    setTab('variantes')
+  }
 
   function handleSwap(id: string) {
     onApply?.(id)
@@ -71,38 +107,42 @@ export function ExerciseSheet({
     >
       <div className="hx-stage" style={{ height: 216 }}>
         <div style={{ position: 'absolute', inset: '8px 60px' }}>
-          <ExerciseDemo
-            motion={active?.motion ?? 'press-flat'}
-            implement={active?.implement}
+          <ItemDemo
+            resolved={resolved}
+            variant={shown}
+            notes={exercise.notes}
             playing={playing}
-            nonce={`${active?.id}:${nonce}`}
+            nonce={`${shown?.id ?? resolved.id}:${nonce}`}
+            size="stage"
           />
         </div>
-        {exercise.tempo && (
+        {resolved.tempo && (
           <div style={{ position: 'absolute', top: 12, right: 12, textAlign: 'right' }}>
-            <div className="n-md">{compactTempo(exercise.tempo)}</div>
+            <div className="n-md">{compactTempo(resolved.tempo)}</div>
             <div className="t-caption">cadência</div>
           </div>
         )}
-        <div style={{ position: 'absolute', left: 8, bottom: 8, display: 'flex', gap: 6 }}>
-          <IconButton
-            icon={playing ? 'pause' : 'play'}
-            label={playing ? 'pausar demonstração' : 'reproduzir demonstração'}
-            iconSize={18}
-            onClick={() => setPlaying(p => !p)}
-          />
-          <Button
-            kind="secondary"
-            icon="repeat"
-            style={{ padding: '0 14px', fontSize: 14 }}
-            onClick={() => {
-              setNonce(n => n + 1)
-              setPlaying(true)
-            }}
-          >
-            Repetir
-          </Button>
-        </div>
+        {hasDemo && (
+          <div style={{ position: 'absolute', left: 8, top: 8, display: 'flex', gap: 6 }}>
+            <IconButton
+              icon={playing ? 'pause' : 'play'}
+              label={playing ? 'pausar demonstração' : 'reproduzir demonstração'}
+              iconSize={18}
+              onClick={() => setPlaying(p => !p)}
+            />
+            <Button
+              kind="secondary"
+              icon="repeat"
+              style={{ padding: '0 14px', fontSize: 14 }}
+              onClick={() => {
+                setNonce(n => n + 1)
+                setPlaying(true)
+              }}
+            >
+              Repetir
+            </Button>
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginTop: 18 }}>
@@ -114,48 +154,79 @@ export function ExerciseSheet({
         )}
       </div>
       <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-        {exercise.muscle && <Tag>{exercise.muscle}</Tag>}
-        {active && <Tag>{active.equip}</Tag>}
-        {active && <Tag>{active.level}</Tag>}
+        {exercise.muscle && !display.plannedName && <Tag>{exercise.muscle}</Tag>}
+        {(shown?.equip || resolved.gearLabel) && <Tag>{shown?.equip || resolved.gearLabel}</Tag>}
+        {shown?.level && <Tag>{shown.level}</Tag>}
+        {shown?.crossPattern && <Tag>Equivalente</Tag>}
       </div>
 
-      <div style={{ marginTop: 20 }}>
-        <Segmented
-          tabs
-          label="conteúdo"
-          options={[
-            { value: 'execucao', label: 'Execução' },
-            { value: 'variantes', label: `Variantes (${variants.length})` },
-          ]}
-          value={tab}
-          onChange={setTab}
-        />
-      </div>
+      {preview && (
+        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+          <Button kind="ghost" icon="back" style={{ minHeight: 40, padding: '0 12px', fontSize: 14 }} onClick={backToVariants}>
+            Voltar às variantes
+          </Button>
+          {onApply && preview.id !== active?.id && (
+            <Button kind="secondary" style={{ minHeight: 40, padding: '0 14px', fontSize: 14 }} onClick={() => handleSwap(preview.id)}>
+              Trocar
+            </Button>
+          )}
+        </div>
+      )}
 
-      {tab === 'execucao' ? (
+      {exercise.cardio && (
+        <p className="t-secondary" style={{ marginTop: 8 }}>
+          Zona {exercise.cardio.zone} · {exercise.cardio.minutes} min
+        </p>
+      )}
+
+      {variants.length > 0 && !preview && (
+        <div style={{ marginTop: 20 }}>
+          <Segmented
+            tabs
+            label="conteúdo"
+            options={[
+              { value: 'execucao', label: 'Execução' },
+              { value: 'variantes', label: `Variantes (${variants.length})` },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
+        </div>
+      )}
+
+      {tab === 'execucao' || preview ? (
         <div role="tabpanel" aria-label="Execução">
-          {cues.length > 0 && (
+          {steps.length > 0 && (
             <div style={{ marginTop: 20 }}>
-              <Steps items={toSteps(cues)} />
+              <Steps items={steps} />
             </div>
+          )}
+          {guidance?.context && (
+            <p className="t-secondary" style={{ marginTop: 12 }}>
+              {guidance.context}
+            </p>
           )}
           {display.tip && (
             <div style={{ marginTop: 20 }}>
               <Tips text={display.tip} />
             </div>
           )}
-          <h3 className="t-section" style={{ marginTop: 28 }}>
-            Músculos trabalhados
-          </h3>
-          <div style={{ marginTop: 12 }}>
-            <MuscleMap primary={muscles.primary} secondary={muscles.secondary} />
-          </div>
+          {!isCardio && muscles.primary.length > 0 && (
+            <>
+              <h3 className="t-section" style={{ marginTop: 28 }}>
+                Músculos trabalhados
+              </h3>
+              <div style={{ marginTop: 12 }}>
+                <MuscleMap primary={muscles.primary} secondary={muscles.secondary} />
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <div role="tabpanel" aria-label="Variantes" style={{ marginTop: 12 }}>
           {variants.map((v, i) => {
             const isCurrent = v.id === active?.id
-            const better = active ? v.match > active.match : false
+            const better = active && !active.offList ? v.match > active.match : false
             return (
               <div
                 key={v.id}
@@ -169,7 +240,7 @@ export function ExerciseSheet({
                 }}
               >
                 <div className="t-body-m">{v.name}</div>
-                <Fit value={v.match} />
+                {v.offList ? <span /> : <Fit value={v.match} />}
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   <Tag>{v.equip}</Tag>
                   <Tag>{v.level}</Tag>
@@ -177,16 +248,26 @@ export function ExerciseSheet({
                   {v.rec && !isCurrent && <Tag>Recomendado</Tag>}
                   {isCurrent && <Tag kind="outline">Atual</Tag>}
                 </div>
-                {!isCurrent && onApply && (
+                <div style={{ display: 'flex', gap: 6 }}>
                   <Button
-                    kind={better ? 'secondary' : 'ghost'}
-                    aria-label={`Trocar para ${v.name}`}
-                    style={{ minHeight: 40, padding: '0 14px', fontSize: 14 }}
-                    onClick={() => handleSwap(v.id)}
+                    kind="ghost"
+                    aria-label={`Ver execução de ${v.name}`}
+                    style={{ minHeight: 40, padding: '0 12px', fontSize: 14 }}
+                    onClick={() => openPreview(v.id)}
                   >
-                    Trocar
+                    Ver
                   </Button>
-                )}
+                  {!isCurrent && onApply && (
+                    <Button
+                      kind={better ? 'secondary' : 'ghost'}
+                      aria-label={`Trocar para ${v.name}`}
+                      style={{ minHeight: 40, padding: '0 14px', fontSize: 14 }}
+                      onClick={() => handleSwap(v.id)}
+                    >
+                      Trocar
+                    </Button>
+                  )}
+                </div>
               </div>
             )
           })}

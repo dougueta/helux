@@ -11,7 +11,10 @@
     "db:start": "pnpm dlx supabase@2.118.0 start -x studio,imgproxy,realtime,storage-api,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta",
     "db:stop": "pnpm dlx supabase@2.118.0 stop",
     "db:status": "pnpm dlx supabase@2.118.0 status -o env",
-    "test:e2e": "pnpm --filter @helux/api test:e2e"
+    "test:e2e": "pnpm --filter @helux/api test:e2e",
+    "demos:evidence": "pnpm --filter @helux/web demos:evidence",
+    "demos:approve": "pnpm --filter @helux/web demos:approve",
+    "demos:check-pending": "pnpm --filter @helux/web demos:check-pending"
   },
   "devDependencies": {
     "turbo": "^2.0.0",

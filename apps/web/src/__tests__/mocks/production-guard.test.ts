@@ -6,9 +6,15 @@ vi.mock('next/headers', () => ({
 }))
 const getSession = vi.fn().mockResolvedValue({ data: { session: null } })
 vi.mock('@/lib/supabase-server', () => ({ createSupabaseServerClient: () => ({ auth: { getSession } }) }))
+vi.mock('next/navigation', () => ({
+  notFound: () => {
+    throw new Error('NEXT_NOT_FOUND')
+  },
+}))
 
 import { getDataSource, resolveDataSource, setDataSource, shouldBypassAuth, showDevBar } from '@/lib/data-source'
 import { getServerSession, MOCK_SESSION } from '@/lib/server-session'
+import DevDemosPage from '@/app/dev/demos/page'
 
 describe('guarda de produção (021 T018, FR-008/SC-006)', () => {
   afterEach(() => {
@@ -29,6 +35,11 @@ describe('guarda de produção (021 T018, FR-008/SC-006)', () => {
     expect(getSession).toHaveBeenCalled()
     expect(showDevBar()).toBe(false)
     setDataSource('real')
+  })
+
+  it('com NODE_ENV=production a galeria /dev/demos não existe (028)', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(() => DevDemosPage({ searchParams: {} })).toThrow('NEXT_NOT_FOUND')
   })
 
   it('fora de produção a Dev Bar aparece', () => {
