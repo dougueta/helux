@@ -94,3 +94,40 @@ Antes, os 8 itens tinham primário ombro e secundário tríceps. `muscleGroup`, 
 | (lote 4) | guidance | recomendações nos passos de 4 itens ("Pode ser feito…", "Recruta…", "Boa opção…", "Exercício avançado…") | movidas para `context` | FR-018 e FR-019. |
 
 Demonstração: o desenvolvimento unilateral usa a base do desenvolvimento em pé com halter; de perfil, só aparece o braço que trabalha. Halteres, máquina e Smith sentados dividem a base, e o implemento diferencia cada um. O landmine desenha a barra do apoio no chão até a mão (`anchor`).
+
+## Lote 5: Puxar na vertical (T062)
+
+Antes, os 9 itens tinham primário dorsal e secundário bíceps. `muscleGroup`, `pattern` e `stress` não mudam.
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| barra-fixa-corporal | muscles | dorsal; bíceps | dorsal; bíceps, antebraço e core | O peso do corpo pendurado exige pegada e o core evita o balanço. |
+| barra-fixa-supinada-corporal | muscles | dorsal; bíceps | dorsal e bíceps; antebraço | A pegada supinada põe o bíceps como motor principal junto com o dorsal. |
+| barra-fixa-neutra-corporal | muscles | dorsal; bíceps | dorsal; bíceps e antebraço | Pegada sustentando o peso do corpo. |
+| puxada-alta-cabo | muscles | dorsal; bíceps | dorsal; bíceps e trapézio | A parte de baixo do trapézio desce as escápulas no final. |
+| puxada-unilateral-cabo | muscles | dorsal; bíceps | dorsal; bíceps e core | O core evita o giro do tronco. |
+| pullover-barra | muscles | dorsal; bíceps | dorsal e peito; tríceps e core | Mesmo raciocínio do pullover com halteres, aprovado no piloto: extensão de ombro com cotovelo quase fixo. |
+| puxada-alta-fechada-cabo, puxada-alta-neutra-cabo, pulldown-assistido-maquina | muscles | dorsal; bíceps | igual | Conferido. |
+| (lote 5) | gear | — | conferido | Sem correção. |
+| (lote 5) | guidance | recomendações nos passos de 6 itens ("Use elástico…", "Maior participação…", "Boa opção…", "Reduz…", "Boa progressão…") | movidas para `context` | FR-018 e FR-019. |
+
+Demonstração: as três barras fixas dividem a base, e as quatro puxadas no cabo dividem outra; de perfil a pegada não aparece, então cada uma tem legenda própria. O pulldown assistido usa a base da barra fixa com a almofada da máquina nos joelhos. O pullover com barra usa a base do pullover do piloto.
+
+## Lote 6: Puxar na horizontal (T063)
+
+Antes, as remadas tinham primário dorsal e secundário bíceps; face pull e remada alta, primário ombro e secundário bíceps. `muscleGroup`, `pattern` e `stress` não mudam.
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| remada-curvada-barra, remada-curvada-halteres | muscles | dorsal; bíceps | dorsal e trapézio; bíceps, lombar e ombro | Puxada horizontal com o tronco inclinado: o trapézio junta as escápulas, a lombar segura o tronco e o deltoide posterior ajuda. |
+| remada-t-barra, remada-cavalinho-barra | muscles | dorsal; bíceps | dorsal e trapézio; bíceps e lombar | Mesma posição da curvada. |
+| remada-pendlay-barra | muscles | dorsal; bíceps | dorsal e trapézio; bíceps, lombar e posterior | Tronco paralelo ao chão: o posterior de coxa sustenta a dobradiça. |
+| remada-unilateral-halteres, remada-baixa-cabo | muscles | dorsal; bíceps | dorsal; bíceps e trapézio | O trapézio junta as escápulas no fim. |
+| remada-maquina | muscles | dorsal; bíceps | dorsal e trapézio; bíceps | Peito apoiado concentra o trabalho nas costas. |
+| remada-invertida-corporal | muscles | dorsal; bíceps | dorsal; bíceps, trapézio e core | O core segura o corpo reto. |
+| face-pull-cabo | muscles | ombro; bíceps | ombro e trapézio; nenhum | Deltoide posterior e manguito com o trapézio; o bíceps quase não participa. |
+| remada-alta-barra | muscles | ombro; bíceps | ombro e trapézio; bíceps e antebraço | Elevação dos braços com o trapézio superior. |
+| (lote 6) | gear | — | conferido | Sem correção. |
+| (lote 6) | guidance | recomendações nos passos de 8 itens ("Permite…", "Boa opção…", "Ajuste…", "Excelente…", "Reduza…") | movidas para `context` | FR-018 e FR-019. |
+
+Demonstração: barra T e cavalinho usam a base da remada curvada com a barra presa no chão atrás; a pegada não aparece de perfil, então ambos têm legenda. Na remada unilateral, o banco reto é alto demais para a perna de apoio alcançar o chão, então a demonstração mostra só o joelho e a mão no banco. A remada invertida usa as paralelas como barra baixa.
