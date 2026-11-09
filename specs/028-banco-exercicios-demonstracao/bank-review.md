@@ -131,3 +131,20 @@ Antes, as remadas tinham primário dorsal e secundário bíceps; face pull e rem
 | (lote 6) | guidance | recomendações nos passos de 8 itens ("Permite…", "Boa opção…", "Ajuste…", "Excelente…", "Reduza…") | movidas para `context` | FR-018 e FR-019. |
 
 Demonstração: barra T e cavalinho usam a base da remada curvada com a barra presa no chão atrás; a pegada não aparece de perfil, então ambos têm legenda. Na remada unilateral, o banco reto é alto demais para a perna de apoio alcançar o chão, então a demonstração mostra só o joelho e a mão no banco. A remada invertida usa as paralelas como barra baixa.
+
+## Lote 7a: Core, pranchas, anti-rotação e rollouts (T064)
+
+Antes, todos os itens de core tinham primário core e nenhum secundário. `muscleGroup`, `pattern` e `stress` não mudam.
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| prancha-abdominal-corporal | muscles | core; nenhum | core; ombro e glúteo | Os ombros sustentam o apoio nos antebraços e o glúteo segura o quadril na linha. |
+| prancha-lateral-corporal | muscles | core; nenhum | core; ombro e abdutores | O glúteo médio (abdutores) mantém o quadril elevado de lado. |
+| prancha-rotacao | muscles | core; nenhum | core; ombro | Um braço sustenta o corpo durante a rotação. |
+| prancha-toque-ombro-corporal | muscles | core; nenhum | core; ombro e tríceps | Apoio em um braço estendido a cada toque. |
+| roda-abdominal, rollout-barra | muscles | core; nenhum | core; dorsal e ombro | O dorsal e o ombro controlam os braços acima da cabeça na volta. |
+| dead-bug-corporal, hollow-hold-corporal, pallof-press-cabo | muscles | core; nenhum | igual (pallof com ombro de secundário) | Os braços do pallof sustentam o cabo estendido. |
+| (lote 7a) | gear | — | conferido | Sem correção. |
+| (lote 7a) | guidance | recomendações nos passos de 4 itens ("Excelente…", "Exercício avançado…", "Reduza…") | movidas para `context` | FR-018 e FR-019. |
+
+Demonstração: na prancha lateral, vista de frente, o antebraço de apoio aponta para quem olha e aparece encurtado. Prancha com rotação e toque no ombro alternam o lado. O pallof é visto de perfil, então o cabo, que vem do lado, aparece vindo de trás; a legenda explica. Roda abdominal e rollout com barra dividem a base e mudam o implemento.

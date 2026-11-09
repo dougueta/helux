@@ -101,4 +101,10 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
     const { PUXAR_HORIZONTAL } = await import('../demos/puxar-horizontal')
     await expectBatchComplete(PUXAR_HORIZONTAL, 11)
   })
+
+  it('lote 7a, Core: pranchas, anti-rotação e rollouts (T064)', async () => {
+    const { CORE } = await import('../demos/core')
+    // inclui o russian twist do piloto
+    await expectBatchComplete(CORE, 10)
+  })
 })
