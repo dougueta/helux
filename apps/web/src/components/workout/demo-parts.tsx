@@ -272,6 +272,16 @@ export function DemoImplement({ demo, pose }: { demo: ResolvedDemo; pose: Pose }
     )
   }
 
+  // Landmine: uma ponta da barra fica presa no apoio (`anchor`) e a outra nas mãos.
+  if (demo.gear === 'barra' && demo.anchor) {
+    return (
+      <g>
+        <line data-landmine x1={demo.anchor[0]} y1={demo.anchor[1]} x2={at[0]} y2={at[1]} stroke={ACC} strokeWidth="4" strokeLinecap="round" />
+        <Single gear="barra" at={at} anchor={anchor} />
+      </g>
+    )
+  }
+
   // Segunda mão: lado espelhado (vista frontal) ou braço oposto desenhado.
   const second: Point | undefined = demo.mirror
     ? mir(at)

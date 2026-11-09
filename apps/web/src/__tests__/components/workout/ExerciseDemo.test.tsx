@@ -281,6 +281,19 @@ describe('ExerciseDemo — cenas e implementos (028)', () => {
     },
   )
 
+  it('barra com ponto de apoio (landmine) desenha a barra do apoio até as mãos', () => {
+    const { container } = render(<ExerciseDemo demo={demoOf({ gear: 'barra', anchor: [204, 238] })} playing={false} label="x" />)
+    const line = container.querySelector('[data-part="implement"] line[data-landmine]')
+    expect(line).not.toBeNull()
+    expect(line).toHaveAttribute('x1', '204')
+    expect(line).toHaveAttribute('y1', '238')
+  })
+
+  it('barra sem ponto de apoio não desenha a barra do landmine', () => {
+    const { container } = render(<ExerciseDemo demo={demoOf({ gear: 'barra' })} playing={false} label="x" />)
+    expect(container.querySelector('[data-landmine]')).toBeNull()
+  })
+
   it.each(['peso-corporal', 'banco', 'barra-fixa', 'nenhum'] as const)('gear sem carga (%s) não desenha implemento', (gear) => {
     const { container } = render(<ExerciseDemo demo={demoOf({ gear })} playing={false} label="x" />)
     expect(container.querySelector('[data-part="implement"] *')).toBeNull()
