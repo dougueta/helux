@@ -126,6 +126,18 @@ export function DemoScene({ scene }: { scene: Scene }) {
         </g>
       )
     }
+    case 'banco-scott': {
+      const [top, low] = G.SCOTT_BENCH.pad
+      return (
+        <g data-scene={scene}>
+          <Floor />
+          <rect x={G.SCOTT_BENCH.seat.x0} y={G.SCOTT_BENCH.seat.top} width={G.SCOTT_BENCH.seat.x1 - G.SCOTT_BENCH.seat.x0} height={10} rx={5} fill={BENCH_FILL} stroke="var(--hairline)" />
+          <line x1={top[0]} y1={top[1]} x2={low[0]} y2={low[1]} stroke={BENCH_FILL} strokeWidth="12" strokeLinecap="round" />
+          {post(G.SCOTT_BENCH.seat.x0 + 22, G.SCOTT_BENCH.seat.top + 10, G.FLOOR_Y - 2)}
+          {post(top[0] + 2, top[1] + 6, G.SCOTT_BENCH.seat.top)}
+        </g>
+      )
+    }
     case 'solo':
     default:
       return (

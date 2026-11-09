@@ -114,4 +114,9 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
     // 7a (com o russian twist do piloto) + 6 itens do 7b
     await expectBatchComplete(CORE, 16)
   })
+
+  it('lote 8, Bíceps e tríceps (T065)', async () => {
+    const { ISOLAMENTO_BRACOS } = await import('../demos/isolamento-bracos')
+    await expectBatchComplete(ISOLAMENTO_BRACOS, 14)
+  })
 })

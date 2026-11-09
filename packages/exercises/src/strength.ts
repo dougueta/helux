@@ -1952,6 +1952,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, barra com pegada supinada na largura dos ombros, cotovelos junto ao tronco'],
+      steps: [
+        'Dobre os cotovelos e suba a barra até perto dos ombros',
+        'Mantenha os cotovelos parados ao lado do tronco',
+        'Desça controlando até os braços quase estenderem',
+      ],
+      commonError: 'Jogar o quadril para arremessar a barra para cima',
+    },
+    muscles: { primary: ['biceps'], secondary: ['antebraco'] },
     cues: [
       'Pegada supinada, cotovelos fixos ao lado do tronco',
       'Flexione os cotovelos elevando a barra até a altura do ombro',
@@ -1966,6 +1976,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, halteres ao lado do corpo, palmas para a frente'],
+      steps: [
+        'Dobre os cotovelos e suba os dois halteres juntos',
+        'Mantenha os cotovelos parados ao lado do tronco',
+        'Desça controlando até os braços quase estenderem',
+      ],
+      commonError: 'Levar os cotovelos à frente para ajudar a subida',
+    },
+    muscles: { primary: ['biceps'], secondary: ['antebraco'] },
     cues: [
       'Halteres ao lado do corpo, palmas voltadas para frente',
       'Flexione os cotovelos elevando os halteres simultaneamente ou alternado',
@@ -1980,6 +2000,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, halteres ao lado do corpo, palmas voltadas para o corpo'],
+      steps: [
+        'Suba um halter girando a palma para cima durante a subida',
+        'Desça controlando e suba o outro',
+        'Mantenha o cotovelo parado durante toda a repetição',
+      ],
+      commonError: 'Balançar o tronco a cada repetição',
+      context: 'Permite prestar atenção em um braço de cada vez',
+    },
+    muscles: { primary: ['biceps'], secondary: ['antebraco'] },
     cues: [
       'Halteres ao lado do corpo, alterne a flexão de um braço por vez',
       'Gire levemente o punho para supinação conforme sobe',
@@ -1994,6 +2025,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, halteres ao lado do corpo, palmas uma de frente para a outra'],
+      steps: [
+        'Dobre os cotovelos mantendo a pegada neutra durante a subida',
+        'Mantenha os cotovelos parados ao lado do tronco',
+        'Desça controlando até os braços quase estenderem',
+      ],
+      commonError: 'Girar os punhos durante a subida e perder a pegada neutra',
+      context: 'Trabalha também o braquial e o antebraço',
+    },
+    muscles: { primary: ['biceps', 'antebraco'], secondary: [] },
     cues: [
       'Halteres com pegada neutra (palmas uma de frente para a outra)',
       'Flexione os cotovelos mantendo a pegada neutra durante todo o movimento',
@@ -2008,6 +2050,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Sentado no banco Scott, axilas perto da borda de cima, braços apoiados'],
+      steps: [
+        'Dobre os cotovelos sem tirar os braços do apoio',
+        'Suba a barra até perto dos ombros',
+        'Desça devagar até quase estender os braços',
+      ],
+      commonError: 'Estender os braços de vez no fim da descida',
+      context: 'O apoio tira o balanço do tronco e isola o bíceps',
+    },
+    muscles: { primary: ['biceps'], secondary: ['antebraco'] },
     cues: [
       'Braços apoiados no banco Scott, axilas próximas à borda superior',
       'Flexione os cotovelos sem levantar os braços do apoio',
@@ -2022,6 +2075,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, de frente para a polia baixa, pegada supinada na barra ou na corda'],
+      steps: [
+        'Dobre os cotovelos e suba a pegada até perto dos ombros',
+        'Mantenha os cotovelos parados ao lado do tronco',
+        'Volte controlando, sem deixar o peso puxar os braços',
+      ],
+      commonError: 'Inclinar o tronco para trás para subir a carga',
+      context: 'O cabo mantém a tensão durante todo o movimento',
+    },
+    muscles: { primary: ['biceps'], secondary: ['antebraco'] },
     cues: [
       'Polia baixa, pegada supinada na barra ou corda',
       'Flexione os cotovelos mantendo tensão constante do cabo',
@@ -2036,6 +2100,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, barra com pegada supinada, cotovelos junto ao tronco, carga mais leve que na rosca direta'],
+      steps: [
+        'Faça 7 repetições da extensão até a metade do caminho',
+        'Faça 7 repetições da metade até perto dos ombros',
+        'Termine com 7 repetições completas, sem pausa',
+      ],
+      commonError: 'Soltar os cotovelos do tronco quando a fadiga aparece',
+      context: 'Serve para terminar o treino de bíceps',
+    },
+    muscles: { primary: ['biceps'], secondary: ['antebraco'] },
     cues: [
       '7 repetições na metade inferior do movimento, 7 na metade superior, 7 na amplitude completa',
       'Mantenha os cotovelos fixos ao lado do tronco durante toda a série',
@@ -2050,6 +2125,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Deitado no banco, barra acima do peito, braços estendidos'],
+      steps: [
+        'Dobre só os cotovelos, descendo a barra em direção à testa',
+        'Mantenha os cotovelos apontando para o teto, sem abrir',
+        'Estenda os cotovelos até voltar ao início',
+      ],
+      commonError: 'Mexer os ombros em vez de dobrar só os cotovelos',
+    },
+    muscles: { primary: ['triceps'], secondary: [] },
     cues: [
       'Deitado, barra acima do peito com os braços estendidos',
       'Flexione apenas os cotovelos, descendo a barra em direção à testa',
@@ -2064,6 +2149,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Deitado no banco, halteres acima do peito, braços estendidos'],
+      steps: [
+        'Dobre só os cotovelos, descendo os halteres ao lado da cabeça',
+        'Mantenha os cotovelos apontando para o teto',
+        'Estenda os cotovelos até voltar ao início',
+      ],
+      commonError: 'Abrir os cotovelos para os lados durante a descida',
+      context: 'Os halteres deixam o punho num caminho mais natural que a barra',
+    },
+    muscles: { primary: ['triceps'], secondary: [] },
     cues: [
       'Deitado, halteres acima do peito com os braços estendidos',
       'Flexione os cotovelos descendo os halteres ao lado da cabeça',
@@ -2078,6 +2174,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'corda',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, de frente para a polia alta, corda nas duas mãos, cotovelos junto ao tronco'],
+      steps: [
+        'Estenda os cotovelos levando a corda para baixo',
+        'Abra as pontas da corda no fim do movimento',
+        'Volte controlando, sem tirar os cotovelos do lugar',
+      ],
+      commonError: 'Levar os cotovelos à frente durante a extensão',
+    },
+    muscles: { primary: ['triceps'], secondary: [] },
     cues: [
       'Polia alta, corda segurada com as duas mãos, cotovelos fixos ao lado do tronco',
       'Estenda os cotovelos empurrando a corda para baixo',
@@ -2092,6 +2198,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé ou sentado, um halter seguro com as duas mãos acima da cabeça'],
+      steps: [
+        'Desça o halter atrás da cabeça dobrando só os cotovelos',
+        'Mantenha os cotovelos apontando para a frente, perto da cabeça',
+        'Estenda os cotovelos até voltar ao início',
+      ],
+      commonError: 'Abrir os cotovelos para os lados durante a descida',
+    },
+    muscles: { primary: ['triceps'], secondary: [] },
     cues: [
       'Em pé ou sentado, halter segurado acima da cabeça com as duas mãos',
       'Desça o halter atrás da cabeça flexionando apenas os cotovelos',
@@ -2106,6 +2222,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'banco',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Mãos na borda do banco atrás do corpo, pernas estendidas à frente'],
+      steps: [
+        'Desça dobrando os cotovelos até cerca de 90 graus',
+        'Empurre o banco para voltar, sem subir os ombros para as orelhas',
+        'Mantenha o quadril perto do banco',
+      ],
+      commonError: 'Descer demais e forçar a frente do ombro',
+      context: 'Para dificultar, apoie os pés em outro banco',
+    },
+    muscles: { primary: ['triceps'], secondary: ['peito', 'ombro'] },
     cues: [
       'Mãos apoiadas na borda de um banco atrás do corpo, pernas estendidas à frente',
       'Desça flexionando os cotovelos até cerca de 90°',
@@ -2120,6 +2247,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Apoiado nas paralelas com os braços estendidos, joelhos dobrados'],
+      steps: [
+        'Desça dobrando os cotovelos, com o tronco um pouco inclinado à frente',
+        'Pare quando os cotovelos chegarem a cerca de 90 graus',
+        'Empurre até quase estender os cotovelos',
+      ],
+      commonError: 'Descer demais e forçar a frente do ombro',
+      context: 'Tronco mais inclinado trabalha mais o peito; mais ereto, mais o tríceps',
+    },
+    muscles: { primary: ['triceps', 'peito'], secondary: ['ombro'] },
     cues: [
       'Corpo suspenso entre as barras paralelas, braços estendidos',
       'Desça flexionando os cotovelos, tronco levemente inclinado à frente',
@@ -2657,6 +2795,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Sentado na ponta do banco, tronco inclinado, cotovelo apoiado na parte de dentro da coxa'],
+      steps: [
+        'Dobre o cotovelo levando o halter em direção ao ombro',
+        'Mantenha o cotovelo apoiado na coxa',
+        'Desça devagar até quase estender o braço',
+      ],
+      commonError: 'Tirar o cotovelo do apoio para ajudar',
+    },
+    muscles: { primary: ['biceps'], secondary: [] },
     cues: [
       'Sentado, cotovelo apoiado na parte interna da coxa',
       'Flexione o cotovelo levando o halter até o ombro',
