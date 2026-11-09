@@ -103,8 +103,15 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
   })
 
   it('lote 7a, Core: pranchas, anti-rotação e rollouts (T064)', async () => {
-    const { CORE } = await import('../demos/core')
+    const { CORE: all } = await import('../demos/core')
+    const ids7a = ['russian-twist-halteres', 'prancha-abdominal-corporal', 'prancha-lateral-corporal', 'prancha-rotacao', 'prancha-toque-ombro-corporal', 'dead-bug-corporal', 'hollow-hold-corporal', 'pallof-press-cabo', 'roda-abdominal', 'rollout-barra']
     // inclui o russian twist do piloto
-    await expectBatchComplete(CORE, 10)
+    await expectBatchComplete({ bases: all.bases, demos: Object.fromEntries(ids7a.map((id) => [id, all.demos[id]])) }, 10)
+  })
+
+  it('lote 7b, Core: flexão e rotação de tronco (T064)', async () => {
+    const { CORE } = await import('../demos/core')
+    // 7a (com o russian twist do piloto) + 6 itens do 7b
+    await expectBatchComplete(CORE, 16)
   })
 })

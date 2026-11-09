@@ -1,6 +1,6 @@
 /** Família "core": pranchas, anti-rotação, rollouts, abdominais e rotações. */
 import { BODY, heading, mirrorX, polar, round, twoBone } from '../engine/geometry'
-import { MAT } from '../engine/scene-geometry'
+import { FLOOR_Y, MAT, PULL_UP_BAR, WALL_X } from '../engine/scene-geometry'
 import type { MovementBase, Point, Pose } from '../engine/types'
 import { ANKLE_Y, sidePose, type SideLegs } from './figure'
 import type { DemoFamily } from './index'
@@ -220,6 +220,120 @@ function rollout(thighDeg: number, handX: number): Pose {
 }
 const ROLLOUT = base('rollout', 'reps', 'foot', ['an', 'toe', 'kn'], rollout(-72, 126), rollout(-26, 196), 3200)
 
+/* ---------------------------------------------------------------- abdominais deitado */
+
+/** Mãos atrás da cabeça: cotovelos apontando para cima, a partir do tronco no ângulo `t`. */
+function handsBehindHead(sh: Point, t: number) {
+  const ha = polar(sh, 18, t - 8)
+  return { el: twoBone(sh, BODY.upperArm, ha, BODY.forearm, 'above'), ha }
+}
+
+/** Abdominal supra: joelhos dobrados e pés no chão; o tronco enrola e tira os ombros do colchonete. */
+const CR_HIP: Point = [100, MAT_Y]
+const CR_AN: Point = [CR_HIP[0] - 58, MAT_Y]
+const CR_KN = twoBone(CR_HIP, BODY.thigh, CR_AN, BODY.shin, 'above')
+function crunch(t: number): Pose {
+  const sh = polar(CR_HIP, BODY.torso, t)
+  return r({ head: polar(sh, BODY.neck, t - 32), sh, ...handsBehindHead(sh, t), hip: CR_HIP, kn: CR_KN, an: CR_AN, toe: [CR_AN[0] - BODY.foot, MAT_Y] })
+}
+const CRUNCH = base('abdominal-supra', 'reps', 'hip', ['hip', 'kn', 'an', 'toe'], crunch(0), crunch(-30), 2400)
+
+/** Abdominal infra: deitado, braços ao lado do corpo; as pernas estendidas sobem até apontar para o teto. */
+const LR_HIP: Point = [104, MAT_Y]
+const LR_SH: Point = [LR_HIP[0] + BODY.torso, MAT_Y]
+function legRaise(deg: number): Pose {
+  const kn = polar(LR_HIP, BODY.thigh, deg)
+  const an = polar(kn, BODY.shin, deg)
+  return r({
+    head: lyingHead(LR_SH), sh: LR_SH, el: [LR_SH[0] - BODY.upperArm, MAT_Y], ha: [LR_SH[0] - BODY.upperArm - BODY.forearm, MAT_Y],
+    hip: LR_HIP, kn, an, toe: polar(an, BODY.foot, deg + 90),
+  })
+}
+const LEG_RAISE = base('abdominal-infra', 'reps', 'hip', ['hip', 'sh', 'head', 'el', 'ha'], legRaise(192), legRaise(266), 2600)
+
+/** Bicicleta: ombros fora do chão; um joelho vem ao peito enquanto a outra perna estende, e troca. */
+const BI_HIP: Point = [100, MAT_Y]
+const BI_T = -26
+const BI_SH = polar(BI_HIP, BODY.torso, BI_T)
+function bikeLeg(thighDeg: number, shinDeg: number) {
+  const kn = polar(BI_HIP, BODY.thigh, thighDeg)
+  const an = polar(kn, BODY.shin, shinDeg)
+  return { kn, an, toe: polar(an, BODY.foot, shinDeg + 90) }
+}
+function bicycle(tucked: boolean): Pose {
+  const mid = bikeLeg(-90, 180)
+  const main = tucked ? bikeLeg(-50, 178) : mid
+  const other = tucked ? bikeLeg(200, 200) : mid
+  return r({
+    head: polar(BI_SH, BODY.neck, BI_T - 32), sh: BI_SH, ...handsBehindHead(BI_SH, BI_T), hip: BI_HIP, ...main,
+    kn2: other.kn, an2: other.an, toe2: other.toe,
+  })
+}
+const BICYCLE = base('abdominal-bicicleta', 'alternate', 'hip', ['hip', 'sh', 'head', 'el', 'ha'], bicycle(false), bicycle(true), 2400)
+
+/* ---------------------------------------------------------------- elevação de pernas na barra */
+
+/** Pendurado na barra fixa, braços estendidos; as pernas estendidas sobem até a altura do quadril. */
+const HG_HA: Point = [110, PULL_UP_BAR.y + 2]
+const HG_SH: Point = [HG_HA[0] - 4, HG_HA[1] + BODY.upperArm + BODY.forearm - 1]
+const HG_EL = twoBone(HG_SH, BODY.upperArm, HG_HA, BODY.forearm, 'right')
+const HG_HIP = polar(HG_SH, BODY.torso, 92)
+function hangingLegs(deg: number): Pose {
+  const kn = polar(HG_HIP, BODY.thigh, deg)
+  const an = polar(kn, BODY.shin, deg)
+  return r({ head: polar(HG_SH, BODY.neck, -84), sh: HG_SH, el: HG_EL, ha: HG_HA, hip: HG_HIP, kn, an, toe: polar(an, BODY.foot, deg - 62) })
+}
+const HANGING_LEG_RAISE = base('elevacao-pernas-barra', 'reps', 'hand', ['ha', 'el', 'sh', 'head', 'hip'], hangingLegs(86), hangingLegs(2), 2800)
+
+/* ---------------------------------------------------------------- polia */
+
+/** Abdominal na polia: ajoelhado de frente para a polia alta, corda junto à cabeça; o tronco enrola para baixo. */
+const CC_KN: Point = [82, FLOOR_Y - 4]
+const CC_AN: Point = [CC_KN[0] - BODY.shin, FLOOR_Y - 4]
+const CC_HIP: Point = [CC_KN[0], CC_KN[1] - BODY.thigh]
+function cableCrunch(t: number): Pose {
+  const sh = polar(CC_HIP, BODY.torso, t)
+  const ha = polar(sh, 18, t + 34)
+  return r({
+    head: polar(sh, BODY.neck, t + 8), sh, el: twoBone(sh, BODY.upperArm, ha, BODY.forearm, 'below'), ha,
+    hip: CC_HIP, kn: CC_KN, an: CC_AN, toe: [CC_AN[0] - BODY.foot, FLOOR_Y - 4],
+  })
+}
+const CABLE_CRUNCH = base('abdominal-polia', 'reps', 'hip', ['hip', 'kn', 'an', 'toe'], cableCrunch(-80), cableCrunch(4), 2600)
+const CABLE_CRUNCH_ANCHOR: Point = [WALL_X - 4, 30]
+
+/**
+ * Rotação de tronco no cabo, vista de frente: polia à direita na altura do peito, braços quase estendidos
+ * e as mãos juntas. As mãos saem do lado da polia e cruzam para o outro lado, com o quadril parado.
+ */
+const RT_HIP: Point = [110, 150]
+const RT_SH: Point = [110, RT_HIP[1] - BODY.torso]
+const RT_KN: Point = [100, 192]
+const RT_AN: Point = [98, 234]
+const RT_TOE: Point = [88, 236]
+function torsoRotation(hands: Point): Pose {
+  return r({
+    head: [110, RT_SH[1] - BODY.neck], sh: RT_SH, hip: RT_HIP,
+    el: twoBone(RT_SH, BODY.upperArm, hands, BODY.forearm, 'below'), ha: hands,
+    el2: twoBone(RT_SH, BODY.upperArm, hands, BODY.forearm, 'above'), ha2: hands,
+    kn: RT_KN, an: RT_AN, toe: RT_TOE, kn2: mirrorX(RT_KN), an2: mirrorX(RT_AN), toe2: mirrorX(RT_TOE),
+  })
+}
+const RT_HANDS: Point = [160, RT_SH[1] + 24]
+const TORSO_ROTATION: MovementBase = {
+  key: 'rotacao-tronco-cabo',
+  view: 'front',
+  loop: 'reps',
+  durationMs: 2600,
+  root: 'hip',
+  fixed: ['hip', 'sh', 'head', 'kn', 'an', 'toe', 'kn2', 'an2', 'toe2'],
+  keyframes: [
+    { at: 0, pose: torsoRotation(RT_HANDS) },
+    { at: 1, pose: torsoRotation(mirrorX(RT_HANDS)) },
+  ],
+}
+const RT_ANCHOR: Point = [WALL_X - 4, RT_HANDS[1]]
+
 /* ---------------------------------------------------------------- rotação sentado (piloto) */
 
 /**
@@ -257,7 +371,10 @@ const SEATED_TWIST: MovementBase = {
 }
 
 export const CORE: DemoFamily = {
-  bases: [SEATED_TWIST, PLANK, SIDE_PLANK, PLANK_ROTATION, SHOULDER_TAP, DEAD_BUG, HOLLOW, PALLOF, ROLLOUT],
+  bases: [
+    SEATED_TWIST, PLANK, SIDE_PLANK, PLANK_ROTATION, SHOULDER_TAP, DEAD_BUG, HOLLOW, PALLOF, ROLLOUT,
+    CRUNCH, LEG_RAISE, BICYCLE, HANGING_LEG_RAISE, CABLE_CRUNCH, TORSO_ROTATION,
+  ],
   demos: {
     'russian-twist-halteres': { base: 'rotacao-sentado', gear: 'halteres', scene: 'colchonete', implementAt: 'ha' },
     'prancha-abdominal-corporal': { base: 'prancha', gear: 'peso-corporal', scene: 'colchonete', implementAt: 'ha' },
@@ -272,5 +389,11 @@ export const CORE: DemoFamily = {
     },
     'roda-abdominal': { base: 'rollout', gear: 'roda', scene: 'colchonete', implementAt: 'ha' },
     'rollout-barra': { base: 'rollout', gear: 'barra', scene: 'colchonete', implementAt: 'ha' },
+    'abdominal-supra-corporal': { base: 'abdominal-supra', gear: 'peso-corporal', scene: 'colchonete', implementAt: 'sh' },
+    'abdominal-infra-corporal': { base: 'abdominal-infra', gear: 'peso-corporal', scene: 'colchonete', implementAt: 'an' },
+    'abdominal-bicicleta-corporal': { base: 'abdominal-bicicleta', gear: 'peso-corporal', scene: 'colchonete', implementAt: 'kn' },
+    'elevacao-pernas-barra': { base: 'elevacao-pernas-barra', gear: 'barra-fixa', scene: 'barra-fixa', implementAt: 'an' },
+    'abdominal-polia-cabo': { base: 'abdominal-polia', gear: 'cabo', scene: 'parede', implementAt: 'ha', anchor: CABLE_CRUNCH_ANCHOR },
+    'rotacao-tronco-cabo': { base: 'rotacao-tronco-cabo', gear: 'cabo', scene: 'parede', implementAt: 'ha', anchor: RT_ANCHOR },
   },
 }

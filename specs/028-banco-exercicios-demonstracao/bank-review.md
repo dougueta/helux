@@ -148,3 +148,17 @@ Antes, todos os itens de core tinham primário core e nenhum secundário. `muscl
 | (lote 7a) | guidance | recomendações nos passos de 4 itens ("Excelente…", "Exercício avançado…", "Reduza…") | movidas para `context` | FR-018 e FR-019. |
 
 Demonstração: na prancha lateral, vista de frente, o antebraço de apoio aponta para quem olha e aparece encurtado. Prancha com rotação e toque no ombro alternam o lado. O pallof é visto de perfil, então o cabo, que vem do lado, aparece vindo de trás; a legenda explica. Roda abdominal e rollout com barra dividem a base e mudam o implemento.
+
+## Lote 7b: Core, flexão e rotação de tronco (T064)
+
+Antes, primário core e nenhum secundário. `muscleGroup`, `pattern` e `stress` não mudam.
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| elevacao-pernas-barra | muscles | core; nenhum | core; antebraço e dorsal | Pendurado na barra: a pegada e o dorsal sustentam o corpo. |
+| rotacao-tronco-cabo | muscles | core; nenhum | core; ombro | Os braços seguram a alça estendidos durante a rotação. |
+| abdominal-supra-corporal, abdominal-infra-corporal, abdominal-bicicleta-corporal, abdominal-polia-cabo | muscles | core; nenhum | igual | Conferido. |
+| (lote 7b) | gear | — | conferido | Sem correção. |
+| (lote 7b) | guidance | sem recomendações nos passos | — | Erros comuns que estavam nos passos foram para `commonError`. |
+
+Demonstração: a rotação de tronco no cabo é vista de frente, com a polia à direita; as mãos juntas cruzam de um lado ao outro. A bicicleta alterna o lado; de perfil, o cotovelo que vai ao joelho oposto não aparece. A elevação de pernas na barra usa a barra fixa com as pernas estendidas.
