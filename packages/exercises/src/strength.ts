@@ -1394,6 +1394,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'barra-fixa',
     pattern: 'puxar-vertical',
+    guidance: {
+      setup: ['Pendurado na barra, pegada pronada um pouco além da largura dos ombros, ombros ativos'],
+      steps: [
+        'Puxe o corpo levando os cotovelos para baixo e para trás',
+        'Suba até o queixo passar da barra, sem balançar as pernas',
+        'Desça controlando até os braços quase estenderem',
+      ],
+      commonError: 'Balançar o corpo para ganhar impulso',
+      context: 'Use elástico de assistência ou a máquina assistida até conseguir sem ajuda',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps', 'antebraco', 'core'] },
     cues: [
       'Pegada pronada, um pouco mais aberta que a largura dos ombros',
       'Puxe o corpo até o queixo passar da barra, sem balançar as pernas',
@@ -1408,6 +1419,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'barra-fixa',
     pattern: 'puxar-vertical',
+    guidance: {
+      setup: ['Pendurado na barra, pegada supinada (palmas para você) na largura dos ombros'],
+      steps: [
+        'Puxe o corpo levando o peito em direção à barra',
+        'Suba até o queixo passar da barra',
+        'Desça controlando até os braços quase estenderem',
+      ],
+      commonError: 'Subir só dobrando os braços, sem levar o peito à barra',
+      context: 'O bíceps participa mais que na pegada pronada',
+    },
+    muscles: { primary: ['dorsal', 'biceps'], secondary: ['antebraco'] },
     cues: [
       'Pegada supinada (palmas voltadas para você), mãos na largura dos ombros',
       'Puxe o corpo para cima levando o peito em direção à barra',
@@ -1422,6 +1444,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'puxar-vertical',
+    guidance: {
+      setup: ['Sentado, coxas presas sob o apoio, pegada pronada mais aberta que os ombros'],
+      steps: [
+        'Puxe a barra até a parte de cima do peito, cotovelos para baixo e para trás',
+        'Junte as escápulas no final, sem jogar o tronco para trás',
+        'Volte controlando até os braços quase estenderem',
+      ],
+      commonError: 'Jogar o tronco para trás para ajudar a puxada',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps', 'trapezio'] },
     cues: [
       'Sentado, coxas travadas sob o apoio, pegada pronada mais aberta que os ombros',
       'Puxe a barra em direção à parte superior do peito, cotovelos para baixo e para trás',
@@ -1436,6 +1468,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'puxar-vertical',
+    guidance: {
+      setup: ['Sentado, coxas presas sob o apoio, mãos no triângulo, palmas uma para a outra'],
+      steps: [
+        'Puxe o triângulo até a parte de cima do peito, cotovelos junto ao corpo',
+        'Junte as escápulas no final',
+        'Volte controlando até os braços quase estenderem',
+      ],
+      commonError: 'Puxar com os braços sem descer as escápulas',
+      context: 'Costuma incomodar menos o ombro que a pegada aberta',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps'] },
     cues: [
       'Pegada triângulo ou mãos próximas, palmas voltadas uma para a outra',
       'Puxe em direção à parte superior do peito, cotovelos próximos ao corpo',
@@ -1450,6 +1493,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'puxar-vertical',
+    guidance: {
+      setup: ['Sentado, coxas presas sob o apoio, mãos nas pegadas paralelas na largura dos ombros'],
+      steps: [
+        'Junte as escápulas antes de dobrar os braços',
+        'Puxe até a parte de cima do peito, punhos retos',
+        'Volte controlando até os braços quase estenderem',
+      ],
+      commonError: 'Dobrar os punhos durante a puxada',
+      context: 'Costuma incomodar menos punho e cotovelo que a pegada pronada',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps'] },
     cues: [
       'Barra com pegadas neutras (paralelas), mãos na largura dos ombros',
       'Puxe em direção ao peito superior mantendo os punhos neutros',
@@ -1464,6 +1518,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'puxar-vertical',
+    guidance: {
+      setup: ['Ajoelhado na almofada da máquina, peso de assistência escolhido, mãos na barra'],
+      steps: [
+        'Puxe o corpo levando os cotovelos para baixo e para trás',
+        'Suba até o queixo passar da barra, levando o peito em direção a ela',
+        'Desça controlando até os braços quase estenderem',
+      ],
+      commonError: 'Dobrar só os braços, sem levar o peito à barra',
+      context: 'Diminua a assistência aos poucos até fazer a barra fixa sem ajuda',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps'] },
     cues: [
       'Ajuste a máquina para o nível de assistência adequado ao seu nível',
       'Puxe o corpo para cima simulando o movimento da barra fixa',
@@ -2015,6 +2080,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'puxar-vertical',
+    guidance: {
+      setup: ['Deitado de costas no banco, pés no chão, barra acima do peito com pegada na largura dos ombros'],
+      steps: [
+        'Leve a barra para trás da cabeça em arco, com os cotovelos levemente dobrados',
+        'Desça até alongar costas e peito, sem arquear a lombar',
+        'Puxe a barra pelo mesmo arco até voltar acima do peito',
+      ],
+      commonError: 'Usar carga alta demais e perder o controle atrás da cabeça',
+    },
+    muscles: { primary: ['dorsal', 'peito'], secondary: ['triceps', 'core'] },
     cues: [
       'Deitado no banco, barra com pegada na largura dos ombros acima do peito',
       'Desça a barra para trás da cabeça em arco, braços quase estendidos',
@@ -2029,6 +2104,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'barra-fixa',
     pattern: 'puxar-vertical',
+    guidance: {
+      setup: ['Pendurado nas pegadas paralelas, palmas voltadas uma para a outra, ombros ativos'],
+      steps: [
+        'Puxe o peito em direção às mãos, cotovelos para baixo e para trás',
+        'Suba até o queixo passar das mãos',
+        'Desça controlando até estender os braços',
+      ],
+      commonError: 'Balançar o corpo para ganhar impulso',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps', 'antebraco'] },
     cues: [
       'Pegada com as palmas voltadas uma para a outra, corpo pendurado e ombros ativos',
       'Puxe o peito em direção às mãos levando os cotovelos para baixo e para trás',
@@ -2043,6 +2128,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'puxar-vertical',
+    guidance: {
+      setup: ['Sentado ou ajoelhado de frente para a polia alta, pegada com uma mão'],
+      steps: [
+        'Puxe o cotovelo em direção ao quadril do mesmo lado',
+        'Mantenha o tronco de frente para a polia, sem girar',
+        'Volte alongando as costas, sem deixar o ombro subir',
+      ],
+      commonError: 'Girar o tronco para puxar com o corpo em vez das costas',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps', 'core'] },
     cues: [
       'Ajoelhado ou sentado de frente para a polia alta, pegada com uma mão',
       'Puxe o cotovelo em direção ao quadril do mesmo lado',
