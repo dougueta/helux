@@ -203,7 +203,7 @@ Alterar uma base já aprovada exige nova aprovação dos itens que a usam, no me
 - [X] T073 [US3] Escrever `apps/api/src/__tests__/plan-variants-refresh.test.ts`: recalcula só sessões não concluídas de planos ativos; variante ativa preservada; sessões concluídas e histórico intactos; perfil neutro sem genética; resumo sem dado pessoal. Confirmar que falha
 - [X] T074 [US3] Implementar a transformação pura em `apps/api/src/services/plan-variants-refresh.service.ts`
 - [X] T075 [US3] Criar `apps/api/scripts/refresh-plan-variants.ts`: simula por padrão; `--apply` exige `--backup <dir>` e recusa diretório dentro do repositório; a saída traz só contagens e nomes de exercícios (R8)
-- [ ] T076 [US3] ⛔ Portão do dono: depois do merge e do deploy da regra nova, pedir autorização para rodar a simulação em produção e apresentar o resultado. Rodar `pnpm --filter @helux/api exec tsx scripts/refresh-plan-variants.ts --apply --backup <dir-fora-do-repo>` só com a confirmação explícita do dono, e depois conferir a abertura de um plano e do histórico (SC-008)
+- [X] T076 [US3] ⛔ Portão do dono: depois do merge e do deploy da regra nova, pedir autorização para rodar a simulação em produção e apresentar o resultado. Rodar `pnpm --filter @helux/api exec tsx scripts/refresh-plan-variants.ts --apply --backup <dir-fora-do-repo>` só com a confirmação explícita do dono, e depois conferir a abertura de um plano e do histórico (SC-008)
 
 ---
 

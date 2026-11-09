@@ -25,7 +25,13 @@ export interface RefreshResult {
 const isMain = (e: PlannedExercise) =>
   e.phase !== 'aquecimento' && e.phase !== 'volta-calma' && !e.cardio && !e.region && !e.catalogId && !e.approachOf
 
-const sameList = (a: PlannedExercise, b: PlannedExercise) => JSON.stringify([a.variants, a.match]) === JSON.stringify([b.variants, b.match])
+/** JSON com as chaves em ordem: o jsonb do Postgres devolve os objetos com outra ordem de chaves. */
+const canonical = (value: unknown): string =>
+  JSON.stringify(value, (_k, v: unknown) =>
+    v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b))) : v,
+  )
+
+const sameList = (a: PlannedExercise, b: PlannedExercise) => canonical([a.variants, a.match]) === canonical([b.variants, b.match])
 
 function refreshExercise(exercise: PlannedExercise, profile: GeneticProfile): { exercise: PlannedExercise; change?: ExerciseChange } {
   if (!isMain(exercise)) return { exercise }
