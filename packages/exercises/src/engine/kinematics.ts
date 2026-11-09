@@ -22,7 +22,7 @@ export const BONES: readonly [Joint, Joint][] = [
 ]
 
 /** Articulação que serve de raiz da cadeia para cada tipo de apoio. */
-export const ROOT_JOINT: Record<Root, Joint> = { foot: 'an', hand: 'ha', hip: 'hip', seat: 'hip' }
+export const ROOT_JOINT: Record<Root, Joint> = { foot: 'an', hand: 'ha', hip: 'hip', seat: 'hip', toe: 'toe' }
 
 export const MAX_BONE_VARIATION = 0.03
 export const MAX_FIXED_DRIFT = 1
