@@ -1703,6 +1703,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'core',
+    guidance: {
+      setup: ['Deitado de costas, joelhos dobrados, pés no chão, mãos leves atrás da cabeça'],
+      steps: [
+        'Enrole o tronco e tire os ombros do chão contraindo o abdômen',
+        'Suba até as escápulas saírem do chão, sem puxar o pescoço',
+        'Desça controlando, sem relaxar de vez entre as repetições',
+      ],
+      commonError: 'Puxar a cabeça com as mãos em vez de subir com o abdômen',
+    },
+    muscles: { primary: ['core'], secondary: [] },
     cues: [
       'Deitado, joelhos flexionados, mãos leves atrás da cabeça ou cruzadas no peito',
       'Eleve a parte superior do tronco contraindo o abdômen, sem puxar o pescoço',
@@ -1717,6 +1727,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'core',
+    guidance: {
+      setup: ['Deitado de costas, braços ao lado do corpo, pernas estendidas'],
+      steps: [
+        'Suba as pernas estendidas até apontarem para o teto',
+        'Mantenha a lombar encostada no chão durante a subida',
+        'Desça controlando, sem deixar as pernas caírem',
+      ],
+      commonError: 'Usar o embalo das pernas e arquear a lombar na descida',
+      context: 'Para facilitar, dobre os joelhos',
+    },
+    muscles: { primary: ['core'], secondary: [] },
     cues: [
       'Deitado, mãos ao lado do corpo ou sob a lombar para apoio',
       'Eleve as pernas contraindo a porção inferior do abdômen',
@@ -1731,6 +1752,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'barra-fixa',
     pattern: 'core',
+    guidance: {
+      setup: ['Pendurado na barra fixa, braços estendidos, pernas juntas'],
+      steps: [
+        'Suba as pernas estendidas até a altura do quadril',
+        'Desça controlando até as pernas ficarem sob o corpo',
+        'Mantenha o corpo parado, sem balançar',
+      ],
+      commonError: 'Balançar o corpo para ganhar impulso',
+      context: 'Para facilitar, suba com os joelhos dobrados',
+    },
+    muscles: { primary: ['core'], secondary: ['antebraco', 'dorsal'] },
     cues: [
       'Suspenso na barra fixa, braços estendidos e core ativado',
       'Eleve as pernas (estendidas ou flexionadas) até a altura do quadril ou mais',
@@ -1795,6 +1827,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'core',
+    guidance: {
+      setup: ['Ajoelhado de frente para a polia alta, corda segura ao lado da cabeça'],
+      steps: [
+        'Enrole o tronco levando os cotovelos em direção às coxas',
+        'Mantenha o quadril parado, sem sentar nos calcanhares',
+        'Volte controlando, sem deixar o peso puxar o tronco',
+      ],
+      commonError: 'Puxar só com os braços, sem enrolar o tronco',
+    },
+    muscles: { primary: ['core'], secondary: [] },
     cues: [
       'Ajoelhado de frente para a polia alta, corda segura próxima à cabeça',
       'Flexione o tronco contraindo o abdômen, levando os cotovelos em direção aos joelhos',
@@ -1809,6 +1851,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'core',
+    guidance: {
+      setup: ['De lado para a polia na altura do peito, braços quase estendidos segurando a alça'],
+      steps: [
+        'Gire o tronco levando as mãos para o lado oposto à polia',
+        'Mantenha o quadril parado e os braços quase estendidos',
+        'Volte controlando e depois troque o lado',
+      ],
+      commonError: 'Girar com os braços em vez do tronco',
+    },
+    muscles: { primary: ['core'], secondary: ['ombro'] },
     cues: [
       'Polia na altura do peito, braços estendidos segurando a alça',
       'Rotacione o tronco de um lado para o outro mantendo o quadril fixo',
@@ -2531,6 +2583,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'core',
+    guidance: {
+      setup: ['Deitado de costas, mãos atrás da cabeça, ombros e pernas fora do chão'],
+      steps: [
+        'Leve um joelho em direção ao peito e o cotovelo oposto em direção a ele',
+        'Estenda a outra perna à frente, sem encostar no chão',
+        'Troque os lados num ritmo controlado',
+      ],
+      commonError: 'Puxar o pescoço com as mãos',
+    },
+    muscles: { primary: ['core'], secondary: [] },
     cues: [
       'Deitado de costas, mãos atrás da cabeça, pernas elevadas',
       'Leve o cotovelo em direção ao joelho oposto enquanto estende a outra perna',
