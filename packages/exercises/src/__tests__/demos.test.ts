@@ -119,4 +119,9 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
     const { ISOLAMENTO_BRACOS } = await import('../demos/isolamento-bracos')
     await expectBatchComplete(ISOLAMENTO_BRACOS, 14)
   })
+
+  it('lote 9, Ombro, trapézio e peito (T066)', async () => {
+    const { ISOLAMENTO_TRONCO } = await import('../demos/isolamento-tronco')
+    await expectBatchComplete(ISOLAMENTO_TRONCO, 11)
+  })
 })
