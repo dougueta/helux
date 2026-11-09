@@ -83,6 +83,16 @@ describe('refreshPlanSessions (R8)', () => {
     expect(twice.sessions).toEqual(once.sessions)
   })
 
+  it('lista igual com as chaves em outra ordem (jsonb do Postgres) não conta como mudança', () => {
+    const once = refreshPlanSessions(sessions(), NEUTRAL).sessions
+    const reorder = (v: unknown): unknown =>
+      Array.isArray(v) ? v.map(reorder) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).reverse().map(([k, x]) => [k, reorder(x)])) : v
+    const fromDb = reorder(once) as MesocycleSession[]
+    const again = refreshPlanSessions(fromDb, NEUTRAL)
+    expect(again.changes).toEqual([])
+    expect(again.sessions[1].exercises[1]).toBe(fromDb[1].exercises[1])
+  })
+
   it('exercício fora do banco fica como está', () => {
     const odd: PlannedExercise = { name: 'Exercício Antigo Sem Catálogo', sets: 3, reps: '10', weight: '', variants: [stale('x', 'Y', true)], match: 60 }
     const { sessions: next, changes } = refreshPlanSessions([{ letter: 'A', focus: 'x', completedAt: null, exercises: [odd] }], NEUTRAL)
