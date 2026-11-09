@@ -1,4 +1,5 @@
-export { generateMesocyclePlan, enrichExercise, ConstraintsUnsatisfiableError, IncompleteResponseError, MESOCYCLE_EFFORT } from './mesocycle-planner'
+export { generateMesocyclePlan, enrichExercise, ConstraintsUnsatisfiableError, IncompleteResponseError, MESOCYCLE_EFFORT, NEUTRAL_GENETICS } from './mesocycle-planner'
+export { buildVariants } from './variants'
 export type { GenerateMesocycleInput, GenerateMesocycleResult, AgentEffort } from './mesocycle-planner'
 export { CARDIO_BANK, findCardio, type CardioBankEntry } from './cardio-bank'
 

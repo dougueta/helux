@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { GeneticProfile } from '@helux/types'
 import { EXERCISE_BANK } from '../exercise-bank'
+import { isCoherentVariant } from '@helux/exercises'
 import { buildVariants, flaggedJoints } from '../variants'
 
 describe('buildVariants', () => {
@@ -220,5 +221,41 @@ describe('buildVariants — equivalência genética entre padrões (spec 013)', 
       ['Agachamento Búlgaro (Halteres)', 82, false],
       ['Agachamento Livre (Barra)', 74, false],
     ])
+  })
+})
+
+// ---- spec 028 (FR-012, FR-013, SC-003): só variantes coerentes ----
+describe('buildVariants — variantes coerentes (spec 028)', () => {
+  const profile: GeneticProfile = {
+    metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'medio', predisposicao: 'misto', alertas: [],
+  }
+  const bank = (name: string) => EXERCISE_BANK.find((e) => e.name === name)!
+  const sharesPrimary = (a: string, b: string) => bank(b).muscles.primary.some((m) => bank(a).muscles.primary.includes(m))
+
+  it('Rosca Direta só traz variantes de bíceps', () => {
+    const original = EXERCISE_BANK.find((e) => e.id === 'rosca-direta-barra')!
+    const others = buildVariants(original.name, profile).filter((v) => !v.rec)
+    expect(others.length).toBeGreaterThan(0)
+    for (const v of others) expect(bank(v.name).muscles.primary, v.name).toContain('biceps')
+  })
+
+  it('nenhum isolamento oferece variante de outra função muscular (SC-003)', () => {
+    const offenders: string[] = []
+    for (const e of EXERCISE_BANK.filter((x) => x.pattern === 'isolamento')) {
+      for (const v of buildVariants(e.name, { ...profile, alertas: ['Menor resistência do colágeno em tendões'] })) {
+        if (!v.rec && !sharesPrimary(e.name, v.name)) offenders.push(`${e.name} → ${v.name}`)
+      }
+    }
+    expect(offenders).toEqual([])
+  })
+
+  it('a lista fica menor em vez de completar com item incoerente (FR-013)', () => {
+    for (const e of EXERCISE_BANK) {
+      const coherentEquip = new Set(
+        EXERCISE_BANK.filter((c) => c.id !== e.id && c.equipment !== e.equipment && isCoherentVariant(e, c)).map((c) => c.equipment),
+      )
+      const samePattern = buildVariants(e.name, profile).filter((v) => !v.rec && !v.crossPattern)
+      expect(samePattern, e.name).toHaveLength(coherentEquip.size)
+    }
   })
 })

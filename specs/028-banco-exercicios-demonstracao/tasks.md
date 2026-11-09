@@ -197,12 +197,12 @@ Alterar uma base já aprovada exige nova aprovação dos itens que a usam, no me
 
 **Depende de**: Phase 7, porque a regra usa `muscles` revisados.
 
-- [ ] T070 [US3] Escrever `packages/exercises/src/__tests__/variants-rule.test.ts`: mesmo `pattern` e músculo principal em comum; afinidade `gluteo` ↔ `posterior` só em `dobrar-quadril`; `rosca-direta-barra` recusa `cadeira-extensora`, `crucifixo-halteres` e `mergulho-banco-corporal`; invariante 7 de `contracts/catalog.md` em todo o banco (SC-003). Confirmar que falha
-- [ ] T071 [US3] Implementar `isCoherentVariant` em `packages/exercises/src/variants-rule.ts` e exportar em `packages/exercises/src/index.ts` (FR-012, R9)
-- [ ] T072 [US3] Ampliar `packages/ai/src/__tests__/variants.test.ts` (lista menor em vez de preencher com item incoerente; equivalentes da 013 mantidos com a etiqueta) e aplicar a regra em `packages/ai/src/variants.ts`, sem mudar a pontuação (FR-013)
-- [ ] T073 [US3] Escrever `apps/api/src/__tests__/plan-variants-refresh.test.ts`: recalcula só sessões não concluídas de planos ativos; variante ativa preservada; sessões concluídas e histórico intactos; perfil neutro sem genética; resumo sem dado pessoal. Confirmar que falha
-- [ ] T074 [US3] Implementar a transformação pura em `apps/api/src/services/plan-variants-refresh.service.ts`
-- [ ] T075 [US3] Criar `apps/api/scripts/refresh-plan-variants.ts`: simula por padrão; `--apply` exige `--backup <dir>` e recusa diretório dentro do repositório; a saída traz só contagens e nomes de exercícios (R8)
+- [X] T070 [US3] Escrever `packages/exercises/src/__tests__/variants-rule.test.ts`: mesmo `pattern` e músculo principal em comum; afinidade `gluteo` ↔ `posterior` só em `dobrar-quadril`; `rosca-direta-barra` recusa `cadeira-extensora`, `crucifixo-halteres` e `mergulho-banco-corporal`; invariante 7 de `contracts/catalog.md` em todo o banco (SC-003). Confirmar que falha
+- [X] T071 [US3] Implementar `isCoherentVariant` em `packages/exercises/src/variants-rule.ts` e exportar em `packages/exercises/src/index.ts` (FR-012, R9)
+- [X] T072 [US3] Ampliar `packages/ai/src/__tests__/variants.test.ts` (lista menor em vez de preencher com item incoerente; equivalentes da 013 mantidos com a etiqueta) e aplicar a regra em `packages/ai/src/variants.ts`, sem mudar a pontuação (FR-013)
+- [X] T073 [US3] Escrever `apps/api/src/__tests__/plan-variants-refresh.test.ts`: recalcula só sessões não concluídas de planos ativos; variante ativa preservada; sessões concluídas e histórico intactos; perfil neutro sem genética; resumo sem dado pessoal. Confirmar que falha
+- [X] T074 [US3] Implementar a transformação pura em `apps/api/src/services/plan-variants-refresh.service.ts`
+- [X] T075 [US3] Criar `apps/api/scripts/refresh-plan-variants.ts`: simula por padrão; `--apply` exige `--backup <dir>` e recusa diretório dentro do repositório; a saída traz só contagens e nomes de exercícios (R8)
 - [ ] T076 [US3] ⛔ Portão do dono: depois do merge e do deploy da regra nova, pedir autorização para rodar a simulação em produção e apresentar o resultado. Rodar `pnpm --filter @helux/api exec tsx scripts/refresh-plan-variants.ts --apply --backup <dir-fora-do-repo>` só com a confirmação explícita do dono, e depois conferir a abertura de um plano e do histórico (SC-008)
 
 ---
