@@ -27,6 +27,7 @@ import { trainingPreferencesRoutes } from './routes/training-preferences'
 import { agentsProfileRoutes } from './routes/agents-profile'
 import { agentsChatRoutes } from './routes/agents-chat'
 import { agentsGuidanceRoutes } from './routes/agents-guidance'
+import { routinesRoutes } from './routes/routines'
 import { loadEnv, type AppEnv } from './config/env'
 
 export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): FastifyInstance {
@@ -68,6 +69,7 @@ export function buildApp(config: Pick<AppEnv, 'CORS_ORIGIN'> = loadEnv()): Fasti
   app.register(agentsProfileRoutes)
   app.register(agentsChatRoutes)
   app.register(agentsGuidanceRoutes)
+  app.register(routinesRoutes)
 
   return app
 }

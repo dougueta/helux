@@ -147,8 +147,8 @@ function preferencesSummary(p: TrainingPreferences): IntegratedSource {
   return active(parts.join('\n'), p, p.updatedAt)
 }
 
-function historySummary(sessions: WorkoutSession[]): IntegratedSource {
-  if (sessions.length === 0) return empty()
+function historySummary(sessions: WorkoutSession[], complementaryLogs: Array<{ category: string; performed_on: string; duration_minutes: number }> = []): IntegratedSource {
+  if (sessions.length === 0 && complementaryLogs.length === 0) return empty()
   const lines = sessions.map(s => {
     const top = s.exercises
       .filter(e => !e.skipped && e.sets.length > 0)
@@ -158,7 +158,15 @@ function historySummary(sessions: WorkoutSession[]): IntegratedSource {
       })
     return `${fmtDate(s.date)}: ${top.join('; ') || 'sem séries registradas'}`
   })
-  return active(lines.join('\n'), sessions, sessions[0].date)
+  if (complementaryLogs.length > 0) {
+    const counts = complementaryLogs.reduce<Record<string, number>>((acc, l) => {
+      acc[l.category] = (acc[l.category] ?? 0) + 1
+      return acc
+    }, {})
+    const summaryParts = Object.entries(counts).map(([cat, count]) => `${cat}: ${count}×`)
+    lines.push(`Rotinas complementares recentes: ${summaryParts.join(', ')}`)
+  }
+  return active(lines.join('\n'), { sessions, complementaryLogs }, sessions[0]?.date ?? complementaryLogs[0]?.performed_on ?? null)
 }
 
 function mesocycleSummary(m: MesocycleRow | null): IntegratedSource {
@@ -232,7 +240,7 @@ function geneticsSummary(raw: unknown | null): IntegratedSource {
 /** Monta o Perfil Integrado (FR-001, R6) e as restrições rígidas (R7). */
 export async function buildIntegratedProfile(userId: string, supabase: SupabaseClient, now: Date = new Date()): Promise<ProfileBuild> {
   const nowIso = now.toISOString()
-  const [settingsRes, profileRes, prefsRes, historyRes, factsRes, guidanceRes, editsRes, mesocycle, tiredness, nutrition, geneticRaw, conditions] = await Promise.all([
+  const [settingsRes, profileRes, prefsRes, historyRes, factsRes, guidanceRes, editsRes, mesocycle, tiredness, nutrition, geneticRaw, conditions, complementaryRes] = await Promise.all([
     supabase.from('agent_source_settings').select('source, enabled').eq('user_id', userId),
     supabase.from('user_training_profile').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('training_preferences').select('*').eq('user_id', userId).maybeSingle(),
@@ -246,6 +254,7 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
     loadNutritionContext(userId, supabase, now).catch(() => null),
     getGeneticRaw(userId, supabase).catch(() => null),
     listConditions(userId, supabase).catch(() => [] as HealthCondition[]),
+    supabase.from('complementary_routine_logs').select('category, performed_on, duration_minutes').eq('user_id', userId).gte('performed_on', new Date(now.getTime() - 30 * DAY_MS).toISOString().slice(0, 10)).order('performed_on', { ascending: false }),
   ])
 
   const disabled = new Set(((settingsRes.data ?? []) as { source: SourceKey; enabled: boolean }[]).filter(s => !s.enabled).map(s => s.source))
@@ -317,7 +326,10 @@ export async function buildIntegratedProfile(userId: string, supabase: SupabaseC
   const sources: Record<SourceKey, IntegratedSource> = {
     perfil: profileSummary(profileRes.data as Record<string, unknown> | null, conditions, now),
     preferencias: preferencesSummary(preferences),
-    historico: historySummary(((historyRes.data ?? []) as (WorkoutSession & { duration_s?: number | null; review_status?: string | null })[]).filter(isValidSession).slice(0, HISTORY_SESSIONS)),
+    historico: historySummary(
+      ((historyRes.data ?? []) as (WorkoutSession & { duration_s?: number | null; review_status?: string | null })[]).filter(isValidSession).slice(0, HISTORY_SESSIONS),
+      ((complementaryRes?.data ?? []) as Array<{ category: string; performed_on: string; duration_minutes: number }>),
+    ),
     mesociclo: mesocycleSummary(mesocycle),
     cansaco: tirednessSummary(tiredness),
     // Spec 029: pesagens e medidas vêm do contexto de nutrição (já carregado acima).

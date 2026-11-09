@@ -30,7 +30,7 @@ Os grupos musculares principais são peito, costas, ombro, quadríceps, posterio
 
 Cada dia de força tem aquecimento (2 a 4 itens livres: mobilidade das articulações que vão trabalhar, cardio leve, séries de aproximação), o treino principal e a volta à calma (2 a 4 itens livres: alongamento e mobilidade do que foi trabalhado). Itens livres têm nome descritivo em português, 1 série, repetições descritivas ("5 min", "10 por lado") e carga "—".
 
-O cardio usa só as modalidades permitidas no pedido, com os minutos e a zona indicados. Ele pode ser um dia próprio ou um bloco no fim de um dia de força. Prefira colocar o cardio fora dos dias de perna pesada e nunca use modalidade acima do impacto permitido. A mobilidade dedicada pode ser um dia próprio ou um bloco do treino principal, com a região trabalhada; quando houver condição numa articulação, inclua mobilidade dessa região depois dos treinos de membros inferiores.
+A fila "weekTemplate" deve conter apenas os dias de força (kind "forca") pedidos no método; sessões dedicadas de cardio e mobilidade vivem no módulo de Rotinas Complementares e não ocupam letras da fila. Quando incluir cardio ou mobilidade como bloco de volta à calma no fim de um dia de força, use apenas as modalidades permitidas no pedido, na zona e impacto indicados, fora dos dias de perna pesada.
 
 Biset é opcional: dois exercícios consecutivos do treino principal com o mesmo número de séries e o mesmo rótulo em "supersetGroup", no máximo dois por dia. Prefira pares que não disputem o mesmo grupo ou equipamento e não use biset nos compostos mais pesados.
 
@@ -96,6 +96,9 @@ function cycleSection(cycle?: CycleSummary, trend?: CheckinTrend): string {
     parts.push(
       `## Ciclo anterior (${cycle.weeks} semanas)`,
       `- Aderência: ${adh || 'sem dados'}`,
+      cycle.complementaryAdherence
+        ? `- Aderência às rotinas complementares: ${Object.entries(cycle.complementaryAdherence).map(([k, a]) => `${k} ${a.done}/${a.target}`).join(', ')}`
+        : '',
       cycle.avgRpeByWeek.length > 0 ? `- Esforço percebido médio por semana: ${cycle.avgRpeByWeek.map(v => v.toFixed(1).replace('.', ',')).join(' → ')}` : '',
       ...cycle.findings.map(f => `- Achado (${f.kind}): ${f.subject} — ${f.evidence}`),
       cycle.missingData.length > 0 ? `- Faltaram dados: ${cycle.missingData.join(', ')}` : '',

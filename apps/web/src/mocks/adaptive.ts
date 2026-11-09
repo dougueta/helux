@@ -1,5 +1,6 @@
-import type { HealthCondition, Joint, PainReport, Region } from '@helux/types'
-import { CONDITION_CATALOG, rulesFor, sessionValidity } from '@helux/workouts'
+import type { ComplementaryPreferences, ComplementaryRoutineLog, ComplementaryRoutinesView, Goal, HardConstraints, HealthCondition, Joint, PainReport, Region } from '@helux/types'
+import { CONDITION_CATALOG, completedComplementaryCategoriesToday, computeWeeklyRoutineProgress, constraintsFromConditions, prescribeComplementaryRoutines, rulesFor, sessionValidity } from '@helux/workouts'
+import { today } from './fixtures/clock'
 import type { MockRouter } from './mock-router'
 import type { MockDataset } from './types'
 import { agentsOf } from './agents'
@@ -167,5 +168,81 @@ export function registerAdaptiveRoutes(router: MockRouter): void {
     const completedAt = new Date().toISOString()
     store.updateDataset(cur => ({ profile: { ...cur.profile, onboardingCompletedAt: completedAt, updatedAt: completedAt } }))
     return { completedAt }
+  })
+
+  // Spec 030: rotinas complementares (alongamento, core/abdominal e cardio)
+  const routinesViewOf = (d: MockDataset): ComplementaryRoutinesView => {
+    const conds = conditionsOf(d)
+    const fromConds = constraintsFromConditions(conds)
+    const prefs = agentsOf(d).preferences
+    const constraints: HardConstraints = {
+      availableEquipment: prefs.availableEquipment ?? [],
+      exercisesToAvoid: prefs.exercisesToAvoid ?? [],
+      maxSessionMinutes: prefs.maxSessionMinutes ?? null,
+      blockedPatterns: fromConds.blockedPatterns,
+      blockedExercises: fromConds.blockedExercises,
+      maxJointStress: fromConds.maxJointStress,
+      maxCardioImpact: fromConds.maxCardioImpact,
+      minRir: fromConds.minRir,
+    }
+    const activeConds = conds.filter(c => c.status !== 'resolvida')
+    const conditionRegions = [...new Set(activeConds.map(c => c.region))]
+    const todayDate = today()
+    const flaredRegions = [...new Set(activeConds.filter(c => c.flare && c.flare.until >= todayDate).map(c => c.flare!.region))]
+    const goal = ((d.profile?.goalPrimary as Goal | null) ?? (d.profile?.goal as Goal | null) ?? 'hipertrofia')
+    const preferences = d.complementaryPreferences ?? {}
+    const routines = prescribeComplementaryRoutines({
+      goal,
+      level: d.profile?.level ?? 'intermediario',
+      constraints,
+      conditionRegions,
+      flaredRegions,
+      mesocycleGroups: ['peito', 'costas', 'quadriceps', 'posterior'],
+      preferences,
+      cardioLikes: d.profile?.cardioLikes ?? [],
+      cardioAvoid: d.profile?.cardioAvoid ?? [],
+      todayGymSession: d.latestPlan?.today ?? null,
+    })
+    const recentLogs = d.complementaryLogs ?? []
+    const progress = computeWeeklyRoutineProgress(recentLogs, routines, todayDate)
+    const completedToday = completedComplementaryCategoriesToday(recentLogs, todayDate)
+    return { routines, progress, recentLogs, preferences, completedToday }
+  }
+
+  router.register('GET', '/api/routines', ({ data }) => routinesViewOf(data))
+
+  router.register('PUT', '/api/routines/preferences', ({ store, body }) => {
+    const incoming = body as ComplementaryPreferences
+    const next = store.updateDataset(d => ({
+      complementaryPreferences: { ...(d.complementaryPreferences ?? {}), ...incoming },
+    }))
+    return routinesViewOf(next)
+  })
+
+  router.register('POST', '/api/routines/logs', ({ store, body }) => {
+    const input = body as Omit<ComplementaryRoutineLog, 'id' | 'performed_at'>
+    const log: ComplementaryRoutineLog = {
+      id: `mock-routine-log-${Date.now()}`,
+      category: input.category,
+      performed_on: input.performed_on,
+      performed_at: new Date().toISOString(),
+      duration_minutes: input.duration_minutes,
+      modality: input.modality ?? null,
+      zone: input.zone ?? null,
+      effort: input.effort ?? null,
+      items: input.items ?? [],
+      notes: input.notes ?? null,
+    }
+    const next = store.updateDataset(d => ({
+      complementaryLogs: [log, ...(d.complementaryLogs ?? [])],
+    }))
+    return { log, view: routinesViewOf(next) }
+  })
+
+  router.register('DELETE', '/api/routines/logs/:id', ({ store, params }) => {
+    store.updateDataset(d => ({
+      complementaryLogs: (d.complementaryLogs ?? []).filter(l => l.id !== params.id),
+    }))
+    return null
   })
 }

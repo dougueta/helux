@@ -10,15 +10,17 @@ import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { HistoryRow } from '@/components/ui/HistoryRow'
 import { SectionHeader } from '@/components/ui/SectionHeader'
+import { Segmented } from '@/components/ui/Segmented'
 import { PlanExerciseList } from '@/components/workout/PlanExerciseList'
 import { ExerciseSheet } from '@/components/workout/ExerciseSheet'
 import { PlanRationale } from '@/components/agents/PlanRationale'
 import { SessionEditSheet } from '@/components/agents/SessionEditSheet'
 import { TodayAdjustCard } from '@/components/agents/TodayAdjustCard'
 import { AgentChat } from '@/components/agents/AgentChat'
+import { RoutinesTab } from '@/components/routines/RoutinesTab'
 import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
-import type { AdjustedWorkoutPlanView } from '@helux/types'
+import type { AdjustedWorkoutPlanView, ComplementaryRoutinesView } from '@helux/types'
 import { PlanGenerationState } from '@/components/workout/PlanGenerationState'
 import { WeekBadge } from '@/components/workout/WeekBadge'
 import { CycleSummaryCard } from '@/components/cycle/CycleSummaryCard'
@@ -27,13 +29,21 @@ import { isMainExercise } from '@helux/workouts'
 interface TreinosClientProps {
   plan: AdjustedWorkoutPlanView | null
   recentSessions: WorkoutSessionRow[]
+  routinesView?: ComplementaryRoutinesView | null
+  initialTab?: 'academia' | 'rotinas'
 }
 
-/** Treinos (FR-023): o treino atual em lista plana, gerar plano e os recentes. */
-export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClientProps) {
+/** Treinos (FR-023 + Spec 030): sub-abas Academia e Rotinas. */
+export function TreinosClient({
+  plan: initialPlan,
+  recentSessions,
+  routinesView,
+  initialTab = 'academia',
+}: TreinosClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
   const { plan, generating, generationError, generatePlan, repeatWeek, refetch } = useWorkoutPlan()
+  const [tab, setTab] = useState<'academia' | 'rotinas'>(initialTab)
   const [editing, setEditing] = useState<number | null>(null)
   // Spec 026: detalhe só leitura do exercício tocado na lista.
   const [viewing, setViewing] = useState<number | null>(null)
@@ -58,136 +68,158 @@ export function TreinosClient({ plan: initialPlan, recentSessions }: TreinosClie
         Treinos
       </h1>
 
-      {today ? (
-        <section style={{ marginTop: 24 }}>
-          <WeekBadge week={currentPlan?.week} kind={currentPlan?.kind} />
-          <SectionHeader
-            title={today.focus ? `Treino ${today.letter} — ${today.focus}` : `Treino ${today.letter}`}
-            aside={`${today.exercises.filter(isMainExercise).length} exercícios`}
-          />
-          <PlanExerciseList exercises={today.exercises} onSelect={setViewing} />
-          <div style={{ marginTop: 12 }}>
-            <Link href="/treinos/proximo" className="hx-btn hx-btn--secondary hx-btn--block">
-              Ver treino completo
-            </Link>
-          </div>
-          {viewing !== null && today.exercises[viewing] && (
-            <ExerciseSheet open exercise={today.exercises[viewing]} onClose={() => setViewing(null)} />
-          )}
-          <div style={{ marginTop: 16 }}>
-            <Button kind="primary" size="lg" block iconRight="play" onClick={handleStart}>
-              Iniciar treino
-            </Button>
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <Button kind="ghost" block loading={generating} onClick={generatePlan}>
-              Gerar novo plano
-            </Button>
-          </div>
-        </section>
-      ) : null}
+      <div style={{ marginTop: 16 }}>
+        <Segmented
+          label="Seção de treinos"
+          options={[
+            { value: 'academia', label: 'Academia' },
+            { value: 'rotinas', label: 'Rotinas' },
+          ]}
+          value={tab}
+          onChange={setTab}
+        />
+      </div>
 
-      {currentPlan?.mesocycleId && <CycleSummaryCard mesocycleId={currentPlan.mesocycleId} />}
-
-      {today && (
+      {tab === 'rotinas' ? (
+        <RoutinesTab initialView={routinesView} />
+      ) : (
         <>
-          <section style={{ marginTop: 24 }}>
-            <SectionHeader title="Ajustar o treino de hoje" />
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} aria-label="editar exercícios">
-              {today.exercises.map((e, i) =>
-                isMainExercise(e) ? (
-                  <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderTop: '1px solid var(--hairline)' }}>
-                    <span className="t-body" style={{ flex: 1 }}>
-                      {e.name}
-                    </span>
-                    <Button kind="ghost" aria-label={`editar ${e.name}`} onClick={() => setEditing(i)}>
-                      Editar
-                    </Button>
-                  </li>
-                ) : null,
-              )}
-            </ul>
-            <TodayAdjustCard onApplied={() => void refetch()} />
-          </section>
-          {editing !== null && today.exercises[editing] && (
-            <SessionEditSheet
-              open
-              sessionIndex={sessionIndex}
-              exerciseIndex={editing}
-              exercise={today.exercises[editing]}
-              onClose={() => setEditing(null)}
-              onSaved={() => {
-                setEditing(null)
-                void refetch()
-              }}
-            />
-          )}
-          {currentPlan?.rationaleDecisions && <PlanRationale decisions={currentPlan.rationaleDecisions} sourcesUsed={currentPlan.sourcesUsed} />}
-        </>
-      )}
-
-      {!today && currentPlan?.status ? (
-        <section className="hx-focus" style={{ marginTop: 24, padding: 20 }}>
-          <PlanGenerationState plan={currentPlan} busy={generating} onRetry={() => void generatePlan()} onRepeatWeek={() => void repeatWeek()} />
-        </section>
-      ) : !today ? (
-        <section className="hx-focus" style={{ marginTop: 24, padding: 20 }}>
-          <h2 className="t-heading">Nenhum plano gerado ainda</h2>
-          <p className="t-secondary" style={{ marginTop: 6 }}>
-            Gere seu primeiro plano a partir do seu DNA e do seu último check-in.
-          </p>
-          <div style={{ marginTop: 16 }}>
-            <Button kind="primary" size="lg" block loading={generating} onClick={generatePlan}>
-              Gerar meu plano
-            </Button>
-          </div>
-        </section>
-      ) : null}
-
-      <section style={{ marginTop: 28 }}>
-        <SectionHeader title="Falar com o treinador" />
-        {coachOpen ? (
-          <AgentChat channel="treino" onHandoff={to => router.push(`/equipe?agente=${to}`)} placeholder="Ex.: posso trocar o supino por algo com halteres?" />
-        ) : (
-          <Button kind="secondary" block onClick={() => setCoachOpen(true)}>
-            Abrir conversa com o Agente de Treino
-          </Button>
-        )}
-      </section>
-
-      {generationError && (
-        <div style={{ marginTop: 12 }}>
-          <Banner kind="err" title="Não foi possível gerar o plano">
-            {generationError}
-          </Banner>
-        </div>
-      )}
-
-      {recentSessions.length > 0 && (
-        <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
-          <SectionHeader
-            title="Treinos recentes"
-            action={
-              <Link href="/history" className="t-secondary" style={{ color: 'var(--text)' }}>
-                Ver histórico
-              </Link>
-            }
-          />
-          {recentSessions.slice(0, 3).map(session => {
-            const s = summarizeSession(session)
-            return (
-              <HistoryRow
-                key={session.id}
-                href={`/history/${session.id}`}
-                name={s.name}
-                date={sessionDateLabel(session.date)}
-                sets={s.sets}
-                durationMin={s.durationMin}
-                volumeT={s.volumeT}
+          {today ? (
+            <section style={{ marginTop: 24 }}>
+              <WeekBadge week={currentPlan?.week} kind={currentPlan?.kind} />
+              <SectionHeader
+                title={today.focus ? `Treino ${today.letter} — ${today.focus}` : `Treino ${today.letter}`}
+                aside={`${today.exercises.filter(isMainExercise).length} exercícios`}
               />
-            )
-          })}
-        </section>
+              <PlanExerciseList
+                exercises={today.exercises}
+                onSelect={setViewing}
+                completedToday={routinesView?.completedToday}
+              />
+              <div style={{ marginTop: 12 }}>
+                <Link href="/treinos/proximo" className="hx-btn hx-btn--secondary hx-btn--block">
+                  Ver treino completo
+                </Link>
+              </div>
+              {viewing !== null && today.exercises[viewing] && (
+                <ExerciseSheet open exercise={today.exercises[viewing]} onClose={() => setViewing(null)} />
+              )}
+              <div style={{ marginTop: 16 }}>
+                <Button kind="primary" size="lg" block iconRight="play" onClick={handleStart}>
+                  Iniciar treino
+                </Button>
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <Button kind="ghost" block loading={generating} onClick={generatePlan}>
+                  Gerar novo plano
+                </Button>
+              </div>
+            </section>
+          ) : null}
+
+          {currentPlan?.mesocycleId && <CycleSummaryCard mesocycleId={currentPlan.mesocycleId} />}
+
+          {today && (
+            <>
+              <section style={{ marginTop: 24 }}>
+                <SectionHeader title="Ajustar o treino de hoje" />
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} aria-label="editar exercícios">
+                  {today.exercises.map((e, i) =>
+                    isMainExercise(e) ? (
+                      <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderTop: '1px solid var(--hairline)' }}>
+                        <span className="t-body" style={{ flex: 1 }}>
+                          {e.name}
+                        </span>
+                        <Button kind="ghost" aria-label={`editar ${e.name}`} onClick={() => setEditing(i)}>
+                          Editar
+                        </Button>
+                      </li>
+                    ) : null,
+                  )}
+                </ul>
+                <TodayAdjustCard onApplied={() => void refetch()} />
+              </section>
+              {editing !== null && today.exercises[editing] && (
+                <SessionEditSheet
+                  open
+                  sessionIndex={sessionIndex}
+                  exerciseIndex={editing}
+                  exercise={today.exercises[editing]}
+                  onClose={() => setEditing(null)}
+                  onSaved={() => {
+                    setEditing(null)
+                    void refetch()
+                  }}
+                />
+              )}
+              {currentPlan?.rationaleDecisions && <PlanRationale decisions={currentPlan.rationaleDecisions} sourcesUsed={currentPlan.sourcesUsed} />}
+            </>
+          )}
+
+          {!today && currentPlan?.status ? (
+            <section className="hx-focus" style={{ marginTop: 24, padding: 20 }}>
+              <PlanGenerationState plan={currentPlan} busy={generating} onRetry={() => void generatePlan()} onRepeatWeek={() => void repeatWeek()} />
+            </section>
+          ) : !today ? (
+            <section className="hx-focus" style={{ marginTop: 24, padding: 20 }}>
+              <h2 className="t-heading">Nenhum plano gerado ainda</h2>
+              <p className="t-secondary" style={{ marginTop: 6 }}>
+                Gere seu primeiro plano a partir do seu DNA e do seu último check-in.
+              </p>
+              <div style={{ marginTop: 16 }}>
+                <Button kind="primary" size="lg" block loading={generating} onClick={generatePlan}>
+                  Gerar meu plano
+                </Button>
+              </div>
+            </section>
+          ) : null}
+
+          <section style={{ marginTop: 28 }}>
+            <SectionHeader title="Falar com o treinador" />
+            {coachOpen ? (
+              <AgentChat channel="treino" onHandoff={to => router.push(`/equipe?agente=${to}`)} placeholder="Ex.: posso trocar o supino por algo com halteres?" />
+            ) : (
+              <Button kind="secondary" block onClick={() => setCoachOpen(true)}>
+                Abrir conversa com o Agente de Treino
+              </Button>
+            )}
+          </section>
+
+          {generationError && (
+            <div style={{ marginTop: 12 }}>
+              <Banner kind="err" title="Não foi possível gerar o plano">
+                {generationError}
+              </Banner>
+            </div>
+          )}
+
+          {recentSessions.length > 0 && (
+            <section className="hx-plain" style={{ marginTop: 28, paddingTop: 20 }}>
+              <SectionHeader
+                title="Treinos recentes"
+                action={
+                  <Link href="/history" className="t-secondary" style={{ color: 'var(--text)' }}>
+                    Ver histórico
+                  </Link>
+                }
+              />
+              {recentSessions.slice(0, 3).map(session => {
+                const s = summarizeSession(session)
+                return (
+                  <HistoryRow
+                    key={session.id}
+                    href={`/history/${session.id}`}
+                    name={s.name}
+                    date={sessionDateLabel(session.date)}
+                    sets={s.sets}
+                    durationMin={s.durationMin}
+                    volumeT={s.volumeT}
+                  />
+                )
+              })}
+            </section>
+          )}
+        </>
       )}
     </div>
   )

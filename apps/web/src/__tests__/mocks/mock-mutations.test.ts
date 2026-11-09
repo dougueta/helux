@@ -110,6 +110,39 @@ describe('escritas do modo mock (021 T014)', () => {
     expect(await router.dispatch('/workout/mesocycle/repeat-week', post({}))).toMatchObject({ mesocycleId: expect.any(String) })
   })
 
+  it('030: rotinas complementares (GET, PUT preferences, POST/DELETE logs) sem avançar o treino da academia', async () => {
+    const { router } = runtime()
+    const beforePlan = (await router.dispatch('/workout/latest-plan')) as { today: { letter: string } }
+    const view = (await router.dispatch('/api/routines')) as { routines: Record<string, { daysPerWeek: number }> }
+    expect(Object.keys(view.routines)).toEqual(['alongamento-mobilidade', 'core-abdominal', 'cardio'])
+
+    const updated = (await router.dispatch('/api/routines/preferences', put({ 'alongamento-mobilidade': { daysPerWeek: 7 } }))) as {
+      routines: Record<string, { daysPerWeek: number }>
+    }
+    expect(updated.routines['alongamento-mobilidade'].daysPerWeek).toBe(7)
+
+    const logged = (await router.dispatch(
+      '/api/routines/logs',
+      post({
+        category: 'cardio',
+        performed_on: today(),
+        duration_minutes: 25,
+        modality: 'bike',
+        zone: 'leve',
+        effort: 6,
+        items: [{ id: 'bike', name: 'Bike ergométrica', setsCompleted: 1, secondsOrReps: '25 min' }],
+      }),
+    )) as { log: { id: string }; view: { completedToday: string[] } }
+    expect(logged.view.completedToday).toContain('cardio')
+
+    const afterPlan = (await router.dispatch('/workout/latest-plan')) as { today: { letter: string } }
+    expect(afterPlan.today.letter).toBe(beforePlan.today.letter)
+
+    await router.dispatch(`/api/routines/logs/${logged.log.id}`, { method: 'DELETE' })
+    const afterDelete = (await router.dispatch('/api/routines')) as { completedToday: string[] }
+    expect(afterDelete.completedToday).not.toContain('cardio')
+  })
+
   it('reset desfaz as escritas', async () => {
     const { router, store } = runtime()
     await router.dispatch('/api/profile', post({ goal: 'mudou' }))
