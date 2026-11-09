@@ -1172,6 +1172,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'corda',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Em pé, de frente para a polia alta, corda segura com as duas mãos'],
+      steps: [
+        'Puxe a corda em direção ao rosto, abrindo as mãos para os lados',
+        'Termine com os cotovelos altos e as mãos ao lado das orelhas',
+        'Volte controlando, sem deixar o peso puxar os braços',
+      ],
+      commonError: 'Puxar com os cotovelos baixos, como numa remada',
+      context: 'Ajuda a saúde do ombro e a postura; serve também no aquecimento',
+    },
+    muscles: { primary: ['ombro', 'trapezio'], secondary: [] },
     cues: [
       'Polia alta com corda, puxe em direção ao rosto separando as mãos',
       'Cotovelos altos, foco em rotação externa do ombro no final do movimento',
@@ -1266,6 +1277,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Tronco inclinado uns 45 graus, joelhos levemente dobrados, barra pendurada abaixo dos ombros'],
+      steps: [
+        'Puxe a barra em direção ao umbigo, cotovelos perto do corpo',
+        'Junte as escápulas no fim da puxada',
+        'Desça controlando até os braços estenderem, sem mudar a inclinação do tronco',
+      ],
+      commonError: 'Balançar o tronco para ajudar a puxar a barra',
+    },
+    muscles: { primary: ['dorsal', 'trapezio'], secondary: ['biceps', 'lombar', 'ombro'] },
     cues: [
       'Tronco inclinado cerca de 45°, joelhos levemente flexionados, coluna neutra',
       'Puxe a barra em direção ao abdômen, cotovelos próximos ao corpo',
@@ -1280,6 +1301,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Tronco inclinado à frente, joelhos levemente dobrados, halteres pendurados abaixo dos ombros'],
+      steps: [
+        'Puxe os halteres em direção à cintura, cotovelos perto do tronco',
+        'Junte as escápulas no fim da puxada',
+        'Desça controlando até os braços estenderem',
+      ],
+      commonError: 'Levantar o tronco a cada repetição',
+      context: 'Permite mais amplitude que a versão com barra',
+    },
+    muscles: { primary: ['dorsal', 'trapezio'], secondary: ['biceps', 'lombar', 'ombro'] },
     cues: [
       'Tronco inclinado à frente, halteres pendendo abaixo dos ombros',
       'Puxe os halteres em direção à cintura, cotovelos próximos ao tronco',
@@ -1294,6 +1326,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Um joelho e uma mão apoiados no banco, tronco quase paralelo ao chão, halter na outra mão'],
+      steps: [
+        'Puxe o halter em direção à cintura, com o cotovelo perto do corpo',
+        'Mantenha o tronco parado, sem girar',
+        'Desça controlando até o braço estender',
+      ],
+      commonError: 'Girar o tronco para ajudar a puxar o halter',
+      context: 'Ajuda a corrigir diferenças de força entre os lados',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps', 'trapezio'] },
     cues: [
       'Um joelho e uma mão apoiados no banco, tronco paralelo ao chão',
       'Puxe o halter em direção à cintura mantendo o tronco estável',
@@ -1308,6 +1351,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Barra presa atrás e passando entre as pernas, tronco inclinado à frente, pegada no triângulo'],
+      steps: [
+        'Puxe a barra em direção ao abdômen, com a coluna neutra',
+        'Junte as escápulas no fim da puxada',
+        'Desça controlando até os braços estenderem',
+      ],
+      commonError: 'Levantar o tronco para ajudar a puxada',
+      context: 'Permite carga alta para a espessura das costas',
+    },
+    muscles: { primary: ['dorsal', 'trapezio'], secondary: ['biceps', 'lombar'] },
     cues: [
       'Barra T ou barra apoiada entre as pernas, tronco inclinado à frente',
       'Puxe a barra em direção ao abdômen mantendo a coluna neutra',
@@ -1322,6 +1376,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Sentado, pés na plataforma, joelhos levemente dobrados, tronco ereto'],
+      steps: [
+        'Puxe o triângulo em direção ao abdômen, cotovelos perto do corpo',
+        'Junte as escápulas no fim da puxada',
+        'Volte controlando até os braços estenderem, sem soltar a postura',
+      ],
+      commonError: 'Balançar o tronco para trás para ajudar a puxada',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps', 'trapezio'] },
     cues: [
       'Sentado, pés apoiados na plataforma, tronco ereto',
       'Puxe o triângulo ou barra em direção ao abdômen, cotovelos próximos ao corpo',
@@ -1336,6 +1400,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Peito apoiado no encosto, se houver, mãos nas pegadas'],
+      steps: [
+        'Puxe as pegadas em direção ao corpo, juntando as escápulas',
+        'Segure um instante no fim da puxada',
+        'Volte controlando até sentir as costas alongarem',
+      ],
+      commonError: 'Tirar o peito do apoio para puxar mais carga',
+      context: 'Trabalha as costas sem exigir estabilização da lombar',
+    },
+    muscles: { primary: ['dorsal', 'trapezio'], secondary: ['biceps'] },
     cues: [
       'Peito apoiado no encosto (se disponível), pegada nas alças',
       'Puxe em direção ao corpo contraindo as escápulas',
@@ -1350,6 +1425,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'barra-fixa',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Deitado sob uma barra baixa, mãos na barra, corpo reto e calcanhares no chão'],
+      steps: [
+        'Puxe o peito em direção à barra, com o corpo reto',
+        'Junte as escápulas no topo',
+        'Desça controlando até os braços estenderem',
+      ],
+      commonError: 'Deixar o quadril cair durante a puxada',
+      context: 'Para facilitar, dobre os joelhos; para dificultar, eleve os pés',
+    },
+    muscles: { primary: ['dorsal'], secondary: ['biceps', 'trapezio', 'core'] },
     cues: [
       'Barra fixa numa altura baixa, corpo suspenso por baixo com os calcanhares no chão',
       'Puxe o peito em direção à barra mantendo o corpo reto',
@@ -1364,6 +1450,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Uma ponta da barra presa no chão ou no canto, tronco inclinado à frente, mãos na outra ponta'],
+      steps: [
+        'Puxe a ponta da barra em direção ao peito, cotovelos perto do corpo',
+        'Junte as escápulas no fim da puxada',
+        'Desça controlando, com a coluna neutra',
+      ],
+      commonError: 'Arredondar as costas para puxar mais carga',
+      context: 'Substitui a máquina de remada quando ela não está disponível',
+    },
+    muscles: { primary: ['dorsal', 'trapezio'], secondary: ['biceps', 'lombar'] },
     cues: [
       'Uma ponta da barra fixada no chão ou canto, tronco inclinado à frente',
       'Puxe a outra ponta em direção ao peito/abdômen com as duas mãos',
@@ -1378,6 +1475,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Em pé, barra na frente das coxas, pegada um pouco mais fechada que os ombros'],
+      steps: [
+        'Puxe a barra para cima, rente ao corpo, levando os cotovelos à frente',
+        'Pare com a barra na altura do peito e os cotovelos acima das mãos',
+        'Desça controlando até os braços estenderem',
+      ],
+      commonError: 'Subir a barra acima do peito e apertar o ombro',
+      context: 'Diminua a amplitude se sentir desconforto no ombro',
+    },
+    muscles: { primary: ['ombro', 'trapezio'], secondary: ['biceps', 'antebraco'] },
     cues: [
       'Barra à frente do corpo, pegada um pouco mais estreita que os ombros',
       'Puxe a barra verticalmente até a altura do peito, cotovelos guiando o movimento',
@@ -2202,6 +2310,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'puxar-horizontal',
+    guidance: {
+      setup: ['Tronco quase paralelo ao chão, barra parada no chão sob os ombros'],
+      steps: [
+        'Puxe a barra rápido até a parte de baixo do peito',
+        'Devolva a barra ao chão com controle, sem levantar o tronco',
+        'Pare a barra no chão antes da próxima repetição',
+      ],
+      commonError: 'Arredondar a lombar para alcançar a barra',
+    },
+    muscles: { primary: ['dorsal', 'trapezio'], secondary: ['biceps', 'lombar', 'posterior'] },
     cues: [
       'Tronco quase paralelo ao chão, barra parada no chão no início de cada repetição',
       'Puxe a barra de forma explosiva até a parte baixa do peito',

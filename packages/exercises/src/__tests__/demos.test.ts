@@ -96,4 +96,9 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
     // a família também tem o pullover com halteres, aprovado no piloto
     await expectBatchComplete(PUXAR_VERTICAL, 10)
   })
+
+  it('lote 6, Puxar na horizontal (T063)', async () => {
+    const { PUXAR_HORIZONTAL } = await import('../demos/puxar-horizontal')
+    await expectBatchComplete(PUXAR_HORIZONTAL, 11)
+  })
 })
