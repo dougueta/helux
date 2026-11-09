@@ -178,3 +178,18 @@ Antes, as roscas tinham primário bíceps e os itens de tríceps, primário trí
 | (lote 8) | guidance | recomendações nos passos de 6 itens ("Recruta…", "A tensão…", "Use carga…", "Boa técnica…", "Elimina…", "Permite…") | movidas para `context` ou para a posição inicial | FR-018 e FR-019. |
 
 Demonstração: rosca direta com barra e rosca 21 dividem a base e o implemento, e se distinguem pela legenda; o mesmo vale para a rosca direta e a martelo com halteres, já que a pegada não aparece de perfil. A rosca Scott ganhou a cena do banco Scott (assento e apoio inclinado dos braços). No tríceps francês, de perfil, o braço passa na frente da cabeça. As paralelas mostram os joelhos dobrados para os pés não tocarem o chão.
+
+## Lote 9: Ombro, trapézio e peito (T066)
+
+Antes, as elevações e o crucifixo invertido tinham primário ombro; os encolhimentos, primário dorsal (o mapa antigo levava `costas` para dorsal); crucifixos, crossover e peck deck, primário peito. Nenhum tinha secundário. `muscleGroup`, `pattern` e `stress` não mudam.
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| elevacao-lateral-halteres, elevacao-lateral-cabo, elevacao-posterior-halteres, crucifixo-invertido-maquina | muscles | ombro; nenhum | ombro; trapézio | O trapézio estabiliza e gira a escápula quando o braço sobe ou abre para trás. |
+| elevacao-frontal-halteres | muscles | ombro; nenhum | ombro; peito | A parte de cima do peito ajuda na flexão do ombro. |
+| encolhimento-ombros-halteres, encolhimento-barra | muscles | dorsal; nenhum | trapézio; antebraço | O encolhimento é do trapézio superior; o dorsal não participa, e a pegada segura a carga. `muscleGroup` continua `costas`. |
+| crucifixo-halteres, crucifixo-inclinado-halteres, crossover-cabo, peck-deck-maquina | muscles | peito; nenhum | peito; ombro | O deltoide anterior acompanha a adução horizontal. |
+| (lote 9) | gear | — | conferido | Sem correção. |
+| (lote 9) | guidance | recomendações nos passos de 5 itens ("Foco…", "Importante…", "A tensão…", "Ênfase…", "Boa opção…") | movidas para `context` | FR-018 e FR-019. |
+
+Demonstração: elevação lateral, elevação posterior, encolhimentos, crucifixos, crossover, peck deck e crucifixo invertido são vistos de frente, com o outro lado espelhado. O crucifixo deitado é visto a partir dos pés: o tronco aparece curto e os pés ficam no chão dos dois lados do banco; o inclinado mostra os ombros mais altos. O encolhimento não tem como subir só os ombros numa figura de tronco rígido, então o corpo inteiro sobe um pouco a partir dos joelhos soltos; a orientação descreve o movimento certo. Peck deck e crucifixo invertido dividem o caminho em sentidos opostos.

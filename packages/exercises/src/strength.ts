@@ -860,6 +860,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Deitado no banco reto, halteres acima do peito, cotovelos levemente dobrados'],
+      steps: [
+        'Abra os braços em arco até sentir o peito alongar',
+        'Mantenha a mesma dobra dos cotovelos durante o arco',
+        'Feche pelo mesmo arco até os halteres voltarem acima do peito',
+      ],
+      commonError: 'Estender totalmente os cotovelos e sobrecarregar a articulação',
+    },
+    muscles: { primary: ['peito'], secondary: ['ombro'] },
     cues: [
       'Deitado no banco reto, halteres acima do peito com cotovelos levemente flexionados',
       'Abra os braços em arco até sentir alongamento no peito',
@@ -874,6 +884,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Banco inclinado a uns 30 graus, halteres acima do peito, cotovelos levemente dobrados'],
+      steps: [
+        'Abra os braços em arco até o alongamento confortável',
+        'Mantenha a mesma dobra dos cotovelos do início ao fim',
+        'Feche pelo mesmo arco até os halteres voltarem acima do peito',
+      ],
+      commonError: 'Descer demais e forçar a frente do ombro',
+      context: 'Trabalha mais a parte de cima do peito',
+    },
+    muscles: { primary: ['peito'], secondary: ['ombro'] },
     cues: [
       'Banco inclinado 30°, halteres acima do peito com cotovelos levemente flexionados',
       'Abra os braços em arco controlado até o limite de alongamento confortável',
@@ -888,6 +909,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Entre as polias altas, uma alça em cada mão, um pé à frente'],
+      steps: [
+        'Traga as mãos para baixo e para o centro do corpo, em arco',
+        'Junte as mãos à frente do quadril, apertando o peito',
+        'Volte pelo mesmo arco, controlando a abertura',
+      ],
+      commonError: 'Dobrar e estender os cotovelos, transformando o arco num empurrão',
+      context: 'O cabo mantém a tensão; serve para terminar o treino de peito',
+    },
+    muscles: { primary: ['peito'], secondary: ['ombro'] },
     cues: [
       'Polias ajustadas acima da altura da cabeça, um pé à frente para estabilidade',
       'Traga as mãos para baixo e para o centro do corpo em arco',
@@ -902,6 +934,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Costas no encosto, cotovelos na altura dos ombros, antebraços nas almofadas'],
+      steps: [
+        'Feche os braços à frente do corpo, apertando o peito',
+        'Segure um instante com os braços fechados',
+        'Abra controlando, sem deixar o peso cair',
+      ],
+      commonError: 'Abrir demais e forçar a frente do ombro',
+      context: 'Isola o peito com pouco risco para o ombro',
+    },
+    muscles: { primary: ['peito'], secondary: ['ombro'] },
     cues: [
       'Costas apoiadas no encosto, cotovelos na altura dos ombros',
       'Feche os braços à frente do corpo contraindo o peitoral',
@@ -1091,6 +1134,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, halteres ao lado do corpo, cotovelos levemente dobrados'],
+      steps: [
+        'Suba os braços pelos lados até a altura dos ombros',
+        'Mantenha a mesma dobra dos cotovelos durante a subida',
+        'Desça controlando, sem usar o embalo do tronco',
+      ],
+      commonError: 'Subir acima da linha dos ombros e sobrecarregar a articulação',
+    },
+    muscles: { primary: ['ombro'], secondary: ['trapezio'] },
     cues: [
       'Halteres ao lado do corpo, leve flexão de cotovelo mantida fixa',
       'Eleve os braços lateralmente até a altura dos ombros',
@@ -1105,6 +1158,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, halteres à frente das coxas, pegada pronada'],
+      steps: [
+        'Suba um ou os dois braços à frente até a altura dos ombros',
+        'Mantenha os cotovelos levemente dobrados',
+        'Desça controlando, sem balançar o tronco',
+      ],
+      commonError: 'Balançar o tronco para ganhar impulso',
+      context: 'Trabalha a parte da frente do ombro',
+    },
+    muscles: { primary: ['ombro'], secondary: ['peito'] },
     cues: [
       'Halteres à frente das coxas, pegada pronada',
       'Eleve um ou os dois braços à frente até a altura dos ombros',
@@ -1119,6 +1183,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Tronco inclinado à frente, joelhos levemente dobrados, halteres pendurados sob os ombros'],
+      steps: [
+        'Suba os braços pelos lados, levando os cotovelos para fora',
+        'Mantenha a leve dobra dos cotovelos durante todo o movimento',
+        'Desça controlando, sem levantar o tronco',
+      ],
+      commonError: 'Levantar o tronco para ajudar a subir os halteres',
+      context: 'Equilibra o desenvolvimento do ombro e ajuda a postura',
+    },
+    muscles: { primary: ['ombro'], secondary: ['trapezio'] },
     cues: [
       'Tronco inclinado à frente, halteres pendendo abaixo dos ombros',
       'Eleve os braços lateralmente contraindo a porção posterior do ombro',
@@ -1158,6 +1233,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['De lado para a polia baixa, cabo passando pela frente do corpo até a mão do lado oposto'],
+      steps: [
+        'Suba o braço pelo lado até a altura do ombro',
+        'Mantenha o cotovelo levemente dobrado',
+        'Desça controlando, sem deixar o peso puxar o braço',
+      ],
+      commonError: 'Inclinar o tronco para longe da polia para subir mais carga',
+      context: 'O cabo mantém a tensão já no começo da subida',
+    },
+    muscles: { primary: ['ombro'], secondary: ['trapezio'] },
     cues: [
       'Polia baixa, cabo passando por trás do corpo até a mão oposta',
       'Eleve o braço lateralmente mantendo tensão constante do cabo',
@@ -1222,6 +1308,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, halteres ao lado do corpo, braços estendidos'],
+      steps: [
+        'Suba os ombros em direção às orelhas, sem girar',
+        'Segure um instante no topo',
+        'Desça controlando, com os braços estendidos',
+      ],
+      commonError: 'Dobrar os cotovelos para ajudar a subida',
+    },
+    muscles: { primary: ['trapezio'], secondary: ['antebraco'] },
     cues: [
       'Halteres ao lado do corpo, braços estendidos e relaxados',
       'Eleve os ombros em direção às orelhas, sem rotacioná-los',
@@ -1261,6 +1357,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, barra à frente das coxas, pegada na largura dos ombros'],
+      steps: [
+        'Suba os ombros em linha reta em direção às orelhas',
+        'Segure 1 segundo no topo',
+        'Desça controlando, sem girar os ombros para trás',
+      ],
+      commonError: 'Girar os ombros no topo do movimento',
+    },
+    muscles: { primary: ['trapezio'], secondary: ['antebraco'] },
     cues: [
       'Barra à frente do corpo, pegada na largura dos ombros',
       'Eleve os ombros verticalmente em direção às orelhas',
@@ -2819,6 +2925,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Sentado de frente para o encosto do peck deck, pegadas na altura dos ombros'],
+      steps: [
+        'Abra os braços para trás, juntando as escápulas',
+        'Pare quando os braços ficarem alinhados com o tronco',
+        'Volte controlando, sem deixar o peso bater',
+      ],
+      commonError: 'Subir os ombros em direção às orelhas durante o movimento',
+    },
+    muscles: { primary: ['ombro'], secondary: ['trapezio'] },
     cues: [
       'Sentado de frente para o encosto do peck deck, pegadas na altura dos ombros',
       'Abra os braços para trás contraindo o deltoide posterior',
