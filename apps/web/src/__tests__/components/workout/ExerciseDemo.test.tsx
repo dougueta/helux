@@ -287,6 +287,11 @@ describe('ExerciseDemo — cenas e implementos (028)', () => {
     expect(container.querySelector('[data-part="implement"] circle')).not.toBeNull()
   })
 
+  it('bastão fica encostado nas costas, do quadril até acima da cabeça', () => {
+    const { container } = render(<ExerciseDemo demo={demoOf({ gear: 'bastao' })} playing={false} label="x" />)
+    expect(container.querySelector('[data-part="implement"] line[data-dowel]')).not.toBeNull()
+  })
+
   it('barra com ponto de apoio (landmine) desenha a barra do apoio até as mãos', () => {
     const { container } = render(<ExerciseDemo demo={demoOf({ gear: 'barra', anchor: [204, 238] })} playing={false} label="x" />)
     const line = container.querySelector('[data-part="implement"] line[data-landmine]')

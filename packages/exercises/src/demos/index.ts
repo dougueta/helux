@@ -14,6 +14,7 @@ import { ISOLAMENTO_BRACOS } from './isolamento-bracos'
 import { ISOLAMENTO_TRONCO } from './isolamento-tronco'
 import { ISOLAMENTO_PERNAS } from './isolamento-pernas'
 import { PREPARACAO_ATIVACAO } from './preparacao-ativacao'
+import { PREPARACAO_QUADRIL } from './preparacao-quadril'
 import { PUXAR_HORIZONTAL } from './puxar-horizontal'
 import { PUXAR_VERTICAL } from './puxar-vertical'
 
@@ -49,7 +50,7 @@ export function createRegistry(families: DemoFamily[]): DemoRegistry {
 }
 
 /** Famílias registradas. Cada lote acrescenta a sua aqui. */
-const FAMILIES: DemoFamily[] = [AGACHAR, DOBRAR_QUADRIL, EMPURRAR_HORIZONTAL, PUXAR_HORIZONTAL, PUXAR_VERTICAL, CORE, ISOLAMENTO_PERNAS, EMPURRAR_VERTICAL, ISOLAMENTO_BRACOS, ISOLAMENTO_TRONCO, PREPARACAO_ATIVACAO]
+const FAMILIES: DemoFamily[] = [AGACHAR, DOBRAR_QUADRIL, EMPURRAR_HORIZONTAL, PUXAR_HORIZONTAL, PUXAR_VERTICAL, CORE, ISOLAMENTO_PERNAS, EMPURRAR_VERTICAL, ISOLAMENTO_BRACOS, ISOLAMENTO_TRONCO, PREPARACAO_ATIVACAO, PREPARACAO_QUADRIL]
 
 const REGISTRY = createRegistry(FAMILIES)
 
