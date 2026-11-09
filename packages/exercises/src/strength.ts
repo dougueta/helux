@@ -163,6 +163,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Costas no encosto, joelhos alinhados com o eixo da máquina, rolo na frente dos tornozelos'],
+      steps: [
+        'Estenda os joelhos até quase esticar as pernas, sem travar',
+        'Segure um instante no alto',
+        'Desça controlando, sem soltar o peso',
+      ],
+      commonError: 'Usar o embalo do tronco para subir o peso',
+    },
+    muscles: { primary: ['quadriceps'], secondary: [] },
     cues: [
       'Costas apoiadas no encosto, joelhos alinhados com o eixo da máquina',
       'Estenda os joelhos até quase a extensão total, sem travar com força',
@@ -622,6 +632,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Sentado, apoio prendendo as coxas, joelhos alinhados com o eixo, rolo atrás dos tornozelos'],
+      steps: [
+        'Dobre os joelhos puxando o rolo para baixo',
+        'Segure um instante com os joelhos dobrados',
+        'Volte controlando até quase estender as pernas',
+      ],
+      commonError: 'Tirar o quadril do assento para puxar mais carga',
+      context: 'Costuma incomodar menos que a mesa flexora deitado',
+    },
+    muscles: { primary: ['posterior'], secondary: ['panturrilha'] },
     cues: [
       'Sentado, encosto ajustado para apoiar as coxas, joelhos alinhados ao eixo',
       'Flexione os joelhos puxando o rolo para baixo',
@@ -2378,6 +2399,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Ombros sob as almofadas, ponta dos pés na plataforma, calcanhares livres'],
+      steps: [
+        'Suba os calcanhares o máximo possível, com os joelhos estendidos',
+        'Segure um instante no alto',
+        'Desça até alongar bem a panturrilha antes da próxima',
+      ],
+      commonError: 'Quicar no fundo do movimento',
+    },
+    muscles: { primary: ['panturrilha'], secondary: [] },
     cues: [
       'Ombros sob o apoio, ponta dos pés na plataforma, calcanhares livres',
       'Eleve os calcanhares o máximo possível, contraindo a panturrilha',
@@ -2392,6 +2423,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Sentado, joelhos sob o apoio, ponta dos pés na plataforma'],
+      steps: [
+        'Suba os calcanhares o máximo possível',
+        'Segure um instante no alto',
+        'Desça controlando até alongar bem a panturrilha',
+      ],
+      commonError: 'Encurtar a descida e perder o alongamento',
+      context: 'Com o joelho dobrado, trabalha mais o sóleo',
+    },
+    muscles: { primary: ['panturrilha'], secondary: [] },
     cues: [
       'Sentado, joelhos sob o apoio, ponta dos pés na plataforma',
       'Eleve os calcanhares contraindo a panturrilha',
@@ -2406,6 +2448,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, ponta dos pés na beira de um degrau, calcanhares para fora'],
+      steps: [
+        'Suba os calcanhares o máximo possível',
+        'Desça até os calcanhares passarem da altura do degrau',
+        'Apoie a mão numa parede se precisar de equilíbrio',
+      ],
+      commonError: 'Dobrar os joelhos para ajudar a subida',
+      context: 'Para dificultar, faça com uma perna de cada vez',
+    },
+    muscles: { primary: ['panturrilha'], secondary: [] },
     cues: [
       'Em pé, ponta dos pés em uma superfície elevada (degrau), calcanhares livres',
       'Eleve os calcanhares o máximo possível',
@@ -2420,6 +2473,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'halteres',
     gear: 'halteres',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Em pé, halteres ao lado do corpo, ponta dos pés na beira de um degrau'],
+      steps: [
+        'Suba os calcanhares contraindo a panturrilha',
+        'Segure um instante no alto',
+        'Desça controlando até alongar bem a panturrilha',
+      ],
+      commonError: 'Quicar no fundo do movimento',
+      context: 'Substitui a máquina de panturrilha quando ela não está disponível',
+    },
+    muscles: { primary: ['panturrilha'], secondary: ['antebraco'] },
     cues: [
       'Halteres ao lado do corpo, ponta dos pés em uma superfície elevada',
       'Eleve os calcanhares contraindo a panturrilha',
@@ -2434,6 +2498,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Sentado no leg press, só a ponta dos pés na plataforma, joelhos quase estendidos'],
+      steps: [
+        'Empurre a plataforma estendendo os tornozelos',
+        'Mantenha os joelhos parados, sem travar',
+        'Volte controlando até alongar bem a panturrilha',
+      ],
+      commonError: 'Dobrar e estender os joelhos em vez de mover o tornozelo',
+    },
+    muscles: { primary: ['panturrilha'], secondary: [] },
     cues: [
       'Sentado no leg press, apenas a ponta dos pés apoiada na plataforma',
       'Empurre a plataforma estendendo o tornozelo',
@@ -2448,6 +2522,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'maquina',
     pattern: 'isolamento',
+    guidance: {
+      setup: ['Sentado na máquina, costas no encosto, pernas nas almofadas com os joelhos juntos'],
+      steps: [
+        'Abra as pernas contra a resistência, contraindo o glúteo',
+        'Segure um instante com as pernas abertas',
+        'Volte controlando, sem deixar o peso bater',
+      ],
+      commonError: 'Inclinar o tronco à frente para abrir mais',
+      context: 'Ajuda a estabilidade do quadril e do joelho',
+    },
+    muscles: { primary: ['abdutores', 'gluteo'], secondary: [] },
     cues: [
       'Sentado, pernas apoiadas nas almofadas, joelhos juntos no início',
       'Abra as pernas contra a resistência, contraindo o glúteo médio',

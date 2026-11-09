@@ -193,3 +193,19 @@ Antes, as elevações e o crucifixo invertido tinham primário ombro; os encolhi
 | (lote 9) | guidance | recomendações nos passos de 5 itens ("Foco…", "Importante…", "A tensão…", "Ênfase…", "Boa opção…") | movidas para `context` | FR-018 e FR-019. |
 
 Demonstração: elevação lateral, elevação posterior, encolhimentos, crucifixos, crossover, peck deck e crucifixo invertido são vistos de frente, com o outro lado espelhado. O crucifixo deitado é visto a partir dos pés: o tronco aparece curto e os pés ficam no chão dos dois lados do banco; o inclinado mostra os ombros mais altos. O encolhimento não tem como subir só os ombros numa figura de tronco rígido, então o corpo inteiro sobe um pouco a partir dos joelhos soltos; a orientação descreve o movimento certo. Peck deck e crucifixo invertido dividem o caminho em sentidos opostos.
+
+## Lote 10: Isolamento de pernas (T067)
+
+Antes, o mapa antigo de 7 regiões levava glúteo, posterior e panturrilha para quadríceps; por isso a cadeira abdutora, a flexora e as cinco panturrilhas apareciam com primário quadríceps. A extensora já era quadríceps. Nenhum tinha secundário. `muscleGroup`, `pattern` e `stress` não mudam.
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| cadeira-abdutora | muscles | quadríceps; nenhum | abdutores e glúteo; nenhum | Abdução do quadril: glúteo médio e mínimo. |
+| cadeira-flexora | muscles | quadríceps; nenhum | posterior; panturrilha | Flexão do joelho: isquiotibiais, com o gastrocnêmio ajudando. |
+| elevacao-panturrilha-pe-maquina, elevacao-panturrilha-sentado-maquina, elevacao-panturrilha-corporal, panturrilha-leg-press | muscles | quadríceps; nenhum | panturrilha; nenhum | Flexão plantar. |
+| elevacao-panturrilha-halteres | muscles | quadríceps; nenhum | panturrilha; antebraço | A pegada segura os halteres. |
+| cadeira-extensora | muscles | quadríceps; nenhum | igual | Conferido. |
+| (lote 10) | gear | — | conferido | Sem correção. |
+| (lote 10) | guidance | recomendações nos passos de 5 itens ("Bom exercício…", "Boa opção…", "Com o joelho…", "Pode ser feito…", "Não trave…") | movidas para `context` ou reescritas como passo | FR-018 e FR-019. |
+
+Demonstração: a cadeira abdutora usa a base da abdução do piloto. Cadeira extensora e flexora são vistas de perfil, com a coxa parada no assento. As panturrilhas em pé apoiam a ponta do pé na beira do degrau; para isso o motor ganhou o apoio `toe` (a ponta do pé fica fixa e o tornozelo sobe). Na panturrilha sentado, os joelhos sobem junto com os calcanhares. No leg press, só o pé gira em volta do tornozelo.

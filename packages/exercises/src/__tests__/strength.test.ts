@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { STRENGTH_EXERCISES, effectiveFields } from '../strength'
-import { GEARS } from '../types'
+import { GEARS, MUSCLE_KEYS } from '../types'
 import snapshot from './fixtures/strength-snapshot.json'
 
 // R3 e R4: nenhum dos 122 nomes muda, e equipment/muscleGroup/pattern/stress mantêm valor e significado.
@@ -48,6 +48,27 @@ describe('STRENGTH_EXERCISES — implemento real (gear)', () => {
 
   it('kettlebell-swing continua com equipment halteres (filtro inalterado)', () => {
     expect(STRENGTH_EXERCISES.find((e) => e.id === 'kettlebell-swing')!.equipment).toBe('halteres')
+  })
+})
+
+// T068 (SC-004): todo item de força tem posição inicial, execução e erro comum.
+// T069 (FR-015, FR-017): músculos revisados só com MuscleKey válidas e com ao menos um primário.
+describe('STRENGTH_EXERCISES — orientação e músculos revisados (T068, T069)', () => {
+  it('os 122 itens têm guidance com posição inicial, passos e erro comum (SC-004)', () => {
+    const missing = STRENGTH_EXERCISES.filter((e) => !e.guidance?.setup?.length || !e.guidance?.steps?.length || !e.guidance?.commonError?.trim()).map((e) => e.id)
+    const covered = STRENGTH_EXERCISES.length - missing.length
+    console.info(`[SC-004] cobertura de orientação: ${covered} de ${STRENGTH_EXERCISES.length}`)
+    expect(missing).toEqual([])
+  })
+
+  it('os 122 itens têm muscles explícito, só com MuscleKey válidas', () => {
+    for (const e of STRENGTH_EXERCISES) {
+      expect(e.muscles, `${e.id}: falta muscles`).toBeDefined()
+      expect(e.muscles!.primary.length, `${e.id}: sem músculo principal`).toBeGreaterThan(0)
+      for (const m of [...e.muscles!.primary, ...e.muscles!.secondary]) expect(MUSCLE_KEYS, `${e.id}: ${m}`).toContain(m)
+      const overlap = e.muscles!.primary.filter((m) => e.muscles!.secondary.includes(m))
+      expect(overlap, `${e.id}: músculo repetido em primário e secundário`).toEqual([])
+    }
   })
 })
 

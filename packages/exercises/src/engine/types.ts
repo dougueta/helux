@@ -26,7 +26,8 @@ export type Joint = keyof Pose
 
 export type LoopMode = 'reps' | 'hold' | 'alternate' | 'cycle'
 
-export type Root = 'foot' | 'hand' | 'hip' | 'seat'
+/** `toe`: ponta do pé apoiada (elevação de panturrilha); o tornozelo sobe. */
+export type Root = 'foot' | 'hand' | 'hip' | 'seat' | 'toe'
 
 export interface Keyframe {
   /** de 0 a 1, crescente */

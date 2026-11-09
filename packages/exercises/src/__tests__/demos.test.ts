@@ -124,4 +124,10 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
     const { ISOLAMENTO_TRONCO } = await import('../demos/isolamento-tronco')
     await expectBatchComplete(ISOLAMENTO_TRONCO, 11)
   })
+
+  it('lote 10, Isolamento de pernas (T067)', async () => {
+    const { ISOLAMENTO_PERNAS } = await import('../demos/isolamento-pernas')
+    // inclui a cadeira adutora e a mesa flexora do piloto
+    await expectBatchComplete(ISOLAMENTO_PERNAS, 10)
+  })
 })
