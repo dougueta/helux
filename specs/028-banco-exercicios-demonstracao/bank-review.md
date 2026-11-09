@@ -162,3 +162,19 @@ Antes, primário core e nenhum secundário. `muscleGroup`, `pattern` e `stress` 
 | (lote 7b) | guidance | sem recomendações nos passos | — | Erros comuns que estavam nos passos foram para `commonError`. |
 
 Demonstração: a rotação de tronco no cabo é vista de frente, com a polia à direita; as mãos juntas cruzam de um lado ao outro. A bicicleta alterna o lado; de perfil, o cotovelo que vai ao joelho oposto não aparece. A elevação de pernas na barra usa a barra fixa com as pernas estendidas.
+
+## Lote 8: Bíceps e tríceps (T065)
+
+Antes, as roscas tinham primário bíceps e os itens de tríceps, primário tríceps; nenhum tinha secundário. `muscleGroup`, `pattern` e `stress` não mudam.
+
+| id | campo | antes | depois | justificativa |
+|:---|:---|:---|:---|:---|
+| rosca-direta-barra, rosca-direta-halteres, rosca-alternada-halteres, rosca-scott-barra, rosca-cabo, rosca-21-barra | muscles | bíceps; nenhum | bíceps; antebraço | O braquiorradial e os flexores do punho ajudam a segurar e subir a carga. |
+| rosca-martelo-halteres | muscles | bíceps; nenhum | bíceps e antebraço; nenhum | A pegada neutra põe o braquiorradial como motor principal junto com o bíceps. |
+| mergulho-banco-corporal | muscles | tríceps; nenhum | tríceps; peito e ombro | Extensão de cotovelo com o ombro em extensão: peito e deltoide anterior ajudam. |
+| paralelas-corporal | muscles | tríceps; nenhum | tríceps e peito; ombro | O peito é motor principal com o tronco inclinado. |
+| rosca-concentrada-halteres, triceps-testa-barra, triceps-testa-halteres, triceps-corda-cabo, triceps-frances-halteres | muscles | igual | igual | Conferido. |
+| (lote 8) | gear | — | conferido | Sem correção. |
+| (lote 8) | guidance | recomendações nos passos de 6 itens ("Recruta…", "A tensão…", "Use carga…", "Boa técnica…", "Elimina…", "Permite…") | movidas para `context` ou para a posição inicial | FR-018 e FR-019. |
+
+Demonstração: rosca direta com barra e rosca 21 dividem a base e o implemento, e se distinguem pela legenda; o mesmo vale para a rosca direta e a martelo com halteres, já que a pegada não aparece de perfil. A rosca Scott ganhou a cena do banco Scott (assento e apoio inclinado dos braços). No tríceps francês, de perfil, o braço passa na frente da cabeça. As paralelas mostram os joelhos dobrados para os pés não tocarem o chão.

@@ -42,6 +42,9 @@ export const ROMAN_CHAIR = { x0: 22, x1: 118, top: 150, ankle: [30, 136] as Poin
 /** Banco declinado: encosto de `back[0]` (cabeça, baixo) a `back[1]` (quadril, alto); o rolo prende as pernas em `hook`. */
 export const DECLINE_BENCH = { back: [[40, 196], [142, 170]] as [Point, Point], hook: [184, 168] as Point } as const
 
+/** Banco Scott: assento de `seat.x0` a `seat.x1` em `seat.top`; apoio dos braços inclinado de `pad[0]` (alto) a `pad[1]`. */
+export const SCOTT_BENCH = { seat: { x0: 50, x1: 100, top: 184 }, pad: [[84, 132], [114, 162]] as [Point, Point] } as const
+
 /** Colchonete sobre o solo. */
 export const MAT = { x0: 18, x1: 202, top: 235 } as const
 
