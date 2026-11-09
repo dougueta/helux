@@ -1653,6 +1653,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'core',
+    guidance: {
+      setup: ['Antebraços no chão com os cotovelos sob os ombros, pontas dos pés apoiadas'],
+      steps: [
+        'Tire os joelhos do chão até o corpo formar uma linha reta da cabeça aos pés',
+        'Contraia o abdômen e o glúteo para o quadril não cair',
+        'Sustente a posição respirando normalmente',
+      ],
+      commonError: 'Deixar o quadril cair ou subir demais, perdendo o alinhamento',
+      context: 'Para facilitar, mantenha os joelhos no chão',
+    },
+    muscles: { primary: ['core'], secondary: ['ombro', 'gluteo'] },
     cues: [
       'Antebraços e pontas dos pés no chão, corpo formando uma linha reta',
       'Contraia o abdômen e o glúteo para evitar que o quadril caia',
@@ -1667,6 +1678,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'core',
+    guidance: {
+      setup: ['Deitado de lado, cotovelo sob o ombro, pés empilhados'],
+      steps: [
+        'Suba o quadril até o corpo ficar reto da cabeça aos pés',
+        'Mantenha o quadril parado, sem girar para a frente ou para trás',
+        'Sustente a posição e depois troque o lado',
+      ],
+      commonError: 'Deixar o quadril afundar em direção ao chão',
+      context: 'Para facilitar, apoie o joelho de baixo no chão',
+    },
+    muscles: { primary: ['core'], secondary: ['ombro', 'abdutores'] },
     cues: [
       'Apoio em um antebraço e na lateral dos pés, corpo alinhado',
       'Eleve o quadril até formar uma linha reta da cabeça aos pés',
@@ -1723,6 +1745,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'roda',
     pattern: 'core',
+    guidance: {
+      setup: ['Ajoelhado, mãos na roda à frente dos joelhos, braços estendidos'],
+      steps: [
+        'Role a roda à frente, com o abdômen contraído e a lombar neutra',
+        'Vá até onde conseguir manter a lombar sem ceder',
+        'Volte puxando com o abdômen, sem dobrar o quadril primeiro',
+      ],
+      commonError: 'Deixar o quadril cair e arquear a lombar no fim',
+      context: 'Exercício avançado: comece com pouca amplitude',
+    },
+    muscles: { primary: ['core'], secondary: ['dorsal', 'ombro'] },
     cues: [
       'Ajoelhado, mãos na roda à frente do corpo',
       'Role a roda para frente mantendo o core contraído e a lombar neutra',
@@ -1737,6 +1770,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'core',
+    guidance: {
+      setup: ['Prancha alta: mãos sob os ombros, braços estendidos, corpo reto'],
+      steps: [
+        'Gire o tronco e leve um braço em direção ao teto',
+        'Volte a mão ao chão com controle',
+        'Repita do outro lado, sem deixar o quadril cair',
+      ],
+      commonError: 'Girar o quadril junto com o tronco e perder a linha do corpo',
+      context: 'Afaste mais os pés para ganhar estabilidade',
+    },
+    muscles: { primary: ['core'], secondary: ['ombro'] },
     cues: [
       'Comece na posição de prancha alta (mãos estendidas)',
       'Rotacione o tronco elevando um braço em direção ao teto',
@@ -1779,6 +1823,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'core',
+    guidance: {
+      setup: ['Deitado de costas, braços apontando para o teto, quadril e joelhos dobrados a 90 graus'],
+      steps: [
+        'Estenda um braço para trás da cabeça e a perna oposta à frente, rente ao chão',
+        'Mantenha a lombar encostada no chão durante todo o movimento',
+        'Volte ao centro e repita com o outro par',
+      ],
+      commonError: 'Deixar a lombar descolar do chão ao estender a perna',
+      context: 'Ensina a estabilizar o tronco sem sobrecarregar a lombar',
+    },
+    muscles: { primary: ['core'], secondary: [] },
     cues: [
       'Deitado, braços estendidos para cima, joelhos flexionados a 90°',
       'Estenda um braço e a perna oposta simultaneamente, sem deixar a lombar arquear',
@@ -1793,6 +1848,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'maquina-cabo',
     gear: 'cabo',
     pattern: 'core',
+    guidance: {
+      setup: ['De lado para a polia, cabo na altura do peito, as duas mãos juntas no peito'],
+      steps: [
+        'Estenda os braços à frente, resistindo ao cabo que puxa o tronco para o lado',
+        'Segure um instante com os braços estendidos, sem girar',
+        'Volte as mãos ao peito com controle e depois troque o lado',
+      ],
+      commonError: 'Deixar o tronco girar em direção à polia',
+      context: 'Trabalha o core contra a rotação',
+    },
+    muscles: { primary: ['core'], secondary: ['ombro'] },
     cues: [
       'De lado para a polia, cabo segurado com as duas mãos à altura do peito',
       'Estenda os braços à frente resistindo à rotação que o cabo tenta causar',
@@ -1807,6 +1873,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'core',
+    guidance: {
+      setup: ['Prancha alta: mãos sob os ombros, pés um pouco afastados'],
+      steps: [
+        'Tire uma mão do chão e toque o ombro oposto',
+        'Volte a mão ao chão e repita com a outra',
+        'Mantenha o quadril parado durante os toques',
+      ],
+      commonError: 'Balançar o quadril de um lado para o outro a cada toque',
+      context: 'Diminua o ritmo se o quadril começar a girar',
+    },
+    muscles: { primary: ['core'], secondary: ['ombro', 'triceps'] },
     cues: [
       'Posição de prancha alta, mãos abaixo dos ombros',
       'Toque o ombro oposto com uma mão, alternando os lados',
@@ -2430,6 +2507,16 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'peso-corporal',
     gear: 'peso-corporal',
     pattern: 'core',
+    guidance: {
+      setup: ['Deitado de costas, lombar encostada no chão'],
+      steps: [
+        'Tire ombros e pernas estendidas do chão, braços estendidos acima da cabeça',
+        'Sustente a posição respirando, sem descolar a lombar',
+        'Dobre os joelhos se a lombar começar a sair do chão',
+      ],
+      commonError: 'Deixar a lombar descolar do chão',
+    },
+    muscles: { primary: ['core'], secondary: [] },
     cues: [
       'Deitado de costas, lombar colada no chão',
       'Eleve ombros e pernas estendidas alguns centímetros do chão, braços acima da cabeça',
@@ -2483,6 +2570,17 @@ const RAW_ENTRIES: RawEntry[] = [
     equipment: 'barra',
     gear: 'barra',
     pattern: 'core',
+    guidance: {
+      setup: ['Ajoelhado, mãos na barra com anilhas redondas à frente dos joelhos'],
+      steps: [
+        'Role a barra à frente até onde conseguir manter a lombar neutra',
+        'Mantenha os braços estendidos e o abdômen contraído',
+        'Volte puxando com o abdômen até a barra ficar sob os ombros',
+      ],
+      commonError: 'Deixar o quadril cair e arquear a lombar',
+      context: 'Substitui a roda abdominal quando ela não está disponível',
+    },
+    muscles: { primary: ['core'], secondary: ['dorsal', 'ombro'] },
     cues: [
       'Ajoelhado, mãos na barra com anilhas redondas à frente dos joelhos',
       'Role a barra para frente até onde conseguir manter a lombar neutra',
