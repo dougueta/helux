@@ -25,7 +25,8 @@ import { buildMesocycleSchema, rawToPlanned, type RawMesocycleOutput } from './a
 import { validateAgainstMethod } from './agents/method-validation'
 import { AGENT_MODEL, AgentRefusalError, anthropic, FALLBACK_PARAMS, messageText, usagesFromMessage } from './agents/client'
 
-const NEUTRAL_GENETICS: GeneticProfile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] }
+/** Perfil neutro, usado quando a pessoa não tem genética ativa. */
+export const NEUTRAL_GENETICS: GeneticProfile = { metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'baixo', predisposicao: 'misto', alertas: [] }
 
 /** As restrições rígidas não foram atendidas nem na nova tentativa (R7). */
 export class ConstraintsUnsatisfiableError extends Error {

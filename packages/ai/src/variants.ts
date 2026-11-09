@@ -1,4 +1,5 @@
 import type { GeneticProfile, Variant } from '@helux/types'
+import { isCoherentVariant } from '@helux/exercises'
 import { EXERCISE_BANK, type ExerciseBankEntry, type Joint } from './exercise-bank'
 import { resolveMotion } from './motions'
 
@@ -175,7 +176,8 @@ export function buildVariants(exerciseName: string, geneticProfile: GeneticProfi
   const seenEquipment = new Set<Equipment>([bankEntry.equipment])
   const uniqueCandidates: ExerciseBankEntry[] = []
   for (const entry of EXERCISE_BANK) {
-    if (entry.pattern !== bankEntry.pattern) continue
+    // 028 (FR-012, FR-013): só variantes do mesmo padrão e da mesma função muscular; sem candidato coerente, a lista fica menor.
+    if (!isCoherentVariant(bankEntry, entry)) continue
     if (seenEquipment.has(entry.equipment)) continue
     seenEquipment.add(entry.equipment)
     uniqueCandidates.push(entry)
