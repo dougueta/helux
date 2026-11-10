@@ -253,3 +253,26 @@ Itens novos do catálogo de preparação. `knownNames` fica para a T084.
 Implemento novo: `bastao`, desenhado encostado nas costas, do quadril até acima da cabeça.
 
 Demonstração: ponte de glúteo, flexão inclinada e afundo usam as bases de força já aprovadas, sem implemento. O agachamento no banco tem base própria, com os braços à frente. O agachamento cossaco é visto de frente, sem espelhar, e passa de um lado ao outro em ciclo. O quadril 90/90 e o sapo são vistos de perfil: a perna que aponta para quem vê aparece curta, e a legenda explica a posição. No tornozelo, o joelho da frente avança até perto da parede com o calcanhar no chão. Na dorsiflexão do hálux, ajoelhado com os dedos dobrados, o quadril desce até os calcanhares; o detalhe dos dedos é pequeno no desenho, e a legenda explica.
+
+## Lote P3: Mobilidade de coluna e joelho e relaxamento (T081)
+
+Itens novos do catálogo de preparação. `knownNames` fica para a T084.
+
+| id | fases | regiões | modo | equipamento |
+|:---|:---|:---|:---|:---|
+| rotacao-toracica-quatro-apoios | mobilidade, aquecimento | ombro, lombar | por lado | nenhum |
+| rotacao-toracica-deitado-lado | mobilidade, volta à calma | ombro, lombar | por lado | nenhum |
+| mobilidade-toracica-rolo | mobilidade, aquecimento | ombro, lombar | repetições | rolo |
+| gato-camelo | mobilidade, aquecimento | lombar | repetições | nenhum |
+| bascula-pelvica | mobilidade, volta à calma | lombar, quadril | repetições | nenhum |
+| balanco-quatro-apoios | mobilidade, aquecimento | quadril, lombar | repetições | nenhum |
+| deslizamento-calcanhar | mobilidade | joelho | por lado | nenhum |
+| extensao-joelho-toalha | mobilidade | joelho | por lado | toalha |
+| extensao-terminal-joelho-elastico | aquecimento, mobilidade | joelho | por lado | elástico |
+| respiracao-diafragmatica | volta à calma | sistêmica, lombar | contínuo | nenhum |
+
+A coluna torácica não é uma região de `REGIONS`; os itens torácicos usam ombro e lombar.
+
+Implementos novos: `rolo` (rolo de espuma) e `toalha` (toalha enrolada). Os dois ficam parados no ponto de apoio (`anchor`), sob o corpo. Como estão em `needs`, a geração de planos (T087) precisa decidir se toalha conta como equipamento; até lá, o joelho tem itens sem equipamento suficientes.
+
+Demonstração: os itens em quatro apoios compartilham a mesma posição (mão sob o ombro, joelho sob o quadril). Na rotação torácica em quatro apoios, o braço livre aparece encurtado, com a mão na nuca, e o cotovelo vai de baixo até o teto; a legenda explica. O traço do tronco é reto, então no gato-camelo a curva das costas aparece pela cabeça, que desce e sobe; a legenda explica. A rotação deitado de lado é vista a partir da cabeça, para o braço abrir no plano do desenho sem mudar de comprimento: é o desenho mais abstrato do lote, e a legenda explica. No rolo, o quadril fica no chão e o tronco desce até encostar no rolo, com a cabeça indo para trás. A báscula pélvica é um movimento pequeno: o quadril sobe poucos milímetros, e a legenda diz que ele não sai do chão. Na extensão de joelho, a toalha fica sob o joelho e o calcanhar sobe quando a perna estende. Na extensão terminal, o elástico vai da parede até o joelho. Na respiração, só a mão da barriga sobe.

@@ -22,11 +22,14 @@ export type Gear =
   | 'remo'
   /** bastão de mobilidade (cabo de vassoura, PVC) */
   | 'bastao'
+  /** rolo de espuma e toalha enrolada: ficam parados sob o corpo */
+  | 'rolo'
+  | 'toalha'
   | 'nenhum'
 
 export const GEARS: readonly Gear[] = [
   'barra', 'halteres', 'kettlebell', 'maquina', 'smith', 'cabo', 'corda',
-  'peso-corporal', 'elastico', 'roda', 'banco', 'barra-fixa', 'bicicleta', 'remo', 'bastao', 'nenhum',
+  'peso-corporal', 'elastico', 'roda', 'banco', 'barra-fixa', 'bicicleta', 'remo', 'bastao', 'rolo', 'toalha', 'nenhum',
 ]
 
 /** Implementos que não carregam peso: nada é desenhado na mão. */
