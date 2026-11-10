@@ -231,3 +231,25 @@ Itens novos do catálogo de preparação: nascem completos e nunca entram em `pe
 Implementos novos: `bicicleta` (sem carga; a cena desenha quadro, selim, guidão e pedal) e `remo` (puxador e corrente até o volante). Cenas novas: `bicicleta` e `remo`.
 
 Demonstração: bicicleta e remo em modo `cycle`; na bicicleta os pés dão a volta no pedal, um do lado oposto ao outro. Marcha no lugar alterna as pernas. Polichinelo e deslizamento na parede são vistos de frente; no polichinelo os joelhos ficam soltos, porque o quadril é o apoio fixo da figura. A rotação externa é mostrada na posição 90/90, de perfil: o braço aponta para quem vê e aparece curto, e o antebraço gira da horizontal para cima; a legenda explica. Na passagem de ombro, sem ponto de fixação, o elástico aparece só nas mãos. A suspensão ativa mantém os braços estendidos; a diferença entre solto e ativo é pequena no desenho, e a legenda e a orientação descrevem os ombros descendo.
+
+## Lote P2: Ativação inferior e mobilidade de quadril e tornozelo (T080)
+
+Itens novos do catálogo de preparação. `knownNames` fica para a T084.
+
+| id | fases | regiões | modo | equipamento |
+|:---|:---|:---|:---|:---|
+| ponte-gluteo | aquecimento | quadril, lombar | repetições | nenhum |
+| flexao-inclinada-leve | aquecimento | ombro | repetições | banco |
+| afundo-sem-carga | aquecimento | joelho, quadril | por lado | nenhum |
+| agachamento-banco-sem-carga | aquecimento | joelho, quadril | repetições | banco |
+| dobradica-quadril-bastao | aquecimento | lombar, quadril | repetições | bastão |
+| quadril-90-90 | mobilidade, aquecimento | quadril | por lado | nenhum |
+| abertura-quadril-sapo | mobilidade, volta à calma | quadril | repetições | nenhum |
+| agachamento-profundo-pausa | mobilidade, aquecimento | quadril, tornozelo, joelho | sustentação | nenhum |
+| agachamento-cossaco | mobilidade, aquecimento | quadril, joelho | por lado | nenhum |
+| tornozelo-joelho-parede | mobilidade, aquecimento | tornozelo | por lado | nenhum |
+| dorsiflexao-halux | mobilidade | tornozelo | sustentação | nenhum |
+
+Implemento novo: `bastao`, desenhado encostado nas costas, do quadril até acima da cabeça.
+
+Demonstração: ponte de glúteo, flexão inclinada e afundo usam as bases de força já aprovadas, sem implemento. O agachamento no banco tem base própria, com os braços à frente. O agachamento cossaco é visto de frente, sem espelhar, e passa de um lado ao outro em ciclo. O quadril 90/90 e o sapo são vistos de perfil: a perna que aponta para quem vê aparece curta, e a legenda explica a posição. No tornozelo, o joelho da frente avança até perto da parede com o calcanhar no chão. Na dorsiflexão do hálux, ajoelhado com os dedos dobrados, o quadril desce até os calcanhares; o detalhe dos dedos é pequeno no desenho, e a legenda explica.

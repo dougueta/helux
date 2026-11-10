@@ -23,6 +23,7 @@ export const GEAR_LABEL: Record<Gear, string | null> = {
   'barra-fixa': 'Barra fixa',
   bicicleta: 'Bicicleta',
   remo: 'Remo ergômetro',
+  bastao: 'Bastão',
   nenhum: null,
 }
 

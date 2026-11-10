@@ -144,4 +144,15 @@ describe('lotes de preparação: demonstração, base válida e orientação com
       if (!['nenhum', 'peso-corporal'].includes(spec.gear)) expect(item!.needs, id).toContain(spec.gear)
     }
   })
+
+  it('lote P2, Ativação inferior e mobilidade de quadril e tornozelo (T080)', async () => {
+    const { PREPARACAO_QUADRIL } = await import('../demos/preparacao-quadril')
+    const { PREPARATION_ITEMS } = await import('../preparation')
+    await expectBatchComplete(PREPARACAO_QUADRIL, 11)
+    for (const [id, spec] of Object.entries(PREPARACAO_QUADRIL.demos)) {
+      const item = PREPARATION_ITEMS.find((p) => p.id === id)
+      expect(item, id).toBeDefined()
+      if (!['nenhum', 'peso-corporal'].includes(spec.gear)) expect(item!.needs, id).toContain(spec.gear)
+    }
+  })
 })

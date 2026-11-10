@@ -312,6 +312,30 @@ export function DemoImplement({ demo, pose }: { demo: ResolvedDemo; pose: Pose }
   const at = pose[demo.implementAt] ?? pose.ha
   const anchor = demo.anchor ?? G.DEFAULT_ANCHOR
 
+  // Bastão encostado nas costas: do quadril até acima da cabeça, um pouco atrás do tronco.
+  if (demo.gear === 'bastao') {
+    const dx = pose.head[0] - pose.hip[0]
+    const dy = pose.head[1] - pose.hip[1]
+    const L = Math.hypot(dx, dy) || 1
+    const ux = dx / L
+    const uy = dy / L
+    // atrás do tronco: perpendicular para o lado oposto ao que a figura olha
+    const bx = uy * 16
+    const by = -ux * 16
+    return (
+      <line
+        data-dowel
+        x1={pose.hip[0] - ux * 14 + bx}
+        y1={pose.hip[1] - uy * 14 + by}
+        x2={pose.head[0] + ux * 12 + bx}
+        y2={pose.head[1] + uy * 12 + by}
+        stroke={ACC}
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+    )
+  }
+
   if (demo.mirror && demo.gear === 'barra') {
     const other = mir(at)
     return (
