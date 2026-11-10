@@ -17,15 +17,20 @@ export type Gear =
   | 'roda'
   | 'banco'
   | 'barra-fixa'
+  /** preparação (028 US6): bicicleta ergométrica e remo ergômetro */
+  | 'bicicleta'
+  | 'remo'
+  /** bastão de mobilidade (cabo de vassoura, PVC) */
+  | 'bastao'
   | 'nenhum'
 
 export const GEARS: readonly Gear[] = [
   'barra', 'halteres', 'kettlebell', 'maquina', 'smith', 'cabo', 'corda',
-  'peso-corporal', 'elastico', 'roda', 'banco', 'barra-fixa', 'nenhum',
+  'peso-corporal', 'elastico', 'roda', 'banco', 'barra-fixa', 'bicicleta', 'remo', 'bastao', 'nenhum',
 ]
 
 /** Implementos que não carregam peso: nada é desenhado na mão. */
-export const UNLOADED_GEAR: readonly Gear[] = ['peso-corporal', 'banco', 'barra-fixa', 'nenhum']
+export const UNLOADED_GEAR: readonly Gear[] = ['peso-corporal', 'banco', 'barra-fixa', 'bicicleta', 'nenhum']
 
 export type MuscleKey =
   | 'peito'

@@ -45,6 +45,12 @@ export const DECLINE_BENCH = { back: [[40, 196], [142, 170]] as [Point, Point], 
 /** Banco Scott: assento de `seat.x0` a `seat.x1` em `seat.top`; apoio dos braços inclinado de `pad[0]` (alto) a `pad[1]`. */
 export const SCOTT_BENCH = { seat: { x0: 50, x1: 100, top: 184 }, pad: [[84, 132], [114, 162]] as [Point, Point] } as const
 
+/** Bicicleta ergométrica de perfil: selim em `seat`, guidão em `bar`, eixo do pedal em `crank` com raio `crankR`. */
+export const BIKE = { seat: [86, 140] as Point, bar: [156, 108] as Point, crank: [114, 200] as Point, crankR: 12 } as const
+
+/** Remo ergômetro: trilho do selim em `railY` de `x0` a `x1`, apoio dos pés em `foot`, volante em `flywheel`. */
+export const ROWER = { railY: 222, x0: 24, x1: 176, foot: [166, 212] as Point, flywheel: [194, 202] as Point, flywheelR: 15 } as const
+
 /** Colchonete sobre o solo. */
 export const MAT = { x0: 18, x1: 202, top: 235 } as const
 

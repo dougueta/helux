@@ -131,3 +131,28 @@ describe('lotes de força: demonstração, base válida, equipamento e orientaç
     await expectBatchComplete(ISOLAMENTO_PERNAS, 10)
   })
 })
+
+describe('lotes de preparação: demonstração, base válida e orientação completas', () => {
+  it('lote P1, Aquecimento geral e ativação de membros superiores (T079)', async () => {
+    const { PREPARACAO_ATIVACAO } = await import('../demos/preparacao-ativacao')
+    const { PREPARATION_ITEMS } = await import('../preparation')
+    await expectBatchComplete(PREPARACAO_ATIVACAO, 11)
+    // todo item da família está no catálogo de preparação, e o implemento da demonstração está em `needs`
+    for (const [id, spec] of Object.entries(PREPARACAO_ATIVACAO.demos)) {
+      const item = PREPARATION_ITEMS.find((p) => p.id === id)
+      expect(item, id).toBeDefined()
+      if (!['nenhum', 'peso-corporal'].includes(spec.gear)) expect(item!.needs, id).toContain(spec.gear)
+    }
+  })
+
+  it('lote P2, Ativação inferior e mobilidade de quadril e tornozelo (T080)', async () => {
+    const { PREPARACAO_QUADRIL } = await import('../demos/preparacao-quadril')
+    const { PREPARATION_ITEMS } = await import('../preparation')
+    await expectBatchComplete(PREPARACAO_QUADRIL, 11)
+    for (const [id, spec] of Object.entries(PREPARACAO_QUADRIL.demos)) {
+      const item = PREPARATION_ITEMS.find((p) => p.id === id)
+      expect(item, id).toBeDefined()
+      if (!['nenhum', 'peso-corporal'].includes(spec.gear)) expect(item!.needs, id).toContain(spec.gear)
+    }
+  })
+})

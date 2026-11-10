@@ -64,6 +64,8 @@ export type Scene =
   | 'banco-romano'
   | 'banco-declinado'
   | 'banco-scott'
+  | 'bicicleta'
+  | 'remo'
 
 export interface DemoSpec {
   /** MovementBase.key */
