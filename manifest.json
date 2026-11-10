@@ -1,0 +1,18 @@
+[
+  {
+    "id": "bascula-pelvica",
+    "name": "Báscula pélvica"
+  },
+  {
+    "id": "extensao-joelho-toalha",
+    "name": "Extensão de joelho com toalha"
+  },
+  {
+    "id": "extensao-terminal-joelho-elastico",
+    "name": "Extensão terminal de joelho com elástico"
+  },
+  {
+    "id": "respiracao-diafragmatica",
+    "name": "Respiração diafragmática"
+  }
+]
