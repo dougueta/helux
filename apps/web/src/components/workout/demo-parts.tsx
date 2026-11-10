@@ -316,7 +316,7 @@ export function DemoImplement({ demo, pose }: { demo: ResolvedDemo; pose: Pose }
   if (demo.gear === 'rolo' || demo.gear === 'toalha') {
     const c = demo.anchor ?? at
     if (demo.gear === 'rolo') return <circle data-roller cx={c[0]} cy={c[1]} r={10} fill="none" stroke={ACC} strokeWidth="4" />
-    return <rect data-towel x={c[0] - 9} y={c[1] - 5} width={18} height={10} rx={5} fill={ACC} />
+    return <rect data-towel x={c[0] - 10} y={c[1] - 7} width={20} height={14} rx={7} fill={ACC} />
   }
 
   // Bastão encostado nas costas: do quadril até acima da cabeça, um pouco atrás do tronco.

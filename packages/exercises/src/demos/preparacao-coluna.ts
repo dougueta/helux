@@ -96,14 +96,14 @@ const bentLeg = (hip: Point) => {
 const armsDown = (sh: Point) => ({ el: [sh[0] - BODY.upperArm, MAT_Y] as Point, ha: [sh[0] - ARM, MAT_Y] as Point })
 
 /**
- * Báscula pélvica: movimento pequeno. O ombro fica parado e o quadril gira, subindo poucos milímetros
- * enquanto a lombar encosta no colchonete.
+ * Báscula pélvica: o ombro fica parado e o quadril gira; a lombar encosta no colchonete e o quadril
+ * sobe só um pouco, bem menos que numa ponte.
  */
 function pelvicTilt(lift: number): Pose {
   const hip = polar(SUP_SH, BODY.torso, 180 - lift)
   return r({ head: SUP_HEAD, sh: SUP_SH, ...armsDown(SUP_SH), hip, ...bentLeg(hip) })
 }
-const PELVIC_TILT = base('bascula-pelvica', 'reps', 'foot', ['an', 'toe', 'sh', 'head', 'el', 'ha'], spread([pelvicTilt(0), pelvicTilt(4)]), 3000)
+const PELVIC_TILT = base('bascula-pelvica', 'reps', 'foot', ['an', 'toe', 'sh', 'head', 'el', 'ha'], spread([pelvicTilt(0), pelvicTilt(9)]), 3000)
 
 /** Deslizamento de calcanhar: o calcanhar desliza no colchonete até perto do glúteo; a outra perna fica estendida. */
 const straightLeg = (hip: Point) => {
@@ -133,9 +133,9 @@ const HEEL_SLIDE = base(
  * Extensão de joelho com toalha: a toalha enrolada fica sob o joelho; a coxa contrai, o joelho desce contra a
  * toalha e o calcanhar sobe. A outra perna fica dobrada.
  */
-const TOWEL_THIGH_UP = 195
+const TOWEL_THIGH_UP = 201
 const TOWEL_KN = polar(SUP_HIP, BODY.thigh, TOWEL_THIGH_UP)
-const TOWEL_AT: Point = round([TOWEL_KN[0], MAT.top - 5])
+const TOWEL_AT: Point = round([TOWEL_KN[0], MAT.top - 7])
 function towelPress(thighDeg: number, shinDeg: number): Pose {
   const kn = polar(SUP_HIP, BODY.thigh, thighDeg)
   const an = polar(kn, BODY.shin, shinDeg)
@@ -151,7 +151,7 @@ const KNEE_TOWEL = base(
   'reps',
   'hip',
   ['hip', 'sh', 'head', 'el', 'ha', 'kn2', 'an2', 'toe2'],
-  spread([towelPress(TOWEL_THIGH_UP, TOWEL_REST_SHIN), towelPress(190, 190)]),
+  spread([towelPress(TOWEL_THIGH_UP, TOWEL_REST_SHIN), towelPress(193, 193)]),
   3200,
 )
 
@@ -171,7 +171,7 @@ function breath(rise: number): Pose {
     hip: SUP_HIP, ...bent,
   })
 }
-const BREATHING = base('respiracao-diafragmatica', 'reps', 'hip', ['hip', 'sh', 'head', 'kn', 'an', 'toe', 'el2', 'ha2'], spread([breath(0), breath(6)]), 6000)
+const BREATHING = base('respiracao-diafragmatica', 'reps', 'hip', ['hip', 'sh', 'head', 'kn', 'an', 'toe', 'el2', 'ha2'], spread([breath(0), breath(13)]), 6000)
 
 /* ---------------------------------------------------------------- rolo sob as costas */
 
@@ -234,7 +234,7 @@ const TKE = base(
   'foot',
   ['an', 'toe'],
   spread([
-    balanced({ an: TKE_AN, shinDeg: -74, thighDeg: -104 }, hangArms, (p) => p.sh, MIDFOOT(TKE_AN)),
+    balanced({ an: TKE_AN, shinDeg: -66, thighDeg: -114 }, hangArms, (p) => p.sh, MIDFOOT(TKE_AN)),
     balanced({ an: TKE_AN, shinDeg: -88, thighDeg: -92 }, hangArms, (p) => p.sh, MIDFOOT(TKE_AN)),
   ]),
   2600,
@@ -258,7 +258,7 @@ export const PREPARACAO_COLUNA: DemoFamily = {
     },
     'bascula-pelvica': {
       base: 'bascula-pelvica', gear: 'nenhum', scene: 'colchonete', implementAt: 'hip',
-      caption: 'Movimento pequeno: o quadril gira e a lombar encosta no colchonete',
+      caption: 'O quadril gira e sobe só um pouco, e a lombar encosta no colchonete',
     },
     'balanco-quatro-apoios': { base: 'balanco-quatro-apoios', gear: 'nenhum', scene: 'colchonete', implementAt: 'hip' },
     'deslizamento-calcanhar': { base: 'deslizamento-calcanhar', gear: 'nenhum', scene: 'colchonete', implementAt: 'an' },
