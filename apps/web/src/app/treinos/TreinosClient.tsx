@@ -199,7 +199,7 @@ export function TreinosClient({
                 title="Treinos recentes"
                 action={
                   <Link href="/history" className="t-secondary" style={{ color: 'var(--text)' }}>
-                    Ver histórico
+                    Ver calendário e histórico
                   </Link>
                 }
               />

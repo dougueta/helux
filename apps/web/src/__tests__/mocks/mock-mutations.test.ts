@@ -143,6 +143,21 @@ describe('escritas do modo mock (021 T014)', () => {
     expect(afterDelete.completedToday).not.toContain('cardio')
   })
 
+  it('031: calendário de treino no modo mock (GET /api/workouts/calendar) reflete treinos, rotinas e pesagens', async () => {
+    const { router } = runtime()
+    const currentMonth = today().slice(0, 7)
+    const cal = (await router.dispatch(`/api/workouts/calendar?month=${currentMonth}`)) as {
+      month: string
+      weeks: { weekStart: string; days: { date: string; hasGymWorkout: boolean }[] }[]
+      weeklyBalances: Record<string, { tonnageKg: number }>
+      monthCuriosities: { id: string }[]
+    }
+    expect(cal.month).toBe(currentMonth)
+    expect(cal.weeks.length).toBeGreaterThanOrEqual(4)
+    expect(cal.monthCuriosities.length).toBeGreaterThan(0)
+    await expect(router.dispatch('/api/workouts/calendar?month=2099-01')).rejects.toThrow('future-month')
+  })
+
   it('reset desfaz as escritas', async () => {
     const { router, store } = runtime()
     await router.dispatch('/api/profile', post({ goal: 'mudou' }))
