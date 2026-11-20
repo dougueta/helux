@@ -175,7 +175,8 @@ describe('lotes de preparação: demonstração, base válida e orientação com
   it('lote P3, Mobilidade de coluna e joelho e relaxamento (T081)', async () => {
     const { PREPARACAO_COLUNA } = await import('../demos/preparacao-coluna')
     const { PREPARATION_ITEMS } = await import('../preparation')
-    await expectBatchComplete(PREPARACAO_COLUNA, 10)
+    // 10 do lote P3 e a mobilidade de punho da T084, que reaproveita os quatro apoios
+    await expectBatchComplete(PREPARACAO_COLUNA, 11)
     for (const [id, spec] of Object.entries(PREPARACAO_COLUNA.demos)) {
       const item = PREPARATION_ITEMS.find((p) => p.id === id)
       expect(item, id).toBeDefined()

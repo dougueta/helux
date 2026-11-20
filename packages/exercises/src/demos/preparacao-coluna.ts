@@ -78,6 +78,18 @@ function rockBack(thighDeg: number): Pose {
   const el = polar(sh, BODY.upperArm, heading(sh, QP_HA))
   return r({ head: polar(sh, BODY.neck, heading(hip, sh) + 8), sh, el, ha: QP_HA, hip, kn: QP_KN, an: QP_AN, toe: QP_TOE })
 }
+/**
+ * Mobilidade de punho em quatro apoios (T084, cobertura de punho): mãos e joelhos parados; os ombros passam à frente
+ * das mãos com os braços estendidos, dobrando o punho para trás. O desenho não tem punho: a legenda explica.
+ */
+function wristRock(leanDeg: number): Pose {
+  const sh = polar(QP_HA, ARM, -90 + leanDeg)
+  const hip = twoBone(QP_KN, BODY.thigh, sh, BODY.torso, 'above')
+  const el = polar(QP_HA, BODY.forearm, -90 + leanDeg)
+  return r({ head: polar(sh, BODY.neck, heading(hip, sh) + 8), sh, el, ha: QP_HA, hip, kn: QP_KN, an: QP_AN, toe: QP_TOE })
+}
+const WRIST_ROCK = base('mobilidade-punho-quatro-apoios', 'reps', 'hand', ['ha', 'kn', 'an', 'toe'], spread([wristRock(0), wristRock(24)]), 3000)
+
 const ROCK_BACK = base('balanco-quatro-apoios', 'reps', 'hand', ['ha', 'kn', 'an', 'toe'], spread([rockBack(-90), rockBack(-122), rockBack(-150)]), 3200)
 
 /* ---------------------------------------------------------------- deitado de costas, cabeça à direita */
@@ -241,7 +253,7 @@ const TKE = base(
 )
 
 export const PREPARACAO_COLUNA: DemoFamily = {
-  bases: [THORACIC_QUAD, CAT_COW, ROCK_BACK, PELVIC_TILT, HEEL_SLIDE, KNEE_TOWEL, BREATHING, ROLLER, OPEN_BOOK, TKE],
+  bases: [THORACIC_QUAD, CAT_COW, ROCK_BACK, WRIST_ROCK, PELVIC_TILT, HEEL_SLIDE, KNEE_TOWEL, BREATHING, ROLLER, OPEN_BOOK, TKE],
   demos: {
     'rotacao-toracica-quatro-apoios': {
       base: 'rotacao-toracica-quatro-apoios', gear: 'nenhum', scene: 'colchonete', implementAt: 'sh',
@@ -261,6 +273,10 @@ export const PREPARACAO_COLUNA: DemoFamily = {
       caption: 'O quadril gira e sobe só um pouco, e a lombar encosta no colchonete',
     },
     'balanco-quatro-apoios': { base: 'balanco-quatro-apoios', gear: 'nenhum', scene: 'colchonete', implementAt: 'hip' },
+    'mobilidade-punho-quatro-apoios': {
+      base: 'mobilidade-punho-quatro-apoios', gear: 'nenhum', scene: 'colchonete', implementAt: 'sh',
+      caption: 'O punho não aparece no desenho: as palmas ficam no chão e os ombros passam à frente das mãos',
+    },
     'deslizamento-calcanhar': { base: 'deslizamento-calcanhar', gear: 'nenhum', scene: 'colchonete', implementAt: 'an' },
     'extensao-joelho-toalha': { base: 'extensao-joelho-toalha', gear: 'toalha', scene: 'colchonete', implementAt: 'kn', anchor: TOWEL_AT },
     'extensao-terminal-joelho-elastico': {

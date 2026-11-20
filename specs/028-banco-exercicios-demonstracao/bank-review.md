@@ -320,3 +320,13 @@ Com o pedido do dono no P4 (quem nunca treinou precisa entender de relance), o l
 Implemento novo: `faixa`, uma linha das mãos até o meio do pé. Serve uma toalha ou um cinto. Como está em `needs`, a T087 decide se a faixa conta como equipamento, como a toalha do P3.
 
 Demonstração: o quadríceps deitado de lado é visto de cima, porque de perfil o joelho dobra para dentro do desenho. A perna de cima fica um pouco afastada da de baixo, para o joelho dobrado aparecer, e a legenda explica. Na figura 4, a perna cruzada aponta para quem vê e por isso aparece mais curta; o joelho dela cai para fora, formando o "4". Esses dois são os desenhos mais abstratos do lote. No quadríceps em pé, a coxa vai um pouco para trás, para o pé aparecer atrás do corpo.
+
+## T084: cobertura por região e nomes antigos
+
+**Invariante 6.** Cada região de `REGIONS` precisa de ao menos 2 itens de preparação, com ao menos 1 sem equipamento. Depois dos lotes P1 a P5, só punho ficava com 1 item (alongamento de antebraço). Entrou `mobilidade-punho-quatro-apoios` (mobilidade e aquecimento, sem equipamento, modo repetições): em quatro apoios, os ombros passam à frente das mãos com as palmas no chão. A demonstração reaproveita os quatro apoios do lote P3 (`demos/preparacao-coluna.ts`); o desenho não tem punho, e a legenda explica.
+
+**Invariante 8.** Os 109 nomes de `legacy-item-names.json` resolvem ou estão em `__tests__/fixtures/legacy-unresolved.json`, com o motivo. O teste também falha se a lista documentada esconder um nome que resolve. A correspondência continua só por nome exato normalizado (R10), sem busca aproximada:
+
+- 49 nomes entraram em `knownNames` de 31 itens: só quando o nome descreve o mesmo exercício (por exemplo "Bike em ritmo leve", "Mobilidade de tornozelo: joelho à parede", "Alongamento de peitoral no batente").
+- 8 nomes de séries de aproximação de um único exercício de força entraram na lista curada `src/approach-names.ts` (leg press, agachamento box, frontal, com barra vazia, levantamento terra, goblet). O resolvedor mostra o exercício de força marcado como aproximação (passo 6 de "Resolução de um item na tela").
+- 27 nomes ficam documentados: juntam dois ou mais itens ("Polichinelo leve ou marcha no lugar"), servem para mais de um exercício de força ("Séries de aproximação no supino"), ou não têm equivalente ("Alongamento de posterior de coxa sentado"). Esses mostram o aviso de indisponibilidade (FR-031).

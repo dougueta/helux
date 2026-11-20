@@ -12,7 +12,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['sistemica', 'joelho', 'quadril'],
     mode: 'continuo',
     needs: ['bicicleta'],
-    knownNames: [],
+    knownNames: ['Bike em ritmo leve'],
     guidance: {
       setup: ['Selim na altura do quadril em pé: embaixo, o joelho fica quase estendido'],
       steps: ['Pedale num ritmo em que dá para conversar', 'Aumente a cadência aos poucos nos últimos minutos'],
@@ -28,7 +28,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['sistemica', 'lombar'],
     mode: 'continuo',
     needs: ['remo'],
-    knownNames: [],
+    knownNames: ['Remo ergômetro leve'],
     guidance: {
       setup: ['Pés presos no apoio, braços estendidos segurando o puxador, joelhos dobrados'],
       steps: [
@@ -48,7 +48,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['sistemica', 'quadril'],
     mode: 'continuo',
     needs: [],
-    knownNames: [],
+    knownNames: ['Marcha no lugar com elevação de joelhos'],
     guidance: {
       setup: ['Em pé, tronco ereto, braços soltos ao lado do corpo'],
       steps: ['Suba um joelho até a altura do quadril, com o braço oposto à frente', 'Alterne as pernas num ritmo constante'],
@@ -80,7 +80,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['quadril'],
     mode: 'por-lado',
     needs: [],
-    knownNames: [],
+    knownNames: ['Balanço de perna frontal e lateral'],
     guidance: {
       setup: ['Em pé sobre uma perna, com a mão numa parede ou apoio para equilibrar'],
       steps: ['Balance a perna livre para a frente e para trás, sem forçar', 'Aumente a amplitude aos poucos e depois troque de perna'],
@@ -96,7 +96,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['ombro'],
     mode: 'reps',
     needs: [],
-    knownNames: [],
+    knownNames: ['Círculos de ombro e braços'],
     guidance: {
       setup: ['Em pé, braços estendidos ao lado do corpo'],
       steps: ['Gire os braços em círculos para a frente, de menor para maior', 'Depois faça o mesmo para trás'],
@@ -126,7 +126,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['ombro'],
     mode: 'por-lado',
     needs: ['elastico'],
-    knownNames: [],
+    knownNames: ['Rotação externa de ombro com elástico'],
     guidance: {
       setup: ['Elástico preso à frente, cotovelo dobrado a 90 graus na altura do ombro'],
       steps: ['Gire o antebraço para cima até apontar para o teto', 'Volte devagar até o antebraço ficar na horizontal'],
@@ -142,7 +142,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['ombro'],
     mode: 'reps',
     needs: ['elastico'],
-    knownNames: [],
+    knownNames: ['Mobilidade de ombro com elástico (rotações e passagens)'],
     guidance: {
       setup: ['Em pé, elástico seguro à frente das coxas, mãos bem afastadas'],
       steps: ['Com os braços estendidos, leve o elástico por cima da cabeça até atrás do quadril', 'Volte pelo mesmo caminho'],
@@ -174,7 +174,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['ombro'],
     mode: 'sustentacao',
     needs: ['barra-fixa'],
-    knownNames: [],
+    knownNames: ['Suspensão ativa na barra (escápulas para baixo)'],
     guidance: {
       setup: ['Pendurado na barra, mãos na largura dos ombros, braços estendidos'],
       steps: ['Desça os ombros, afastando-os das orelhas, sem dobrar os cotovelos', 'Mantenha a posição respirando normalmente'],
@@ -190,7 +190,10 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['quadril', 'lombar'],
     mode: 'reps',
     needs: [],
-    knownNames: [],
+    knownNames: [
+      'Ponte de glúteo no chão',
+      'Ponte de glúteo sem carga',
+    ],
     guidance: {
       setup: ['Deitado de costas, joelhos dobrados, pés no chão na largura do quadril'],
       steps: ['Suba o quadril contraindo o glúteo até alinhar ombros, quadril e joelhos', 'Desça devagar sem encostar todo o peso no chão'],
@@ -205,7 +208,10 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['ombro'],
     mode: 'reps',
     needs: ['banco'],
-    knownNames: [],
+    knownNames: [
+      'Flexão de braço inclinada leve',
+      'Flexão inclinada de aproximação',
+    ],
     guidance: {
       setup: ['Mãos num banco ou apoio alto, na largura dos ombros, corpo reto dos pés à cabeça'],
       steps: ['Desça o peito em direção ao apoio, cotovelos a uns 45 graus do corpo', 'Empurre de volta sem deixar o quadril cair'],
@@ -221,7 +227,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['joelho', 'quadril'],
     mode: 'por-lado',
     needs: [],
-    knownNames: [],
+    knownNames: ['Afundo de aproximação sem carga'],
     guidance: {
       setup: ['Em pé, um pé à frente e o outro atrás, tronco ereto'],
       steps: ['Desça até o joelho de trás quase tocar o chão', 'Suba empurrando o chão com o pé da frente'],
@@ -236,7 +242,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['joelho', 'quadril'],
     mode: 'reps',
     needs: ['banco'],
-    knownNames: [],
+    knownNames: ['Agachamento no banco sem carga como aproximação'],
     guidance: {
       setup: ['Em pé de costas para um banco, pés na largura dos ombros, braços à frente'],
       steps: ['Leve o quadril para trás e desça até tocar o banco de leve', 'Suba sem embalo, empurrando o chão com os pés'],
@@ -269,7 +275,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['quadril'],
     mode: 'por-lado',
     needs: [],
-    knownNames: [],
+    knownNames: ['Mobilidade de quadril 90/90'],
     guidance: {
       setup: ['Sentado no chão, perna da frente dobrada a 90 graus à frente e a de trás a 90 graus para o lado'],
       steps: ['Com o tronco reto, incline-se sobre a canela da frente até sentir o quadril', 'Volte e troque de lado girando os joelhos'],
@@ -284,7 +290,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['quadril'],
     mode: 'reps',
     needs: [],
-    knownNames: [],
+    knownNames: ['Abertura de quadril em posição de sapo'],
     guidance: {
       setup: ['Em quatro apoios nos antebraços, joelhos bem afastados, canelas paralelas para trás'],
       steps: ['Leve o quadril para trás até sentir a parte interna das coxas', 'Volte devagar, sem forçar a abertura'],
@@ -299,7 +305,10 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['quadril', 'tornozelo', 'joelho'],
     mode: 'sustentacao',
     needs: [],
-    knownNames: [],
+    knownNames: [
+      'Mobilidade de quadril e tornozelo (agachamento com pausa embaixo)',
+      'Mobilidade de quadril e tornozelo (agachamento profundo com pausa)',
+    ],
     guidance: {
       setup: ['Em pé, pés um pouco mais abertos que os ombros, pontas levemente para fora'],
       steps: ['Desça até o fundo do agachamento, calcanhares no chão', 'Fique embaixo com as mãos juntas e os cotovelos empurrando os joelhos para fora'],
@@ -330,7 +339,12 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['tornozelo'],
     mode: 'por-lado',
     needs: [],
-    knownNames: [],
+    knownNames: [
+      'Mobilidade de tornozelo (joelho à parede)',
+      'Mobilidade de tornozelo com joelho à frente na parede',
+      'Mobilidade de tornozelo com joelho à parede',
+      'Mobilidade de tornozelo: joelho à parede',
+    ],
     guidance: {
       setup: ['Semiajoelhado de frente para a parede, pé da frente a alguns centímetros dela'],
       steps: ['Leve o joelho da frente em direção à parede, por cima dos dedos', 'Volte e afaste o pé aos poucos quando o joelho tocar com facilidade'],
@@ -345,7 +359,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['tornozelo'],
     mode: 'sustentacao',
     needs: [],
-    knownNames: [],
+    knownNames: ['Mobilidade de tornozelo e dedão (dorsiflexão do hálux)'],
     guidance: {
       setup: ['Ajoelhado, com os dedos dos pés dobrados apoiados no chão'],
       steps: ['Leve o quadril em direção aos calcanhares até sentir a sola e os dedos', 'Fique na posição respirando devagar'],
@@ -362,7 +376,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['ombro', 'lombar'],
     mode: 'por-lado',
     needs: [],
-    knownNames: [],
+    knownNames: ['Mobilidade torácica (rotação em quatro apoios)'],
     guidance: {
       setup: ['Em quatro apoios, mãos sob os ombros e joelhos sob o quadril; uma mão atrás da cabeça'],
       steps: ['Gire o tronco levando o cotovelo para baixo, em direção ao braço de apoio', 'Gire para o outro lado até o cotovelo apontar para o teto, seguindo-o com o olhar'],
@@ -408,7 +422,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['lombar'],
     mode: 'reps',
     needs: [],
-    knownNames: [],
+    knownNames: ['Gato-camelo lento'],
     guidance: {
       setup: ['Em quatro apoios, mãos sob os ombros e joelhos sob o quadril'],
       steps: ['Arredonde as costas para cima, levando o queixo ao peito', 'Afunde as costas devagar, olhando para a frente'],
@@ -423,7 +437,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['lombar', 'quadril'],
     mode: 'reps',
     needs: [],
-    knownNames: [],
+    knownNames: ['Báscula pélvica deitado'],
     guidance: {
       setup: ['Deitado de costas, joelhos dobrados, pés no chão na largura do quadril'],
       steps: ['Gire o quadril para trás encostando a lombar no chão, contraindo o abdome', 'Solte e deixe a lombar voltar à curva natural'],
@@ -438,11 +452,30 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['quadril', 'lombar'],
     mode: 'reps',
     needs: [],
-    knownNames: [],
+    knownNames: ['Balanço para trás em quatro apoios (flexão de joelho)'],
     guidance: {
       setup: ['Em quatro apoios, mãos sob os ombros e joelhos sob o quadril, costas retas'],
       steps: ['Leve o quadril para trás em direção aos calcanhares sem arredondar as costas', 'Volte à posição inicial'],
       commonError: 'Arredondar a lombar no fim do movimento',
+    },
+  },
+  {
+    id: 'mobilidade-punho-quatro-apoios',
+    name: 'Mobilidade de punho em quatro apoios',
+    kind: 'preparacao',
+    phases: ['aquecimento', 'mobilidade'],
+    regions: ['punho'],
+    mode: 'reps',
+    needs: [],
+    knownNames: [],
+    guidance: {
+      setup: ['Em quatro apoios, mãos sob os ombros com os dedos para a frente e joelhos sob o quadril'],
+      steps: [
+        'Leve o peso do corpo à frente, passando os ombros além das mãos, com as palmas inteiras no chão',
+        'Volte devagar até os ombros ficarem de novo sobre as mãos',
+      ],
+      commonError: 'Tirar a base da mão do chão quando o peso vai à frente',
+      context: 'Prepara os punhos para flexões, supino e apoios no chão',
     },
   },
   /* ---------------------------------------------------------------- lote P3: mobilidade de joelho */
@@ -454,7 +487,10 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['joelho'],
     mode: 'por-lado',
     needs: [],
-    knownNames: [],
+    knownNames: [
+      'Deslizamento de calcanhar deitado (mobilidade de joelho)',
+      'Mobilidade de joelho: deslizamento de calcanhar deitado',
+    ],
     guidance: {
       setup: ['Deitado de costas, pernas estendidas'],
       steps: ['Deslize o calcanhar no chão em direção ao glúteo, dobrando o joelho até onde for confortável', 'Volte deslizando até estender a perna'],
@@ -501,7 +537,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['sistemica', 'lombar'],
     mode: 'continuo',
     needs: [],
-    knownNames: [],
+    knownNames: ['Respiração diafragmática deitado'],
     guidance: {
       setup: ['Deitado de costas, joelhos dobrados, uma mão no peito e outra na barriga'],
       steps: ['Inspire pelo nariz enchendo a barriga, com o peito quase parado', 'Solte o ar devagar pela boca, deixando a barriga descer'],
@@ -518,7 +554,11 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['ombro'],
     mode: 'sustentacao',
     needs: [],
-    knownNames: [],
+    knownNames: [
+      'Alongamento de peito no batente',
+      'Alongamento de peitoral no batente',
+      'Alongamento de peitoral no batente da porta',
+    ],
     guidance: {
       setup: ['De costas para a parede, bem perto dela', 'Leve um braço para trás e apoie a palma da mão na parede, na altura do ombro'],
       steps: [
@@ -553,7 +593,11 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['ombro', 'lombar'],
     mode: 'sustentacao',
     needs: [],
-    knownNames: [],
+    knownNames: [
+      'Alongamento de dorsal na barra ou batente',
+      'Alongamento de dorsal no espaldar',
+      'Alongamento de dorsal segurando no apoio',
+    ],
     guidance: {
       setup: ['Em pé, de frente para um apoio firme na altura do quadril, mãos nele e braços estendidos'],
       steps: ['Leve o quadril para trás até o tronco ficar na horizontal, entre os braços', 'Fique na posição respirando devagar'],
@@ -569,7 +613,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['ombro'],
     mode: 'sustentacao',
     needs: [],
-    knownNames: [],
+    knownNames: ['Alongamento posterior de ombro cruzando o braço'],
     guidance: {
       setup: ['Em pé, um braço estendido cruzando o peito'],
       steps: ['Com a outra mão, puxe o braço acima do cotovelo em direção ao peito', 'Fique na posição respirando devagar e troque de lado'],
@@ -645,7 +689,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['lombar', 'quadril'],
     mode: 'sustentacao',
     needs: [],
-    knownNames: [],
+    knownNames: ['Joelhos ao peito deitado'],
     guidance: {
       setup: ['Deitado de costas, joelhos dobrados e pés no chão'],
       steps: ['Traga os dois joelhos em direção ao peito, segurando-os com as mãos', 'Fique na posição respirando devagar, com a cabeça apoiada'],
@@ -661,7 +705,11 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['quadril', 'lombar'],
     mode: 'sustentacao',
     needs: [],
-    knownNames: [],
+    knownNames: [
+      'Alongamento de flexor de quadril em meio-ajoelhado',
+      'Alongamento de flexores de quadril em semiajoelhado',
+      'Alongamento de flexores do quadril em meio-ajoelhado',
+    ],
     guidance: {
       setup: ['Ajoelhado com um joelho no chão e o outro pé apoiado à frente, joelho da frente dobrado'],
       steps: [
@@ -701,7 +749,7 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['joelho', 'quadril'],
     mode: 'sustentacao',
     needs: [],
-    knownNames: [],
+    knownNames: ['Alongamento de quadríceps em pé com apoio'],
     guidance: {
       setup: ['Em pé, de frente para uma parede, com uma mão apoiada nela'],
       steps: [
@@ -720,7 +768,13 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['joelho', 'quadril', 'lombar'],
     mode: 'sustentacao',
     needs: ['faixa'],
-    knownNames: [],
+    knownNames: [
+      'Alongamento de posterior com faixa',
+      'Alongamento de posterior de coxa deitado',
+      'Alongamento de posterior de coxa deitado com faixa',
+      'Alongamento de posterior de coxa deitado com toalha',
+      'Alongamento de posterior deitado com faixa',
+    ],
     guidance: {
       setup: ['Deitado de costas, uma perna estendida no chão e a faixa passada pela sola do outro pé'],
       steps: [
@@ -759,7 +813,10 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     regions: ['quadril', 'lombar'],
     mode: 'sustentacao',
     needs: [],
-    knownNames: [],
+    knownNames: [
+      'Alongamento de glúteo (figura 4)',
+      'Alongamento de glúteo deitado (figura 4)',
+    ],
     guidance: {
       setup: ['Deitado de costas, joelhos dobrados e pés no chão', 'Cruze um tornozelo sobre o joelho da outra perna, formando um 4'],
       steps: [
