@@ -28,6 +28,9 @@ export const GEAR_LABEL: Record<Gear, string | null> = {
   rolo: 'Rolo de espuma',
   toalha: 'Toalha',
   faixa: 'Faixa',
+  esteira: 'Esteira',
+  eliptico: 'Elíptico',
+  escada: 'Escada / stepper',
   nenhum: null,
 }
 

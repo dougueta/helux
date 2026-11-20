@@ -231,6 +231,28 @@ describe('ExerciseSheet — catálogo (028, T049)', () => {
     expect(screen.getByText(/Zona Z2/)).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Músculos trabalhados' })).toBeNull()
   })
+
+  it('cardio com orientação aprovada mostra como manter a zona prescrita (FR-029)', () => {
+    render(
+      <ExerciseSheet
+        open
+        exercise={{ ...base, name: 'Bike ergométrica', reps: '20 min', cardio: { modality: 'bike', minutes: 20, zone: 'moderada' } }}
+        onClose={vi.fn()}
+      />,
+    )
+    expect(document.querySelector('[data-zone-guidance]')?.textContent).toMatch(/^Moderada: /)
+  })
+
+  it('zona sem orientação correspondente não mostra a linha extra', () => {
+    render(
+      <ExerciseSheet
+        open
+        exercise={{ ...base, name: 'Bike ergométrica', reps: '20 min', cardio: { modality: 'bike', minutes: 20, zone: 'Z2' } }}
+        onClose={vi.fn()}
+      />,
+    )
+    expect(document.querySelector('[data-zone-guidance]')).toBeNull()
+  })
 })
 
 describe('ExerciseSheet — orientação do catálogo (028, T051)', () => {

@@ -66,6 +66,11 @@ export type Scene =
   | 'banco-scott'
   | 'bicicleta'
   | 'remo'
+  /** cardio (028 T085) */
+  | 'esteira'
+  | 'eliptico'
+  | 'escada'
+  | 'piscina'
 
 export interface DemoSpec {
   /** MovementBase.key */

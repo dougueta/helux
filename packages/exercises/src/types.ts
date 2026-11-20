@@ -27,15 +27,19 @@ export type Gear =
   | 'toalha'
   /** faixa (ou toalha, cinto) que vai das mãos até o pé */
   | 'faixa'
+  /** cardio (028 T085): esteira (só a cena), alavancas do elíptico e pedais da escada */
+  | 'esteira'
+  | 'eliptico'
+  | 'escada'
   | 'nenhum'
 
 export const GEARS: readonly Gear[] = [
   'barra', 'halteres', 'kettlebell', 'maquina', 'smith', 'cabo', 'corda',
-  'peso-corporal', 'elastico', 'roda', 'banco', 'barra-fixa', 'bicicleta', 'remo', 'bastao', 'rolo', 'toalha', 'faixa', 'nenhum',
+  'peso-corporal', 'elastico', 'roda', 'banco', 'barra-fixa', 'bicicleta', 'remo', 'bastao', 'rolo', 'toalha', 'faixa', 'esteira', 'eliptico', 'escada', 'nenhum',
 ]
 
 /** Implementos que não carregam peso: nada é desenhado na mão. */
-export const UNLOADED_GEAR: readonly Gear[] = ['peso-corporal', 'banco', 'barra-fixa', 'bicicleta', 'nenhum']
+export const UNLOADED_GEAR: readonly Gear[] = ['peso-corporal', 'banco', 'barra-fixa', 'bicicleta', 'esteira', 'nenhum']
 
 export type MuscleKey =
   | 'peito'
