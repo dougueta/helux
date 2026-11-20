@@ -168,6 +168,61 @@ export function DemoScene({ scene }: { scene: Scene }) {
         </g>
       )
     }
+    case 'esteira': {
+      const [back, front] = G.TREADMILL.deck
+      const { panel } = G.TREADMILL
+      const frame = 'var(--text-faint)'
+      return (
+        <g data-scene={scene}>
+          <Floor />
+          <line x1={back[0]} y1={back[1]} x2={front[0]} y2={front[1]} stroke={BENCH_FILL} strokeWidth="8" strokeLinecap="round" />
+          <line x1={back[0]} y1={back[1] + 4} x2={back[0]} y2={G.FLOOR_Y - 2} stroke={LEG_STROKE} strokeWidth="5" strokeLinecap="round" />
+          <line x1={front[0]} y1={front[1] + 4} x2={front[0]} y2={G.FLOOR_Y - 2} stroke={LEG_STROKE} strokeWidth="5" strokeLinecap="round" />
+          <line x1={front[0]} y1={front[1]} x2={panel[0]} y2={panel[1]} stroke={frame} strokeWidth="5" strokeLinecap="round" />
+          <line x1={panel[0] - 14} y1={panel[1] - 2} x2={panel[0] + 6} y2={panel[1] + 4} stroke={frame} strokeWidth="7" strokeLinecap="round" />
+        </g>
+      )
+    }
+    case 'eliptico': {
+      const { track, rx, ry, pivot, panel } = G.ELLIPTICAL
+      const frame = 'var(--text-faint)'
+      return (
+        <g data-scene={scene}>
+          <Floor />
+          <line x1={track[0] - 50} y1={G.FLOOR_Y - 3} x2={pivot[0] + 30} y2={G.FLOOR_Y - 3} stroke={frame} strokeWidth="6" strokeLinecap="round" />
+          <ellipse cx={track[0]} cy={track[1]} rx={rx} ry={ry} fill="none" stroke="var(--hairline)" strokeWidth="2" strokeDasharray="2 4" />
+          <line x1={pivot[0] + 22} y1={G.FLOOR_Y - 3} x2={panel[0]} y2={panel[1]} stroke={frame} strokeWidth="6" strokeLinecap="round" />
+          <line x1={panel[0] - 6} y1={panel[1] - 4} x2={panel[0] + 10} y2={panel[1] + 2} stroke={frame} strokeWidth="7" strokeLinecap="round" />
+          <circle cx={pivot[0]} cy={pivot[1]} r={4} fill={LEG_STROKE} />
+        </g>
+      )
+    }
+    case 'escada': {
+      const { pivot, rail } = G.STEPPER
+      const frame = 'var(--text-faint)'
+      return (
+        <g data-scene={scene}>
+          <Floor />
+          <line x1={pivot[0] - 10} y1={G.FLOOR_Y - 3} x2={rail.x1 + 6} y2={G.FLOOR_Y - 3} stroke={frame} strokeWidth="6" strokeLinecap="round" />
+          <line x1={pivot[0]} y1={pivot[1]} x2={pivot[0]} y2={G.FLOOR_Y - 3} stroke={frame} strokeWidth="5" strokeLinecap="round" />
+          <line x1={rail.x1} y1={rail.y} x2={rail.x1 + 6} y2={G.FLOOR_Y - 3} stroke={frame} strokeWidth="6" strokeLinecap="round" />
+          <line x1={rail.x0} y1={rail.y} x2={rail.x1} y2={rail.y} stroke={frame} strokeWidth="5" strokeLinecap="round" />
+          <circle cx={pivot[0]} cy={pivot[1]} r={4} fill={LEG_STROKE} />
+        </g>
+      )
+    }
+    case 'piscina':
+      return (
+        <g data-scene={scene}>
+          <rect x={4} y={G.POOL.surface} width={G.VIEWBOX.width - 8} height={G.VIEWBOX.height - G.POOL.surface - 4} rx={4} fill={BENCH_FILL} />
+          <path
+            d={`M 4 ${G.POOL.surface} q 13 -5 26 0 t 26 0 t 26 0 t 26 0 t 26 0 t 26 0 t 26 0 t 26 0`}
+            fill="none"
+            stroke="var(--hairline)"
+            strokeWidth="2"
+          />
+        </g>
+      )
     case 'solo':
     default:
       return (
@@ -321,6 +376,21 @@ export function DemoImplement({ demo, pose }: { demo: ResolvedDemo; pose: Pose }
   if (demo.gear === 'faixa') {
     const foot: Point = [(pose.an[0] + pose.toe[0]) / 2, (pose.an[1] + pose.toe[1]) / 2]
     return <line data-strap x1={at[0]} y1={at[1]} x2={foot[0]} y2={foot[1]} stroke={ACC} strokeWidth="3" strokeLinecap="round" />
+  }
+
+  // Alavancas do elíptico e pedais da escada: giram no eixo (`anchor`) e vão até as mãos ou os pés, dos dois lados.
+  if (demo.gear === 'eliptico' || demo.gear === 'escada') {
+    const other = demo.implementAt === 'an' ? pose.an2 : demo.implementAt === 'ha' ? pose.ha2 : undefined
+    return (
+      <g data-lever>
+        {[at, other].filter((p): p is Point => !!p).map((p, i) => (
+          <g key={i}>
+            <line x1={anchor[0]} y1={anchor[1]} x2={p[0]} y2={p[1]} stroke="var(--text-faint)" strokeWidth="3" strokeLinecap="round" />
+            <circle cx={p[0]} cy={p[1]} r="4" fill={ACC} />
+          </g>
+        ))}
+      </g>
+    )
   }
 
   // Rolo de espuma e toalha enrolada: parados no ponto de apoio (anchor), sob o corpo.

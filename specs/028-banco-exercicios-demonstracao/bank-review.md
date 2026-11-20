@@ -330,3 +330,29 @@ Demonstração: o quadríceps deitado de lado é visto de cima, porque de perfil
 - 49 nomes entraram em `knownNames` de 31 itens: só quando o nome descreve o mesmo exercício (por exemplo "Bike em ritmo leve", "Mobilidade de tornozelo: joelho à parede", "Alongamento de peitoral no batente").
 - 8 nomes de séries de aproximação de um único exercício de força entraram na lista curada `src/approach-names.ts` (leg press, agachamento box, frontal, com barra vazia, levantamento terra, goblet). O resolvedor mostra o exercício de força marcado como aproximação (passo 6 de "Resolução de um item na tela").
 - 27 nomes ficam documentados: juntam dois ou mais itens ("Polichinelo leve ou marcha no lugar"), servem para mais de um exercício de força ("Séries de aproximação no supino"), ou não têm equivalente ("Alongamento de posterior de coxa sentado"). Esses mostram o aviso de indisponibilidade (FR-031).
+
+## Lote C1: cardio (T085)
+
+As 11 modalidades de `CARDIO_BANK` ganham demonstração (`demos/cardio.ts`, todas em `cycle`) e orientação (`cardio-guidance.ts`) com postura e as três zonas (`leve`, `moderada`, `intervalado-leve`). As zonas são explicadas pelo fôlego e pela fala, sem monitor. A tela de execução mostra a orientação da zona prescrita no plano, abaixo de "Zona … · … min", quando a zona do plano tem orientação.
+
+| id | base | cena | implemento |
+|:---|:---|:---|:---|
+| bike, bike-intervalado | bicicleta-cardio | bicicleta | bicicleta |
+| eliptico | eliptico | eliptico | eliptico (alavancas) |
+| remo | remo-cardio | remo | remo |
+| natacao | natacao | piscina | nenhum |
+| caminhada | caminhada | solo | nenhum |
+| caminhada-inclinada | caminhada-inclinada | esteira | esteira |
+| escada | escada | escada | escada (pedais) |
+| corrida-caminhada | corrida-caminhada | solo | nenhum |
+| corrida | corrida | solo | nenhum |
+| circuito-corporal | circuito | solo | nenhum |
+
+Decisões:
+
+- **No lugar.** Caminhada, corrida e circuito ficam com o quadril parado; os pés andam e o chão não. Assim o ciclo se repete sem a figura sair da cena.
+- **Bike e remo** reaproveitam as bases aprovadas no P1, num ritmo mais rápido (bases `bicicleta-cardio` e `remo-cardio`). As duas bikes compartilham a base e se distinguem pela legenda.
+- **Esteira inclinada.** A lona sobe cerca de 5° para a frente (dentro de 3% a 8%, visível no desenho), e o corpo inclina um pouco a partir dos tornozelos.
+- **Natação.** Crawl de lado. Deitado, o corpo inteiro não cabe na largura da cena, então só essa base desenha a figura a 90%.
+- **Circuito.** O banco descreve "marcha, agachamento parcial e deslocamento lateral". De perfil, o deslocamento lateral não aparece, e o motor exige um apoio parado (o quadril). Por isso a sequência desenhada e escrita é **marcha no lugar → socos alternados → calcanhar no glúteo**, todos sem salto. Cada terço do ciclo mostra um movimento, e as fases de evidência (0, 1/3, 2/3) caem em cada um.
+- Implementos novos: `esteira` (só a cena), `eliptico` e `escada`, desenhados como alavancas que saem do eixo e vão até as mãos (elíptico) ou os pés (escada), dos dois lados.

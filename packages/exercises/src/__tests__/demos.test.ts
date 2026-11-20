@@ -195,3 +195,32 @@ describe('lotes de preparação: demonstração, base válida e orientação com
     }
   })
 })
+
+describe('lote C1, Cardio (T085)', () => {
+  it('as 11 modalidades têm demonstração em ciclo, base válida e orientação com as três zonas', async () => {
+    const { CARDIO } = await import('../demos/cardio')
+    const { CARDIO_BANK } = await import('@helux/types')
+    const { CARDIO_GUIDANCE } = await import('../cardio-guidance')
+    await expectBatchComplete(CARDIO, 11)
+    expect(Object.keys(CARDIO.demos).sort()).toEqual(CARDIO_BANK.map((c) => c.id).sort())
+    for (const b of CARDIO.bases) expect(b.loop, b.key).toBe('cycle')
+    for (const c of CARDIO_BANK) {
+      const zones = CARDIO_GUIDANCE[c.id]?.guidance?.zones ?? {}
+      expect(Object.keys(zones).sort(), c.id).toEqual(['intervalado-leve', 'leve', 'moderada'])
+      for (const text of Object.values(zones)) expect(text.length, c.id).toBeLessThanOrEqual(110)
+    }
+  })
+
+  it('o circuito mostra a sequência: um movimento diferente em cada terço do ciclo', async () => {
+    const { resolveDemo } = await import('../demos')
+    const { poseAt, keyPhases } = await import('../engine/pose-at')
+    const demo = resolveDemo('circuito-corporal')!
+    const { start, mid, end } = keyPhases(demo)
+    const [a, b, c] = [start, mid, end].map((p) => poseAt(demo, p))
+    // marcha: joelho na altura do quadril; socos: mão à frente na altura do ombro; calcanhar: tornozelo alto atrás do quadril
+    expect(a.kn[1]).toBeLessThan(a.hip[1] + 10)
+    expect(b.ha[0] - b.sh[0]).toBeGreaterThan(50)
+    expect(c.an[0]).toBeLessThan(c.hip[0])
+    expect(c.an[1]).toBeLessThan(c.kn[1])
+  })
+})

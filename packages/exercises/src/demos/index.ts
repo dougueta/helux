@@ -8,6 +8,7 @@ import type { DemoSpec, MovementBase, ResolvedDemo } from '../engine/types'
 import { ALONGAMENTOS_INFERIORES } from './alongamentos-inferiores'
 import { ALONGAMENTOS_SUPERIORES } from './alongamentos-superiores'
 import { AGACHAR } from './agachar'
+import { CARDIO } from './cardio'
 import { CORE } from './core'
 import { DOBRAR_QUADRIL } from './dobrar-quadril'
 import { EMPURRAR_HORIZONTAL } from './empurrar-horizontal'
@@ -53,7 +54,7 @@ export function createRegistry(families: DemoFamily[]): DemoRegistry {
 }
 
 /** Famílias registradas. Cada lote acrescenta a sua aqui. */
-const FAMILIES: DemoFamily[] = [AGACHAR, DOBRAR_QUADRIL, EMPURRAR_HORIZONTAL, PUXAR_HORIZONTAL, PUXAR_VERTICAL, CORE, ISOLAMENTO_PERNAS, EMPURRAR_VERTICAL, ISOLAMENTO_BRACOS, ISOLAMENTO_TRONCO, PREPARACAO_ATIVACAO, PREPARACAO_QUADRIL, PREPARACAO_COLUNA, ALONGAMENTOS_SUPERIORES, ALONGAMENTOS_INFERIORES]
+const FAMILIES: DemoFamily[] = [AGACHAR, DOBRAR_QUADRIL, EMPURRAR_HORIZONTAL, PUXAR_HORIZONTAL, PUXAR_VERTICAL, CORE, ISOLAMENTO_PERNAS, EMPURRAR_VERTICAL, ISOLAMENTO_BRACOS, ISOLAMENTO_TRONCO, PREPARACAO_ATIVACAO, PREPARACAO_QUADRIL, PREPARACAO_COLUNA, ALONGAMENTOS_SUPERIORES, ALONGAMENTOS_INFERIORES, CARDIO]
 
 const REGISTRY = createRegistry(FAMILIES)
 

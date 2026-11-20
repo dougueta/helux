@@ -51,6 +51,18 @@ export const BIKE = { seat: [86, 140] as Point, bar: [156, 108] as Point, crank:
 /** Remo ergômetro: trilho do selim em `railY` de `x0` a `x1`, apoio dos pés em `foot`, volante em `flywheel`. */
 export const ROWER = { railY: 222, x0: 24, x1: 176, foot: [166, 212] as Point, flywheel: [194, 202] as Point, flywheelR: 15 } as const
 
+/** Esteira inclinada (cardio): lona de `deck[0]` (atrás, baixa) a `deck[1]` (frente, alta); painel em `panel`. */
+export const TREADMILL = { deck: [[26, 228], [178, 214]] as [Point, Point], panel: [184, 104] as Point } as const
+
+/** Elíptico (cardio): os pés giram na elipse de centro `track`, raios `rx` e `ry`; as alavancas giram em `pivot`. */
+export const ELLIPTICAL = { track: [100, 216] as Point, rx: 20, ry: 6, pivot: [128, 232] as Point, panel: [150, 96] as Point } as const
+
+/** Escada / stepper (cardio): os pedais giram em `pivot`; corrimão em `rail` de `x0` a `x1`. */
+export const STEPPER = { pivot: [44, 222] as Point, pedal: 60, rail: { x0: 112, x1: 156, y: 126 } } as const
+
+/** Piscina (cardio): superfície da água em `surface`. */
+export const POOL = { surface: 128 } as const
+
 /** Colchonete sobre o solo. */
 export const MAT = { x0: 18, x1: 202, top: 235 } as const
 
