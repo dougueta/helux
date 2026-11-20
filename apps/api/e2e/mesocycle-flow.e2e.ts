@@ -61,6 +61,8 @@ async function mesocycleRows(): Promise<Array<{ id: string; sessions: Array<{ co
  * valor observado; `done` decide se ele já é o esperado. Em caso de timeout, a
  * falha mostra o esperado e o último valor obtido.
  */
+const isPreparation = (e: PlannedExercise) => e.phase === 'aquecimento' || e.phase === 'volta-calma'
+
 async function waitFor<T>(expected: string, probe: () => Promise<T>, done: (value: T) => boolean): Promise<T> {
   const deadline = Date.now() + BACKGROUND_TIMEOUT_MS
   let last: T
@@ -189,6 +191,8 @@ describe('Fluxo do mesociclo (quickstart 006) — ponta a ponta', () => {
     expect(plan.today?.tiredness?.effectiveLevel).toBe('cansado')
     plan.today!.exercises.forEach((exercise, i) => {
       const base = baseExercises[i]
+      // Spec 014: aquecimento e volta à calma (inclusive a aproximação, 028) nunca são ajustados pelo cansaço
+      if (isPreparation(base)) return expect(exercise).toEqual(base)
       expect(exercise.sets, exercise.name).toBe(Math.max(2, base.sets - 1))
       expect(exercise.weight, exercise.name).toBe(base.weight)
     })
@@ -201,6 +205,7 @@ describe('Fluxo do mesociclo (quickstart 006) — ponta a ponta', () => {
     expect(plan.today?.tiredness?.effectiveLevel).toBe('exausto')
     plan.today!.exercises.forEach((exercise, i) => {
       const base = baseExercises[i]
+      if (isPreparation(base)) return expect(exercise).toEqual(base)
       expect(exercise.sets, exercise.name).toBe(Math.max(2, base.sets - 1))
       const before = kg(base.weight)
       const after = kg(exercise.weight)
