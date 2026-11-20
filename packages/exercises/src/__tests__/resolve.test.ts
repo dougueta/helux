@@ -50,6 +50,7 @@ describe('resolvePlannedItem — ordem de data-model.md', () => {
 
   it('6. nome normalizado ou knownNames da preparação', () => {
     const prep: PreparationItem = {
+      guidance: { setup: ['Quatro apoios'], steps: ['Arredonde e arqueie a coluna'] },
       id: 'gato-camelo',
       name: 'Gato-camelo',
       kind: 'preparacao',
@@ -92,7 +93,7 @@ describe('resolvePlannedItem — demoState e conteúdo', () => {
     expect(r.isApproach).toBe(false)
   })
 
-  it('pendente com animação salva no plano: legada, preservando o conteúdo atual', () => {
+  it('pendente com animação salva no plano: indisponível, sem a animação antiga, preservando os dados do plano (T094)', () => {
     const ex: PlannedExercise = {
       ...base,
       name: 'Supino Reto (Barra)',
@@ -102,7 +103,7 @@ describe('resolvePlannedItem — demoState e conteúdo', () => {
     }
     const r = withPending(ex)
     expect(r.id).toBe('supino-reto-barra')
-    expect(r.demoState).toBe('legada')
+    expect(r.demoState).toBe('indisponivel')
     expect(r.guidance).toBeNull()
     expect(r.muscles).toEqual(ex.muscles)
     expect(r.tempo).toBe('3 · 1 · 1')
@@ -123,7 +124,8 @@ describe('resolvePlannedItem — demoState e conteúdo', () => {
   it('aprovação vem da lista de pendências injetada', () => {
     const resolve = createResolver({ pending: new Set(['pullover-halteres']) })
     const ex: PlannedExercise = { ...base, name: 'Pullover (Halteres)', variants: [variant('pullover-halteres', 'Pullover (Halteres)', { rec: true })] }
-    expect(resolve(ex).demoState).toBe('legada')
+    expect(resolve(ex).demoState).toBe('indisponivel')
+    expect(createResolver({ pending: new Set() })(ex).demoState).toBe('nova')
   })
 })
 
@@ -142,7 +144,7 @@ describe('resolvePlannedItem — variante ativa (FR-011, FR-035)', () => {
   it('variante pendente usa músculos e cadência da própria variante, não os do planejado', () => {
     const own = STRENGTH_EXERCISES.find((e) => e.id === 'supino-reto-halteres')!
     const r = withPending({ ...planned, muscles: { primary: ['quadriceps'], secondary: [] }, tempo: '9 · 9 · 9' }, 'supino-reto-halteres')
-    expect(r.demoState).toBe('legada')
+    expect(r.demoState).toBe('indisponivel')
     expect(r.muscles).toEqual(own.muscles)
     expect(r.tempo).toBe(own.tempo)
   })

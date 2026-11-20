@@ -2,27 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { centralPhase, loadDemo, type ResolvedDemo, type ResolvedItem } from '@helux/exercises'
-import type { Variant } from '@helux/types'
 import { Icon } from '@/components/ui/icons'
 import { DemoUnavailable } from './DemoUnavailable'
 import { ExerciseDemo } from './ExerciseDemo'
 
 /**
  * Demonstração de um item do plano conforme `demoState` (028, contracts/ui.md):
- * `nova` carrega o catálogo sob demanda, `legada` usa a animação salva no plano,
- * `indisponivel` nunca mostra outra animação.
+ * `nova` carrega o catálogo sob demanda; `indisponivel` nunca mostra outra animação.
  */
 export function ItemDemo({
   resolved,
-  variant,
   notes,
   playing,
   nonce,
   size,
 }: {
   resolved: ResolvedItem
-  /** variante ativa, de onde vem a animação salva (estado `legada`) */
-  variant?: Variant
   notes?: string | null
   playing: boolean
   nonce?: string | number
@@ -55,8 +50,6 @@ export function ItemDemo({
         />
       )
     }
-  } else if (resolved.demoState === 'legada' && variant?.motion) {
-    return <ExerciseDemo motion={variant.motion} implement={variant.implement} playing={playing} nonce={nonce} />
   }
 
   if (size === 'thumb') {

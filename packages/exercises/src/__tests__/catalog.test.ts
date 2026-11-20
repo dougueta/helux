@@ -191,3 +191,21 @@ describe('orientação — regras de escrita (FR-018, FR-019, SC-004)', () => {
     expect(msgs).toContain('pullover-halteres: passo começa com "Boa opção"')
   })
 })
+
+describe('Rotinas Complementares → catálogo (028 T102, FR-036)', () => {
+  it('todo item de alongamento, mobilidade e core das Rotinas e todo cardio têm item do catálogo', async () => {
+    const { STRETCH_MOBILITY_BANK, CORE_ROUTINE_ITEMS, CARDIO_BANK } = await import('@helux/types')
+    const { routineCatalogId } = await import('../routine-items')
+    const { CATALOG } = await import('../catalog')
+    const ids = new Set(CATALOG.map((i) => i.id))
+    const routineIds = [...STRETCH_MOBILITY_BANK, ...CORE_ROUTINE_ITEMS, ...CARDIO_BANK].map((e) => e.id)
+    expect(routineIds.filter((id) => !ids.has(routineCatalogId(id)))).toEqual([])
+  })
+
+  it('a tabela não guarda id que as Rotinas não usam', async () => {
+    const { STRETCH_MOBILITY_BANK, CORE_ROUTINE_ITEMS } = await import('@helux/types')
+    const { ROUTINE_ITEMS } = await import('../routine-items')
+    const used = new Set([...STRETCH_MOBILITY_BANK, ...CORE_ROUTINE_ITEMS].map((e) => e.id))
+    expect(Object.keys(ROUTINE_ITEMS).filter((id) => !used.has(id))).toEqual([])
+  })
+})

@@ -1,7 +1,6 @@
 import type { GeneticProfile, Variant } from '@helux/types'
 import { isCoherentVariant } from '@helux/exercises'
 import { EXERCISE_BANK, type ExerciseBankEntry, type Joint } from './exercise-bank'
-import { resolveMotion } from './motions'
 
 type Equipment = ExerciseBankEntry['equipment']
 
@@ -17,13 +16,6 @@ const EQUIPMENT_LEVEL: Record<Equipment, string> = {
   halteres: 'Intermediário',
   'maquina-cabo': 'Iniciante',
   'peso-corporal': 'Iniciante',
-}
-
-const EQUIPMENT_IMPLEMENT: Record<Equipment, string> = {
-  barra: 'barbell',
-  halteres: 'dumbbell',
-  'maquina-cabo': 'cable',
-  'peso-corporal': 'bodyweight',
 }
 
 // Genetic-fit scoring rules (deterministic, no LLM):
@@ -161,8 +153,6 @@ function toVariant(
     equip: EQUIPMENT_LABEL[entry.equipment],
     level: EQUIPMENT_LEVEL[entry.equipment],
     match: Math.max(50, Math.min(99, score)),
-    motion: resolveMotion(entry),
-    implement: EQUIPMENT_IMPLEMENT[entry.equipment],
     why: buildWhy(entry.equipment, profile),
   }
   if (rec) variant.rec = true

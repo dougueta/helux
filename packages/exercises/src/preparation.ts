@@ -201,6 +201,25 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     },
   },
   {
+    id: 'ponte-gluteo-sustentada',
+    name: 'Ponte de glúteo sustentada',
+    kind: 'preparacao',
+    phases: ['aquecimento', 'mobilidade'],
+    regions: ['quadril', 'lombar'],
+    mode: 'sustentacao',
+    needs: [],
+    knownNames: ['Ponte de glúteo isométrica'],
+    guidance: {
+      setup: ['Deitado de costas, joelhos dobrados, pés no chão na largura do quadril'],
+      steps: [
+        'Suba o quadril contraindo o glúteo até alinhar ombros, quadril e joelhos',
+        'Fique no alto pelo tempo pedido, com o glúteo contraído e a respiração solta',
+        'Desça devagar no fim do tempo',
+      ],
+      commonError: 'Arquear a lombar no alto em vez de contrair o glúteo',
+    },
+  },
+  {
     id: 'flexao-inclinada-leve',
     name: 'Flexão inclinada leve',
     kind: 'preparacao',

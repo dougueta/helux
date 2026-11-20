@@ -25,8 +25,6 @@ export function activeVariant(exercise: PlannedExercise, variantId: string | und
       equip: GEAR_LABEL[entry.gear] ?? '',
       level: '',
       match: 0,
-      motion: '',
-      implement: '',
       why: '',
       offList: true,
     }

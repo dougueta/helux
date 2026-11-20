@@ -109,8 +109,8 @@ export function ExerciseSheet({
         <div style={{ position: 'absolute', inset: '8px 60px' }}>
           <ItemDemo
             resolved={resolved}
-            variant={shown}
-            notes={exercise.notes}
+            // as notas do plano valem para o item planejado, não para uma variante (FR-011)
+            notes={display.showPlannedCues ? exercise.notes : undefined}
             playing={playing}
             nonce={`${shown?.id ?? resolved.id}:${nonce}`}
             size="stage"

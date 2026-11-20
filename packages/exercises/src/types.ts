@@ -87,9 +87,9 @@ export interface CatalogItem {
   /** único em todos os catálogos */
   name: string
   kind: CatalogKind
-  /** obrigatório fora de pending.json */
-  guidance?: Guidance
-  /** obrigatório fora de pending.json */
+  /** orientação de execução (obrigatória desde o encerramento, 028 T094) */
+  guidance: Guidance
+  /** demonstração; quando não vem no item, vem do registro de `demos/` (o teste exige uma das duas) */
   demo?: DemoSpec
 }
 
@@ -133,11 +133,11 @@ export interface PreparationItem extends CatalogItem {
 /** Conteúdo de uma modalidade de cardio; os dados de impacto e local seguem em CARDIO_BANK. */
 export interface CardioContent {
   id: string
-  guidance?: Guidance
+  guidance: Guidance
   demo?: DemoSpec
 }
 
-export type DemoState = 'nova' | 'legada' | 'indisponivel'
+export type DemoState = 'nova' | 'indisponivel'
 
 export interface ResolvedItem {
   /** null = sem correspondência */

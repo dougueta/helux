@@ -4,6 +4,7 @@ import { PREPARATION_ITEMS, preparationIssues } from '../preparation'
 import type { PreparationItem } from '../types'
 
 const valid: PreparationItem = {
+  guidance: { setup: ['Em pé'], steps: ['Mova devagar'] },
   id: 'teste-item',
   name: 'Item de teste',
   kind: 'preparacao',

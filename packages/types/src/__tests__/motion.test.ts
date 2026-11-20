@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MOTION_CATALOG, GENERIC_MOTION, type MotionKey } from '../motion'
+import { MOTION_CATALOG, type MotionKey } from '../motion'
 
 const EXPECTED_KEYS: MotionKey[] = [
   'press-flat', 'press-incline', 'push-up', 'press-overhead',
@@ -13,11 +13,6 @@ const EXPECTED_KEYS: MotionKey[] = [
 describe('MOTION_CATALOG (spec 013)', () => {
   it('tem as 30 animações do contrato', () => {
     expect(Object.keys(MOTION_CATALOG).sort()).toEqual([...EXPECTED_KEYS].sort())
-  })
-
-  it('a animação genérica (último recurso) é o supino reto', () => {
-    expect(GENERIC_MOTION).toBe('press-flat')
-    expect(MOTION_CATALOG[GENERIC_MOTION].patterns).toEqual(['empurrar-horizontal'])
   })
 
   it('toda animação declara ao menos um padrão; isolamentos declaram os grupos musculares', () => {

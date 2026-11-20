@@ -22,8 +22,10 @@ export interface Variant {
   betterFit?: boolean
   /** spec 013: equivalente de outro padrão de movimento sugerido por alerta genético articular */
   crossPattern?: boolean
-  motion: string
-  implement: string
+  /** animação antiga: só em planos salvos antes da 028; a demonstração vem do catálogo pelo `id` */
+  motion?: string
+  /** implemento da animação antiga: só em planos salvos antes da 028 */
+  implement?: string
   why: string
 }
 

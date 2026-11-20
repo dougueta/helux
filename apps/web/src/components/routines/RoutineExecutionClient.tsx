@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CARDIO_BANK, type ComplementaryCategory, type ComplementaryRoutine } from '@helux/types'
-import { ExerciseDemo } from '@/components/workout/ExerciseDemo'
+import { ItemDemo } from '@/components/workout/ItemDemo'
+import { resolveRoutineItem, routineSteps } from './routine-demo'
 import { Banner } from '@/components/ui/Banner'
 import { Segmented } from '@/components/ui/Segmented'
 import { ScreenHeader } from '@/components/ui/ScreenHeader'
@@ -163,7 +164,7 @@ export function RoutineExecutionClient({
           )}
 
           <div className="hx-stage" style={{ height: 180, display: 'grid', placeItems: 'center' }}>
-            <ExerciseDemo motion={selectedEntry.motion} playing={true} />
+            <ItemDemo resolved={resolveRoutineItem(selectedEntry.id, selectedEntry.name)} playing size="stage" />
           </div>
 
           <section className="hx-card" style={{ padding: 'var(--s-4)', display: 'flex', flexDirection: 'column', gap: 'var(--s-3)' }}>
@@ -234,7 +235,12 @@ export function RoutineExecutionClient({
             <div>
               <p className="t-caption" style={{ marginBottom: 6 }}>Como executar e manter a zona</p>
               <ol className="hx-steps">
-                {[...selectedEntry.cues, selectedEntry.zoneGuidance[zone]].map((cue, idx) => (
+                {(() => {
+                  // 028 (FR-036): orientação do catálogo, com a zona escrita no catálogo de cardio
+                  const resolved = resolveRoutineItem(selectedEntry.id, selectedEntry.name)
+                  const zoneText = resolved.guidance?.zones?.[zone] ?? selectedEntry.zoneGuidance[zone]
+                  return [...routineSteps(resolved, selectedEntry.cues), zoneText]
+                })().map((cue, idx) => (
                   <li key={idx}>{cue}</li>
                 ))}
               </ol>
@@ -270,7 +276,7 @@ export function RoutineExecutionClient({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)', marginTop: 'var(--s-3)' }}>
           <div className="hx-stage" style={{ height: 180, display: 'grid', placeItems: 'center' }}>
-            <ExerciseDemo motion={currentItem.motion} playing={true} />
+            <ItemDemo resolved={resolveRoutineItem(currentItem.id, currentItem.name)} playing size="stage" />
           </div>
 
           <section className="hx-card" style={{ padding: 'var(--s-4)', display: 'flex', flexDirection: 'column', gap: 'var(--s-3)' }}>
@@ -330,7 +336,7 @@ export function RoutineExecutionClient({
             <div>
               <p className="t-caption" style={{ marginBottom: 6 }}>Como executar</p>
               <ol className="hx-steps">
-                {currentItem.cues.map((cue, i) => (
+                {routineSteps(resolveRoutineItem(currentItem.id, currentItem.name), currentItem.cues).map((cue, i) => (
                   <li key={i}>{cue}</li>
                 ))}
               </ol>
@@ -422,7 +428,7 @@ export function RoutineExecutionClient({
                   </p>
                 </div>
                 <div className="hx-stage" style={{ width: 64, height: 64, flexShrink: 0 }}>
-                  <ExerciseDemo motion={item.motion} playing={true} />
+                  <ItemDemo resolved={resolveRoutineItem(item.id, item.name)} playing size="thumb" />
                 </div>
               </div>
 
@@ -454,7 +460,7 @@ export function RoutineExecutionClient({
               </div>
 
               <ol className="hx-steps">
-                {item.cues.map((cue, cIdx) => (
+                {routineSteps(resolveRoutineItem(item.id, item.name), item.cues).map((cue, cIdx) => (
                   <li key={cIdx}>{cue}</li>
                 ))}
               </ol>

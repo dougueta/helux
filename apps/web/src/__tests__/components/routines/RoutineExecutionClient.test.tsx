@@ -163,6 +163,23 @@ describe('RoutineExecutionClient (030 — US3)', () => {
     })
   })
 
+  it('028 (FR-036): alongamento usa a demonstração e a orientação do item correspondente do catálogo', async () => {
+    render(<RoutineExecutionClient category="alongamento-mobilidade" initialRoutine={STRETCH_ROUTINE} />)
+    // o flexor de quadril das Rotinas é o alongamento semiajoelhado do catálogo
+    expect(await screen.findByLabelText('demonstração de Alongamento de flexor de quadril semiajoelhado')).toBeInTheDocument()
+    expect(document.querySelector('[data-demo="alongamento-flexor-quadril"]')).not.toBeNull()
+    expect(screen.queryByText('Meio ajoelhado sobre apoio macio, tronco ereto e pelve encaixada')).toBeNull()
+    expect(document.querySelector('[data-motion]')).toBeNull()
+  })
+
+  it('028 (FR-036): item sem correspondente no catálogo mostra a indisponibilidade e as dicas da Rotina', async () => {
+    render(<RoutineExecutionClient category="core-abdominal" initialRoutine={CORE_ROUTINE} />)
+    // "prancha-frontal-isometrica" não está na tabela nem no catálogo
+    await waitFor(() => expect(document.querySelector('[data-demo-unavailable-icon]')).not.toBeNull())
+    expect(screen.getByText('Apoie antebraços, contraia glúteos e abdômen')).toBeInTheDocument()
+    expect(document.querySelector('[data-motion]')).toBeNull()
+  })
+
   it('core-abdominal: lista séries sem campo de carga (kg), permite marcar séries com 1 toque e concluir', async () => {
     render(<RoutineExecutionClient category="core-abdominal" initialRoutine={CORE_ROUTINE} />)
 

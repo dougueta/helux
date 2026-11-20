@@ -364,3 +364,23 @@ Decisões:
 - **Troca.** `repairPreparationItems` dá `catalogId` ao item do catálogo e troca o que está fora dele, ou que pede equipamento indisponível, pelo primeiro item permitido da mesma fase e região (sem região, a sistêmica), preferindo os sem equipamento. A troca é por código e não bloqueia o plano; fica registrada na regra `item-fora-do-catalogo` e no log da geração. No ajuste de sessão, só as sessões propostas passam pela troca.
 - **Pedido.** O texto do método troca "itens livres" pela lista de cada fase, explica a aproximação e mantém a mobilidade das condições de saúde (FR-028).
 - **Tela.** A série de aproximação mostra o exercício de força com a etiqueta "Série leve de preparação" e a dose. Itens mantidos mostram "Mantenha a posição: <tempo>", e itens por lado, "Cada lado: <dose>".
+
+## T093: avaliação real da IA
+
+Pendente. `pnpm --filter @helux/ai eval:treino` usa a API paga, e o dono ainda não autorizou a execução. A mudança foi coberta pela IA simulada: esquema, troca de item fora do catálogo, E2E e o teste em que todo item possível resolve com demonstração (SC-010).
+
+## Rotinas Complementares (FR-036, T102 a T104)
+
+Na sessão de 2026-11-20, o dono incluiu as Rotinas na 028 antes da remoção do caminho antigo. A tabela `src/routine-items.ts` leva cada id das Rotinas ao catálogo; o cardio usa o próprio id. Vale também para rotinas salvas, que guardam o mesmo id.
+
+- 15 dos 16 alongamentos e mobilidades têm item equivalente. O "posterior de coxa deitado" mostra a versão com faixa, como os planos antigos (T084), e o "peitoral no batente" mostra o peitoral na parede.
+- A ponte isométrica das Rotinas não tinha equivalente: entrou `ponte-gluteo-sustentada` (aquecimento e mobilidade, sustentação), que reaproveita a base da ponte e fica no alto.
+- Os 8 itens de core já existiam no catálogo de força; só o dead bug tem outro id.
+- A tela mostra a demonstração e a orientação do catálogo. Sem item correspondente, mostra a indisponibilidade e as dicas da própria Rotina.
+
+## Encerramento (T094 a T098)
+
+- `DemoState` ficou só com `nova` e `indisponivel`; `guidance` passou a ser obrigatória no tipo. Item pendente nunca mostra animação de outro item.
+- Saíram o caminho antigo do `ExerciseDemo` (presets, `HELUX_MOTIONS`, supino como último recurso), `packages/ai/src/motions.ts` e a animação gravada nas variantes novas. `Variant.motion` e `Variant.implement` ficaram opcionais, só para os planos salvos.
+- Em `@helux/types`, sai `GENERIC_MOTION`. `MotionKey` fica como tipo do campo `motion` dos bancos de cardio e das Rotinas.
+- Na folha de execução, as notas do plano deixam de aparecer no aviso de indisponibilidade quando uma variante está ativa (FR-011).
