@@ -356,3 +356,11 @@ Decisões:
 - **Natação.** Crawl de lado. Deitado, o corpo inteiro não cabe na largura da cena, então só essa base desenha a figura a 90%.
 - **Circuito.** O banco descreve "marcha, agachamento parcial e deslocamento lateral". De perfil, o deslocamento lateral não aparece, e o motor exige um apoio parado (o quadril). Por isso a sequência desenhada e escrita é **marcha no lugar → socos alternados → calcanhar no glúteo**, todos sem salto. Cada terço do ciclo mostra um movimento, e as fases de evidência (0, 1/3, 2/3) caem em cada um.
 - Implementos novos: `esteira` (só a cena), `eliptico` e `escada`, desenhados como alavancas que saem do eixo e vão até as mãos (elíptico) ou os pés (escada), dos dois lados.
+
+## T086 a T091: geração de planos com o catálogo
+
+- **Esquema.** Aquecimento, volta à calma e mobilidade aceitam só nomes do catálogo, um enum por fase. A região sai do catálogo (primeira região do item). A série de aproximação é um item próprio (`aproximacao`), com o exercício de força do dia, e vira `phase: 'aquecimento'` com `approachOf` e o nome "Série de aproximação: <exercício>". O nome é diferente do exercício para não entrar na progressão de carga dele.
+- **Equipamento.** `allowedPreparation` filtra pelo equipamento do usuário. Toalha, faixa e bastão (cabo de vassoura) contam como itens de casa e ficam sempre liberados. Bike, remo, elástico, rolo e banco dependem de `maquina-cabo` (academia). A barra fixa segue o banco de força, que a trata como peso corporal.
+- **Troca.** `repairPreparationItems` dá `catalogId` ao item do catálogo e troca o que está fora dele, ou que pede equipamento indisponível, pelo primeiro item permitido da mesma fase e região (sem região, a sistêmica), preferindo os sem equipamento. A troca é por código e não bloqueia o plano; fica registrada na regra `item-fora-do-catalogo` e no log da geração. No ajuste de sessão, só as sessões propostas passam pela troca.
+- **Pedido.** O texto do método troca "itens livres" pela lista de cada fase, explica a aproximação e mantém a mobilidade das condições de saúde (FR-028).
+- **Tela.** A série de aproximação mostra o exercício de força com a etiqueta "Série leve de preparação" e a dose. Itens mantidos mostram "Mantenha a posição: <tempo>", e itens por lado, "Cada lado: <dose>".

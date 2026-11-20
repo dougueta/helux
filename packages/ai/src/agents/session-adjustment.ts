@@ -3,7 +3,7 @@ import { buildTrainingMethod } from '../mesocycle-prompts'
 import { buildExerciseCatalogSection } from '../prompts'
 import { ConstraintsUnsatisfiableError, enrichExercise } from '../mesocycle-planner'
 import { AGENT_MODEL, AgentRefusalError, anthropic, FALLBACK_PARAMS, messageText, usagesFromMessage } from './client'
-import { allowedCardio, allowedExercises, validatePlanAgainstConstraints } from './constraints'
+import { allowedCardio, allowedExercises, allowedPreparation, repairPreparationItems, validatePlanAgainstConstraints } from './constraints'
 import { buildExerciseItemSchema, rawToPlanned, type AllowedChoices, type RawExercise } from './mesocycle-schema'
 import { renderProfile } from './render-profile'
 
@@ -89,7 +89,11 @@ export async function proposeSessionAdjustment(input: {
   const before = sessionIndexes.map(i => sessions[i])
   let violations: ConstraintViolation[] = []
   const allowed = allowedExercises(input.constraints)
-  const schema = adjustmentSchema({ exercises: allowed.map(e => e.name), cardio: allowedCardio(input.constraints).map(k => k.id) })
+  const schema = adjustmentSchema({
+    exercises: allowed.map(e => e.name),
+    cardio: allowedCardio(input.constraints).map(k => k.id),
+    preparation: allowedPreparation(input.constraints).map(p => p.name),
+  })
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const retry = violations.length > 0 ? `\n\nA proposta anterior violou: ${violations.map(v => v.message).join('; ')}. Corrija sem violar nenhuma restrição.` : ''
@@ -132,7 +136,10 @@ ${buildExerciseCatalogSection(allowed)}${retry}`,
     const after: MesocycleSession[] = sessionIndexes.map(i => {
       const proposed = raw.sessions.find(s => s.index === i)
       // Mantém semana, tipo e deload da sessão original (PR #19).
-      return proposed ? { ...sessions[i], focus: proposed.focus, completedAt: null, exercises: proposed.exercises.map(toExercise) } : sessions[i]
+      if (!proposed) return sessions[i]
+      const session: MesocycleSession = { ...sessions[i], focus: proposed.focus, completedAt: null, exercises: proposed.exercises.map(toExercise) }
+      // 028 (FR-027): só a sessão proposta passa pela troca; as intocadas ficam como estão.
+      return repairPreparationItems([session], input.constraints).sessions[0]
     })
     violations = validatePlanAgainstConstraints(after, input.constraints)
     if (violations.length === 0) {

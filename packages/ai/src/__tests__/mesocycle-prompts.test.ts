@@ -55,6 +55,14 @@ describe('buildTrainingMethod', () => {
     expect(text).not.toContain('Supino Reto (Barra)')
   })
 
+  it('028: preparação só da lista de cada fase, pelo nome exato; aproximação como item próprio; mobilidade das condições continua (FR-027, FR-028, FR-030)', () => {
+    expect(text).toMatch(/só os itens da lista de cada fase, pelo nome exato/)
+    expect(text).toMatch(/"aproximacao"/)
+    expect(text).toMatch(/"exercise"/)
+    expect(text).toMatch(/condição de saúde pede mobilidade, ela continua prescrita/)
+    expect(text).not.toMatch(/itens livres/i)
+  })
+
   it('sem caixa-alta de obrigatoriedade e estável (sem data/hora) para o cache', () => {
     expect(text).not.toMatch(/OBRIGATÓRIO/)
     expect(buildTrainingMethod()).toBe(text)

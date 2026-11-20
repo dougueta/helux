@@ -255,6 +255,36 @@ describe('ExerciseSheet — catálogo (028, T049)', () => {
   })
 })
 
+describe('ExerciseSheet — preparação e aproximação (028, T091)', () => {
+  const prep = (over: Partial<PlannedExercise>): PlannedExercise => ({ name: 'x', sets: 1, reps: '30 s', weight: '—', phase: 'volta-calma', ...over })
+
+  it('série de aproximação mostra o exercício de força com o aviso "Série leve de preparação" (FR-030)', () => {
+    render(
+      <ExerciseSheet
+        open
+        exercise={prep({ name: 'Série de aproximação: Supino Reto (Halteres)', phase: 'aquecimento', approachOf: 'supino-reto-halteres', sets: 2, reps: '10, 6', weight: '10kg' })}
+        onClose={vi.fn()}
+      />,
+    )
+    expect(screen.getByText('Série leve de preparação')).toBeInTheDocument()
+    expect(screen.getByText(/2 séries leves antes do Supino Reto \(Halteres\)/)).toBeInTheDocument()
+  })
+
+  it('posição mantida indica o tempo; item por lado indica a dose de cada lado', () => {
+    const { unmount } = render(<ExerciseSheet open exercise={prep({ name: 'Postura da criança', catalogId: 'postura-crianca', reps: '40 s' })} onClose={vi.fn()} />)
+    expect(screen.getByText('Mantenha a posição: 40 s')).toBeInTheDocument()
+    unmount()
+    render(<ExerciseSheet open exercise={prep({ name: 'Balanço de perna', catalogId: 'balanco-perna', phase: 'aquecimento', reps: '10' })} onClose={vi.fn()} />)
+    expect(screen.getByText('Cada lado: 10')).toBeInTheDocument()
+  })
+
+  it('exercício de força comum não mostra aviso de preparação nem dose', () => {
+    render(<ExerciseSheet open exercise={prep({ name: 'Supino Reto (Halteres)', phase: 'principal', sets: 3, reps: '8-10' })} onClose={vi.fn()} />)
+    expect(screen.queryByText('Série leve de preparação')).toBeNull()
+    expect(document.querySelector('[data-dose]')).toBeNull()
+  })
+})
+
 describe('ExerciseSheet — orientação do catálogo (028, T051)', () => {
   const pullover: PlannedExercise = {
     name: 'Pullover (Halteres)',

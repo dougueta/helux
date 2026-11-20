@@ -28,7 +28,11 @@ Os grupos musculares principais são peito, costas, ombro, quadríceps, posterio
 
 ## Estrutura dos dias
 
-Cada dia de força tem aquecimento (2 a 4 itens livres: mobilidade das articulações que vão trabalhar, cardio leve, séries de aproximação), o treino principal e a volta à calma (2 a 4 itens livres: alongamento e mobilidade do que foi trabalhado). Itens livres têm nome descritivo em português, 1 série, repetições descritivas ("5 min", "10 por lado") e carga "—".
+Cada dia de força tem aquecimento (2 a 4 itens: mobilidade das articulações que vão trabalhar, cardio leve, ativação), o treino principal e a volta à calma (2 a 4 itens: alongamento e mobilidade do que foi trabalhado). Aquecimento, volta à calma e mobilidade usam só os itens da lista de cada fase, pelo nome exato; cada item mostra a demonstração e as orientações ao usuário. Esses itens têm 1 série, a dose em "reps" ("5 min", "10 repetições", "8 por lado", "30 s") e carga "—".
+
+Séries de aproximação são um item próprio ("aproximacao"), no aquecimento, logo antes do treino principal: indique em "exercise" o exercício de força do dia que elas preparam, com séries, repetições e cargas leves ("2", "10, 6", "40% e 60% da carga"). Use para os compostos pesados do dia, não para isolados.
+
+Quando uma condição de saúde pede mobilidade, ela continua prescrita: escolha na lista de mobilidade os itens que trabalham a região indicada.
 
 A fila "weekTemplate" deve conter apenas os dias de força (kind "forca") pedidos no método; sessões dedicadas de cardio e mobilidade vivem no módulo de Rotinas Complementares e não ocupam letras da fila. Quando incluir cardio ou mobilidade como bloco de volta à calma no fim de um dia de força, use apenas as modalidades permitidas no pedido, na zona e impacto indicados, fora dos dias de perna pesada.
 

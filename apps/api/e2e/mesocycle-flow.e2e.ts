@@ -9,6 +9,7 @@ import { describe, it, expect, beforeAll, afterAll, inject } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { AdjustedWorkoutPlanView, PlannedExercise } from '@helux/types'
+import { resolvePlannedItem } from '@helux/exercises'
 import { startFakeAnthropic, type FakeAnthropic } from './fake-anthropic'
 import { GENETIC_FIXTURE_PATH, resolveAiMode } from './prerequisites'
 import { readFileSync } from 'node:fs'
@@ -169,6 +170,9 @@ describe('Fluxo do mesociclo (quickstart 006) — ponta a ponta', () => {
     baseExercises = plan.today!.exercises
     expect(baseExercises.length).toBeGreaterThan(0)
     if (fakeAi) expect(fakeAi.calls).toBe(1)
+    // 028 (SC-010): todo item do plano novo resolve no catálogo, sem nome livre
+    const unresolved = plan.today!.exercises.filter(e => resolvePlannedItem(e).id === null)
+    expect(unresolved.map(e => e.name)).toEqual([])
   })
 
   it('2a. HRV bom (75 ms): treino sem ajuste', async () => {

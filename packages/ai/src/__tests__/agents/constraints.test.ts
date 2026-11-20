@@ -114,3 +114,57 @@ describe('compatibleAlternatives (FR-009a)', () => {
     expect(compatibleAlternatives('nao-existe', NONE)).toEqual([])
   })
 })
+
+describe('preparação do catálogo (028 T088, FR-027)', () => {
+  it('allowedPreparation: sem equipamento informado, o catálogo inteiro; com equipamento, só o que dá para fazer', async () => {
+    const { allowedPreparation } = await import('../../agents/constraints')
+    const { PREPARATION_ITEMS } = await import('@helux/exercises')
+    expect(allowedPreparation(NONE)).toHaveLength(PREPARATION_ITEMS.length)
+    const home = allowedPreparation({ ...NONE, availableEquipment: ['peso-corporal', 'halteres'] }).map(p => p.id)
+    // bike, remo, elástico, rolo e banco são da academia; toalha, faixa e bastão existem em casa
+    expect(home).not.toContain('bike-leve')
+    expect(home).not.toContain('rotacao-externa-elastico')
+    expect(home).toContain('extensao-joelho-toalha')
+    expect(home).toContain('marcha-no-lugar')
+    const gym = allowedPreparation({ ...NONE, availableEquipment: ['maquina-cabo'] }).map(p => p.id)
+    expect(gym).toContain('bike-leve')
+  })
+
+  it('repairPreparationItems: nome do catálogo ganha catalogId; nome livre é trocado pelo item da mesma fase e região', async () => {
+    const { repairPreparationItems } = await import('../../agents/constraints')
+    const plan = [
+      session([
+        ex('Bike leve', 1, { phase: 'aquecimento', reps: '5 min', weight: '—' }),
+        ex('Mobilidade de ombro com bastão', 1, { phase: 'aquecimento', reps: '10', weight: '—' }),
+        ex('Supino Reto (Barra)'),
+        ex('Série de aproximação: Supino Reto (Barra)', 2, { phase: 'aquecimento', approachOf: 'supino-reto-barra' }),
+        ex('Mobilidade de joelho livre', 1, { region: 'joelho', reps: '10 min', weight: '—' }),
+        ex('Alongamento qualquer', 1, { phase: 'volta-calma', reps: '30 s', weight: '—', notes: 'devagar' }),
+      ]),
+    ]
+    const { sessions, repairs } = repairPreparationItems(plan, NONE)
+    const [bike, freeWarm, main, approach, mobility, cooldown] = sessions[0].exercises
+    expect(bike).toMatchObject({ name: 'Bike leve', catalogId: 'bike-leve' })
+    // aquecimento sem região: primeiro item de aquecimento sem equipamento
+    expect(freeWarm).toMatchObject({ name: 'Marcha no lugar', catalogId: 'marcha-no-lugar', phase: 'aquecimento', sets: 1, reps: '10' })
+    expect(main).toEqual(plan[0].exercises[2])
+    expect(approach).toEqual(plan[0].exercises[3])
+    // mobilidade mantém a região pedida
+    expect(mobility).toMatchObject({ catalogId: 'agachamento-profundo-pausa', region: 'joelho', reps: '10 min' })
+    expect(cooldown).toMatchObject({ catalogId: 'respiracao-diafragmatica', phase: 'volta-calma', notes: 'devagar' })
+    expect(repairs.map(r => [r.rule, r.exercise])).toEqual([
+      ['item-fora-do-catalogo', 'Mobilidade de ombro com bastão'],
+      ['item-fora-do-catalogo', 'Mobilidade de joelho livre'],
+      ['item-fora-do-catalogo', 'Alongamento qualquer'],
+    ])
+  })
+
+  it('item do catálogo que precisa de equipamento indisponível também é trocado', async () => {
+    const { repairPreparationItems } = await import('../../agents/constraints')
+    const plan = [session([ex('Bike leve', 1, { phase: 'aquecimento', catalogId: 'bike-leve', reps: '5 min', weight: '—' })])]
+    const { sessions, repairs } = repairPreparationItems(plan, { ...NONE, availableEquipment: ['peso-corporal'] })
+    // bike-leve cobre sistêmica, joelho e quadril: a troca procura a mesma região, sem equipamento
+    expect(sessions[0].exercises[0]).toMatchObject({ catalogId: 'marcha-no-lugar', reps: '5 min' })
+    expect(repairs).toHaveLength(1)
+  })
+})

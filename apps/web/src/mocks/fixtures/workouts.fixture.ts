@@ -17,36 +17,51 @@ const ex = (name: string, sets: number, reps: string, weight: string, muscle: st
   muscle,
 })
 
+/** 028 (T091): item de preparação do catálogo e série de aproximação, como a IA gera hoje. */
+const prep = (phase: 'aquecimento' | 'volta-calma', catalogId: string, name: string, reps: string): PlannedExercise => ({ name, sets: 1, reps, weight: '—', phase, catalogId })
+const approach = (exerciseId: string, name: string, weight: string): PlannedExercise => ({
+  name: `Série de aproximação: ${name}`, sets: 2, reps: '10, 6', weight, phase: 'aquecimento', approachOf: exerciseId,
+})
+
 /** Mesociclo ABCD com exercícios do banco (`packages/ai/src/exercise-bank.ts`). */
 export const MESOCYCLE_SESSIONS: Omit<MesocycleSession, 'completedAt'>[] = [
   {
     letter: 'A',
     focus: 'Peito e tríceps',
     exercises: [
+      prep('aquecimento', 'circulos-braco', 'Círculos de braço', '10 por sentido'),
+      approach('supino-reto-barra', 'Supino Reto (Barra)', '40 kg, 60 kg'),
       ex('Supino Reto (Barra)', 4, '6-8', '80 kg', 'peito'),
       ex('Supino Inclinado (Halteres)', 3, '8-10', '30 kg', 'peito'),
       ex('Crossover no Cabo', 3, '12-15', '15 kg', 'peito'),
       ex('Tríceps Corda (Cabo)', 3, '10-12', '25 kg', 'triceps'),
+      prep('volta-calma', 'alongamento-peitoral-parede', 'Alongamento de peitoral na parede', '30 s'),
     ],
   },
   {
     letter: 'B',
     focus: 'Costas e bíceps',
     exercises: [
+      prep('aquecimento', 'suspensao-ativa-barra', 'Suspensão ativa na barra', '20 s'),
       ex('Barra Fixa (Peso Corporal)', 4, '6-8', 'peso corporal', 'costas'),
+      approach('remada-curvada-barra', 'Remada Curvada (Barra)', '30 kg, 50 kg'),
       ex('Remada Curvada (Barra)', 4, '8-10', '70 kg', 'costas'),
       ex('Puxada Alta (Cabo)', 3, '10-12', '60 kg', 'costas'),
       ex('Rosca Direta (Barra)', 3, '8-10', '35 kg', 'biceps'),
+      prep('volta-calma', 'alongamento-dorsal-apoio', 'Alongamento de dorsal no apoio', '30 s'),
     ],
   },
   {
     letter: 'C',
     focus: 'Pernas',
     exercises: [
+      prep('aquecimento', 'balanco-perna', 'Balanço de perna', '10'),
+      approach('agachamento-livre-barra', 'Agachamento Livre (Barra)', '40 kg, 70 kg'),
       ex('Agachamento Livre (Barra)', 4, '6-8', '100 kg', 'quadriceps'),
       ex('Levantamento Terra Romeno (Barra)', 3, '8-10', '90 kg', 'posterior'),
       ex('Leg Press 45°', 3, '10-12', '200 kg', 'quadriceps'),
       ex('Mesa Flexora', 3, '10-12', '45 kg', 'posterior'),
+      prep('volta-calma', 'alongamento-flexor-quadril', 'Alongamento de flexor de quadril semiajoelhado', '30 s por lado'),
     ],
   },
   {
@@ -93,7 +108,8 @@ export function workoutHistoryFixture(): MockSessionRow[] {
       date: dateDaysAgo(daysAgo),
       duration_s: 3300 + ((i * 137) % 900),
       created_at: isoDaysAgo(daysAgo, 19),
-      exercises: session.exercises.map(e => ({
+      // o histórico registra o treino principal; aquecimento e volta à calma não têm carga
+      exercises: session.exercises.filter(e => e.phase !== 'aquecimento' && e.phase !== 'volta-calma').map(e => ({
         name: e.name,
         sets: Array.from({ length: e.sets }, (_, s) => ({
           reps: Number.parseInt(e.reps, 10) || 10,

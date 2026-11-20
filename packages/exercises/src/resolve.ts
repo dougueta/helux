@@ -42,6 +42,8 @@ interface Entry {
   muscles: { primary: string[]; secondary: string[] } | null
   tempo: string | null
   gear: Gear | null
+  /** só preparação */
+  mode: PreparationItem['mode'] | null
 }
 
 export interface ResolverSources {
@@ -76,12 +78,12 @@ export function createResolver(sources: ResolverSources = {}) {
   const approachByName = new Map<string, Entry>()
 
   for (const e of strength) {
-    const entry: Entry = { id: e.id, name: e.name, kind: 'forca', guidance: e.guidance ?? null, muscles: e.muscles, tempo: e.tempo, gear: e.gear }
+    const entry: Entry = { id: e.id, name: e.name, kind: 'forca', guidance: e.guidance ?? null, muscles: e.muscles, tempo: e.tempo, gear: e.gear, mode: null }
     byId.set(e.id, entry)
     strengthByName.set(e.name, entry)
   }
   for (const p of preparation) {
-    const entry: Entry = { id: p.id, name: p.name, kind: 'preparacao', guidance: p.guidance ?? null, muscles: null, tempo: null, gear: null }
+    const entry: Entry = { id: p.id, name: p.name, kind: 'preparacao', guidance: p.guidance ?? null, muscles: null, tempo: null, gear: null, mode: p.mode }
     byId.set(p.id, entry)
     for (const n of [p.name, ...p.knownNames]) prepByName.set(normalize(n), entry)
   }
@@ -90,7 +92,7 @@ export function createResolver(sources: ResolverSources = {}) {
     if (entry?.kind === 'forca') approachByName.set(normalize(name), entry)
   }
   for (const c of CARDIO_BANK) {
-    byId.set(c.id, { id: c.id, name: c.name, kind: 'cardio', guidance: CARDIO_GUIDANCE[c.id]?.guidance ?? null, muscles: null, tempo: null, gear: null })
+    byId.set(c.id, { id: c.id, name: c.name, kind: 'cardio', guidance: CARDIO_GUIDANCE[c.id]?.guidance ?? null, muscles: null, tempo: null, gear: null, mode: null })
   }
 
   /** Ordem de data-model.md, "Resolução de um item na tela". */
@@ -119,7 +121,7 @@ export function createResolver(sources: ResolverSources = {}) {
     const entry = find(exercise, variantId)
     const isApproach = Boolean(exercise.approachOf) || (entry !== undefined && entry === findPlanned(exercise) && entry === legacyApproach(exercise))
     if (!entry) {
-      return { id: null, name: exercise.name, kind: null, demoState: 'indisponivel', guidance: null, muscles: null, tempo: null, gearLabel: null, isApproach }
+      return { id: null, name: exercise.name, kind: null, demoState: 'indisponivel', guidance: null, muscles: null, tempo: null, gearLabel: null, isApproach, mode: null }
     }
 
     if (!pending.has(entry.id)) {
@@ -133,6 +135,7 @@ export function createResolver(sources: ResolverSources = {}) {
         tempo: entry.tempo,
         gearLabel: entry.gear ? GEAR_LABEL[entry.gear] : null,
         isApproach,
+        mode: entry.mode,
       }
     }
 
@@ -154,6 +157,7 @@ export function createResolver(sources: ResolverSources = {}) {
       tempo: isPlanned ? exercise.tempo ?? entry.tempo : entry.tempo,
       gearLabel: null,
       isApproach,
+      mode: entry.mode,
     }
   }
 }

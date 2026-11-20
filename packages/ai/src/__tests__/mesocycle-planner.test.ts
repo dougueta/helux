@@ -39,17 +39,19 @@ const METHOD: MethodPrescription = {
 }
 
 const main = (name: string, sets = 3) => ({ phase: 'principal', name, sets, reps: '8-10', weight: '20 kg', rirTarget: 2, notes: null, supersetGroup: null })
-const free = (phase: string, name: string, region: string | null = null) => ({ phase, name, sets: 1, reps: '5 min', weight: '—', region, notes: null })
-const body = (chest = 'Supino Reto (Halteres)') => {
+const prep = (phase: string, name: string) => ({ phase, name, sets: 1, reps: '5 min', weight: '—', notes: null })
+const approach = (exercise: string) => ({ phase: 'aproximacao', exercise, sets: 2, reps: '10, 6', weight: '40% e 60% da carga', notes: null })
+const body = (chest = 'Supino Reto (Halteres)', warmup = 'Círculos de braço') => {
   const day = [
-    free('aquecimento', 'Mobilidade de ombros'),
+    prep('aquecimento', warmup),
+    approach(chest),
     main(chest, 2),
     main('Remada Unilateral (Halteres)', 2),
     main('Desenvolvimento com Halteres', 2),
     main('Agachamento Goblet (Halteres)', 2),
     main('Levantamento Terra Romeno (Halteres)', 2),
     main('Elevação Pélvica (Peso Corporal)', 2),
-    free('volta-calma', 'Alongamento de peitoral'),
+    prep('volta-calma', 'Alongamento de peitoral na parede'),
   ]
   return {
     splitType: 'Full Body',
@@ -57,7 +59,7 @@ const body = (chest = 'Supino Reto (Halteres)') => {
     decisions: [{ topic: 'divisao', choice: 'Full Body', sources: ['preferencias'], reason: '2 dias de força' }],
     weekTemplate: [
       { letter: 'A', kind: 'forca', focus: 'Corpo todo', exercises: [...day, { phase: 'cardio', modality: 'bike', minutes: 20, zone: 'leve', notes: null }] },
-      { letter: 'B', kind: 'forca', focus: 'Corpo todo', exercises: [...day, free('mobilidade', 'Mobilidade de quadril', 'quadril')] },
+      { letter: 'B', kind: 'forca', focus: 'Corpo todo', exercises: [...day, prep('mobilidade', 'Quadril 90/90')] },
     ],
   }
 }
@@ -132,6 +134,28 @@ describe('generateMesocyclePlan — pedido', () => {
   })
 })
 
+describe('generateMesocyclePlan — preparação do catálogo (028 T089)', () => {
+  it('o schema só aceita a preparação que o equipamento permite, por fase, e a aproximação dos exercícios permitidos', async () => {
+    mockStream.mockReturnValueOnce(reply(body()))
+    await generateMesocyclePlan(input())
+    const schema = mockStream.mock.calls[0][0].output_config.format.schema
+    const alts = schema.properties.weekTemplate.items.properties.exercises.items.anyOf as { properties: Record<string, { enum?: string[] }> }[]
+    const byPhase = Object.fromEntries(alts.map(a => [a.properties.phase.enum![0], a]))
+    expect(byPhase.aquecimento.properties.name.enum).toContain('Marcha no lugar')
+    // halteres e peso corporal: a bike é da academia
+    expect(byPhase.aquecimento.properties.name.enum).not.toContain('Bike leve')
+    expect(byPhase.aproximacao.properties.exercise.enum).toContain('Supino Reto (Halteres)')
+    expect(byPhase.aproximacao.properties.exercise.enum).not.toContain('Supino Reto (Barra)')
+  })
+
+  it('item fora do catálogo (ou com equipamento indisponível) é trocado por código, sem nova tentativa', async () => {
+    mockStream.mockReturnValueOnce(reply(body('Supino Reto (Halteres)', 'Bike leve')))
+    const { plan } = await generateMesocyclePlan(input())
+    expect(mockStream).toHaveBeenCalledTimes(1)
+    expect(plan.sessions[0].exercises[0]).toMatchObject({ phase: 'aquecimento', catalogId: 'marcha-no-lugar', name: 'Marcha no lugar' })
+  })
+})
+
 describe('generateMesocyclePlan — resultado', () => {
   it('semana-modelo enriquecida (força com cues; cardio e mobilidade sem), decisões e uso', async () => {
     mockStream.mockReturnValueOnce(reply(body()))
@@ -146,7 +170,13 @@ describe('generateMesocyclePlan — resultado', () => {
     const bike = plan.sessions[0].exercises.find(e => e.cardio)!
     expect(bike).toMatchObject({ name: 'Bike ergométrica', cardio: { modality: 'bike', minutes: 20 } })
     expect(bike.cues).toBeUndefined()
-    expect(plan.sessions[1].exercises.find(e => e.region)).toMatchObject({ name: 'Mobilidade de quadril', region: 'quadril' })
+    expect(plan.sessions[1].exercises.find(e => e.region)).toMatchObject({ name: 'Quadril 90/90', region: 'quadril', catalogId: 'quadril-90-90' })
+    // 028: preparação com catalogId e aproximação apontando para o exercício de força, sem cues próprias
+    const [warm, appr] = plan.sessions[0].exercises
+    expect(warm).toMatchObject({ name: 'Círculos de braço', phase: 'aquecimento', catalogId: 'circulos-braco' })
+    expect(appr).toMatchObject({ name: 'Série de aproximação: Supino Reto (Halteres)', phase: 'aquecimento', approachOf: 'supino-reto-halteres' })
+    expect(appr.cues).toBeUndefined()
+    expect(plan.sessions[0].exercises.at(-2)).toMatchObject({ phase: 'volta-calma', catalogId: 'alongamento-peitoral-parede' })
     expect(decisions).toEqual([{ topic: 'divisao', choice: 'Full Body', sources: ['preferencias'], reason: '2 dias de força' }])
     expect(usages.map(u => [u.cacheTtl, u.cache_creation_input_tokens])).toEqual([
       ['5m', 1000],

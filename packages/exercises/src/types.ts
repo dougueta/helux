@@ -150,4 +150,6 @@ export interface ResolvedItem {
   tempo: string | null
   gearLabel: string | null
   isApproach: boolean
+  /** preparação: como a dose é contada (028 T091); null fora da preparação */
+  mode: PreparationItem['mode'] | null
 }

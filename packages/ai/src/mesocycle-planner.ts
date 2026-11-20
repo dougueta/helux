@@ -17,7 +17,7 @@ import type { BetaMessageParam } from '@anthropic-ai/sdk/resources/beta/messages
 import { buildMesocycleRequest, buildRetryRequest, buildTrainingMethod } from './mesocycle-prompts'
 import { EXERCISE_BANK, MUSCLE_GROUP_LABEL } from './exercise-bank'
 import { buildVariants } from './variants'
-import { allowedExercises, validatePlanAgainstConstraints } from './agents/constraints'
+import { allowedExercises, allowedPreparation, repairPreparationItems, validatePlanAgainstConstraints } from './agents/constraints'
 import { ensureFeasible } from './agents/feasibility'
 import { fitPlanToMethod } from './agents/method-repair'
 import { renderProfile } from './agents/render-profile'
@@ -103,7 +103,11 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
     throw new ConstraintsUnsatisfiableError([{ sessionIndex: 0, exercise: null, rule: 'metodo-estrutura', message: feasible.infeasible }], usages)
   }
   const method = feasible.method
-  const schema = buildMesocycleSchema({ exercises: allowedExercises(input.constraints).map(e => e.name), cardio: method.cardio.allowed })
+  const schema = buildMesocycleSchema({
+    exercises: allowedExercises(input.constraints).map(e => e.name),
+    cardio: method.cardio.allowed,
+    preparation: allowedPreparation(input.constraints).map(p => p.name),
+  })
   const request = buildMesocycleRequest({
     method,
     constraints: input.constraints,
@@ -138,7 +142,10 @@ export async function generateMesocyclePlan(input: GenerateMesocycleInput): Prom
 
     const text = messageText(message)
     const raw = JSON.parse(text) as RawMesocycleOutput
-    const sessions = fitPlanToMethod(toSessions(raw, input.geneticProfile ?? NEUTRAL_GENETICS), method, input.constraints)
+    // 028 (FR-027): preparação fora do catálogo é trocada por código, sem custar uma nova tentativa.
+    const prepared = repairPreparationItems(toSessions(raw, input.geneticProfile ?? NEUTRAL_GENETICS), input.constraints)
+    if (prepared.repairs.length > 0) console.warn('[mesociclo] preparação trocada:', prepared.repairs.map(r => r.exercise).join(', '))
+    const sessions = fitPlanToMethod(prepared.sessions, method, input.constraints)
     violations = [...validatePlanAgainstConstraints(sessions, input.constraints), ...validateAgainstMethod(sessions, method)]
     if (violations.length === 0) {
       return {

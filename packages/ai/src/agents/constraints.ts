@@ -1,6 +1,7 @@
 import type { ConstraintViolation, ExerciseAlternative, HardConstraints, MesocycleSession, PlannedExercise } from '@helux/types'
 import { EXERCISE_BANK, findBankExercise, type ExerciseBankEntry } from '../exercise-bank'
 import { CARDIO_BANK, findCardio, type CardioBankEntry } from '../cardio-bank'
+import { PREPARATION_ITEMS, type Gear, type PreparationItem, type PreparationPhase } from '@helux/exercises'
 
 const WARMUP_MIN = 5
 const EXECUTION_S_PER_SET = 40
@@ -52,6 +53,89 @@ const MESSAGES: Record<ConstraintViolation['rule'], (name: string) => string> = 
   'metodo-cardio': () => 'faltam sessões de cardio pedidas pelo método',
   'metodo-mobilidade': () => 'faltam sessões de mobilidade pedidas pelo método',
   'metodo-estrutura': () => 'número de dias de força diferente do pedido pelo método',
+  'item-fora-do-catalogo': n => `${n} não está no catálogo de preparação e foi trocado`,
+}
+
+/**
+ * Equipamento do usuário que cada implemento da preparação exige (028 T088). Toalha, faixa e
+ * bastão (cabo de vassoura) existem em qualquer casa; bike, remo, elástico, rolo e banco são da
+ * academia; a barra fixa segue o banco de força, que a trata como peso corporal.
+ */
+const GEAR_NEEDS: Partial<Record<Gear, HardConstraints['availableEquipment'][number]>> = {
+  bicicleta: 'maquina-cabo',
+  remo: 'maquina-cabo',
+  elastico: 'maquina-cabo',
+  rolo: 'maquina-cabo',
+  banco: 'maquina-cabo',
+  maquina: 'maquina-cabo',
+  cabo: 'maquina-cabo',
+  barra: 'barra',
+  halteres: 'halteres',
+  kettlebell: 'halteres',
+  'barra-fixa': 'peso-corporal',
+}
+
+/** Itens de preparação que o equipamento disponível permite (028 FR-027). Sem equipamento informado, todos. */
+export function allowedPreparation(c: HardConstraints): PreparationItem[] {
+  if (c.availableEquipment.length === 0) return PREPARATION_ITEMS
+  return PREPARATION_ITEMS.filter(p => p.needs.every(g => {
+    const need = GEAR_NEEDS[g]
+    return !need || c.availableEquipment.includes(need)
+  }))
+}
+
+/** Fase de preparação do item do plano; null para força, cardio e aproximação. */
+function preparationPhase(e: PlannedExercise): PreparationPhase | null {
+  if (e.cardio || e.approachOf) return null
+  if (e.phase === 'aquecimento' || e.phase === 'volta-calma') return e.phase
+  return e.region ? 'mobilidade' : null
+}
+
+/** Item do catálogo pelo id ou pelo nome (inclusive nomes antigos exatos). */
+function findPreparation(e: PlannedExercise): PreparationItem | undefined {
+  if (e.catalogId) return PREPARATION_ITEMS.find(p => p.id === e.catalogId)
+  return PREPARATION_ITEMS.find(p => p.name === e.name || p.knownNames.includes(e.name))
+}
+
+/**
+ * Troca determinística (028 T088): primeiro item permitido da mesma fase que cobre a região
+ * (sem região, a sistêmica), preferindo os que não pedem equipamento; sem nenhum da região,
+ * o primeiro da fase. Dose e observações do plano ficam.
+ */
+function replacementFor(phase: PreparationPhase, region: string, allowed: PreparationItem[]): PreparationItem | undefined {
+  const ofPhase = allowed.filter(p => p.phases.includes(phase))
+  const ranked = [...ofPhase].sort((a, b) => Number(a.needs.length > 0) - Number(b.needs.length > 0))
+  return ranked.find(p => (p.regions as string[]).includes(region)) ?? ranked[0]
+}
+
+/**
+ * Preparação sempre do catálogo (028 FR-027): o item que já está nele ganha `catalogId`; o que
+ * está fora dele, ou pede equipamento indisponível, é trocado e registrado na regra
+ * `item-fora-do-catalogo`. Não bloqueia o plano: a troca é por código, sem nova chamada à IA.
+ */
+export function repairPreparationItems(sessions: MesocycleSession[], c: HardConstraints): { sessions: MesocycleSession[]; repairs: ConstraintViolation[] } {
+  const allowed = allowedPreparation(c)
+  const allowedIds = new Set(allowed.map(p => p.id))
+  const repairs: ConstraintViolation[] = []
+  const fixed = sessions.map((session, sessionIndex) => ({
+    ...session,
+    exercises: session.exercises.map(e => {
+      const phase = preparationPhase(e)
+      if (!phase) return e
+      const found = findPreparation(e)
+      if (found && allowedIds.has(found.id) && found.phases.includes(phase)) {
+        return found.id === e.catalogId ? e : { ...e, catalogId: found.id }
+      }
+      const region = e.region ?? found?.regions[0] ?? 'sistemica'
+      const next = replacementFor(phase, region, allowed)
+      if (!next) return e
+      repairs.push({ sessionIndex, exercise: e.name, rule: 'item-fora-do-catalogo', message: MESSAGES['item-fora-do-catalogo'](e.name) })
+      const out: PlannedExercise = { ...e, name: next.name, catalogId: next.id }
+      if (phase === 'mobilidade') out.region = (next.regions as string[]).includes(region) ? (region as PlannedExercise['region']) : next.regions[0]
+      return out
+    }),
+  }))
+  return { sessions: fixed, repairs }
 }
 
 /**

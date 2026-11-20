@@ -41,9 +41,14 @@ describe('fixtures da persona padrão (021 T011)', () => {
   beforeEach(() => localStorage.clear())
   const d = datasetForPersona('standard-athlete')
 
-  it('todo exercício do mesociclo existe no banco de exercícios', () => {
-    const names = MESOCYCLE_SESSIONS.flatMap(s => s.exercises.map(e => e.name))
-    expect(names.filter(n => !BANK.has(n))).toEqual([])
+  it('todo exercício principal do mesociclo existe no banco; preparação e aproximação vêm do catálogo (028 T091)', () => {
+    const items = MESOCYCLE_SESSIONS.flatMap(s => s.exercises)
+    const main = items.filter(e => e.phase !== 'aquecimento' && e.phase !== 'volta-calma')
+    expect(main.map(e => e.name).filter(n => !BANK.has(n))).toEqual([])
+    const prep = items.filter(e => e.phase === 'aquecimento' || e.phase === 'volta-calma')
+    expect(prep.length).toBeGreaterThan(0)
+    expect(prep.filter(e => !e.catalogId && !e.approachOf).map(e => e.name)).toEqual([])
+    expect(prep.some(e => e.approachOf)).toBe(true)
   })
 
   it('histórico: 12 sessões nos últimos 30 dias, exercícios do banco', () => {
