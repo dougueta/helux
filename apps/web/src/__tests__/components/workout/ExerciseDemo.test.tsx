@@ -303,6 +303,14 @@ describe('ExerciseDemo — cenas e implementos (028)', () => {
     expect(container.querySelector('[data-part="implement"] line[data-dowel]')).not.toBeNull()
   })
 
+  it('faixa vai das mãos até o meio do pé', () => {
+    const { container } = render(<ExerciseDemo demo={demoOf({ gear: 'faixa', implementAt: 'ha' })} playing={false} label="x" />)
+    const strap = container.querySelector('[data-part="implement"] line[data-strap]')
+    expect(strap).not.toBeNull()
+    expect([strap!.getAttribute('x1'), strap!.getAttribute('y1')]).toEqual([String(STAND.ha[0]), String(STAND.ha[1])])
+    expect([strap!.getAttribute('x2'), strap!.getAttribute('y2')]).toEqual([String((STAND.an[0] + STAND.toe[0]) / 2), String((STAND.an[1] + STAND.toe[1]) / 2)])
+  })
+
   it('rolo e toalha ficam parados no ponto de apoio, sob o corpo', () => {
     const rolo = render(<ExerciseDemo demo={demoOf({ gear: 'rolo', anchor: [132, 226] })} playing={false} label="x" />)
     const roller = rolo.container.querySelector('[data-part="implement"] circle[data-roller]')

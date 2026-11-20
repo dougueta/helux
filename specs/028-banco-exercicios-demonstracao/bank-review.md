@@ -300,3 +300,23 @@ O apoio do dorsal no apoio pode ser um rack, o encosto de um aparelho ou a pared
 Demonstração: todas as bases usam `hold`, chegando à posição e parando. Peitoral e bíceps são montados com a figura de costas para a parede: o desenho espelha a figura para ela olhar para a esquerda. O peitoral foi refeito a pedido do dono, para quem nunca treinou entender de relance: a versão com o antebraço na parede depende de girar o tronco, o que não aparece de perfil. Agora a mão fica parada na parede, na altura do ombro, e a pessoa dá um passo à frente; o braço estica para trás. A perna que dá o passo é a principal. No bíceps, a mão fica na parede e o cotovelo estende. O dorsal no apoio vai de frente para a parede, com as mãos na altura do quadril. No dorsal no banco, os cotovelos ficam na borda do banco baixo e a cabeça pende à frente dele. No tríceps, a cabeça fica um pouco à frente para o braço passar atrás dela. O antebraço não tem punho no desenho, e a legenda explica. A postura da criança desce do tronco ereto até os braços tocarem o colchonete.
 
 Vista frontal com braços diferentes: no posterior de ombro, cada braço faz uma coisa. Na vista frontal espelhada, `el2`/`ha2` passam a ser o braço do lado espelhado, guardado já espelhado, e substituem a cópia do braço principal (`demo-parts.tsx`). Nenhuma base anterior tinha `el2` com espelho, então as demais demonstrações não mudam. O braço que cruza fica na altura do peito, abaixo da linha dos ombros, para não se confundir com ela.
+
+## Lote P5: Alongamentos de membros inferiores (T083)
+
+Itens novos do catálogo de preparação. `knownNames` fica para a T084.
+
+| id | fases | regiões | modo | equipamento |
+|:---|:---|:---|:---|:---|
+| alongamento-flexor-quadril | volta à calma, mobilidade | quadril, lombar | sustentação | nenhum |
+| alongamento-quadriceps-deitado | volta à calma | joelho, quadril | sustentação | nenhum |
+| alongamento-quadriceps-em-pe | volta à calma | joelho, quadril | sustentação | nenhum |
+| alongamento-posterior-coxa-faixa | volta à calma | joelho, quadril, lombar | sustentação | faixa |
+| alongamento-posterior-coxa-em-pe | volta à calma | joelho, quadril, lombar | sustentação | nenhum |
+| alongamento-gluteo-figura-4 | volta à calma, mobilidade | quadril, lombar | sustentação | nenhum |
+| alongamento-panturrilha-parede | volta à calma | tornozelo, joelho | sustentação | nenhum |
+
+Com o pedido do dono no P4 (quem nunca treinou precisa entender de relance), o lote usa versões em que o movimento acontece no plano do desenho, e a perna que alonga é a principal (em destaque). Todas as bases usam `hold`.
+
+Implemento novo: `faixa`, uma linha das mãos até o meio do pé. Serve uma toalha ou um cinto. Como está em `needs`, a T087 decide se a faixa conta como equipamento, como a toalha do P3.
+
+Demonstração: o quadríceps deitado de lado é visto de cima, porque de perfil o joelho dobra para dentro do desenho. A perna de cima fica um pouco afastada da de baixo, para o joelho dobrado aparecer, e a legenda explica. Na figura 4, a perna cruzada aponta para quem vê e por isso aparece mais curta; o joelho dela cai para fora, formando o "4". Esses dois são os desenhos mais abstratos do lote. No quadríceps em pé, a coxa vai um pouco para trás, para o pé aparecer atrás do corpo.

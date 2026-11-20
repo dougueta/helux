@@ -317,6 +317,12 @@ export function DemoImplement({ demo, pose }: { demo: ResolvedDemo; pose: Pose }
   const at = pose[demo.implementAt] ?? pose.ha
   const anchor = demo.anchor ?? G.DEFAULT_ANCHOR
 
+  // Faixa: das mãos até o meio do pé, que ela envolve.
+  if (demo.gear === 'faixa') {
+    const foot: Point = [(pose.an[0] + pose.toe[0]) / 2, (pose.an[1] + pose.toe[1]) / 2]
+    return <line data-strap x1={at[0]} y1={at[1]} x2={foot[0]} y2={foot[1]} stroke={ACC} strokeWidth="3" strokeLinecap="round" />
+  }
+
   // Rolo de espuma e toalha enrolada: parados no ponto de apoio (anchor), sob o corpo.
   if (demo.gear === 'rolo' || demo.gear === 'toalha') {
     const c = demo.anchor ?? at

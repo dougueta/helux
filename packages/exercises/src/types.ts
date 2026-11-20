@@ -25,11 +25,13 @@ export type Gear =
   /** rolo de espuma e toalha enrolada: ficam parados sob o corpo */
   | 'rolo'
   | 'toalha'
+  /** faixa (ou toalha, cinto) que vai das mãos até o pé */
+  | 'faixa'
   | 'nenhum'
 
 export const GEARS: readonly Gear[] = [
   'barra', 'halteres', 'kettlebell', 'maquina', 'smith', 'cabo', 'corda',
-  'peso-corporal', 'elastico', 'roda', 'banco', 'barra-fixa', 'bicicleta', 'remo', 'bastao', 'rolo', 'toalha', 'nenhum',
+  'peso-corporal', 'elastico', 'roda', 'banco', 'barra-fixa', 'bicicleta', 'remo', 'bastao', 'rolo', 'toalha', 'faixa', 'nenhum',
 ]
 
 /** Implementos que não carregam peso: nada é desenhado na mão. */

@@ -145,6 +145,19 @@ describe('lotes de preparação: demonstração, base válida e orientação com
     }
   })
 
+  it('lote P5, Alongamentos de membros inferiores (T083)', async () => {
+    const { ALONGAMENTOS_INFERIORES } = await import('../demos/alongamentos-inferiores')
+    const { PREPARATION_ITEMS } = await import('../preparation')
+    await expectBatchComplete(ALONGAMENTOS_INFERIORES, 7)
+    for (const [id, spec] of Object.entries(ALONGAMENTOS_INFERIORES.demos)) {
+      const item = PREPARATION_ITEMS.find((p) => p.id === id)
+      expect(item, id).toBeDefined()
+      expect(item!.mode, id).toBe('sustentacao')
+      if (!['nenhum', 'peso-corporal'].includes(spec.gear)) expect(item!.needs, id).toContain(spec.gear)
+    }
+    for (const b of ALONGAMENTOS_INFERIORES.bases) expect(b.loop, b.key).toBe('hold')
+  })
+
   it('lote P4, Alongamentos de tronco e membros superiores (T082)', async () => {
     const { ALONGAMENTOS_SUPERIORES } = await import('../demos/alongamentos-superiores')
     const { PREPARATION_ITEMS } = await import('../preparation')
