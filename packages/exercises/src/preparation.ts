@@ -520,10 +520,14 @@ export const PREPARATION_ITEMS: PreparationItem[] = [
     needs: [],
     knownNames: [],
     guidance: {
-      setup: ['Em pé, de lado para a parede, cotovelo dobrado e antebraço apoiado nela, cotovelo na altura do ombro'],
-      steps: ['Dê um passo à frente e gire o peito para longe da parede até sentir o peito e a frente do ombro', 'Fique na posição respirando devagar e troque de lado'],
-      commonError: 'Subir o cotovelo acima do ombro e sentir o ombro em vez do peito',
-      context: 'Um batente de porta serve do mesmo jeito',
+      setup: ['De costas para a parede, bem perto dela', 'Leve um braço para trás e apoie a palma da mão na parede, na altura do ombro'],
+      steps: [
+        'Dê um passo à frente, sem tirar a mão da parede: o braço estica para trás',
+        'Pare quando sentir o peito e a frente do ombro esticarem, sem dor',
+        'Fique assim respirando devagar e depois troque de braço',
+      ],
+      commonError: 'Dobrar o cotovelo ou deixar a mão escorregar para baixo',
+      context: 'Se o braço formigar, apoie a mão um pouco mais baixo',
     },
   },
   {

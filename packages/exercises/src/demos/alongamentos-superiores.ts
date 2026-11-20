@@ -43,27 +43,25 @@ function backToWall(sh: Point, torsoDeg: number, arm: { el: Point; ha: Point }):
 }
 
 /**
- * Peitoral na parede: cotovelo e antebraço apoiados na parede, atrás do corpo, com um pé à frente; o tronco avança
- * e o ombro passa da altura acima do cotovelo para a mesma altura dele. A perna de trás fica perto da parede.
+ * Peitoral na parede, pensado para quem nunca treinou: de costas para a parede, a mão fica parada nela na altura do
+ * ombro e a pessoa dá um passo à frente. O braço estica para trás e o peito abre. A perna que dá o passo é a
+ * principal (em destaque); a de trás fica parada perto da parede.
  */
-const PEC_EL: Point = [BACK_WALL_X + 4, 108]
-const PEC_HA: Point = [PEC_EL[0], PEC_EL[1] - BODY.forearm]
-const PEC_AN: Point = [66, ANKLE_Y]
-const PEC_AN2: Point = [28, ANKLE_Y]
-function pecStretch(shoulderDeg: number, torsoDeg: number): Pose {
-  const sh = polar(PEC_EL, BODY.upperArm, shoulderDeg)
-  const hip = polar(sh, BODY.torso, torsoDeg + 180)
+const PEC_HA: Point = [BACK_WALL_X + 4, 92]
+const PEC_BACK_AN: Point = [50, ANKLE_Y]
+function pecStep(hip: Point, frontAn: Point, torsoDeg: number): Pose {
+  const sh = polar(hip, BODY.torso, torsoDeg)
   return flip(r({
-    head: polar(sh, BODY.neck, torsoDeg + 8), sh, el: PEC_EL, ha: PEC_HA, hip,
-    kn: twoBone(PEC_AN, BODY.shin, hip, BODY.thigh, 'right'), an: PEC_AN, toe: polar(PEC_AN, BODY.foot, FOOT_DEG),
-    kn2: twoBone(PEC_AN2, BODY.shin, hip, BODY.thigh, 'right'), an2: PEC_AN2, toe2: polar(PEC_AN2, BODY.foot, FOOT_DEG),
+    head: polar(sh, BODY.neck, torsoDeg + 8), sh, el: twoBone(sh, BODY.upperArm, PEC_HA, BODY.forearm, 'below'), ha: PEC_HA, hip,
+    kn: twoBone(frontAn, BODY.shin, hip, BODY.thigh, 'right'), an: frontAn, toe: polar(frontAn, BODY.foot, FOOT_DEG),
+    kn2: twoBone(PEC_BACK_AN, BODY.shin, hip, BODY.thigh, 'right'), an2: PEC_BACK_AN, toe2: polar(PEC_BACK_AN, BODY.foot, FOOT_DEG),
   }))
 }
 const PEC_WALL = base(
   'alongamento-peitoral-parede',
-  'foot',
-  ['an', 'toe', 'an2', 'toe2', 'el', 'ha'],
-  spread([pecStretch(-30, -90), pecStretch(0, -80)]),
+  'hand',
+  ['ha', 'an2', 'toe2'],
+  spread([pecStep([50, 150.5], [52, ANKLE_Y], -90), pecStep([75, 154], [97, ANKLE_Y], -88)]),
   3600,
 )
 
@@ -239,8 +237,8 @@ export const ALONGAMENTOS_SUPERIORES: DemoFamily = {
   bases: [PEC_WALL, BICEPS_WALL, LAT_WALL, LAT_BENCH, TRICEPS, FOREARM, CROSS_BODY, CHILD, KNEES_CHEST],
   demos: {
     'alongamento-peitoral-parede': {
-      base: 'alongamento-peitoral-parede', gear: 'nenhum', scene: 'parede', implementAt: 'el',
-      caption: 'De costas para a parede: cotovelo e antebraço apoiados atrás, e o tronco avança',
+      base: 'alongamento-peitoral-parede', gear: 'nenhum', scene: 'parede', implementAt: 'sh',
+      caption: 'A mão fica parada na parede; o passo à frente estica o braço para trás e abre o peito',
     },
     'alongamento-dorsal-banco': { base: 'alongamento-dorsal-banco', gear: 'nenhum', scene: 'banco-baixo', implementAt: 'el' },
     'alongamento-dorsal-apoio': { base: 'alongamento-dorsal-apoio', gear: 'nenhum', scene: 'parede', implementAt: 'ha' },
