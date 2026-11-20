@@ -4,9 +4,10 @@
 
 | Rota / Local | Componente | Comportamento |
 |:---|:---|:---|
-| `/` (`HomeClient`) | `<WeeklyCalendarStrip />` | Tira visual compacta da semana corrente (segunda a domingo, `S T Q Q S S D`) posicionada na Home. Mostra cada um dos 7 dias com seu marcador visual (`--accent` para academia, `--success` para rotina complementar, anel para hoje), placar rápido da semana (ex.: `3/4 treinos · 13,5 t`) e ação de 1 toque que navega para `/history` (na aba `Calendário`). |
-| `/history` (`HistoryPage`) | `Segmented` (`Calendário` \| `Lista`) + `<WorkoutCalendarView />` | Ganha no topo um `Segmented` com `Calendário` como visão padrão (e suporte a `?modo=lista` ou `?modo=calendario`). Na aba `Calendário`, exibe o cabeçalho do mês + grade visual interativa + detalhe do dia selecionado + cartão **Saldo da Semana** + seção **Curiosidades** (`Semana` \| `Mês`). Na aba `Lista`, mantém a lista cronológica de `HistoryRow` existente. |
-| `/treinos` (`TreinosClient`) | Seção `"Treinos recentes"` | O link de cabeçalho `"Ver histórico"` passa a ser `"Ver calendário e histórico"` → `/history`, levando direto à visão de Calendário. |
+| `/` (`HomePage` + `HomeClient`) | `<WeeklyCalendarStrip />` | Tira visual compacta da semana corrente (segunda a domingo, `S T Q Q S S D`) posicionada logo abaixo do cartão do treino principal na Home (com pré-carregamento SSR em `app/page.tsx` e `Skeleton` enquanto carrega). Mostra cada um dos 7 dias com seu marcador visual (`--accent` para academia, `--success` para rotina complementar, anel para hoje), placar rápido da semana e ação de 1 toque que navega para `/recovery` (já na visão `Calendário`). |
+| `/recovery` (`RecoveryPage` — aba **Progresso** da `NavBar`) | `Segmented` (`Calendário` \| `Evolução`) + `<WorkoutCalendarView />` | Na 5ª aba da barra inferior (**Progresso**), exibe no topo o seletor `Calendário` (padrão) \| `Evolução`. Em `Calendário`, renderiza o Calendário de Treino completo (grade mensal, Detalhe do Dia, Saldo da Semana e Curiosidades). Em `Evolução`, exibe Recovery de hoje, Volume semanal, Recordes pessoais e treinos recentes. |
+| `/treinos` (`TreinosClient` — aba **Treinos** da `NavBar`) | `Segmented` (`Academia` \| `Rotinas` \| `Calendário`) | O seletor de topo da aba Treinos passa a ter 3 opções: `Academia`, `Rotinas` e `Calendário` (renderizando `<WorkoutCalendarView />` diretamente quando `Calendário` é selecionado). |
+| `/history` (`HistoryPage`) | `Segmented` (`Calendário` \| `Lista`) + `<WorkoutCalendarView />` | Exibe no topo um `Segmented` com `Calendário` como visão padrão e `Lista` para a lista cronológica completa de `HistoryRow`. |
 
 ---
 

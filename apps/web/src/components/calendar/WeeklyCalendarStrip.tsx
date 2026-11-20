@@ -6,6 +6,7 @@ import { formatTonnageValuePt, getMondayOfDate } from '@helux/workouts'
 import { useWorkoutCalendar } from '@/hooks/useWorkoutCalendar'
 import { Icon } from '@/components/ui/icons'
 import { SectionHeader } from '@/components/ui/SectionHeader'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 const SHORT_WEEKDAYS = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'] as const
 
@@ -14,7 +15,16 @@ export interface WeeklyCalendarStripProps {
 }
 
 export function WeeklyCalendarStrip({ initialView }: WeeklyCalendarStripProps) {
-  const { view } = useWorkoutCalendar(initialView)
+  const { view, loading } = useWorkoutCalendar(initialView)
+
+  if (loading && !view) {
+    return (
+      <section style={{ marginTop: 24 }} aria-label="Resumo semanal do calendário" aria-busy="true">
+        <SectionHeader title="Sua semana" />
+        <Skeleton h={108} r={16} />
+      </section>
+    )
+  }
 
   if (!view) return null
 
