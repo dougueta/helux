@@ -18,6 +18,7 @@ import { SessionEditSheet } from '@/components/agents/SessionEditSheet'
 import { TodayAdjustCard } from '@/components/agents/TodayAdjustCard'
 import { AgentChat } from '@/components/agents/AgentChat'
 import { RoutinesTab } from '@/components/routines/RoutinesTab'
+import { WorkoutCalendarView } from '@/components/calendar/WorkoutCalendarView'
 import { sessionDateLabel, summarizeSession } from '@/lib/sessionSummary'
 import type { WorkoutSessionRow } from '@/hooks/useWorkoutHistory'
 import type { AdjustedWorkoutPlanView, ComplementaryRoutinesView } from '@helux/types'
@@ -30,10 +31,10 @@ interface TreinosClientProps {
   plan: AdjustedWorkoutPlanView | null
   recentSessions: WorkoutSessionRow[]
   routinesView?: ComplementaryRoutinesView | null
-  initialTab?: 'academia' | 'rotinas'
+  initialTab?: 'academia' | 'rotinas' | 'calendario'
 }
 
-/** Treinos (FR-023 + Spec 030): sub-abas Academia e Rotinas. */
+/** Treinos (FR-023 + Spec 030 + Spec 031): sub-abas Academia, Rotinas e Calendário. */
 export function TreinosClient({
   plan: initialPlan,
   recentSessions,
@@ -43,7 +44,7 @@ export function TreinosClient({
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
   const { plan, generating, generationError, generatePlan, repeatWeek, refetch } = useWorkoutPlan()
-  const [tab, setTab] = useState<'academia' | 'rotinas'>(initialTab)
+  const [tab, setTab] = useState<'academia' | 'rotinas' | 'calendario'>(initialTab)
   const [editing, setEditing] = useState<number | null>(null)
   // Spec 026: detalhe só leitura do exercício tocado na lista.
   const [viewing, setViewing] = useState<number | null>(null)
@@ -74,13 +75,16 @@ export function TreinosClient({
           options={[
             { value: 'academia', label: 'Academia' },
             { value: 'rotinas', label: 'Rotinas' },
+            { value: 'calendario', label: 'Calendário' },
           ]}
           value={tab}
           onChange={setTab}
         />
       </div>
 
-      {tab === 'rotinas' ? (
+      {tab === 'calendario' ? (
+        <WorkoutCalendarView />
+      ) : tab === 'rotinas' ? (
         <RoutinesTab initialView={routinesView} />
       ) : (
         <>

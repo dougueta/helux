@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { AdjustedWorkoutPlanView, BodyMeasurement, BodyWeight, PlannedExercise } from '@helux/types'
+import type { AdjustedWorkoutPlanView, BodyMeasurement, BodyWeight, PlannedExercise, TrainingCalendarMonthView } from '@helux/types'
 import { useActiveWorkout } from '@/hooks/useActiveWorkout'
 import { useWorkoutPlan } from '@/hooks/useWorkoutPlan'
 import { useTirednessFlow } from '@/hooks/useTirednessFlow'
@@ -34,6 +34,7 @@ interface HomeClientProps {
   weights: BodyWeight[]
   measurements: BodyMeasurement[]
   analytics: { thisWeekSessions: number; currentStreakWeeks: number } | null
+  calendarView?: TrainingCalendarMonthView | null
 }
 
 function todayLabel() {
@@ -89,7 +90,7 @@ function HomeSkeleton() {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function HomeClient({ plan: initialPlan, firstName, weights, measurements, analytics }: HomeClientProps) {
+export function HomeClient({ plan: initialPlan, firstName, weights, measurements, analytics, calendarView }: HomeClientProps) {
   const router = useRouter()
   const { startWorkout } = useActiveWorkout()
   const { plan, loading, generating, generationError, generatePlan, repeatWeek, refetch } = useWorkoutPlan()
@@ -248,8 +249,8 @@ export function HomeClient({ plan: initialPlan, firstName, weights, measurements
 
       {/* Spec 024: crise de gota além do prazo → procurar o médico. */}
       <FlareNotice onChange={() => void refetch()} />
+      <WeeklyCalendarStrip initialView={calendarView} />
       <DailyRoutinesSection />
-      <WeeklyCalendarStrip />
       {/* Spec 024: no começo de um ciclo novo, o resumo do anterior e o que mudou. */}
       {currentPlan?.mesocycleId && currentPlan.progress?.completed === 0 && <CycleSummaryCard mesocycleId={currentPlan.mesocycleId} />}
 

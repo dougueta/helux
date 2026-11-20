@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import type { TrainingCalendarMonthView } from '@helux/types'
 import { getLatestPlan, serverFetch } from '@/lib/server-api'
 import { getServerSession } from '@/lib/server-session'
 import { HomeClient } from './HomeClient'
@@ -30,14 +31,27 @@ async function getAnalytics(token: string) {
   } catch { return null }
 }
 
+async function getCalendarView(token: string): Promise<TrainingCalendarMonthView | null> {
+  try {
+    const res = await serverFetch(`/api/workouts/calendar`, {
+      headers: { Authorization: `Bearer ${token}` },
+      next: { revalidate: 60 },
+    })
+    return res.ok ? ((await res.json()) as TrainingCalendarMonthView) : null
+  } catch {
+    return null
+  }
+}
+
 export default async function HomePage() {
   const session = await getServerSession()
   if (!session) redirect('/login')
 
-  const [plan, body, analytics] = await Promise.all([
+  const [plan, body, analytics, calendarView] = await Promise.all([
     getLatestPlan(session.access_token),
     getBody(session.access_token),
     getAnalytics(session.access_token),
+    getCalendarView(session.access_token),
   ])
 
   const firstName = session.user.email?.split('@')[0] ?? 'atleta'
@@ -49,6 +63,7 @@ export default async function HomePage() {
       weights={body.weights}
       measurements={body.measurements}
       analytics={analytics}
+      calendarView={calendarView}
     />
   )
 }
