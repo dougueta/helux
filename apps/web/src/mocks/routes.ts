@@ -1,5 +1,6 @@
 import type { AdjustedWorkoutPlanView, BodyMeasurement, BodyWeight, DayType, DietCalibration, DietGoal, DietPhase, MealSwap, TirednessLevel, UserTrainingProfileInput } from '@helux/types'
 import { addDays, ageOn, buildDayPlan, effectiveBodyFat, evaluateRecalibration, navyEstimate, phaseTargets, swapOptions } from '@helux/nutrition'
+import { buildTrainingCalendarMonth } from '@helux/workouts'
 import { currentWeight } from './body'
 import type { MeasurementInput } from '@helux/types'
 import { ApiError } from '@/services/api-client'
@@ -85,6 +86,23 @@ function registerReads(router: MockRouter) {
   })
 
   router.register('GET', '/api/workouts/analytics', ({ data }) => data.workoutAnalytics)
+
+  // Spec 031: Calendário de treino, saldo da semana e curiosidades.
+  router.register('GET', '/api/workouts/calendar', ({ data, query }) => {
+    const currentDay = today()
+    const currentMonth = currentDay.slice(0, 7)
+    const month = query.get('month') ?? currentMonth
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new ApiError('invalid-month')
+    if (month > currentMonth) throw new ApiError('future-month')
+    return buildTrainingCalendarMonth({
+      month,
+      today: currentDay,
+      sessions: data.workoutHistory,
+      routineLogs: data.complementaryLogs ?? [],
+      weights: data.bodyWeights ?? [],
+      targetGymDays: data.agents?.preferences.availableDays.length || 4,
+    })
+  })
   router.register('GET', '/api/tiredness-today', ({ data }) => data.tirednessToday)
 
   router.register('GET', '/api/recovery/latest', ({ data }) => {
