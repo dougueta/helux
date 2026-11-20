@@ -178,7 +178,10 @@ export function DemoScene({ scene }: { scene: Scene }) {
   }
 }
 
-/** Figura articulada. Membros do lado oposto em tom de corpo; `mirror` desenha o outro lado espelhado (vista frontal). */
+/**
+ * Figura articulada. Membros do lado oposto em tom de corpo; `mirror` desenha o outro lado espelhado (vista frontal).
+ * Na vista frontal, `el2`/`ha2` são o braço do lado espelhado, guardado já espelhado: substituem a cópia do braço principal.
+ */
 export function DemoFigure({ pose, mirror }: { pose: Pose; mirror: boolean }) {
   const limb = { stroke: 'var(--text)', strokeWidth: 7, strokeLinecap: 'round' as const, fill: 'none' }
   const body = { stroke: 'var(--text-dim)', strokeWidth: 7, strokeLinecap: 'round' as const, fill: 'none' }
@@ -188,6 +191,8 @@ export function DemoFigure({ pose, mirror }: { pose: Pose; mirror: boolean }) {
   const cx = G.VIEWBOX.width / 2
   const midSh: Point = mirror ? [cx, pose.sh[1]] : pose.sh
   const midHip: Point = mirror ? [cx, pose.hip[1]] : pose.hip
+  const ownMirrorArm = mirror && pose.el2 && pose.ha2 ? { el: pose.el2, ha: pose.ha2 } : null
+  const mirrorArm = ownMirrorArm ?? { el: pose.el, ha: pose.ha }
   const marker = (joint: string, p: Point | undefined) =>
     p ? <circle key={joint} data-joint={joint} cx={p[0]} cy={p[1]} r={0} fill="none" /> : null
 
@@ -195,7 +200,7 @@ export function DemoFigure({ pose, mirror }: { pose: Pose; mirror: boolean }) {
     <g data-part="figure">
       <g {...body}>
         {pose.kn2 && pose.an2 && pose.toe2 && [seg(pose.hip, pose.kn2, 'b1'), seg(pose.kn2, pose.an2, 'b2'), seg(pose.an2, pose.toe2, 'b3')]}
-        {pose.el2 && pose.ha2 && [seg(pose.sh, pose.el2, 'b4'), seg(pose.el2, pose.ha2, 'b5')]}
+        {!mirror && pose.el2 && pose.ha2 && [seg(pose.sh, pose.el2, 'b4'), seg(pose.el2, pose.ha2, 'b5')]}
         {mirror && seg(pose.sh, mir(pose.sh), 'b6')}
         {mirror && seg(pose.hip, mir(pose.hip), 'b7')}
         {seg(midSh, midHip, 'b8')}
@@ -210,15 +215,15 @@ export function DemoFigure({ pose, mirror }: { pose: Pose; mirror: boolean }) {
       <g data-part="arms" {...limb}>
         {seg(pose.sh, pose.el, 'a1')}
         {seg(pose.el, pose.ha, 'a2')}
-        {mirror && [seg(f(pose.sh), f(pose.el), 'm4'), seg(f(pose.el), f(pose.ha), 'm5')]}
+        {mirror && [seg(f(pose.sh), f(mirrorArm.el), 'm4'), seg(f(mirrorArm.el), f(mirrorArm.ha), 'm5')]}
       </g>
       <circle data-joint="kn" cx={pose.kn[0]} cy={pose.kn[1]} r="4.5" fill={jointFill} />
       <circle data-joint="el" cx={pose.el[0]} cy={pose.el[1]} r="4.5" fill={jointFill} />
-      {pose.el2 && <circle data-joint="el2" cx={pose.el2[0]} cy={pose.el2[1]} r="4.5" fill={jointFill} />}
+      {pose.el2 && <circle data-joint="el2" cx={f(pose.el2)[0]} cy={f(pose.el2)[1]} r="4.5" fill={jointFill} />}
       {marker('hip', pose.hip)}
       {marker('sh', pose.sh)}
       {marker('ha', pose.ha)}
-      {marker('ha2', pose.ha2)}
+      {marker('ha2', pose.ha2 && f(pose.ha2))}
       {marker('an', pose.an)}
       {marker('an2', pose.an2)}
     </g>

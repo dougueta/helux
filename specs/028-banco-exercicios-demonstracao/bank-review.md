@@ -276,3 +276,27 @@ A coluna torácica não é uma região de `REGIONS`; os itens torácicos usam om
 Implementos novos: `rolo` (rolo de espuma) e `toalha` (toalha enrolada). Os dois ficam parados no ponto de apoio (`anchor`), sob o corpo. Como estão em `needs`, a geração de planos (T087) precisa decidir se toalha conta como equipamento; até lá, o joelho tem itens sem equipamento suficientes.
 
 Demonstração: os itens em quatro apoios compartilham a mesma posição (mão sob o ombro, joelho sob o quadril). Na rotação torácica em quatro apoios, o braço livre aparece encurtado, com a mão na nuca, e o cotovelo vai de baixo até o teto; a legenda explica. O traço do tronco é reto, então no gato-camelo a curva das costas aparece pela cabeça, que desce e sobe; a legenda explica. A rotação deitado de lado é vista a partir da cabeça, para o braço abrir no plano do desenho sem mudar de comprimento: é o desenho mais abstrato do lote, e a legenda explica. No rolo, o quadril fica no chão e o tronco desce até encostar no rolo, com a cabeça indo para trás. Na báscula pélvica, o quadril gira e sobe só um pouco, bem menos que numa ponte; a legenda explica. Na revisão, a báscula, a respiração e as duas extensões de joelho tiveram o movimento aumentado, porque pareciam paradas. Na extensão de joelho, a toalha fica sob o joelho e o calcanhar sobe quando a perna estende. Na extensão terminal, o elástico vai da parede até o joelho. Na respiração, só a mão da barriga sobe.
+
+## Lote P4: Alongamentos de tronco e membros superiores (T082)
+
+Itens novos do catálogo de preparação. `knownNames` fica para a T084.
+
+| id | fases | regiões | modo | equipamento |
+|:---|:---|:---|:---|:---|
+| alongamento-peitoral-parede | volta à calma | ombro | sustentação | nenhum |
+| alongamento-dorsal-banco | volta à calma | ombro, lombar | sustentação | banco |
+| alongamento-dorsal-apoio | volta à calma | ombro, lombar | sustentação | nenhum |
+| alongamento-posterior-ombro | volta à calma | ombro | sustentação | nenhum |
+| alongamento-biceps-parede | volta à calma | cotovelo, ombro | sustentação | nenhum |
+| alongamento-triceps | volta à calma | cotovelo, ombro | sustentação | nenhum |
+| alongamento-antebraco | volta à calma | punho, cotovelo | sustentação | nenhum |
+| postura-crianca | volta à calma, mobilidade | lombar, quadril, ombro | sustentação | nenhum |
+| joelhos-ao-peito | volta à calma, mobilidade | lombar, quadril | sustentação | nenhum |
+
+Nomes: o `data-model.md` agrupa os alongamentos com nomes curtos ("Peitoral na parede", "Antebraço"). No catálogo, o nome aparece sozinho no treino, então os alongamentos levam "Alongamento de" na frente, como a IA já escrevia. "Postura da criança" e "Joelhos ao peito" já se explicam.
+
+O apoio do dorsal no apoio pode ser um rack, o encosto de um aparelho ou a parede, então o item fica sem equipamento. O antebraço é o primeiro item da região punho.
+
+Demonstração: todas as bases usam `hold`, chegando à posição e parando. Peitoral e bíceps são montados com a figura de costas para a parede: o desenho espelha a figura para ela olhar para a esquerda. O peitoral foi refeito a pedido do dono, para quem nunca treinou entender de relance: a versão com o antebraço na parede depende de girar o tronco, o que não aparece de perfil. Agora a mão fica parada na parede, na altura do ombro, e a pessoa dá um passo à frente; o braço estica para trás. A perna que dá o passo é a principal. No bíceps, a mão fica na parede e o cotovelo estende. O dorsal no apoio vai de frente para a parede, com as mãos na altura do quadril. No dorsal no banco, os cotovelos ficam na borda do banco baixo e a cabeça pende à frente dele. No tríceps, a cabeça fica um pouco à frente para o braço passar atrás dela. O antebraço não tem punho no desenho, e a legenda explica. A postura da criança desce do tronco ereto até os braços tocarem o colchonete.
+
+Vista frontal com braços diferentes: no posterior de ombro, cada braço faz uma coisa. Na vista frontal espelhada, `el2`/`ha2` passam a ser o braço do lado espelhado, guardado já espelhado, e substituem a cópia do braço principal (`demo-parts.tsx`). Nenhuma base anterior tinha `el2` com espelho, então as demais demonstrações não mudam. O braço que cruza fica na altura do peito, abaixo da linha dos ombros, para não se confundir com ela.

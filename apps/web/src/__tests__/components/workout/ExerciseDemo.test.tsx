@@ -243,6 +243,17 @@ describe('ExerciseDemo — demonstração do catálogo (028)', () => {
     expect(near(jointAt(second.container, 'ha2'), STAND.ha)).toBe(false)
   })
 
+  it('vista frontal com el2/ha2: o lado espelhado usa esse braço, e não a cópia do braço principal', () => {
+    const cross: Pose = { ...STAND, el: [140, 72], ha: [168, 70], el2: [96, 98], ha2: [118, 84] }
+    const demo = demoOf({ view: 'front', mirror: true, gear: 'nenhum', keyframes: [{ at: 0, pose: cross }, { at: 1, pose: cross }] })
+    const { container } = render(<ExerciseDemo demo={demo} playing={false} label="x" />)
+    const arms = [...container.querySelectorAll('[data-part="arms"] line')].map((l) => ['x1', 'y1', 'x2', 'y2'].map((a) => Number(l.getAttribute(a))))
+    // espelho em torno de x = 110: el2 (96, 98) aparece em (124, 98)
+    expect(arms.some(([, , x2, y2]) => x2 === 124 && y2 === 98)).toBe(true)
+    expect(arms.some(([, , x2, y2]) => x2 === 220 - 140 && y2 === 72)).toBe(false)
+    expect(near(jointAt(container, 'el2'), [124, 98])).toBe(true)
+  })
+
   it('caption aparece como texto real abaixo da demonstração', () => {
     const { getByText, container } = render(<ExerciseDemo demo={demoOf({ caption: 'Pegada fechada' })} playing={false} label="x" />)
     const caption = getByText('Pegada fechada')
