@@ -1,3 +1,4 @@
+import { APPROACH_NAMES } from './approach-names'
 import { CARDIO_BANK, type PlannedExercise } from '@helux/types'
 import { CARDIO_GUIDANCE } from './cardio-guidance'
 import { PENDING_IDS } from './pending'
@@ -26,6 +27,7 @@ export const GEAR_LABEL: Record<Gear, string | null> = {
   bastao: 'Bastão',
   rolo: 'Rolo de espuma',
   toalha: 'Toalha',
+  faixa: 'Faixa',
   nenhum: null,
 }
 
@@ -68,6 +70,7 @@ export function createResolver(sources: ResolverSources = {}) {
   const byId = new Map<string, Entry>()
   const strengthByName = new Map<string, Entry>()
   const prepByName = new Map<string, Entry>()
+  const approachByName = new Map<string, Entry>()
 
   for (const e of strength) {
     const entry: Entry = { id: e.id, name: e.name, kind: 'forca', guidance: e.guidance ?? null, muscles: e.muscles, tempo: e.tempo, gear: e.gear }
@@ -79,6 +82,10 @@ export function createResolver(sources: ResolverSources = {}) {
     byId.set(p.id, entry)
     for (const n of [p.name, ...p.knownNames]) prepByName.set(normalize(n), entry)
   }
+  for (const [name, id] of Object.entries(APPROACH_NAMES)) {
+    const entry = byId.get(id)
+    if (entry?.kind === 'forca') approachByName.set(normalize(name), entry)
+  }
   for (const c of CARDIO_BANK) {
     byId.set(c.id, { id: c.id, name: c.name, kind: 'cardio', guidance: CARDIO_GUIDANCE[c.id]?.guidance ?? null, muscles: null, tempo: null, gear: null })
   }
@@ -88,7 +95,13 @@ export function createResolver(sources: ResolverSources = {}) {
   function findPlanned(exercise: PlannedExercise): Entry | undefined {
     if (exercise.catalogId) return byId.get(exercise.catalogId)
     if (exercise.cardio) return byId.get(exercise.cardio.modality)
-    return strengthByName.get(exercise.name) ?? prepByName.get(normalize(exercise.name))
+    return strengthByName.get(exercise.name) ?? prepByName.get(normalize(exercise.name)) ?? legacyApproach(exercise)
+  }
+
+  /** Série de aproximação de um plano antigo, pela lista curada (sem `approachOf`). */
+  function legacyApproach(exercise: PlannedExercise): Entry | undefined {
+    if (exercise.approachOf || exercise.catalogId || exercise.cardio) return undefined
+    return approachByName.get(normalize(exercise.name))
   }
 
   function find(exercise: PlannedExercise, variantId?: string): Entry | undefined {
@@ -100,8 +113,8 @@ export function createResolver(sources: ResolverSources = {}) {
   }
 
   return function resolve(exercise: PlannedExercise, variantId?: string): ResolvedItem {
-    const isApproach = Boolean(exercise.approachOf)
     const entry = find(exercise, variantId)
+    const isApproach = Boolean(exercise.approachOf) || (entry !== undefined && entry === findPlanned(exercise) && entry === legacyApproach(exercise))
     if (!entry) {
       return { id: null, name: exercise.name, kind: null, demoState: 'indisponivel', guidance: null, muscles: null, tempo: null, gearLabel: null, isApproach }
     }

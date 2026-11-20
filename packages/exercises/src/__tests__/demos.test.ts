@@ -145,6 +145,19 @@ describe('lotes de preparação: demonstração, base válida e orientação com
     }
   })
 
+  it('lote P5, Alongamentos de membros inferiores (T083)', async () => {
+    const { ALONGAMENTOS_INFERIORES } = await import('../demos/alongamentos-inferiores')
+    const { PREPARATION_ITEMS } = await import('../preparation')
+    await expectBatchComplete(ALONGAMENTOS_INFERIORES, 7)
+    for (const [id, spec] of Object.entries(ALONGAMENTOS_INFERIORES.demos)) {
+      const item = PREPARATION_ITEMS.find((p) => p.id === id)
+      expect(item, id).toBeDefined()
+      expect(item!.mode, id).toBe('sustentacao')
+      if (!['nenhum', 'peso-corporal'].includes(spec.gear)) expect(item!.needs, id).toContain(spec.gear)
+    }
+    for (const b of ALONGAMENTOS_INFERIORES.bases) expect(b.loop, b.key).toBe('hold')
+  })
+
   it('lote P4, Alongamentos de tronco e membros superiores (T082)', async () => {
     const { ALONGAMENTOS_SUPERIORES } = await import('../demos/alongamentos-superiores')
     const { PREPARATION_ITEMS } = await import('../preparation')
@@ -162,7 +175,8 @@ describe('lotes de preparação: demonstração, base válida e orientação com
   it('lote P3, Mobilidade de coluna e joelho e relaxamento (T081)', async () => {
     const { PREPARACAO_COLUNA } = await import('../demos/preparacao-coluna')
     const { PREPARATION_ITEMS } = await import('../preparation')
-    await expectBatchComplete(PREPARACAO_COLUNA, 10)
+    // 10 do lote P3 e a mobilidade de punho da T084, que reaproveita os quatro apoios
+    await expectBatchComplete(PREPARACAO_COLUNA, 11)
     for (const [id, spec] of Object.entries(PREPARACAO_COLUNA.demos)) {
       const item = PREPARATION_ITEMS.find((p) => p.id === id)
       expect(item, id).toBeDefined()

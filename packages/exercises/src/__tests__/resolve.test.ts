@@ -64,6 +64,14 @@ describe('resolvePlannedItem — ordem de data-model.md', () => {
     expect(resolve({ ...base, name: 'Mobilidade de coluna gato e vaca' }).id).toBe('gato-camelo')
   })
 
+  it('6b. nome antigo de aproximação da lista curada: exercício de força, marcado como aproximação', () => {
+    const r = resolvePlannedItem({ ...base, name: 'Séries de aproximação no leg press', phase: 'aquecimento' })
+    expect(r.id).toBe('leg-press-45')
+    expect(r.isApproach).toBe(true)
+    // nome ambíguo (mais de um exercício) fica fora da lista
+    expect(resolvePlannedItem({ ...base, name: 'Séries de aproximação no agachamento e no supino', phase: 'aquecimento' }).id).toBeNull()
+  })
+
   it('7. sem correspondência: id null e indisponível, sem outra animação', () => {
     const r = resolvePlannedItem({ ...base, name: 'Exercício inventado', variants: [variant('x', 'Exercício inventado', { rec: true, motion: 'press-flat' })] })
     expect(r.id).toBeNull()
