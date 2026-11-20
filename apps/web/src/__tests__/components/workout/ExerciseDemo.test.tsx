@@ -292,6 +292,15 @@ describe('ExerciseDemo — cenas e implementos (028)', () => {
     expect(container.querySelector('[data-part="implement"] line[data-dowel]')).not.toBeNull()
   })
 
+  it('rolo e toalha ficam parados no ponto de apoio, sob o corpo', () => {
+    const rolo = render(<ExerciseDemo demo={demoOf({ gear: 'rolo', anchor: [132, 226] })} playing={false} label="x" />)
+    const roller = rolo.container.querySelector('[data-part="implement"] circle[data-roller]')
+    expect(roller?.getAttribute('cx')).toBe('132')
+    expect(roller?.getAttribute('cy')).toBe('226')
+    const toalha = render(<ExerciseDemo demo={demoOf({ gear: 'toalha', anchor: [52, 229] })} playing={false} label="x" />)
+    expect(toalha.container.querySelector('[data-part="implement"] [data-towel]')).not.toBeNull()
+  })
+
   it('barra com ponto de apoio (landmine) desenha a barra do apoio até as mãos', () => {
     const { container } = render(<ExerciseDemo demo={demoOf({ gear: 'barra', anchor: [204, 238] })} playing={false} label="x" />)
     const line = container.querySelector('[data-part="implement"] line[data-landmine]')

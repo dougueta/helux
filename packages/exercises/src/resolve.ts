@@ -24,6 +24,8 @@ export const GEAR_LABEL: Record<Gear, string | null> = {
   bicicleta: 'Bicicleta',
   remo: 'Remo ergômetro',
   bastao: 'Bastão',
+  rolo: 'Rolo de espuma',
+  toalha: 'Toalha',
   nenhum: null,
 }
 
