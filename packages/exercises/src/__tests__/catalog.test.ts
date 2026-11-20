@@ -6,6 +6,11 @@ import { PENDING_IDS } from '../resolve'
 import { checkCatalog, coverageByKind, guidanceIssues, itemHash } from '../review/check'
 import approvals from '../review/approvals.json'
 import snapshot from './fixtures/strength-snapshot.json'
+import legacyNames from './fixtures/legacy-item-names.json'
+import legacyUnresolved from './fixtures/legacy-unresolved.json'
+import { REGIONS } from '@helux/types'
+import { PREPARATION_ITEMS } from '../preparation'
+import { resolvePlannedItem } from '../resolve'
 import type { MovementBase } from '../engine/types'
 
 const APPROVALS = approvals as Record<string, string>
@@ -35,6 +40,28 @@ describe('catálogo — invariantes', () => {
   it('toda demonstração registrada pertence a um item do catálogo', () => {
     const ids = new Set(CATALOG.map((i) => i.id))
     expect(Object.keys(DEMO_SPECS).filter((id) => !ids.has(id))).toEqual([])
+  })
+
+  it('6. cada região tem ao menos 2 itens de preparação, ao menos 1 sem equipamento', () => {
+    const gaps = REGIONS.flatMap((region) => {
+      const items = PREPARATION_ITEMS.filter((p) => (p.regions as string[]).includes(region))
+      const free = items.filter((p) => p.needs.length === 0)
+      return items.length >= 2 && free.length >= 1 ? [] : [`${region}: ${items.length} itens, ${free.length} sem equipamento`]
+    })
+    expect(gaps).toEqual([])
+  })
+
+  it('8. todo nome antigo resolve ou é um caso documentado em legacy-unresolved.json', () => {
+    const documented = legacyUnresolved as Record<string, string>
+    const all = Object.entries(legacyNames as Record<string, string[]>).flatMap(([phase, names]) => names.map((name) => ({ phase, name })))
+    const resolves = (phase: string, name: string) =>
+      resolvePlannedItem({ name, phase: phase as 'aquecimento', sets: 1, reps: '1', weight: '' }).id !== null
+    // sem correspondência e sem documentação
+    expect(all.filter(({ phase, name }) => !resolves(phase, name) && !documented[name]).map((e) => e.name)).toEqual([])
+    // a lista documentada não esconde nome que resolve, nem nome que não está nos planos
+    expect(all.filter(({ phase, name }) => documented[name] && resolves(phase, name)).map((e) => e.name)).toEqual([])
+    const known = new Set(all.map((e) => e.name))
+    expect(Object.keys(documented).filter((n) => !known.has(n))).toEqual([])
   })
 
   it('4. os 122 nomes atuais continuam presentes', () => {
