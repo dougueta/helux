@@ -208,6 +208,32 @@ describe('generateAndSaveMesocycle', () => {
     expect(saved[1].supersetGroup).toBeUndefined()
   })
 
+  it('028 (SC-010): catalogId e approachOf chegam ao plano salvo e todo item resolve com demonstração', async () => {
+    generateMesocyclePlanMock.mockResolvedValue(planResult({
+      ...MOCK_MESOCYCLE,
+      sessions: [{
+        letter: 'A', focus: 'Peito', completedAt: null,
+        exercises: [
+          { name: 'Círculos de braço', sets: 1, reps: '5 min', weight: '—', phase: 'aquecimento', catalogId: 'circulos-braco' },
+          { name: 'Série de aproximação: Supino Reto (Barra)', sets: 2, reps: '10, 6', weight: '40kg', phase: 'aquecimento', approachOf: 'supino-reto-barra' },
+          { name: 'Supino Reto (Barra)', sets: 4, reps: '8-10', weight: '80kg', phase: 'principal' },
+          { name: 'Alongamento de peitoral na parede', sets: 1, reps: '30 s', weight: '—', phase: 'volta-calma', catalogId: 'alongamento-peitoral-parede' },
+        ],
+      }],
+    }))
+    const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')
+    const { resolvePlannedItem } = await import('@helux/exercises')
+
+    await generateAndSaveMesocycle('user-123', 'token-abc', supabase, logger as never)
+
+    const saved = insertMock.mock.calls[0][0].sessions[0].exercises
+    expect(saved[0].catalogId).toBe('circulos-braco')
+    expect(saved[1].approachOf).toBe('supino-reto-barra')
+    expect(saved[3].catalogId).toBe('alongamento-peitoral-parede')
+    for (const e of saved) expect(resolvePlannedItem(e).id, e.name).not.toBeNull()
+    expect(resolvePlannedItem(saved[1]).isApproach).toBe(true)
+  })
+
   it('teto de IA atingido: não gera e o mesociclo atual continua (FR-026)', async () => {
     assertBudgetMock.mockRejectedValue(new BudgetExceededError('teto'))
     const { generateAndSaveMesocycle } = await import('../services/plan-generation.service')

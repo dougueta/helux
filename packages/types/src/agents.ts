@@ -232,6 +232,8 @@ export interface ConstraintViolation {
     | 'metodo-cardio'
     | 'metodo-mobilidade'
     | 'metodo-estrutura'
+    // Spec 028: preparação fora do catálogo, trocada por código (não bloqueia o plano)
+    | 'item-fora-do-catalogo'
   message: string
 }
 

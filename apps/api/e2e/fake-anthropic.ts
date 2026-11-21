@@ -35,14 +35,31 @@ const lower = [
   exercise('Elevação Pélvica (Barra)', 3, '80kg'),
   exercise('Elevação Pélvica na Máquina', 3, '60kg'),
 ]
+// Spec 028 (FR-027, FR-030): preparação só do catálogo, e a aproximação aponta para o exercício de força.
+const prep = (phase: string, name: string, reps: string) => ({ phase, name, sets: 1, reps, weight: '—', notes: null })
+const approach = (exercise: string) => ({ phase: 'aproximacao', exercise, sets: 2, reps: '10, 6', weight: '40% e 60% da carga', notes: null })
+const day = (warmup: string, first: string, main: object[], cooldown: string, extra: object[] = []) => [
+  prep('aquecimento', warmup, '5 min'),
+  approach(first),
+  ...main,
+  ...extra,
+  prep('volta-calma', cooldown, '30 s por lado'),
+]
+
 export const FAKE_MESOCYCLE = {
   splitType: 'Superior/Inferior',
   rationale: 'Mesociclo fixo da IA simulada (e2e).',
   weekTemplate: [
-    { letter: 'A', kind: 'forca', focus: 'Inferior', exercises: lower },
-    { letter: 'B', kind: 'forca', focus: 'Superior', exercises: [...upper, { phase: 'cardio', modality: 'bike', minutes: 20, zone: 'leve', notes: null }] },
-    { letter: 'C', kind: 'forca', focus: 'Inferior', exercises: [...lower, { phase: 'mobilidade', name: 'Mobilidade de quadril', sets: 1, reps: '10 min', weight: '—', region: 'quadril', notes: null }] },
-    { letter: 'D', kind: 'forca', focus: 'Superior', exercises: upper },
+    { letter: 'A', kind: 'forca', focus: 'Inferior', exercises: day('Bike leve', 'Agachamento Livre (Barra)', lower, 'Alongamento de quadríceps em pé') },
+    {
+      letter: 'B', kind: 'forca', focus: 'Superior',
+      exercises: day('Círculos de braço', 'Supino Reto (Barra)', upper, 'Alongamento de peitoral na parede', [{ phase: 'cardio', modality: 'bike', minutes: 20, zone: 'leve', notes: null }]),
+    },
+    {
+      letter: 'C', kind: 'forca', focus: 'Inferior',
+      exercises: day('Marcha no lugar', 'Leg Press 45°', lower, 'Alongamento de glúteo em figura 4', [prep('mobilidade', 'Quadril 90/90', '8 por lado')]),
+    },
+    { letter: 'D', kind: 'forca', focus: 'Superior', exercises: day('Rotação torácica em quatro apoios', 'Remada Curvada (Barra)', upper, 'Postura da criança') },
   ],
   decisions: [{ topic: 'divisao', choice: 'Superior/Inferior', sources: ['perfil'], reason: 'Mesociclo fixo da IA simulada (e2e).' }],
 }

@@ -62,11 +62,12 @@ describe('modo mock da 022 (T034, R12)', () => {
 
   it('edição manual: alternativas e troca', async () => {
     const { router } = runtime()
-    const { alternatives } = (await router.dispatch('/api/workout/sessions/1/exercises/0/alternatives')) as { alternatives: { exerciseId: string; name: string }[] }
+    // o índice 0 é o aquecimento (028); o 1 é o primeiro exercício de força
+    const { alternatives } = (await router.dispatch('/api/workout/sessions/1/exercises/1/alternatives')) as { alternatives: { exerciseId: string; name: string }[] }
     expect(alternatives.length).toBeGreaterThan(0)
-    await router.dispatch('/api/workout/sessions/1/exercises/0', json('PATCH', { exerciseId: alternatives[0].exerciseId }))
+    await router.dispatch('/api/workout/sessions/1/exercises/1', json('PATCH', { exerciseId: alternatives[0].exerciseId }))
     const plan = (await router.dispatch('/workout/latest-plan')) as { today: { exercises: { name: string }[] } }
-    expect(plan.today.exercises[0].name).toBe(alternatives[0].name)
+    expect(plan.today.exercises[1].name).toBe(alternatives[0].name)
   })
 
   it('chat simulado: SSE com relato e orientação na Medicina, grava a conversa; aceitar ativa a restrição', async () => {

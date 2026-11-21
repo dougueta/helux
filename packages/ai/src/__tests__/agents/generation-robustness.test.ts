@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { EMPTY_HARD_CONSTRAINTS, type HealthCondition, type MesocycleSession, type MethodPrescription, type PlannedExercise } from '@helux/types'
 import { constraintsFromConditions, modifiersFromFindings, prescribeMethod } from '@helux/workouts'
-import { allowedCardio, allowedExercises, estimateSessionMinutes, validatePlanAgainstConstraints } from '../../agents/constraints'
+import { resolvePlannedItem } from '@helux/exercises'
+import { allowedCardio, allowedExercises, allowedPreparation, estimateSessionMinutes, repairPreparationItems, validatePlanAgainstConstraints } from '../../agents/constraints'
 import { ensureFeasible } from '../../agents/feasibility'
 import { fitPlanToMethod } from '../../agents/method-repair'
 import { validateAgainstMethod } from '../../agents/method-validation'
-import { buildExerciseItemSchema, buildMesocycleSchema } from '../../agents/mesocycle-schema'
+import { APPROACH_PREFIX, buildExerciseItemSchema, buildMesocycleSchema, rawToPlanned, type RawExercise } from '../../agents/mesocycle-schema'
 import { EXERCISE_BANK } from '../../exercise-bank'
 import { withRealSources } from '../../mesocycle-planner'
 import { EVAL_PROFILES } from '../../agents/__evals__/treino-profiles'
@@ -77,10 +78,10 @@ describe('allowedExercises / allowedCardio (A)', () => {
   })
 
   it('schema por pedido: enum só com os permitidos; sem cardio permitido, sem item de cardio', () => {
-    const schema = JSON.stringify(buildMesocycleSchema({ exercises: ['Supino Reto (Halteres)'], cardio: ['bike'] }))
+    const schema = JSON.stringify(buildMesocycleSchema({ exercises: ['Supino Reto (Halteres)'], cardio: ['bike'], preparation: [] }))
     expect(schema).toContain('"enum":["Supino Reto (Halteres)"]')
     expect(schema).toContain('"enum":["bike"]')
-    expect(buildExerciseItemSchema({ exercises: ['Supino Reto (Halteres)'], cardio: [] }).anyOf).toHaveLength(2)
+    expect(buildExerciseItemSchema({ exercises: ['Supino Reto (Halteres)'], cardio: [], preparation: [] }).anyOf).toHaveLength(2)
   })
 })
 
@@ -190,5 +191,41 @@ describe('R17b: viabilidade não desce abaixo do útil; fontes reais', () => {
     const profile = { generatedAt: '', sources: { perfil: { status: 'ativa' }, restricoes: { status: 'vazia' } } } as never
     const out = withRealSources([{ topic: 'condicao', choice: 'x', sources: ['perfil', 'restricoes'], reason: 'y' }] as never, profile)
     expect(out[0].sources).toEqual(['perfil'])
+  })
+})
+
+describe('028 T090: todo item do plano novo resolve com demonstração (SC-010)', () => {
+  /** IA simulada: escolhe cada opção que o schema do pedido oferece, item por item. */
+  function everyChoice(c: typeof EMPTY_HARD_CONSTRAINTS): RawExercise[] {
+    const schema = buildExerciseItemSchema({
+      exercises: allowedExercises(c).map(e => e.name),
+      cardio: allowedCardio(c).map(k => k.id),
+      preparation: allowedPreparation(c).map(p => p.name),
+    }) as unknown as { anyOf: { properties: Record<string, { enum?: string[] }> }[] }
+    return schema.anyOf.flatMap(alt => {
+      const phase = alt.properties.phase.enum![0]
+      if (phase === 'principal') return alt.properties.name.enum!.map(name => ({ phase, name, sets: 3, reps: '8-10', weight: '20 kg', rirTarget: 2, notes: null, supersetGroup: null }) as RawExercise)
+      if (phase === 'cardio') return alt.properties.modality.enum!.map(modality => ({ phase, modality, minutes: 20, zone: 'leve', notes: null }) as RawExercise)
+      if (phase === 'aproximacao') return alt.properties.exercise.enum!.map(exercise => ({ phase, exercise, sets: 2, reps: '10, 6', weight: 'leve', notes: null }) as RawExercise)
+      return alt.properties.name.enum!.map(name => ({ phase, name, sets: 1, reps: '5 min', weight: '—', notes: null }) as RawExercise)
+    })
+  }
+
+  it.each([
+    ['sem restrições', EMPTY_HARD_CONSTRAINTS],
+    ['em casa, só peso corporal', { ...EMPTY_HARD_CONSTRAINTS, availableEquipment: ['peso-corporal' as const] }],
+    ['halteres, joelho e lombar sensíveis', { ...EMPTY_HARD_CONSTRAINTS, availableEquipment: ['halteres' as const, 'peso-corporal' as const], maxJointStress: { joelho: 1 as const, lombar: 1 as const }, maxCardioImpact: 0 as const }],
+  ])('%s: nenhum nome livre, nenhum item sem demonstração', (_label, c) => {
+    const raw = everyChoice(c)
+    const session: MesocycleSession = { letter: 'A', focus: 'x', completedAt: null, exercises: raw.map(rawToPlanned) }
+    const { sessions, repairs } = repairPreparationItems([session], c)
+    expect(repairs).toEqual([])
+    const unresolved = sessions[0].exercises.map(e => [e.name, resolvePlannedItem(e)] as const).filter(([, r]) => r.id === null || r.demoState === 'indisponivel')
+    expect(unresolved.map(([name]) => name)).toEqual([])
+    // preparação sempre com catalogId; aproximação sempre com approachOf
+    for (const e of sessions[0].exercises) {
+      if (e.phase === 'aquecimento' && e.name.startsWith(APPROACH_PREFIX)) expect(e.approachOf, e.name).toBeTruthy()
+      else if (e.phase === 'aquecimento' || e.phase === 'volta-calma' || e.region) expect(e.catalogId, e.name).toBeTruthy()
+    }
   })
 })

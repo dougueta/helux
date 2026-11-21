@@ -35,7 +35,13 @@ describe('startFakeAnthropic', () => {
 
     expect(plan.sessions.map((s) => s.letter)).toEqual(['A', 'B', 'C', 'D'])
     expect(plan.sessions.every((s) => s.completedAt === null)).toBe(true)
-    for (const exercise of plan.sessions.flatMap((s) => s.exercises).filter((e) => !e.cardio && !e.region)) {
+    const items = plan.sessions.flatMap((s) => s.exercises)
+    // 028: aquecimento e volta à calma vêm do catálogo de preparação; a aproximação aponta para o exercício de força
+    const prep = items.filter((e) => e.phase === 'aquecimento' || e.phase === 'volta-calma')
+    expect(prep.length).toBeGreaterThan(0)
+    for (const e of prep) expect(e.catalogId ?? e.approachOf, e.name).toBeTruthy()
+    expect(items.filter((e) => e.region).every((e) => e.catalogId)).toBe(true)
+    for (const exercise of items.filter((e) => !e.cardio && !e.region && e.phase !== 'aquecimento' && e.phase !== 'volta-calma')) {
       // `muscle` só é preenchido quando o nome existe no EXERCISE_BANK.
       expect(exercise.muscle, exercise.name).toBeTruthy()
       expect(exercise.sets).toBeGreaterThanOrEqual(3)

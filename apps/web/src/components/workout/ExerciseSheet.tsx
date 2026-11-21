@@ -173,6 +173,23 @@ export function ExerciseSheet({
         </div>
       )}
 
+      {/* 028 (FR-030): série de aproximação usa a demonstração do exercício de força, com o aviso */}
+      {resolved.isApproach && (
+        <div data-approach style={{ marginTop: 10 }}>
+          <Tag>Série leve de preparação</Tag>
+          <p className="t-secondary" style={{ marginTop: 6 }}>
+            {exercise.sets} {exercise.sets === 1 ? 'série leve' : 'séries leves'} antes do {resolved.name}: {exercise.reps}
+            {exercise.weight && exercise.weight !== '—' ? ` · ${exercise.weight}` : ''}
+          </p>
+        </div>
+      )}
+      {/* 028 (T091): posição mantida mostra o tempo; item por lado, a dose de cada lado */}
+      {!resolved.isApproach && (resolved.mode === 'sustentacao' || resolved.mode === 'por-lado') && (
+        <p className="t-secondary" data-dose style={{ marginTop: 8 }}>
+          {resolved.mode === 'sustentacao' ? 'Mantenha a posição' : 'Cada lado'}: {exercise.reps}
+        </p>
+      )}
+
       {exercise.cardio && (
         <p className="t-secondary" style={{ marginTop: 8 }}>
           Zona {exercise.cardio.zone} · {exercise.cardio.minutes} min
