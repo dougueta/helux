@@ -1,15 +1,3 @@
 {
-  "ids": [
-    "bike",
-    "bike-intervalado",
-    "eliptico",
-    "remo",
-    "natacao",
-    "caminhada",
-    "caminhada-inclinada",
-    "escada",
-    "corrida-caminhada",
-    "corrida",
-    "circuito-corporal"
-  ]
+  "ids": []
 }

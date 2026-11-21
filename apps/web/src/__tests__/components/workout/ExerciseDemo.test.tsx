@@ -272,7 +272,7 @@ describe('ExerciseDemo — demonstração do catálogo (028)', () => {
 })
 
 describe('ExerciseDemo — cenas e implementos (028)', () => {
-  it.each(['solo', 'banco-reto', 'banco-inclinado', 'banco-baixo', 'assento', 'assento-reclinado', 'maquina', 'barra-fixa', 'paralelas', 'parede', 'degrau', 'colchonete', 'banco-romano', 'banco-declinado', 'banco-scott', 'bicicleta', 'remo'] as const)(
+  it.each(['solo', 'banco-reto', 'banco-inclinado', 'banco-baixo', 'assento', 'assento-reclinado', 'maquina', 'barra-fixa', 'paralelas', 'parede', 'degrau', 'colchonete', 'banco-romano', 'banco-declinado', 'banco-scott', 'bicicleta', 'remo', 'esteira', 'eliptico', 'escada', 'piscina'] as const)(
     'desenha a cena %s',
     (scene) => {
       const { container } = render(<ExerciseDemo demo={demoOf({ scene })} playing={false} label="x" />)
@@ -311,6 +311,14 @@ describe('ExerciseDemo — cenas e implementos (028)', () => {
     expect([strap!.getAttribute('x2'), strap!.getAttribute('y2')]).toEqual([String((STAND.an[0] + STAND.toe[0]) / 2), String((STAND.an[1] + STAND.toe[1]) / 2)])
   })
 
+  it.each(['eliptico', 'escada'] as const)('alavanca (%s) sai do eixo e vai até o ponto do implemento', (gear) => {
+    const { container } = render(<ExerciseDemo demo={demoOf({ gear, anchor: [128, 232] })} playing={false} label="x" />)
+    const lever = container.querySelector('[data-part="implement"] [data-lever] line')
+    expect(lever).not.toBeNull()
+    expect([lever!.getAttribute('x1'), lever!.getAttribute('y1')]).toEqual(['128', '232'])
+    expect([lever!.getAttribute('x2'), lever!.getAttribute('y2')]).toEqual([String(STAND.ha[0]), String(STAND.ha[1])])
+  })
+
   it('rolo e toalha ficam parados no ponto de apoio, sob o corpo', () => {
     const rolo = render(<ExerciseDemo demo={demoOf({ gear: 'rolo', anchor: [132, 226] })} playing={false} label="x" />)
     const roller = rolo.container.querySelector('[data-part="implement"] circle[data-roller]')
@@ -333,7 +341,7 @@ describe('ExerciseDemo — cenas e implementos (028)', () => {
     expect(container.querySelector('[data-landmine]')).toBeNull()
   })
 
-  it.each(['peso-corporal', 'banco', 'barra-fixa', 'bicicleta', 'nenhum'] as const)('gear sem carga (%s) não desenha implemento', (gear) => {
+  it.each(['peso-corporal', 'banco', 'barra-fixa', 'bicicleta', 'esteira', 'nenhum'] as const)('gear sem carga (%s) não desenha implemento', (gear) => {
     const { container } = render(<ExerciseDemo demo={demoOf({ gear })} playing={false} label="x" />)
     expect(container.querySelector('[data-part="implement"] *')).toBeNull()
   })

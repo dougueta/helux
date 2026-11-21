@@ -178,6 +178,12 @@ export function ExerciseSheet({
           Zona {exercise.cardio.zone} · {exercise.cardio.minutes} min
         </p>
       )}
+      {/* 028 (FR-029): como manter a zona prescrita, quando a modalidade já tem orientação aprovada */}
+      {exercise.cardio && guidance?.zones?.[exercise.cardio.zone] && (
+        <p className="t-secondary" data-zone-guidance style={{ marginTop: 4 }}>
+          {guidance.zones[exercise.cardio.zone]}
+        </p>
+      )}
 
       {variants.length > 0 && !preview && (
         <div style={{ marginTop: 20 }}>

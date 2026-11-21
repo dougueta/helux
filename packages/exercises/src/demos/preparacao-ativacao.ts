@@ -153,7 +153,7 @@ function biking(deg: number): Pose {
   })
 }
 /** Bicicleta: os pés dão a volta no pedal, um do lado oposto ao outro; tronco e mãos parados. */
-const BIKE_RIDE = base('bicicleta', 'cycle', 'seat', ['hip', 'sh', 'head', 'el', 'ha'], around([-90, -45, 0, 45, 90, 135, 180, 225].map(biking)), 1600)
+export const BIKE_RIDE = base('bicicleta', 'cycle', 'seat', ['hip', 'sh', 'head', 'el', 'ha'], around([-90, -45, 0, 45, 90, 135, 180, 225].map(biking)), 1600)
 
 /* ---------------------------------------------------------------- remo */
 
@@ -169,7 +169,7 @@ function rowing(hipX: number, torsoDeg: number, hands: 'reach' | 'pull'): Pose {
   return r({ head: polar(sh, BODY.neck, torsoDeg + 6), sh, el, ha, hip, kn, an: ROW_AN, toe: ROW_TOE })
 }
 /** Remo: as pernas empurram, o tronco vai um pouco para trás e os braços puxam até o abdome; depois volta na ordem inversa. */
-const ROW = base(
+export const ROW = base(
   'remo',
   'cycle',
   'foot',
