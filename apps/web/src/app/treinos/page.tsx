@@ -45,7 +45,12 @@ export default async function TreinosPage({
     getRoutinesViewServer(session.access_token),
   ])
 
-  const initialTab = searchParams?.aba === 'rotinas' ? 'rotinas' : 'academia'
+  const initialTab =
+    searchParams?.aba === 'rotinas'
+      ? 'rotinas'
+      : searchParams?.aba === 'calendario'
+        ? 'calendario'
+        : 'academia'
 
   return (
     <TreinosClient

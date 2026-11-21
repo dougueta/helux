@@ -106,3 +106,7 @@
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 - [X] T022 Rodar toda a suíte de testes e checagem de tipos do monorepo (`pnpm --filter @helux/types typecheck`, `pnpm --filter @helux/workouts test`, `pnpm --filter @helux/api test`, `pnpm --filter @helux/web test` e `pnpm -r typecheck`) e garantir 100% verde
+- [X] T023 [P] [US4] Escrever testes de integração para a aba **Progresso (`/recovery`)** (`Segmented` `Calendário | Evolução` com `Calendário` como padrão) e para a sub-aba `Calendário` em **Treinos (`/treinos`)** (`Academia | Rotinas | Calendário`)
+- [X] T024 [US4] Atualizar `apps/web/src/app/recovery/page.tsx` (aba **Progresso** da `NavBar`) com `Segmented` (`Calendário | Evolução`, padrão `Calendário`) e `apps/web/src/app/treinos/TreinosClient.tsx` com a 3ª sub-aba `Calendário` (`Academia | Rotinas | Calendário`)
+- [X] T025 [US4] Adicionar pré-carregamento SSR de `/api/workouts/calendar` em `apps/web/src/app/page.tsx`, posicionar `WeeklyCalendarStrip` logo abaixo do cartão principal na `HomeClient.tsx` e exibir `Skeleton` durante o carregamento inicial no cliente
+- [X] T026 Rodar toda a suíte de testes e `typecheck` para validar as tarefas `T023`–`T025`

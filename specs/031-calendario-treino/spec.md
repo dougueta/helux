@@ -148,8 +148,11 @@ O usuário encontra o Calendário de Treino facilmente nos fluxos naturais do ap
 
 **Pontos de entrada, integração e excelência de experiência (UX)**
 
-- **FR-009**: A tela de **Histórico (`/history`)** MUST integrar o Calendário de Treino como visão principal, oferecendo um seletor (`Calendário` | `Lista`) para que o usuário possa alternar entre o calendário visual (com Saldo da Semana e Curiosidades) e a lista cronológica de sessões já existente.
-- **FR-010**: A **Home** MUST exibir uma tira visual compacta da semana atual (segunda a domingo, com os dias ativos marcados e resumo rápido da semana) que leva ao Calendário de Treino completo com 1 toque.
+- **FR-009**: O Calendário de Treino MUST estar diretamente acessível nas abas principais da barra de navegação inferior do Helux v2:
+  1. Na aba **Progresso (`/recovery`)** (5ª aba da `NavBar`, onde vive o histórico/evolução na v2): exibir um seletor `Calendário` | `Evolução` no topo, com **`Calendário` como visão padrão** (e a visão `Evolução` preservando Recovery, Volume semanal, Recordes pessoais e histórico recente);
+  2. Na aba **Treinos (`/treinos`)**: incluir **`Calendário`** como 3ª sub-aba no seletor do topo (`Academia` | `Rotinas` | `Calendário`);
+  3. Na rota **`/history`**: manter o seletor `Calendário` | `Lista` (com `Calendário` como visão padrão).
+- **FR-010**: A **Home (`/`)** MUST exibir a tira visual compacta da semana atual (`WeeklyCalendarStrip`, segunda a domingo, com os dias ativos marcados e resumo rápido da semana) logo abaixo do cartão do treino de hoje, com pré-carregamento no servidor (SSR) e esqueleto de carregamento (*skeleton*) para que nunca fique invisível durante o *cold start* da API, levando ao Calendário de Treino completo com 1 toque.
 - **FR-011**: A experiência visual e tátil do Calendário de Treino MUST seguir rigorosamente o Design System v2 do Helux:
   1. **Leitura instantânea por contraste e forma**: dias com treino de academia destacam-se com o verde-ácido do sistema (`--accent`), dias com rotinas complementares exibem anel/indicador complementar distinto, dias com ambas as conquistas combinam os dois marcadores sem poluição visual e o dia de hoje possui assinatura própria mesmo antes de treinar;
   2. **Seleção fluida de semana e dia sem salto de layout (*zero layout shift*)**: tocar em qualquer dia ou linha semanal atualiza o Saldo da Semana e o painel do dia com transição suave (`--dur-2`, `--ease-out`, respeitando `prefers-reduced-motion`), mantendo a grade ancorada no topo;

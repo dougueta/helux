@@ -82,9 +82,10 @@ apps/api/src/
     └── workout-calendar.test.ts                    # novo: testes da rota GET /api/workouts/calendar (auth, validação, payload)
 
 apps/web/src/
-├── app/page.tsx + HomeClient.tsx                   # exibe WeeklyCalendarStrip na Home levando a /history
+├── app/page.tsx + HomeClient.tsx                   # SSR prefetch de calendarView + exibe WeeklyCalendarStrip logo abaixo do treino de hoje
+├── app/recovery/page.tsx                           # aba Progresso da NavBar: Segmented Calendário (padrão) | Evolução
+├── app/treinos/TreinosClient.tsx                   # Segmented Academia | Rotinas | Calendário + link "Ver calendário e histórico"
 ├── app/history/page.tsx                            # Segmented Calendário | Lista + WorkoutCalendarView como visão principal
-├── app/treinos/TreinosClient.tsx                   # link "Ver calendário e histórico" → /history
 ├── components/calendar/
 │   ├── WorkoutCalendarView.tsx                     # novo: orquestra navegação de mês, grade, detalhe do dia, saldo e curiosidades
 │   ├── CalendarMonthGrid.tsx                       # novo: grade mensal (seg-dom) com linha semanal destacada e marcadores v2
