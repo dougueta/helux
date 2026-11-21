@@ -109,8 +109,8 @@ export function ExerciseSheet({
         <div style={{ position: 'absolute', inset: '8px 60px' }}>
           <ItemDemo
             resolved={resolved}
-            variant={shown}
-            notes={exercise.notes}
+            // as notas do plano valem para o item planejado, não para uma variante (FR-011)
+            notes={display.showPlannedCues ? exercise.notes : undefined}
             playing={playing}
             nonce={`${shown?.id ?? resolved.id}:${nonce}`}
             size="stage"
@@ -178,7 +178,7 @@ export function ExerciseSheet({
         <div data-approach style={{ marginTop: 10 }}>
           <Tag>Série leve de preparação</Tag>
           <p className="t-secondary" style={{ marginTop: 6 }}>
-            {exercise.sets} {exercise.sets === 1 ? 'série leve' : 'séries leves'} antes do {resolved.name}: {exercise.reps}
+            {exercise.sets} {exercise.sets === 1 ? 'série leve' : 'séries leves'} antes das séries do treino: {exercise.reps}
             {exercise.weight && exercise.weight !== '—' ? ` · ${exercise.weight}` : ''}
           </p>
         </div>

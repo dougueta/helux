@@ -150,7 +150,7 @@ function bridge(up: number, freeLeg = false): Pose {
   const an2 = polar(kn2, BODY.shin, line)
   return { ...pose, kn2: round(kn2), an2: round(an2), toe2: round(polar(an2, BODY.foot, line - 80)) }
 }
-const BRIDGE = reps('ponte', ['an', 'toe', 'sh', 'el', 'ha'], [bridge(4), bridge(28)], 2400)
+export const BRIDGE = reps('ponte', ['an', 'toe', 'sh', 'el', 'ha'], [bridge(4), bridge(28)], 2400)
 const SINGLE_BRIDGE = reps('ponte-unilateral', ['an', 'toe', 'sh', 'el', 'ha'], [bridge(4, true), bridge(26, true)], 2600)
 
 /** Hiperextensão no banco romano: quadril no apoio, pernas presas; o tronco desce e volta à linha das pernas. */

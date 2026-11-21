@@ -16,10 +16,11 @@ describe('ItemDemo (028)', () => {
     expect(screen.getByLabelText('demonstração de Pullover (Halteres)')).toBeInTheDocument()
   })
 
-  it('legada: usa a animação salva no plano', () => {
+  it('pendente com animação salva no plano: indisponível, nunca a animação antiga (T095)', () => {
     const ex = { ...base, name: 'Supino Reto (Barra)', variants: [legacyVariant] }
-    const { container } = render(<ItemDemo resolved={resolvePlannedItem(ex)} variant={legacyVariant} playing={false} size="stage" />)
-    expect(container.querySelector('[data-motion="press-flat"]')).not.toBeNull()
+    const { container } = render(<ItemDemo resolved={resolvePlannedItem(ex)} playing={false} size="stage" />)
+    expect(screen.getByText('Demonstração indisponível para este item')).toBeInTheDocument()
+    expect(container.querySelector('[data-motion]')).toBeNull()
   })
 
   it('indisponível no palco: aviso com nome e notas, sem animação', () => {

@@ -399,7 +399,6 @@ export default function WorkoutPage() {
               <span className="hx-stage" style={{ width: 52, height: 52, borderRadius: 12, flexShrink: 0, display: 'block' }}>
                 <ItemDemo
                   resolved={display.resolved}
-                  variant={selectedVariant}
                   playing={false}
                   nonce={`${currentIdx}:${selectedVariant?.id ?? display.resolved.id}`}
                   size="thumb"

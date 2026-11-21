@@ -143,7 +143,8 @@ describe('resolveExerciseDisplay — catálogo (028)', () => {
   it('variante alternativa resolve pela própria variante', () => {
     const d = resolveExerciseDisplay(approved, 'supino-reto-barra')
     expect(d.resolved.id).toBe('supino-reto-barra')
-    expect(d.resolved.demoState).toBe('legada')
+    // o supino segue "pendente" no helper dos testes: sem a animação antiga (T094)
+    expect(d.resolved.demoState).toBe('indisponivel')
   })
 
   it('item sem correspondência fica indisponível', () => {

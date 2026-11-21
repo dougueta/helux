@@ -139,19 +139,15 @@ export function createResolver(sources: ResolverSources = {}) {
       }
     }
 
-    // Pendente: a tela continua como hoje, com a animação salva no plano, quando existe (só força).
-    // Uma variante ativa fora da lista não herda a animação de outra.
-    const variants = exercise.variants ?? []
-    const listed = variantId ? variants.find((v) => v.id === variantId) : undefined
-    const active = variantId && byId.has(variantId) ? listed : listed ?? variants.find((v) => v.rec) ?? variants[0]
-    const hasLegacy = entry.kind === 'forca' && Boolean(active?.motion)
+    // Pendente (item novo ainda sem aprovação): sem demonstração nem orientação, nunca a animação de
+    // outro item (FR-006). A animação antiga salva no plano saiu no encerramento (028 T094).
     // Os dados do plano valem para o item planejado; uma variante usa os próprios (FR-011).
     const isPlanned = !isApproach && entry === findPlanned(exercise)
     return {
       id: entry.id,
       name: entry.name,
       kind: entry.kind,
-      demoState: hasLegacy ? 'legada' : 'indisponivel',
+      demoState: 'indisponivel',
       guidance: null,
       muscles: isPlanned ? exercise.muscles ?? entry.muscles : entry.muscles,
       tempo: isPlanned ? exercise.tempo ?? entry.tempo : entry.tempo,

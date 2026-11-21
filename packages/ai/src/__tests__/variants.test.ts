@@ -104,17 +104,15 @@ describe('buildVariants', () => {
     }
   })
 
-  // spec 013 (FR-003): a animação vem do próprio exercício, não do padrão genérico
-  it('cada variante traz a animação do seu movimento e o implemento do equipamento', () => {
+  // 028 (T096): a demonstração vem do catálogo pelo id da variante; planos novos não guardam animação
+  it('variantes novas não guardam a animação antiga', () => {
     const profile: GeneticProfile = {
       metabolismo: 'moderado', recuperacaoMuscular: 'media', riscoCardiovascular: 'medio',
       predisposicao: 'misto', alertas: [],
     }
     const variants = buildVariants('Agachamento Livre (Barra)', profile)
-    expect(variants.find((v) => v.name === 'Agachamento Livre (Barra)')?.motion).toBe('squat')
-    expect(variants.find((v) => v.name === 'Leg Press 45°')?.motion).toBe('leg-press')
-    const bodyweight = variants.find((v) => v.equip === 'Peso corporal')
-    expect(bodyweight?.implement).toBe('bodyweight')
+    expect(variants.length).toBeGreaterThan(0)
+    expect(variants.every((v) => v.motion === undefined && v.implement === undefined)).toBe(true)
   })
 
 })

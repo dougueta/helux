@@ -3181,7 +3181,7 @@ function cuesFromGuidance(g: Guidance): string[] {
   return [...g.setup, ...g.steps, ...(g.commonError ? [`Erro comum: ${g.commonError}`] : [])]
 }
 
-type FieldSource = Pick<RawEntry, 'muscleGroup' | 'pattern' | 'cues' | 'muscles' | 'guidance'>
+type FieldSource = Pick<RawEntry, 'muscleGroup' | 'pattern' | 'cues' | 'muscles'> & { guidance?: RawEntry['guidance'] }
 
 /**
  * `cues` e `muscles` efetivos. Pendente: valores atuais (derivados), para nada mudar antes da aprovação.

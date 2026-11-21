@@ -18,6 +18,9 @@ export interface GalleryParams {
   phase?: string
   frame?: string
   card?: string
+  blind?: string
+  seed?: string
+  answers?: string
 }
 
 export const KIND_LABEL: Record<CatalogKind, string> = { forca: 'Força', preparacao: 'Preparação', cardio: 'Cardio' }
@@ -57,5 +60,42 @@ export function coverageLines(items: GalleryItem[]): string[] {
   return (Object.keys(KIND_LABEL) as CatalogKind[]).map((kind) => {
     const ofKind = items.filter((i) => i.kind === kind)
     return `${KIND_LABEL[kind]}: ${ofKind.filter((i) => !i.pending).length}/${ofKind.length}`
+  })
+}
+
+export const BLIND_SIZE = 20
+
+/** Gerador determinístico (mulberry32): a mesma semente repete o mesmo sorteio. */
+function seeded(seed: number) {
+  let a = seed >>> 0
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/** Semente do sorteio: número inteiro da URL, ou 1. */
+export function parseSeed(raw: string | undefined): number {
+  const n = Number(raw)
+  return Number.isInteger(n) ? n : 1
+}
+
+/**
+ * Sorteio do teste às cegas (028, SC-006): até `size` itens aprovados e com demonstração,
+ * em ordem embaralhada pela semente. A legenda sai, porque pode entregar o nome.
+ */
+export function blindDraw(items: GalleryItem[], seed: number, size = BLIND_SIZE): GalleryItem[] {
+  const pool = items.filter((i) => !i.pending && i.demo)
+  const rand = seeded(seed)
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[pool[i], pool[j]] = [pool[j], pool[i]]
+  }
+  return pool.slice(0, size).map((i) => {
+    const { caption: _caption, ...demo } = i.demo!
+    return { ...i, demo }
   })
 }

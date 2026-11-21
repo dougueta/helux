@@ -3,6 +3,7 @@ import { BODY, heading, polar, round, twoBone } from '../engine/geometry'
 import { MAT } from '../engine/scene-geometry'
 import type { Keyframe, MovementBase, Point, Pose } from '../engine/types'
 import { ANKLE_Y, MIDFOOT, balanced, handsAt, sidePose, straightArms } from './figure'
+import { BRIDGE } from './dobrar-quadril'
 import type { DemoFamily } from './index'
 
 const r = (p: Pose): Pose => Object.fromEntries(Object.entries(p).map(([k, v]) => [k, round(v as Point)])) as unknown as Pose
@@ -184,10 +185,14 @@ function halluxKneel(thighDeg: number): Pose {
 }
 const HALLUX = base('dorsiflexao-halux', 'hold', 'foot', ['an', 'toe', 'kn'], spread([halluxKneel(-88), halluxKneel(-156)]), 3200)
 
+/** Ponte sustentada (028 T103, Rotinas): a mesma ponte, que sobe e fica no alto, com o glúteo contraído. */
+const BRIDGE_HOLD: MovementBase = { ...BRIDGE, key: 'ponte-sustentada', loop: 'hold', durationMs: 3000 }
+
 export const PREPARACAO_QUADRIL: DemoFamily = {
-  bases: [BOX_SIT, DEEP_HOLD, HIP_HINGE, NINETY_NINETY, FROG, COSSACK, ANKLE_WALL, HALLUX],
+  bases: [BOX_SIT, DEEP_HOLD, HIP_HINGE, NINETY_NINETY, FROG, COSSACK, ANKLE_WALL, HALLUX, BRIDGE_HOLD],
   demos: {
     'ponte-gluteo': { base: 'ponte', gear: 'nenhum', scene: 'colchonete', implementAt: 'hip' },
+    'ponte-gluteo-sustentada': { base: 'ponte-sustentada', gear: 'nenhum', scene: 'colchonete', implementAt: 'hip' },
     'flexao-inclinada-leve': { base: 'flexao-inclinada', gear: 'nenhum', scene: 'banco-baixo', implementAt: 'sh' },
     'afundo-sem-carga': { base: 'afundo-parado', gear: 'nenhum', scene: 'solo', implementAt: 'hip' },
     'agachamento-banco-sem-carga': { base: 'agachamento-banco-livre', gear: 'nenhum', scene: 'banco-baixo', implementAt: 'hip' },

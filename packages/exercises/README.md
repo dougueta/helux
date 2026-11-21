@@ -13,7 +13,8 @@ Pacote puro: sem React, sem SDK de IA e sem rede. Depende só de `@helux/types`.
 | `src/cardio-guidance.ts` | Orientação e demonstração das modalidades de `CARDIO_BANK`. |
 | `src/demos/` | Movimentos base e a demonstração (`DemoSpec`) de cada item, por família. |
 | `src/engine/` | Motor puro: interpolação por ângulo, apoios fixos, modos de repetição e medidas das cenas. |
-| `src/review/pending.json` | Itens ainda não aprovados. **A lista só diminui.** |
+| `src/review/pending.json` | Vazia desde o encerramento da 028. Item novo nunca entra nela. |
+| `src/routine-items.ts` | Item das Rotinas Complementares → item do catálogo. |
 | `src/review/approvals.json` | `id → hash` do conteúdo aprovado (demonstração resolvida + orientação). |
 | `src/review/check.ts`, `hash.ts` | A trava, usada pelos testes e pelos scripts. Fica fora do bundle da web. |
 
@@ -30,10 +31,10 @@ Existe um único caminho, e o CI falha se faltar alguma etapa.
 5. **PR**: o workflow `demo-evidence.yml` comenta no PR com o GIF e o cartão de cada item alterado.
 6. **Aprovação**: depois que o dono aprovar no PR, rode `pnpm demos:approve <ids...>` só com os ids aprovados e faça o commit de `approvals.json`.
 
-## Regras da lista de pendências
+## Regras da aprovação
 
-- `pending.json` só pode diminuir. Item novo **nunca** entra nela: nasce completo e aprovado. `pnpm demos:check-pending` barra isso no CI.
-- Item pendente continua aparecendo como hoje (animação antiga ou aviso de indisponibilidade).
+- `pending.json` está vazia e não aceita item: todo item nasce completo e aprovado. `pnpm demos:check-pending` barra isso no CI.
+- Item sem demonstração aprovada mostra o aviso de indisponibilidade, nunca a animação de outro item.
 - Alterar um item aprovado, ou uma base usada por ele, muda o hash. O teste volta a falhar até uma nova aprovação no mesmo PR. O item não pode voltar para a lista de pendências.
 
 ## Comandos

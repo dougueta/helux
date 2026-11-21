@@ -58,8 +58,8 @@ describe('ExerciseSheet (v2, spec 012 T050)', () => {
 
   it('shows the cadence on the stage, with pause/play and "Repetir"', async () => {
     const user = userEvent.setup()
-    renderSheet()
-    expect(screen.getByText('2·0·1')).toBeInTheDocument()
+    // item aprovado: com demonstração, há controles de reprodução (o supino segue pendente no helper)
+    renderSheet({ exercise: { ...EXERCISE, name: 'Pullover (Halteres)', variants: undefined, tempo: undefined } })
     expect(screen.getByText('cadência')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'pausar demonstração' }))
     expect(screen.getByRole('button', { name: 'reproduzir demonstração' })).toBeInTheDocument()
@@ -146,7 +146,8 @@ describe('ExerciseSheet (v2, spec 012 T050)', () => {
   it('Execução tab with the recommended variant active keeps the planned cues and notes', () => {
     renderSheet({ currentVariantId: 'supino-reto-barra' })
     expect(screen.getByText('Escápulas retraídas e pés firmes no chão')).toBeInTheDocument()
-    expect(screen.getByText('Cargas altas — seu forte')).toBeInTheDocument()
+    // sem demonstração (supino pendente no helper), as notas aparecem também no aviso do palco
+    expect(screen.getAllByText('Cargas altas — seu forte').length).toBeGreaterThan(0)
   })
 })
 
@@ -267,7 +268,7 @@ describe('ExerciseSheet — preparação e aproximação (028, T091)', () => {
       />,
     )
     expect(screen.getByText('Série leve de preparação')).toBeInTheDocument()
-    expect(screen.getByText(/2 séries leves antes do Supino Reto \(Halteres\)/)).toBeInTheDocument()
+    expect(screen.getByText(/2 séries leves antes das séries do treino/)).toBeInTheDocument()
   })
 
   it('posição mantida indica o tempo; item por lado indica a dose de cada lado', () => {

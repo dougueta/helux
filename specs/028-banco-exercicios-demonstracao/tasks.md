@@ -235,7 +235,7 @@ Alterar uma base já aprovada exige nova aprovação dos itens que a usam, no me
 - [X] T089 [US6] Ampliar `packages/ai/src/__tests__/mesocycle-planner.test.ts` e `packages/ai/src/__tests__/mesocycle-prompts.test.ts`, e implementar `catalogId` e `approachOf` em `packages/ai/src/mesocycle-planner.ts`, com as instruções de preparação e aproximação em `packages/ai/src/mesocycle-prompts.ts`, preservando a prescrição de mobilidade para condições de saúde (FR-028)
 - [X] T090 [US6] Ampliar `packages/ai/src/__tests__/agents/generation-robustness.test.ts` e `apps/api/src/__tests__/plan-generation.service.test.ts` com a IA simulada: todo item do plano novo resolve com demonstração, sem nenhum nome livre (SC-010)
 - [X] T091 [US6] Na tela, com testes em `apps/web/src/__tests__/components/workout/ExerciseSheet.test.tsx`, implementar em `apps/web/src/components/workout/ExerciseSheet.tsx` o aviso "Série leve de preparação", `hold` e `por-lado` com a indicação da dose, e atualizar `apps/web/src/mocks/fixtures` com itens de catálogo e de aproximação
-- [ ] T092 [US6] Rodar os passos 5 e 6 do roteiro em `quickstart.md` e confirmar nome antigo ambíguo com o aviso de indisponibilidade
+- [X] T092 [US6] Rodar os passos 5 e 6 do roteiro em `quickstart.md` e confirmar nome antigo ambíguo com o aviso de indisponibilidade
 - [ ] T093 [US6] ⛔ Portão do dono: pedir autorização para rodar `pnpm --filter @helux/ai eval:treino`, que usa a API paga. Comparar o resultado com a referência em `packages/ai/src/agents/__evals__/results`. Sem autorização, registrar em `specs/028-banco-exercicios-demonstracao/bank-review.md` que a avaliação real ficou pendente
 
 ---
@@ -244,14 +244,20 @@ Alterar uma base já aprovada exige nova aprovação dos itens que a usam, no me
 
 **Purpose**: Remover o caminho antigo e comprovar os critérios de sucesso.
 
-**Pré-condição**: `packages/exercises/src/review/pending.json` com `ids` vazio.
+**Pré-condição**: `packages/exercises/src/review/pending.json` com `ids` vazio. T095 a T097 dependem de T102 a T104 (as Rotinas deixam de usar o caminho antigo).
 
-- [ ] T094 Tornar `guidance` e `demo` obrigatórios no tipo em `packages/exercises/src/types.ts`, remover o estado `legada` de `packages/exercises/src/resolve.ts` e ajustar `packages/exercises/src/__tests__/resolve.test.ts`
-- [ ] T095 Remover de `apps/web/src/components/workout/ExerciseDemo.tsx` o caminho antigo, `HELUX_MOTIONS` e o supino como último recurso, ajustando `apps/web/src/__tests__/components/workout/ExerciseDemo.test.tsx`
-- [ ] T096 Remover `packages/ai/src/motions.ts` e `packages/ai/src/__tests__/motions.test.ts`, e ajustar `packages/ai/src/variants.ts` e `packages/ai/src/index.ts`, mantendo `Variant.motion` e `Variant.implement` no tipo em `packages/types/src/workout.ts` para os planos salvos
-- [ ] T097 Remover de `packages/types/src/motion.ts` o que não tiver mais consumidor, confirmando com busca em `packages` e `apps`
-- [ ] T098 [P] Confirmar que `packages/exercises/README.md` e `specs/028-banco-exercicios-demonstracao/quickstart.md` não citam o processo de transição, exceto o histórico
-- [ ] T099 Medir SC-007 em modo mock, com a resolução de celular: até 2 toques e início em até 1 s, registrando o resultado em `specs/028-banco-exercicios-demonstracao/bank-review.md`
+### Rotinas Complementares (FR-036, sessão de 2026-11-20)
+
+- [X] T102 Criar `packages/exercises/src/routine-items.ts`, com a tabela curada de id da Rotina → id do catálogo, e o teste em `packages/exercises/src/__tests__/catalog.test.ts`: todo item de `STRETCH_MOBILITY_BANK` e `CORE_ROUTINE_ITEMS` tem correspondente no catálogo, e todo id de `CARDIO_BANK` também. O que não tiver equivalente vira item novo do catálogo (T103)
+- [X] T103 Item novo de preparação para o que não tem equivalente (ponte de glúteo sustentada), com demonstração e orientação, seguindo o procedimento da Phase 7. ⛔ Portão do dono
+- [X] T104 Na tela de Rotinas (`apps/web/src/components/routines/RoutineExecutionClient.tsx`), com testes, mostrar a demonstração do catálogo pelo id correspondente (e a orientação do catálogo quando houver), com o aviso de indisponibilidade quando não houver, sem o caminho antigo
+
+- [X] T094 Tornar `guidance` e `demo` obrigatórios no tipo em `packages/exercises/src/types.ts`, remover o estado `legada` de `packages/exercises/src/resolve.ts` e ajustar `packages/exercises/src/__tests__/resolve.test.ts`
+- [X] T095 Remover de `apps/web/src/components/workout/ExerciseDemo.tsx` o caminho antigo, `HELUX_MOTIONS` e o supino como último recurso, ajustando `apps/web/src/__tests__/components/workout/ExerciseDemo.test.tsx`
+- [X] T096 Remover `packages/ai/src/motions.ts` e `packages/ai/src/__tests__/motions.test.ts`, e ajustar `packages/ai/src/variants.ts` e `packages/ai/src/index.ts`, mantendo `Variant.motion` e `Variant.implement` no tipo em `packages/types/src/workout.ts` para os planos salvos
+- [X] T097 Remover de `packages/types/src/motion.ts` o que não tiver mais consumidor, confirmando com busca em `packages` e `apps`
+- [X] T098 [P] Confirmar que `packages/exercises/README.md` e `specs/028-banco-exercicios-demonstracao/quickstart.md` não citam o processo de transição, exceto o histórico
+- [X] T099 Medir SC-007 em modo mock, com a resolução de celular: até 2 toques e início em até 1 s, registrando o resultado em `specs/028-banco-exercicios-demonstracao/bank-review.md`
 - [ ] T100 ⛔ Portão do dono: montar em `/dev/demos` o sorteio de 20 demonstrações sem o nome e registrar o resultado em `specs/028-banco-exercicios-demonstracao/bank-review.md` (SC-006, meta de 90%)
 - [ ] T101 Rodar `pnpm typecheck && pnpm test`, executar todo o roteiro de `specs/028-banco-exercicios-demonstracao/quickstart.md` e conferir a tabela de critérios SC-001 a SC-010, relatando o que não puder ser verificado
 

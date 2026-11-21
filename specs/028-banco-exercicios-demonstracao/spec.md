@@ -32,6 +32,10 @@ O banco tem 122 exercícios de força e 30 animações. A spec 013 mediu cobertu
 - Q: Como as demonstrações são validadas? → A: Por PR, sob demanda: cada demonstração nova ou alterada é renderizada automaticamente na resolução de celular e anexada ao PR, e o dono do produto aprova no próprio PR. Como um print não mostra movimento, a evidência inclui os quadros principais e a animação.
 - Q: As variantes corrigidas valem para planos já existentes? → A: Sim. Planos existentes passam a mostrar a lista corrigida, e uma variante já ativada continua valendo mesmo que não esteja mais nela.
 
+### Session 2026-11-20
+
+- Q: As Rotinas Complementares (alongamento e mobilidade, core e cardio), que ainda usam as animações antigas, entram nesta entrega antes de remover o caminho antigo? → A: Sim. Os itens das Rotinas passam a usar a demonstração e a orientação do catálogo, e só depois o caminho antigo é removido.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ver como executar qualquer exercício (Priority: P1)
@@ -185,6 +189,7 @@ Quem mantém o banco adiciona um exercício seguindo um único caminho, e o proj
 - **FR-011**: Com uma variante ativa, a tela de execução DEVE exibir demonstração, orientações, músculos, cadência e equipamento dessa variante.
 - **FR-012**: As variantes de um exercício DEVEM ter o mesmo padrão de movimento e a mesma função muscular principal, com grupos afins definidos de forma explícita. Os equivalentes da spec 013 continuam permitidos, com a etiqueta "Equivalente".
 - **FR-013**: O sistema NÃO DEVE preencher a lista de variantes com um exercício incoerente para completar a quantidade.
+- **FR-036**: Os itens das Rotinas Complementares (alongamento e mobilidade, core e cardio), inclusive os de rotinas já salvas, DEVEM mostrar a demonstração e a orientação do item correspondente do catálogo. A correspondência é por uma tabela curada de ids, e todo item das Rotinas DEVE ter um item aprovado correspondente antes da remoção do caminho antigo.
 - **FR-035**: Planos existentes DEVEM exibir a lista de variantes corrigida, sem nova geração do plano. Uma variante já ativada DEVE continuar valendo e visível como atual, mesmo que não esteja mais na lista, e o histórico NÃO DEVE ser alterado.
 
 **Coerência dos dados**

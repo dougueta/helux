@@ -364,3 +364,69 @@ Decisões:
 - **Troca.** `repairPreparationItems` dá `catalogId` ao item do catálogo e troca o que está fora dele, ou que pede equipamento indisponível, pelo primeiro item permitido da mesma fase e região (sem região, a sistêmica), preferindo os sem equipamento. A troca é por código e não bloqueia o plano; fica registrada na regra `item-fora-do-catalogo` e no log da geração. No ajuste de sessão, só as sessões propostas passam pela troca.
 - **Pedido.** O texto do método troca "itens livres" pela lista de cada fase, explica a aproximação e mantém a mobilidade das condições de saúde (FR-028).
 - **Tela.** A série de aproximação mostra o exercício de força com a etiqueta "Série leve de preparação" e a dose. Itens mantidos mostram "Mantenha a posição: <tempo>", e itens por lado, "Cada lado: <dose>".
+
+## T093: avaliação real da IA
+
+Pendente. `pnpm --filter @helux/ai eval:treino` usa a API paga, e o dono ainda não autorizou a execução. A mudança foi coberta pela IA simulada: esquema, troca de item fora do catálogo, E2E e o teste em que todo item possível resolve com demonstração (SC-010).
+
+## Rotinas Complementares (FR-036, T102 a T104)
+
+Na sessão de 2026-11-20, o dono incluiu as Rotinas na 028 antes da remoção do caminho antigo. A tabela `src/routine-items.ts` leva cada id das Rotinas ao catálogo; o cardio usa o próprio id. Vale também para rotinas salvas, que guardam o mesmo id.
+
+- 15 dos 16 alongamentos e mobilidades têm item equivalente. O "posterior de coxa deitado" mostra a versão com faixa, como os planos antigos (T084), e o "peitoral no batente" mostra o peitoral na parede.
+- A ponte isométrica das Rotinas não tinha equivalente: entrou `ponte-gluteo-sustentada` (aquecimento e mobilidade, sustentação), que reaproveita a base da ponte e fica no alto.
+- Os 8 itens de core já existiam no catálogo de força; só o dead bug tem outro id.
+- A tela mostra a demonstração e a orientação do catálogo. Sem item correspondente, mostra a indisponibilidade e as dicas da própria Rotina.
+
+## Encerramento (T094 a T098)
+
+- `DemoState` ficou só com `nova` e `indisponivel`; `guidance` passou a ser obrigatória no tipo. Item pendente nunca mostra animação de outro item.
+- Saíram o caminho antigo do `ExerciseDemo` (presets, `HELUX_MOTIONS`, supino como último recurso), `packages/ai/src/motions.ts` e a animação gravada nas variantes novas. `Variant.motion` e `Variant.implement` ficaram opcionais, só para os planos salvos.
+- Em `@helux/types`, sai `GENERIC_MOTION`. `MotionKey` fica como tipo do campo `motion` dos bancos de cardio e das Rotinas.
+- Na folha de execução, as notas do plano deixam de aparecer no aviso de indisponibilidade quando uma variante está ativa (FR-011).
+
+## T099: tempo até a demonstração (SC-007)
+
+Medido em 2026-11-20, em modo mock (`next dev`, sem otimização de produção), com Playwright em 390 × 844, toque de celular, 5 repetições por caminho. O tempo vai do toque até o desenho da demonstração aparecer na folha.
+
+| Caminho | Toques | Tempos (ms) | Pior |
+|---|---|---|---|
+| Início → Ver treino → exercício | 2 | 76, 61, 50, 85, 37 | 85 ms |
+| Treino em andamento → Ver execução | 1 | 23, 8, 13, 10, 12 | 23 ms |
+
+Resultado: atende (até 2 toques, início bem abaixo de 1 s).
+
+## T100: teste às cegas (SC-006)
+
+A galeria tem o modo de sorteio: `/dev/demos?blind=1&seed=7` mostra 20 demonstrações aprovadas, numeradas, sem nome e sem legenda; `&answers=1` mostra o gabarito na mesma ordem. Meta: acertar o exercício, ou o grupo de variações, em ao menos 18 de 20.
+
+Resultado: aguardando o teste do dono.
+
+## T101: conferência final (parcial, 2026-11-20)
+
+Typecheck: 10 de 10 pacotes limpos. Testes (`pnpm turbo run test --concurrency=1 --continue`): ia 217, web 871, api 388, treinos 191, nutrição 109, genética 37, saúde 27, tipos 20, mobile 17; exercícios 154 de 155, e a falha é só a aprovação pendente da ponte de glúteo sustentada (T103). Dois testes das Rotinas que esperam a demonstração carregar oscilavam sob carga; o limite de espera foi de 1 s para 5 s.
+
+| Critério | Situação |
+|---|---|
+| SC-001 | Atende nos testes do catálogo: todo exercício fora de `pending.json` tem demonstração e aprovação em dia |
+| SC-002 | Atende nos testes da folha de execução ("Ver" e "Voltar às variantes" sem alterar o treino) |
+| SC-003 | Atende na regra de variantes coerentes (T084) |
+| SC-004 | Atende no invariante de orientação do catálogo |
+| SC-005 | Atende: o CI bloqueia item sem aprovação (a própria ponte sustentada é o exemplo) |
+| SC-006 | Aguardando o teste às cegas do dono (T100) |
+| SC-007 | Atende: 2 toques, pior caso de 85 ms (T099) |
+| SC-008 | Atende nos testes de planos e histórico antigos; conferência no preview pendente (T092) |
+| SC-009 | Atende para as 11 modalidades de cardio; a ponte sustentada aguarda aprovação |
+| SC-010 | Atende no teste de todas as escolhas da IA; a avaliação paga (T093) aguarda autorização |
+
+## T092: roteiro de preparação e cardio (2026-11-20)
+
+Feito em modo mock, 390 × 844, no Treino B e nas Rotinas.
+
+- Passo 5, preparação: "Suspensão ativa na barra" e "Alongamento de dorsal no apoio" abrem com a demonstração do catálogo, "Mantenha a posição" com o tempo, passos e erro comum. A série de aproximação da Remada Curvada abre a demonstração da remada com a cadência e a marca "Série leve de preparação".
+- Passo 6, cardio: nas Rotinas, a bike abre com a demonstração e a legenda do ritmo.
+- Nome antigo ambíguo ("Séries de aproximação no agachamento e no supino"): não resolve para nenhum item e mostra o aviso de indisponível (teste 6b de `resolve.test.ts`).
+
+Correções feitas na conferência:
+- A demonstração nas Rotinas saía cortada: o palco centralizava com grid e o desenho perdia a altura. Passou a usar o mesmo encaixe da folha de execução.
+- O texto da aproximação dizia "antes do Remada Curvada". Passou a "N séries leves antes das séries do treino", que vale para qualquer nome.

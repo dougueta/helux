@@ -1,10 +1,7 @@
 /**
- * Catálogo das animações de execução (spec 013).
- *
- * Cada chave declara os padrões de movimento — e, nos isolamentos, os grupos
- * musculares — que a animação representa. É a fonte única usada por
- * `@helux/ai` (escolha da animação por exercício e medição da cobertura) e por
- * `apps/web` (o `ExerciseDemo` precisa ter um preset para cada chave).
+ * Chaves das animações antigas (spec 013). Desde o encerramento da 028 (T097), nenhuma tela
+ * desenha por elas: a demonstração vem do catálogo `@helux/exercises`. As chaves continuam só
+ * como tipo do campo `motion` dos bancos de cardio e das Rotinas e dos dados já salvos.
  */
 export interface MotionCatalogEntry {
   patterns: readonly string[]
@@ -47,9 +44,6 @@ const catalog = {
 export type MotionKey = keyof typeof catalog
 
 export const MOTION_CATALOG: Record<MotionKey, MotionCatalogEntry> = catalog
-
-/** Animação de último recurso (chave desconhecida ou exercício sem regra). */
-export const GENERIC_MOTION: MotionKey = 'press-flat'
 
 export function isMotionKey(key: string): key is MotionKey {
   return Object.prototype.hasOwnProperty.call(MOTION_CATALOG, key)

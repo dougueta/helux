@@ -28,14 +28,14 @@ A galeria não existe em produção.
 4. Abra o PR. A evidência é publicada no comentário.
 5. Depois da aprovação do dono, rode `pnpm demos:approve <id>` e faça commit.
 
-**Não adicione o item a `pending.json`.** Essa lista só existe para a transição e o CI recusa adições.
+**Não adicione o item a `pending.json`.** A lista ficou vazia no encerramento, e o CI recusa adições.
 
 Exercícios de força também passam a aparecer como variantes, e os de preparação no esquema da IA, sem outra alteração.
 
 ## Produzir um lote
 
 1. Escolha a família, com no máximo 15 itens.
-2. Escreva os movimentos e as orientações, sem apagar o id de `pending.json`.
+2. Escreva os movimentos e as orientações de cada item.
 3. Abra o PR e aguarde a revisão.
 4. Rode `demos:approve` só com os ids aprovados.
 5. Registre as correções de dados em `bank-review.md`.
