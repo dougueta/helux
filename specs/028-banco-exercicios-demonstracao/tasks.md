@@ -249,7 +249,7 @@ Alterar uma base já aprovada exige nova aprovação dos itens que a usam, no me
 ### Rotinas Complementares (FR-036, sessão de 2026-11-20)
 
 - [X] T102 Criar `packages/exercises/src/routine-items.ts`, com a tabela curada de id da Rotina → id do catálogo, e o teste em `packages/exercises/src/__tests__/catalog.test.ts`: todo item de `STRETCH_MOBILITY_BANK` e `CORE_ROUTINE_ITEMS` tem correspondente no catálogo, e todo id de `CARDIO_BANK` também. O que não tiver equivalente vira item novo do catálogo (T103)
-- [ ] T103 Item novo de preparação para o que não tem equivalente (ponte de glúteo sustentada), com demonstração e orientação, seguindo o procedimento da Phase 7. ⛔ Portão do dono
+- [X] T103 Item novo de preparação para o que não tem equivalente (ponte de glúteo sustentada), com demonstração e orientação, seguindo o procedimento da Phase 7. ⛔ Portão do dono
 - [X] T104 Na tela de Rotinas (`apps/web/src/components/routines/RoutineExecutionClient.tsx`), com testes, mostrar a demonstração do catálogo pelo id correspondente (e a orientação do catálogo quando houver), com o aviso de indisponibilidade quando não houver, sem o caminho antigo
 
 - [X] T094 Tornar `guidance` e `demo` obrigatórios no tipo em `packages/exercises/src/types.ts`, remover o estado `legada` de `packages/exercises/src/resolve.ts` e ajustar `packages/exercises/src/__tests__/resolve.test.ts`
