@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import type { Pose, ResolvedDemo } from '@helux/exercises'
-import type { GalleryItem } from '@/lib/demo-gallery'
+import { blindDraw, type GalleryItem } from '@/lib/demo-gallery'
 
 vi.mock('next/navigation', () => ({
   notFound: () => {
@@ -118,5 +118,40 @@ describe('/dev/demos (028, FR-024)', () => {
     renderPage({ ids: 'pullover-halteres', frame: '1', card: '1' })
     expect(screen.getAllByText('Palmas voltadas uma para a outra')).toHaveLength(1)
     ITEMS[0] = { ...ITEMS[0], demo: demo('pullover-halteres') }
+  })
+  it('blind=1 mostra os aprovados numerados, sem nome nem legenda, e esconde o gabarito', () => {
+    ITEMS[2] = { ...ITEMS[2], demo: { ...demo('gato-camelo'), caption: 'Coluna em onda' } }
+    renderPage({ blind: '1', seed: '3' })
+    expect(screen.getByRole('heading', { name: 'Demonstração 1' })).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(1)
+    expect(screen.queryByText('Gato-camelo')).toBeNull()
+    expect(screen.queryByText('Coluna em onda')).toBeNull()
+    expect(screen.queryByText('Pendente')).toBeNull()
+    expect(screen.getByRole('link', { name: 'Ver gabarito' })).toHaveAttribute('href', '/dev/demos?blind=1&seed=3&answers=1')
+    ITEMS[2] = { ...ITEMS[2], demo: demo('gato-camelo') }
+  })
+
+  it('answers=1 mostra o gabarito na ordem do sorteio', () => {
+    renderPage({ blind: '1', seed: '3', answers: '1' })
+    expect(within(screen.getByRole('region', { name: 'Gabarito' })).getByText('Gato-camelo')).toBeInTheDocument()
+  })
+})
+
+describe('blindDraw (028, SC-006)', () => {
+  const many: GalleryItem[] = Array.from({ length: 30 }, (_, i) => ({
+    id: `item-${i}`, name: `Item ${i}`, kind: 'forca' as const, pending: i >= 25, demo: i % 10 === 9 ? null : demo(`item-${i}`), guidance: null,
+  }))
+
+  it('sorteia até 20 itens aprovados e com demonstração, sem repetir', () => {
+    const drawn = blindDraw(many, 7)
+    expect(drawn).toHaveLength(20)
+    expect(new Set(drawn.map((i) => i.id)).size).toBe(20)
+    expect(drawn.every((i) => !i.pending && i.demo)).toBe(true)
+  })
+
+  it('a mesma semente repete o sorteio; outra semente muda a ordem', () => {
+    const ids = (seed: number) => blindDraw(many, seed).map((i) => i.id)
+    expect(ids(7)).toEqual(ids(7))
+    expect(ids(8)).not.toEqual(ids(7))
   })
 })

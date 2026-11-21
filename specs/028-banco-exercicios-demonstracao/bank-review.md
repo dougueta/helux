@@ -384,3 +384,37 @@ Na sessão de 2026-11-20, o dono incluiu as Rotinas na 028 antes da remoção do
 - Saíram o caminho antigo do `ExerciseDemo` (presets, `HELUX_MOTIONS`, supino como último recurso), `packages/ai/src/motions.ts` e a animação gravada nas variantes novas. `Variant.motion` e `Variant.implement` ficaram opcionais, só para os planos salvos.
 - Em `@helux/types`, sai `GENERIC_MOTION`. `MotionKey` fica como tipo do campo `motion` dos bancos de cardio e das Rotinas.
 - Na folha de execução, as notas do plano deixam de aparecer no aviso de indisponibilidade quando uma variante está ativa (FR-011).
+
+## T099: tempo até a demonstração (SC-007)
+
+Medido em 2026-11-20, em modo mock (`next dev`, sem otimização de produção), com Playwright em 390 × 844, toque de celular, 5 repetições por caminho. O tempo vai do toque até o desenho da demonstração aparecer na folha.
+
+| Caminho | Toques | Tempos (ms) | Pior |
+|---|---|---|---|
+| Início → Ver treino → exercício | 2 | 76, 61, 50, 85, 37 | 85 ms |
+| Treino em andamento → Ver execução | 1 | 23, 8, 13, 10, 12 | 23 ms |
+
+Resultado: atende (até 2 toques, início bem abaixo de 1 s).
+
+## T100: teste às cegas (SC-006)
+
+A galeria tem o modo de sorteio: `/dev/demos?blind=1&seed=7` mostra 20 demonstrações aprovadas, numeradas, sem nome e sem legenda; `&answers=1` mostra o gabarito na mesma ordem. Meta: acertar o exercício, ou o grupo de variações, em ao menos 18 de 20.
+
+Resultado: aguardando o teste do dono.
+
+## T101: conferência final (parcial, 2026-11-20)
+
+Typecheck: 10 de 10 pacotes limpos. Testes (`pnpm turbo run test --concurrency=1 --continue`): ia 217, web 871, api 388, treinos 191, nutrição 109, genética 37, saúde 27, tipos 20, mobile 17; exercícios 154 de 155, e a falha é só a aprovação pendente da ponte de glúteo sustentada (T103). Dois testes das Rotinas que esperam a demonstração carregar oscilavam sob carga; o limite de espera foi de 1 s para 5 s.
+
+| Critério | Situação |
+|---|---|
+| SC-001 | Atende nos testes do catálogo: todo exercício fora de `pending.json` tem demonstração e aprovação em dia |
+| SC-002 | Atende nos testes da folha de execução ("Ver" e "Voltar às variantes" sem alterar o treino) |
+| SC-003 | Atende na regra de variantes coerentes (T084) |
+| SC-004 | Atende no invariante de orientação do catálogo |
+| SC-005 | Atende: o CI bloqueia item sem aprovação (a própria ponte sustentada é o exemplo) |
+| SC-006 | Aguardando o teste às cegas do dono (T100) |
+| SC-007 | Atende: 2 toques, pior caso de 85 ms (T099) |
+| SC-008 | Atende nos testes de planos e histórico antigos; conferência no preview pendente (T092) |
+| SC-009 | Atende para as 11 modalidades de cardio; a ponte sustentada aguarda aprovação |
+| SC-010 | Atende no teste de todas as escolhas da IA; a avaliação paga (T093) aguarda autorização |

@@ -257,7 +257,7 @@ Alterar uma base já aprovada exige nova aprovação dos itens que a usam, no me
 - [X] T096 Remover `packages/ai/src/motions.ts` e `packages/ai/src/__tests__/motions.test.ts`, e ajustar `packages/ai/src/variants.ts` e `packages/ai/src/index.ts`, mantendo `Variant.motion` e `Variant.implement` no tipo em `packages/types/src/workout.ts` para os planos salvos
 - [X] T097 Remover de `packages/types/src/motion.ts` o que não tiver mais consumidor, confirmando com busca em `packages` e `apps`
 - [X] T098 [P] Confirmar que `packages/exercises/README.md` e `specs/028-banco-exercicios-demonstracao/quickstart.md` não citam o processo de transição, exceto o histórico
-- [ ] T099 Medir SC-007 em modo mock, com a resolução de celular: até 2 toques e início em até 1 s, registrando o resultado em `specs/028-banco-exercicios-demonstracao/bank-review.md`
+- [X] T099 Medir SC-007 em modo mock, com a resolução de celular: até 2 toques e início em até 1 s, registrando o resultado em `specs/028-banco-exercicios-demonstracao/bank-review.md`
 - [ ] T100 ⛔ Portão do dono: montar em `/dev/demos` o sorteio de 20 demonstrações sem o nome e registrar o resultado em `specs/028-banco-exercicios-demonstracao/bank-review.md` (SC-006, meta de 90%)
 - [ ] T101 Rodar `pnpm typecheck && pnpm test`, executar todo o roteiro de `specs/028-banco-exercicios-demonstracao/quickstart.md` e conferir a tabela de critérios SC-001 a SC-010, relatando o que não puder ser verificado
 
