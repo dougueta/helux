@@ -163,8 +163,10 @@ export function RoutineExecutionClient({
             </Banner>
           )}
 
-          <div className="hx-stage" style={{ height: 180, display: 'grid', placeItems: 'center' }}>
-            <ItemDemo resolved={resolveRoutineItem(selectedEntry.id, selectedEntry.name)} playing size="stage" />
+          <div className="hx-stage" style={{ height: 180, position: 'relative' }}>
+            <div style={{ position: 'absolute', inset: '8px 24px' }}>
+              <ItemDemo resolved={resolveRoutineItem(selectedEntry.id, selectedEntry.name)} playing size="stage" />
+            </div>
           </div>
 
           <section className="hx-card" style={{ padding: 'var(--s-4)', display: 'flex', flexDirection: 'column', gap: 'var(--s-3)' }}>
@@ -275,8 +277,10 @@ export function RoutineExecutionClient({
         />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)', marginTop: 'var(--s-3)' }}>
-          <div className="hx-stage" style={{ height: 180, display: 'grid', placeItems: 'center' }}>
-            <ItemDemo resolved={resolveRoutineItem(currentItem.id, currentItem.name)} playing size="stage" />
+          <div className="hx-stage" style={{ height: 180, position: 'relative' }}>
+            <div style={{ position: 'absolute', inset: '8px 24px' }}>
+              <ItemDemo resolved={resolveRoutineItem(currentItem.id, currentItem.name)} playing size="stage" />
+            </div>
           </div>
 
           <section className="hx-card" style={{ padding: 'var(--s-4)', display: 'flex', flexDirection: 'column', gap: 'var(--s-3)' }}>

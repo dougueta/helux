@@ -178,7 +178,7 @@ export function ExerciseSheet({
         <div data-approach style={{ marginTop: 10 }}>
           <Tag>Série leve de preparação</Tag>
           <p className="t-secondary" style={{ marginTop: 6 }}>
-            {exercise.sets} {exercise.sets === 1 ? 'série leve' : 'séries leves'} antes do {resolved.name}: {exercise.reps}
+            {exercise.sets} {exercise.sets === 1 ? 'série leve' : 'séries leves'} antes das séries do treino: {exercise.reps}
             {exercise.weight && exercise.weight !== '—' ? ` · ${exercise.weight}` : ''}
           </p>
         </div>

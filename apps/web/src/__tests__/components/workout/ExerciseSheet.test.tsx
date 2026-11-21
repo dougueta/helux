@@ -268,7 +268,7 @@ describe('ExerciseSheet — preparação e aproximação (028, T091)', () => {
       />,
     )
     expect(screen.getByText('Série leve de preparação')).toBeInTheDocument()
-    expect(screen.getByText(/2 séries leves antes do Supino Reto \(Halteres\)/)).toBeInTheDocument()
+    expect(screen.getByText(/2 séries leves antes das séries do treino/)).toBeInTheDocument()
   })
 
   it('posição mantida indica o tempo; item por lado indica a dose de cada lado', () => {

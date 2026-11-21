@@ -418,3 +418,15 @@ Typecheck: 10 de 10 pacotes limpos. Testes (`pnpm turbo run test --concurrency=1
 | SC-008 | Atende nos testes de planos e histórico antigos; conferência no preview pendente (T092) |
 | SC-009 | Atende para as 11 modalidades de cardio; a ponte sustentada aguarda aprovação |
 | SC-010 | Atende no teste de todas as escolhas da IA; a avaliação paga (T093) aguarda autorização |
+
+## T092: roteiro de preparação e cardio (2026-11-20)
+
+Feito em modo mock, 390 × 844, no Treino B e nas Rotinas.
+
+- Passo 5, preparação: "Suspensão ativa na barra" e "Alongamento de dorsal no apoio" abrem com a demonstração do catálogo, "Mantenha a posição" com o tempo, passos e erro comum. A série de aproximação da Remada Curvada abre a demonstração da remada com a cadência e a marca "Série leve de preparação".
+- Passo 6, cardio: nas Rotinas, a bike abre com a demonstração e a legenda do ritmo.
+- Nome antigo ambíguo ("Séries de aproximação no agachamento e no supino"): não resolve para nenhum item e mostra o aviso de indisponível (teste 6b de `resolve.test.ts`).
+
+Correções feitas na conferência:
+- A demonstração nas Rotinas saía cortada: o palco centralizava com grid e o desenho perdia a altura. Passou a usar o mesmo encaixe da folha de execução.
+- O texto da aproximação dizia "antes do Remada Curvada". Passou a "N séries leves antes das séries do treino", que vale para qualquer nome.
